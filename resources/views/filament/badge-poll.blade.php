@@ -24,9 +24,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (count > 0) {
                     label.textContent = count;
-                    ctn.style.display = '';
+                    ctn.closest('.fi-sidebar-item-badge-ctn').style.display = '';
                 } else {
-                    ctn.style.display = 'none';
+                    ctn.closest('.fi-sidebar-item-badge-ctn').style.display = 'none';
                 }
             });
         })
@@ -34,5 +34,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     setInterval(updateBadges, 30000);
+
+    if (typeof Livewire !== 'undefined') {
+        Livewire.on('refresh-badges', function () {
+            updateBadges();
+        });
+    }
+
+    document.addEventListener('livewire:message.processed', function () {
+        setTimeout(updateBadges, 100);
+    });
 });
 </script>
