@@ -156,7 +156,9 @@ class TaskResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return (string) Task::whereNull('completed_at')->count();
+        $count = Task::whereNull('completed_at')->count();
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public static function getPages(): array

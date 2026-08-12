@@ -68,7 +68,7 @@ class SyncWpForms implements ShouldQueue
             'entry_id' => (int) $entry->entry_id,
             'form_id' => (int) $entry->form_id,
             'form_name' => $entry->form_name ?: null,
-            'status' => $entry->status ?: null,
+            'status' => 'new',
             'viewed' => (bool) ($entry->viewed ?? false),
             'starred' => (bool) ($entry->starred ?? false),
             'ip_address' => $entry->ip_address ?: null,

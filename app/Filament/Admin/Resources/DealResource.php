@@ -116,7 +116,9 @@ class DealResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return (string) Deal::whereNotIn('stage', ['closed_won', 'closed_lost'])->count();
+        $count = Deal::whereNotIn('stage', ['closed_won', 'closed_lost'])->count();
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public static function getPages(): array

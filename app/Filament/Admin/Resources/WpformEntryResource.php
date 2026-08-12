@@ -57,16 +57,14 @@ class WpformEntryResource extends Resource
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('Telefona numurs'))
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Telefona numurs%')->where('fields', 'like', "%{$search}%")),
-                Tables\Columns\CheckboxColumn::make('viewed')->label('Skatīts'),
-                Tables\Columns\SelectColumn::make('status')->label('Statuss')
-                    ->options(self::STATUSES)
-                    ->placeholder('—')
-                    ->selectablePlaceholder(),
+                Tables\Columns\TextColumn::make('status')->label('Statuss')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => self::STATUSES[$state] ?? $state ?? '—')
+                    ->placeholder('—'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->label('Statuss')
                     ->options(self::STATUSES),
-                Tables\Filters\TernaryFilter::make('viewed')->label('Skatīts'),
                 Tables\Filters\Filter::make('linked_client')->label('Piesaistīts klientam')
                     ->query(fn ($q) => $q->whereNotNull('client_id')),
                 Tables\Filters\Filter::make('unlinked')->label('Bez klienta')
@@ -86,7 +84,9 @@ class WpformEntryResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return (string) WpformEntry::count();
+        $count = WpformEntry::where('status', 'new')->count();
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public static function getPages(): array
