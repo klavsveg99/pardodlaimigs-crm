@@ -106,6 +106,7 @@ class WpformEntryResource extends Resource
                             ->title('Statuss mainīts')
                             ->success()
                             ->send();
+                        request()->session()->flash('refresh-badges', true);
                     }),
                 ViewAction::make()->label('Skatīt'),
                 DeleteAction::make()->label('Dzēst'),
