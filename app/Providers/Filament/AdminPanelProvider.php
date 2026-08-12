@@ -42,7 +42,9 @@ class AdminPanelProvider extends PanelProvider
                 'info' => '#236D63',
             ])
             ->renderHook('panels::body.start', fn () => view('filament.brand-fonts'))
-            ->renderHook('panels::head.end', fn () => view('filament.calendar-assets'))
+            ->renderHook('panels::head.end', function () {
+                return view('filament.calendar-assets').view('filament.page-animations');
+            })
             ->renderHook('panels::scripts.after', fn () => view('filament.badge-poll'))
             ->renderHook('panels::styles.before', fn () => '<link rel="stylesheet" href="'
                 .asset('css/filament-custom.css').'">')
