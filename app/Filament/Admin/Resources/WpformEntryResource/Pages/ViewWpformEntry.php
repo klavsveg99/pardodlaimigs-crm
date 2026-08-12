@@ -45,7 +45,7 @@ class ViewWpformEntry extends ViewRecord
                             ->send();
 
                         $existing = Client::where('email', $email)->whereNull('gdpr_erased_at')->first();
-                        $this->record->update(['client_id' => $existing->id]);
+                        $this->record->update(['client_id' => $existing->id, 'status' => 'klients_pievienots']);
 
                         return;
                     }
@@ -57,7 +57,7 @@ class ViewWpformEntry extends ViewRecord
                         'source' => 'Tīmekļa vietne',
                     ]);
 
-                    $this->record->update(['client_id' => $client->id]);
+                    $this->record->update(['client_id' => $client->id, 'status' => 'klients_pievienots']);
 
                     Notification::make()
                         ->title('Klients izveidots un piesaistīts')
@@ -78,7 +78,7 @@ class ViewWpformEntry extends ViewRecord
                         ->required(),
                 ])
                 ->action(function (array $data) {
-                    $this->record->update(['client_id' => $data['client_id']]);
+                    $this->record->update(['client_id' => $data['client_id'], 'status' => 'klients_pievienots']);
                     Notification::make()
                         ->title('Klients piesaistīts')
                         ->success()
@@ -91,7 +91,7 @@ class ViewWpformEntry extends ViewRecord
                 ->visible(fn () => $this->record->client_id !== null)
                 ->requiresConfirmation()
                 ->action(function () {
-                    $this->record->update(['client_id' => null]);
+                    $this->record->update(['client_id' => null, 'status' => 'new']);
                     Notification::make()
                         ->title('Klients atsaistīts')
                         ->success()
