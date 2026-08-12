@@ -47,11 +47,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setInterval(refreshBadges, 30000);
 
+    function onWpformsPage() {
+        return window.location.href.indexOf('/wpform-entries') !== -1;
+    }
+
     document.addEventListener('livewire:message.processed', function () {
-        var url = window.location.href;
-        if (url.indexOf('/wpform-entries') !== -1) {
-            setTimeout(refreshBadges, 50);
-        }
+        if (onWpformsPage()) setTimeout(refreshBadges, 50);
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!onWpformsPage()) return;
+        var btn = e.target.closest('button');
+        if (!btn) return;
+        var modal = btn.closest('.fi-modal-window');
+        if (!modal) return;
+        setTimeout(refreshBadges, 300);
+    });
+
+    document.querySelectorAll('select[name*="status"]').forEach(function (s) {
+        s.dataset.prevStatus = s.value;
     });
 
     document.addEventListener('change', function (e) {
@@ -74,10 +88,6 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (oldVal !== 'new' && newVal === 'new') {
             setBadgeCount(wpformBadge, count + 1);
         }
-    });
-
-    document.querySelectorAll('select[name*="status"]').forEach(function (s) {
-        s.dataset.prevStatus = s.value;
     });
 });
 </script>
