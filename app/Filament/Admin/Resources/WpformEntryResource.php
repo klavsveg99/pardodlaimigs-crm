@@ -57,10 +57,10 @@ class WpformEntryResource extends Resource
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('Telefona numurs'))
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Telefona numurs%')->where('fields', 'like', "%{$search}%")),
-                Tables\Columns\TextColumn::make('status')->label('Statuss')
-                    ->badge()
-                    ->formatStateUsing(fn ($state) => self::STATUSES[$state] ?? $state ?? '—')
-                    ->placeholder('—'),
+                Tables\Columns\SelectColumn::make('status')->label('Statuss')
+                    ->options(self::STATUSES)
+                    ->placeholder('—')
+                    ->selectablePlaceholder(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->label('Statuss')
