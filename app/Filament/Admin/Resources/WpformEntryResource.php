@@ -6,13 +6,10 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\WpformEntryResource\Pages;
 use App\Models\WpformEntry;
-use Filament\Actions;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\Select;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -69,18 +66,10 @@ class WpformEntryResource extends Resource
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('Telefona numurs'))
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Telefona numurs%')->where('fields', 'like', "%{$search}%")),
-                Tables\Columns\TextColumn::make('status')->label('Statuss')
-                    ->badge()
-                    ->formatStateUsing(fn ($state) => self::STATUSES[$state] ?? $state ?? '—')
-                    ->color(fn ($state) => match ($state) {
-                        'new' => 'info',
-                        'review' => 'warning',
-                        'replied' => 'success',
-                        'spam' => 'danger',
-                        'archived' => 'gray',
-                        'klients_pievienots' => 'success',
-                        default => 'gray',
-                    }),
+                Tables\Columns\SelectColumn::make('status')->label('Statuss')
+                    ->options(self::EDITABLE_STATUSES)
+                    ->placeholder('—')
+                    ->selectablePlaceholder(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->label('Statuss')
@@ -91,22 +80,6 @@ class WpformEntryResource extends Resource
                     ->query(fn ($q) => $q->whereNull('client_id')),
             ])
             ->actions([
-                Actions\Action::make('change_status')
-                    ->label('Mainīt statusu')
-                    ->icon('heroicon-o-arrow-path')
-                    ->form([
-                        Select::make('status')
-                            ->label('Statuss')
-                            ->options(self::EDITABLE_STATUSES)
-                            ->required(),
-                    ])
-                    ->action(function (WpformEntry $record, array $data): void {
-                        $record->update(['status' => $data['status']]);
-                        Notification::make()
-                            ->title('Statuss mainīts')
-                            ->success()
-                            ->send();
-                    }),
                 ViewAction::make()->label('Skatīt'),
                 DeleteAction::make()->label('Dzēst'),
             ])
