@@ -64,19 +64,25 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(refreshBadges, 300);
     });
 
-    document.querySelectorAll('select[name*="status"]').forEach(function (s) {
-        s.dataset.prevStatus = s.value;
+    function isStatusSelect(el) {
+        if (!el || el.tagName !== 'SELECT') return false;
+        var name = el.name || '';
+        var wire = (el.getAttribute('wire:model') || el.getAttribute('wire:model.live') || el.getAttribute('wire:model.change') || '');
+        return name.indexOf('status') !== -1 || wire.indexOf('status') !== -1;
+    }
+
+    document.querySelectorAll('select').forEach(function (s) {
+        if (isStatusSelect(s)) s.dataset.prevStatus = s.value;
     });
 
     document.addEventListener('change', function (e) {
         var select = e.target;
-        if (!select.matches || !select.name) return;
-        if (select.name.indexOf('status') === -1) return;
+        if (!isStatusSelect(select)) return;
 
         var wpformBadge = getBadge(map.wpforms);
         if (!wpformBadge) return;
 
-        var oldVal = select.dataset.prevStatus;
+        var oldVal = select.dataset.prevStatus || '';
         var newVal = select.value;
         select.dataset.prevStatus = newVal;
 
