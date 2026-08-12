@@ -3,7 +3,8 @@
 /**
  * PRIVATE CREDENTIALS - NEVER COMMIT THIS FILE
  *
- * Copy this to config.php and fill in real values.
+ * Local dev: copy to ./private/config.php
+ * Hostinger: copy to ~/domains/pardodlaimigs.lv/private/crm-config.php
  */
 
 return [
