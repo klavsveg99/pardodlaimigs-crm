@@ -4,15 +4,17 @@ namespace App\Filament\Admin\Resources\ClientResource\RelationManagers;
 
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Schemas\Schema;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 
 class ViewingsRelationManager extends RelationManager
 {
     protected static string $relationship = 'viewings';
+
     protected static ?string $title = 'Apskates';
+
     protected static string|\BackedEnum|null $icon = 'heroicon-o-calendar';
 
     public function form(Schema $schema): Schema
@@ -24,9 +26,9 @@ class ViewingsRelationManager extends RelationManager
             Forms\Components\TextInput::make('duration_min')->label('Ilgums (min)')->numeric()->default(30),
             Forms\Components\Select::make('status')->label('Statuss')->options([
                 'scheduled' => 'Ieplānota',
-                'done'      => 'Notikusi',
+                'done' => 'Notikusi',
                 'cancelled' => 'Atcelta',
-                'no_show'   => 'Klients neatnāca',
+                'no_show' => 'Klients neatnāca',
             ])->default('scheduled'),
             Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
         ]);

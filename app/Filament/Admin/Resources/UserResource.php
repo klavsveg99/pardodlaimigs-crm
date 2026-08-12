@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources;
 
-use UnitEnum;
-
 use App\Filament\Admin\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Actions;
@@ -15,15 +13,22 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+
     protected static ?string $navigationLabel = 'Aģenti';
+
     protected static string|UnitEnum|null $navigationGroup = 'Sistēma';
+
     protected static ?string $modelLabel = 'Lietotājs';
+
     protected static ?string $pluralModelLabel = 'Lietotāji';
+
     protected static ?int $navigationSort = 50;
 
     public static function canAccess(): bool
@@ -40,7 +45,7 @@ class UserResource extends Resource
                 Forms\Components\Select::make('role')->label('Loma')
                     ->options([
                         'aģents' => 'Aģents',
-                        'admin'  => 'Admin',
+                        'admin' => 'Admin',
                     ])->searchable()->default(null)->nullable(),
                 Forms\Components\TextInput::make('password')
                     ->label('Parole (atstāj tukšu, ja nemainīt)')
@@ -64,7 +69,7 @@ class UserResource extends Resource
                     ->label('Loma')
                     ->options([
                         'aģents' => 'Aģents',
-                        'admin'  => 'Admin',
+                        'admin' => 'Admin',
                     ]),
             ])
             ->actions([

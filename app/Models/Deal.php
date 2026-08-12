@@ -8,17 +8,16 @@ use App\Services\AuditLogger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Support\Facades\Auth;
 
 class Deal extends Model
 {
     public const STAGES = [
-        'lead'             => 'Sākotnējais interesents',
-        'viewing_scheduled'=> 'Apskate ieplānota',
-        'offer'            => 'Piedāvājums',
-        'reserved'         => 'Rezervēts',
-        'closed_won'       => 'Pārdots',
-        'closed_lost'      => 'Zaudēts',
+        'lead' => 'Sākotnējais interesents',
+        'viewing_scheduled' => 'Apskate ieplānota',
+        'offer' => 'Piedāvājums',
+        'reserved' => 'Rezervēts',
+        'closed_won' => 'Pārdots',
+        'closed_lost' => 'Zaudēts',
     ];
 
     protected $fillable = [
@@ -30,9 +29,9 @@ class Deal extends Model
     protected $with = ['attachments'];
 
     protected $casts = [
-        'value_cents'         => 'integer',
+        'value_cents' => 'integer',
         'expected_close_date' => 'date',
-        'closed_at'           => 'datetime',
+        'closed_at' => 'datetime',
     ];
 
     protected static function booted(): void
@@ -47,7 +46,7 @@ class Deal extends Model
             if (isset($changes['stage'])) {
                 app(AuditLogger::class)->activity('stage_changed', $d, [
                     'from' => $d->getOriginal('stage'),
-                    'to'   => $d->stage,
+                    'to' => $d->stage,
                 ]);
             }
             app(AuditLogger::class)->log(

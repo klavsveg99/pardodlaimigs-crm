@@ -16,7 +16,7 @@ class Attachment extends Model
     ];
 
     protected $casts = [
-        'size'       => 'integer',
+        'size' => 'integer',
         'sort_order' => 'integer',
     ];
 

@@ -2,6 +2,11 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Admin\Widgets\CalendarViewings;
+use App\Filament\Admin\Widgets\CrmStatsOverview;
+use App\Filament\Admin\Widgets\DealsByStage;
+use App\Filament\Admin\Widgets\TodayViewings;
+use App\Filament\Admin\Widgets\UpcomingTasks;
 use App\Http\Middleware\TrustCrmHost;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -10,7 +15,6 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -40,7 +44,7 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook('panels::body.start', fn () => view('filament.brand-fonts'))
             ->renderHook('panels::head.end', fn () => view('filament.calendar-assets'))
             ->renderHook('panels::styles.before', fn () => '<link rel="stylesheet" href="'
-                . asset('css/filament-custom.css') . '">')
+                .asset('css/filament-custom.css').'">')
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
@@ -48,11 +52,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
-                \App\Filament\Admin\Widgets\CrmStatsOverview::class,
-                \App\Filament\Admin\Widgets\DealsByStage::class,
-                \App\Filament\Admin\Widgets\UpcomingTasks::class,
-                \App\Filament\Admin\Widgets\TodayViewings::class,
-                \App\Filament\Admin\Widgets\CalendarViewings::class,
+                CrmStatsOverview::class,
+                DealsByStage::class,
+                UpcomingTasks::class,
+                TodayViewings::class,
+                CalendarViewings::class,
             ])
             ->middleware([
                 TrustCrmHost::class,

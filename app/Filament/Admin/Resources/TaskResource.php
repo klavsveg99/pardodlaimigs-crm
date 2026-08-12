@@ -4,25 +4,32 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources;
 
-use UnitEnum;
-
 use App\Filament\Admin\Resources\TaskResource\Pages;
+use App\Models\Client;
+use App\Models\Deal;
 use App\Models\Task;
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class TaskResource extends Resource
 {
     protected static ?string $model = Task::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
+
     protected static ?string $navigationLabel = 'Uzdevumi';
+
     protected static string|UnitEnum|null $navigationGroup = 'Darbplūsma';
+
     protected static ?string $modelLabel = 'Uzdevums';
+
     protected static ?string $pluralModelLabel = 'Uzdevumi';
+
     protected static ?int $navigationSort = 30;
 
     public static function form(Schema $schema): Schema
@@ -35,12 +42,12 @@ class TaskResource extends Resource
                 ->relationship('assignedTo', 'name')->searchable()->preload()->optionsLimit(20),
             Forms\Components\Select::make('client_id')->label('Klients')
                 ->searchable()
-                ->options(fn () => \App\Models\Client::query()->orderBy('name')->limit(20)->pluck('name', 'id')->all())
-                ->getOptionLabelUsing(fn ($value): ?string => \App\Models\Client::find($value)?->name),
+                ->options(fn () => Client::query()->orderBy('name')->limit(20)->pluck('name', 'id')->all())
+                ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name),
             Forms\Components\Select::make('deal_id')->label('Darījums')
                 ->searchable()
                 ->options(function () {
-                    return \App\Models\Deal::query()
+                    return Deal::query()
                         ->with(['client', 'property'])
                         ->whereNotNull('property_id')
                         ->orderByDesc('id')
@@ -49,19 +56,20 @@ class TaskResource extends Resource
                         ->mapWithKeys(function ($d) {
                             $client = $d->client?->name ?? '—';
                             $property = $d->property?->title ?? '—';
-                            $stage = \App\Models\Deal::STAGES[$d->stage] ?? $d->stage;
+                            $stage = Deal::STAGES[$d->stage] ?? $d->stage;
+
                             return [$d->id => "#{$d->id} · {$client} · {$property} · {$stage}"];
                         })
                         ->toArray();
                 })
                 ->getSearchResultsUsing(function (string $search) {
-                    return \App\Models\Deal::query()
+                    return Deal::query()
                         ->with(['client', 'property'])
                         ->whereNotNull('property_id')
                         ->where(function ($q) use ($search) {
                             $q->where('id', 'like', "%{$search}%")
-                              ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$search}%"))
-                              ->orWhereHas('property', fn ($p) => $p->where('title', 'like', "%{$search}%"));
+                                ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$search}%"))
+                                ->orWhereHas('property', fn ($p) => $p->where('title', 'like', "%{$search}%"));
                         })
                         ->orderByDesc('id')
                         ->limit(20)
@@ -69,25 +77,27 @@ class TaskResource extends Resource
                         ->mapWithKeys(function ($d) {
                             $client = $d->client?->name ?? '—';
                             $property = $d->property?->title ?? '—';
-                            $stage = \App\Models\Deal::STAGES[$d->stage] ?? $d->stage;
+                            $stage = Deal::STAGES[$d->stage] ?? $d->stage;
+
                             return [$d->id => "#{$d->id} · {$client} · {$property} · {$stage}"];
                         })
                         ->toArray();
                 })
                 ->getOptionLabelUsing(function ($value): ?string {
-                    $d = \App\Models\Deal::with(['client', 'property'])->find($value);
-                    if (!$d) {
+                    $d = Deal::with(['client', 'property'])->find($value);
+                    if (! $d) {
                         return null;
                     }
                     $client = $d->client?->name ?? '—';
                     $property = $d->property?->title ?? '—';
-                    $stage = \App\Models\Deal::STAGES[$d->stage] ?? $d->stage;
+                    $stage = Deal::STAGES[$d->stage] ?? $d->stage;
+
                     return "#{$d->id} · {$client} · {$property} · {$stage}";
                 }),
             Forms\Components\FileUpload::make('attachments')
                 ->label('Pielikumi')
-                ->helperText('Atļauti failu tipi: ' . implode(', ', config('attachments.accepted_mimes'))
-                    . ' · maksimālais izmērs: ' . (int) (config('attachments.max_size_kb') / 1024) . ' MB')
+                ->helperText('Atļauti failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
+                    .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
                 ->multiple()
                 ->reorderable()
                 ->deletable()
@@ -136,7 +146,7 @@ class TaskResource extends Resource
                 Actions\Action::make('complete')
                     ->label('Pabeigt')
                     ->icon('heroicon-o-check')
-                    ->visible(fn ($record) => !$record->completed_at)
+                    ->visible(fn ($record) => ! $record->completed_at)
                     ->action(fn ($record) => $record->update(['completed_at' => now()])),
                 Actions\EditAction::make(),
             ])
@@ -146,15 +156,15 @@ class TaskResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return (string) \App\Models\Task::whereNull('completed_at')->count();
+        return (string) Task::whereNull('completed_at')->count();
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListTasks::route('/'),
+            'index' => Pages\ListTasks::route('/'),
             'create' => Pages\CreateTask::route('/create'),
-            'edit'   => Pages\EditTask::route('/{record}/edit'),
+            'edit' => Pages\EditTask::route('/{record}/edit'),
         ];
     }
 }

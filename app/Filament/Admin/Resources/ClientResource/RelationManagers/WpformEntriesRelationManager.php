@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\ClientResource\RelationManagers;
 
 use App\Filament\Admin\Resources\WpformEntryResource;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -11,7 +12,9 @@ use Filament\Tables\Table;
 class WpformEntriesRelationManager extends RelationManager
 {
     protected static string $relationship = 'wpformEntries';
+
     protected static ?string $title = 'Pieteikumi';
+
     protected static string|\BackedEnum|null $icon = 'heroicon-o-inbox-stack';
 
     public function table(Table $table): Table
@@ -46,7 +49,7 @@ class WpformEntriesRelationManager extends RelationManager
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update(['client_id' => null]);
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Pieteikums atsaistīts no klienta')
                             ->success()
                             ->send();

@@ -9,10 +9,12 @@ use Filament\Actions\Action;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Illuminate\Database\Eloquent\Builder;
 
 class TodayViewings extends BaseWidget
 {
     protected static ?int $sort = 4;
+
     protected int|string|array $columnSpan = 'full';
 
     public string $scope = 'mine';
@@ -30,9 +32,9 @@ class TodayViewings extends BaseWidget
                 Tables\Columns\TextColumn::make('status')
                     ->label('Statuss')->badge()
                     ->colors([
-                        'info'    => 'scheduled',
+                        'info' => 'scheduled',
                         'success' => 'done',
-                        'danger'  => 'cancelled',
+                        'danger' => 'cancelled',
                         'warning' => 'no_show',
                     ]),
             ])
@@ -49,7 +51,7 @@ class TodayViewings extends BaseWidget
             ->paginated(false);
     }
 
-    protected function getQuery(): \Illuminate\Database\Eloquent\Builder
+    protected function getQuery(): Builder
     {
         $query = Viewing::query()
             ->with(['property', 'client', 'agent'])

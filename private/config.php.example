@@ -3,11 +3,24 @@
 /**
  * PRIVATE CREDENTIALS - NEVER COMMIT THIS FILE
  *
- * Only secrets that can't go in git. Everything else is hardcoded.
  * Copy this to config.php and fill in real values.
  */
 
 return [
-    'DB_PASSWORD'    => '',  // ← CRM database password
-    'WP_CRM_API_KEY' => '',  // ← WP REST API key (feed auth)
+    // ─── Application ────────────────────────────────────────────
+    'APP_KEY'     => '',  // ← php artisan key:generate
+    'APP_NAME'    => 'Pārdod Laimīgs CRM',
+    'APP_URL'     => 'https://crm.pardodlaimigs.lv',
+    'APP_LOCALE'  => 'lv',
+
+    // ─── Database ───────────────────────────────────────────────
+    'DB_CONNECTION' => 'mysql',
+    'DB_HOST'       => 'localhost',
+    'DB_PORT'       => '3306',
+    'DB_DATABASE'   => 'u976787655_crm',
+    'DB_USERNAME'   => 'u976787655_crmuser',
+    'DB_PASSWORD'   => '',
+
+    // ─── WP Feed Auth ───────────────────────────────────────────
+    'WP_CRM_API_KEY' => '',
 ];

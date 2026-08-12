@@ -123,7 +123,7 @@ class WpRest
     private function headers(): array
     {
         return [
-            'Accept'        => 'application/json',
+            'Accept' => 'application/json',
             'X-CRM-API-Key' => (string) config('wp-bridge.wordpress.api_key'),
         ];
     }
