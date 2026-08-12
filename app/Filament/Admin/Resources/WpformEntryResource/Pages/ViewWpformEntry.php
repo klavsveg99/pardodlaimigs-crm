@@ -15,6 +15,8 @@ class ViewWpformEntry extends ViewRecord
 
     protected string $view = 'filament.admin.resources.wpform-entry-resource.pages.view-wpform-entry';
 
+    protected static ?string $title = 'status';
+
     public function getTitle(): string
     {
         return 'Formas ieraksts';
@@ -23,6 +25,24 @@ class ViewWpformEntry extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('change_status')
+                ->label(fn () => 'Statuss: '.(WpformEntryResource::STATUSES[$this->record->status] ?? $this->record->status ?? '—'))
+                ->icon('heroicon-o-arrow-path')
+                ->color('gray')
+                ->form([
+                    Select::make('status')
+                        ->label('Statuss')
+                        ->options(WpformEntryResource::EDITABLE_STATUSES)
+                        ->default(fn () => $this->record->status)
+                        ->required(),
+                ])
+                ->action(function (array $data): void {
+                    $this->record->update(['status' => $data['status']]);
+                    Notification::make()
+                        ->title('Statuss mainīts')
+                        ->success()
+                        ->send();
+                }),
             Actions\Action::make('generate_client')
                 ->label('Ģenerēt klientu')
                 ->icon('heroicon-o-user-plus')
