@@ -106,9 +106,8 @@ class WpformEntryResource extends Resource
                             ->title('Statuss mainīts')
                             ->success()
                             ->send();
-
-                        return redirect()->refresh();
-                    }),
+                    })
+                    ->after(fn () => $this->refreshPage()),
                 ViewAction::make()->label('Skatīt'),
                 DeleteAction::make()->label('Dzēst'),
             ])
