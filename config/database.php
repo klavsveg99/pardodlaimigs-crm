@@ -64,30 +64,6 @@ return [
             ]) : [],
         ],
 
-        // Read-only connection to the WordPress MySQL database (Essential Real Estate source of truth).
-        // Used by App\Services\Wp\WpRead. No migrations, no writes, only SELECT.
-        'wp' => [
-            'driver' => 'mysql',
-            'url' => env('WP_DB_URL'),
-            'host' => env('WP_DB_HOST', 'localhost'),
-            'port' => env('WP_DB_PORT', '3306'),
-            'database' => env('WP_DB_DATABASE', 'wordpress'),
-            'username' => env('WP_DB_USERNAME', 'root'),
-            'password' => env('WP_DB_PASSWORD', ''),
-            'charset' => env('WP_DB_CHARSET', 'utf8mb4'),
-            'collation' => env('WP_DB_COLLATION', 'utf8mb4_unicode_ci'),
-            'prefix' => env('WP_TABLE_PREFIX', 'wp_'),
-            'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
-            'read' => [
-                'host' => env('WP_DB_HOST', 'localhost'),
-            ],
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                Mysql::ATTR_SSL_CA => env('WP_MYSQL_ATTR_SSL_CA'),
-            ]) : [],
-        ],
-
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

@@ -4,10 +4,13 @@
  * Load private credentials from /private/config.php (outside deploy folder)
  * Hostinger deletes /crm on every deploy, so secrets must live in /private
  */
-$privateConfigPath = dirname(__DIR__, 2) . '/private/config.php';
+$privateConfigPath = dirname(__DIR__) . '/private/config.php';
+$privateConfigPathDeploy = dirname(__DIR__, 2) . '/private/config.php';
 
-if (is_file($privateConfigPath)) {
-    $privateConfig = require $privateConfigPath;
+$configPath = is_file($privateConfigPath) ? $privateConfigPath : $privateConfigPathDeploy;
+
+if (is_file($configPath)) {
+    $privateConfig = require $configPath;
     
     // Merge into $_ENV so Laravel's env() helper picks them up
     foreach ($privateConfig as $key => $value) {

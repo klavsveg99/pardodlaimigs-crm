@@ -32,7 +32,3 @@ Thumbs.db
 # Local SQLite database
 /database/database.sqlite
 /database/database.sqlite-journal
-
-# WordPress mu-plugin (live deploy only)
-/wp-mu-plugin/*
-!/wp-mu-plugin/.gitkeep

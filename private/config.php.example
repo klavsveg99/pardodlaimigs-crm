@@ -3,13 +3,11 @@
 /**
  * PRIVATE CREDENTIALS - NEVER COMMIT THIS FILE
  *
- * Only secrets/passwords live here. Everything else is hardcoded.
+ * Only secrets that can't go in git. Everything else is hardcoded.
  * Copy this to config.php and fill in real values.
  */
 
 return [
-    'DB_PASSWORD'     => '',  // ← CRM database password
-    'WP_DB_PASSWORD'  => '',  // ← WordPress database password
-    'WP_CRM_API_KEY'  => '',  // ← WP REST API key (feed auth)
-    'WP_HMAC_SECRET'  => '',  // ← shared HMAC secret with WP mu-plugin
+    'DB_PASSWORD'    => '',  // ← CRM database password
+    'WP_CRM_API_KEY' => '',  // ← WP REST API key (feed auth)
 ];
