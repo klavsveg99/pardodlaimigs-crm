@@ -26,6 +26,15 @@ class WpformEntryResource extends Resource
         'replied' => 'Atbildēts',
         'spam' => 'Mēstule',
         'archived' => 'Arhivēts',
+        'klients_pievienots' => 'Klients pievienots',
+    ];
+
+    public const EDITABLE_STATUSES = [
+        'new' => 'Jauns',
+        'review' => 'Izvērtēts',
+        'replied' => 'Atbildēts',
+        'spam' => 'Mēstule',
+        'archived' => 'Arhivēts',
     ];
 
     protected static ?string $model = WpformEntry::class;
@@ -69,6 +78,7 @@ class WpformEntryResource extends Resource
                         'replied' => 'success',
                         'spam' => 'danger',
                         'archived' => 'gray',
+                        'klients_pievienots' => 'success',
                         default => 'gray',
                     }),
             ])
@@ -87,7 +97,7 @@ class WpformEntryResource extends Resource
                     ->form([
                         Select::make('status')
                             ->label('Statuss')
-                            ->options(self::STATUSES)
+                            ->options(self::EDITABLE_STATUSES)
                             ->required(),
                     ])
                     ->action(function (WpformEntry $record, array $data): void {

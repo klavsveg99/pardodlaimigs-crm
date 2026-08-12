@@ -42,6 +42,7 @@ class WpformEntriesRelationManager extends RelationManager
                         'replied' => 'success',
                         'spam' => 'danger',
                         'archived' => 'gray',
+                        'klients_pievienots' => 'success',
                         default => 'gray',
                     })
                     ->placeholder('—'),
