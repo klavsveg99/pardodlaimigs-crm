@@ -6,6 +6,7 @@ namespace App\Filament\Admin\Resources\WpformEntryResource\Pages;
 
 use App\Filament\Admin\Resources\WpformEntryResource;
 use App\Jobs\SyncWpForms;
+use App\Services\Wp\WpSource;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
@@ -21,11 +22,20 @@ class ListWpformEntries extends ListRecords
                 ->label('Sinhronizēt no WordPress')
                 ->icon('heroicon-o-arrow-path')
                 ->action(function () {
-                    dispatch(new SyncWpForms)->onQueue('sync');
-                    Notification::make()
-                        ->title('Sinhronizācija uzsākta')
-                        ->success()
-                        ->send();
+                    try {
+                        $job = new SyncWpForms;
+                        $job->handle(app(WpSource::class));
+                        Notification::make()
+                            ->title('Pieteikumi sinhronizēti')
+                            ->success()
+                            ->send();
+                    } catch (\Throwable $e) {
+                        Notification::make()
+                            ->title('Kļūda sinhronizācijā')
+                            ->body($e->getMessage())
+                            ->danger()
+                            ->send();
+                    }
                 }),
         ];
     }

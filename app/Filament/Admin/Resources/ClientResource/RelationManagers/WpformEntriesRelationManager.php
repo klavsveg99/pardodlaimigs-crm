@@ -33,7 +33,6 @@ class WpformEntriesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')
                     ->getStateUsing(fn ($record) => $record->fieldValue('Telefona numurs'))
                     ->placeholder('—'),
-                Tables\Columns\IconColumn::make('viewed')->label('Skatīts')->boolean(),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
                     ->formatStateUsing(fn ($state) => WpformEntryResource::STATUSES[$state] ?? $state ?? '—')
