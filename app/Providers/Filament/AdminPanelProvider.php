@@ -43,6 +43,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook('panels::body.start', fn () => view('filament.brand-fonts'))
             ->renderHook('panels::head.end', fn () => view('filament.calendar-assets'))
+            ->renderHook('panels::scripts.after', fn () => view('filament.badge-poll'))
             ->renderHook('panels::styles.before', fn () => '<link rel="stylesheet" href="'
                 .asset('css/filament-custom.css').'">')
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
