@@ -6,10 +6,13 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\WpformEntryResource\Pages;
 use App\Models\WpformEntry;
+use Filament\Actions;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -57,10 +60,17 @@ class WpformEntryResource extends Resource
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('Telefona numurs'))
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Telefona numurs%')->where('fields', 'like', "%{$search}%")),
-                Tables\Columns\SelectColumn::make('status')->label('Statuss')
-                    ->options(self::STATUSES)
-                    ->placeholder('—')
-                    ->selectablePlaceholder(),
+                Tables\Columns\TextColumn::make('status')->label('Statuss')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => self::STATUSES[$state] ?? $state ?? '—')
+                    ->color(fn ($state) => match ($state) {
+                        'new' => 'info',
+                        'review' => 'warning',
+                        'replied' => 'success',
+                        'spam' => 'danger',
+                        'archived' => 'gray',
+                        default => 'gray',
+                    }),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->label('Statuss')
@@ -71,6 +81,22 @@ class WpformEntryResource extends Resource
                     ->query(fn ($q) => $q->whereNull('client_id')),
             ])
             ->actions([
+                Actions\Action::make('change_status')
+                    ->label('Mainīt statusu')
+                    ->icon('heroicon-o-arrow-path')
+                    ->form([
+                        Select::make('status')
+                            ->label('Statuss')
+                            ->options(self::STATUSES)
+                            ->required(),
+                    ])
+                    ->action(function (WpformEntry $record, array $data): void {
+                        $record->update(['status' => $data['status']]);
+                        Notification::make()
+                            ->title('Statuss mainīts')
+                            ->success()
+                            ->send();
+                    }),
                 ViewAction::make()->label('Skatīt'),
                 DeleteAction::make()->label('Dzēst'),
             ])
@@ -79,7 +105,8 @@ class WpformEntryResource extends Resource
                     DeleteBulkAction::make()->label('Dzēst izvēlētos'),
                 ]),
             ])
-            ->paginated([25, 50, 100]);
+            ->paginated([25, 50, 100])
+            ->poll('30s');
     }
 
     public static function getNavigationBadge(): ?string
@@ -87,6 +114,11 @@ class WpformEntryResource extends Resource
         $count = WpformEntry::where('status', 'new')->count();
 
         return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getNavigationBadge() ? 'primary' : null;
     }
 
     public static function getPages(): array

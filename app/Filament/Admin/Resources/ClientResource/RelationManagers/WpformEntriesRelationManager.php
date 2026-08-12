@@ -36,6 +36,14 @@ class WpformEntriesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
                     ->formatStateUsing(fn ($state) => WpformEntryResource::STATUSES[$state] ?? $state ?? '—')
+                    ->color(fn ($state) => match ($state) {
+                        'new' => 'info',
+                        'review' => 'warning',
+                        'replied' => 'success',
+                        'spam' => 'danger',
+                        'archived' => 'gray',
+                        default => 'gray',
+                    })
                     ->placeholder('—'),
             ])
             ->actions([
