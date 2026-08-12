@@ -2,58 +2,12 @@
 
 /**
  * PRIVATE CREDENTIALS - NEVER COMMIT THIS FILE
- * 
- * Place this file at /private/config.php on the server (outside the deploy folder).
- * Hostinger deploy wipes /crm but /private persists.
- * 
- * Example structure:
+ *
+ * Only database passwords live here. Everything else is hardcoded.
+ * Copy this to config.php and fill in real values.
  */
 
 return [
-    // Primary CRM Database
-    'DB_DATABASE' => 'u976787655_crm',
-    'DB_USERNAME' => 'u976787655_crmuser',
-    'DB_PASSWORD' => 'your_crm_db_password_here',
-    'DB_HOST' => 'localhost',
-    'DB_PORT' => '3306',
-    'DB_CHARSET' => 'utf8mb4',
-    'DB_COLLATION' => 'utf8mb4_unicode_ci',
-
-    // WordPress Read-Only Database (ERE source data)
-    'WP_DB_DATABASE' => 'u976787655_pardod',
-    'WP_DB_USERNAME' => 'u976787655_wppardod',
-    'WP_DB_PASSWORD' => 'your_wp_db_password_here',
-    'WP_DB_HOST' => 'localhost',
-    'WP_DB_PORT' => '3306',
-    'WP_TABLE_PREFIX' => 'wp_',
-
-    // WP Sync Bridge (HMAC secret for webhook auth)
-    'WP_SITE_URL' => 'https://pardodlaimigs.lv',
-    'WP_REST_PREFIX' => 'wp-json/pdc/v1',
-    'WP_HMAC_SECRET' => 'generate-long-random-string-here',
-    'WP_HMAC_HEADER' => 'X-PDC-Signature',
-
-    // Application
-    'APP_KEY' => 'base64:generate-with-php-artisan-key-generate',
-    'APP_URL' => 'https://crm.pardodlaimigs.lv',
-    'APP_HOST' => 'crm.pardodlaimigs.lv',
-    'APP_ENV' => 'production',
-    'APP_DEBUG' => 'false',
-
-    // Mail (SMTP)
-    'MAIL_HOST' => 'smtp.hostinger.com',
-    'MAIL_PORT' => '465',
-    'MAIL_USERNAME' => 'info@pardodlaimigs.lv',
-    'MAIL_PASSWORD' => 'your_smtp_password_here',
-    'MAIL_ENCRYPTION' => 'ssl',
-    'MAIL_FROM_ADDRESS' => 'info@pardodlaimigs.lv',
-    'MAIL_FROM_NAME' => 'Pārdod Laimīgs CRM',
-    'MAIL_MAILER' => 'smtp',
-    'MAIL_LOCALE' => 'lv_LV',
-
-    // Session / Cache / Queue
-    'SESSION_DRIVER' => 'database',
-    'SESSION_LIFETIME' => '120',
-    'CACHE_STORE' => 'database',
-    'QUEUE_CONNECTION' => 'database',
+    'DB_PASSWORD'     => '',  // ← CRM database password
+    'WP_DB_PASSWORD'  => '',  // ← WordPress database password
 ];
