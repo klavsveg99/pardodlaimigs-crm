@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\WpformEntryResource\Pages;
 
 use App\Filament\Admin\Resources\WpformEntryResource;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewWpformEntry extends ViewRecord
@@ -26,8 +27,8 @@ class ViewWpformEntry extends ViewRecord
                 ->color(fn () => $this->record->viewed ? 'gray' : 'success')
                 ->requiresConfirmation(false)
                 ->action(function () {
-                    $this->record->update(['viewed' => !$this->record->viewed]);
-                    \Filament\Notifications\Notification::make()
+                    $this->record->update(['viewed' => ! $this->record->viewed]);
+                    Notification::make()
                         ->title($this->record->viewed ? 'Atzīmēts kā lasīts' : 'Atzīmēts kā nelasīts')
                         ->success()
                         ->send();

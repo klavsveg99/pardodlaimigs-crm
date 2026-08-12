@@ -28,7 +28,7 @@ class ListProperties extends ListRecords
             Actions\Action::make('open_wp_admin')
                 ->label('Atvērt īpašumu admin paneli')
                 ->icon('heroicon-o-arrow-top-right-on-square')
-                ->url('https://pardodlaimigs.lv/wp-admin/edit.php?post_type=property')
+                ->url(config('wp-bridge.wordpress.site_url').'/wp-admin/edit.php?post_type=property')
                 ->openUrlInNewTab(),
         ];
     }

@@ -88,12 +88,12 @@ trait SyncsAttachments
             }
 
             $record->attachments()->create([
-                'path'          => $path,
-                'disk'          => 'public',
+                'path' => $path,
+                'disk' => 'public',
                 'original_name' => $originalName,
-                'mime_type'     => $disk->mimeType($path),
-                'size'          => $disk->size($path),
-                'sort_order'    => $i,
+                'mime_type' => $disk->mimeType($path),
+                'size' => $disk->size($path),
+                'sort_order' => $i,
             ]);
         }
     }

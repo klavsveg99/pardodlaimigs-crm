@@ -105,7 +105,7 @@ class PropertyResource extends Resource
                     ]),
             ])
             ->recordUrl(fn ($record) => $record->wp_permalink
-                ? 'https://pardodlaimigs.lv/wp-admin/post.php?post='.$record->id.'&action=edit'
+                ? config('wp-bridge.wordpress.site_url').'/wp-admin/post.php?post='.$record->id.'&action=edit'
                 : null)
             ->openRecordUrlInNewTab()
             ->bulkActions([])

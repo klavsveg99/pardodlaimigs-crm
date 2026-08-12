@@ -9,10 +9,12 @@ use Filament\Actions\Action;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Illuminate\Database\Eloquent\Builder;
 
 class UpcomingTasks extends BaseWidget
 {
     protected static ?int $sort = 3;
+
     protected int|string|array $columnSpan = 'full';
 
     public string $scope = 'mine';
@@ -45,7 +47,7 @@ class UpcomingTasks extends BaseWidget
             ->paginated(false);
     }
 
-    protected function getQuery(): \Illuminate\Database\Eloquent\Builder
+    protected function getQuery(): Builder
     {
         $query = Task::query()
             ->whereNull('completed_at')

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class WpformEntry extends Model
 {
     protected $table = 'wpform_entries';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -17,12 +18,12 @@ class WpformEntry extends Model
     ];
 
     protected $casts = [
-        'entry_id'   => 'integer',
-        'form_id'    => 'integer',
-        'viewed'     => 'boolean',
-        'starred'    => 'boolean',
-        'fields'     => 'array',
-        'client_id'  => 'integer',
+        'entry_id' => 'integer',
+        'form_id' => 'integer',
+        'viewed' => 'boolean',
+        'starred' => 'boolean',
+        'fields' => 'array',
+        'client_id' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

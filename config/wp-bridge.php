@@ -6,9 +6,9 @@ return [
     'host' => env('APP_HOST', 'crm.pardodlaimigs.lv'),
 
     'wordpress' => [
-        'site_url'    => env('WP_SITE_URL', 'https://pardodlaimigs.lv'),
+        'site_url' => env('WP_SITE_URL', 'https://pardodlaimigs.lv'),
         'feed_prefix' => env('WP_FEED_PREFIX', 'wp-json/crm/v1'),
-        'api_key'     => env('WP_CRM_API_KEY'),
+        'api_key' => env('WP_CRM_API_KEY'),
     ],
 
     'feed' => [

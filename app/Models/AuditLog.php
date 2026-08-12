@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AuditLog extends Model
 {
     protected $table = 'audit_log';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -18,8 +19,8 @@ class AuditLog extends Model
     ];
 
     protected $casts = [
-        'before'     => 'array',
-        'after'      => 'array',
+        'before' => 'array',
+        'after' => 'array',
         'created_at' => 'datetime',
     ];
 

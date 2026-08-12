@@ -27,10 +27,10 @@ class Viewing extends Model
         static::created(function (Viewing $v) {
             app(AuditLogger::class)->log('create', 'viewing', $v->id, null, $v->toArray());
             app(AuditLogger::class)->activity('viewing_booked', null, [
-                'viewing_id'  => $v->id,
+                'viewing_id' => $v->id,
                 'property_id' => $v->property_id,
-                'client_id'   => $v->client_id,
-                'scheduled_at'=> $v->scheduled_at?->toIso8601String(),
+                'client_id' => $v->client_id,
+                'scheduled_at' => $v->scheduled_at?->toIso8601String(),
             ]);
         });
         static::updated(function (Viewing $v) {

@@ -24,7 +24,7 @@ class Client extends Model
 
     protected $casts = [
         'gdpr_consent_at' => 'datetime',
-        'gdpr_erased_at'  => 'datetime',
+        'gdpr_erased_at' => 'datetime',
     ];
 
     public function owner(): BelongsTo

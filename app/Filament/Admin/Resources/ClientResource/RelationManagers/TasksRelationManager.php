@@ -4,15 +4,17 @@ namespace App\Filament\Admin\Resources\ClientResource\RelationManagers;
 
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Schemas\Schema;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 
 class TasksRelationManager extends RelationManager
 {
     protected static string $relationship = 'tasks';
+
     protected static ?string $title = 'Uzdevumi';
+
     protected static string|\BackedEnum|null $icon = 'heroicon-o-clipboard-document-check';
 
     public function form(Schema $schema): Schema
@@ -41,7 +43,7 @@ class TasksRelationManager extends RelationManager
                 Actions\Action::make('complete')
                     ->label('Pabeigt')
                     ->icon('heroicon-o-check')
-                    ->visible(fn ($record) => !$record->completed_at)
+                    ->visible(fn ($record) => ! $record->completed_at)
                     ->action(fn ($record) => $record->update(['completed_at' => now()])),
             ]);
     }

@@ -3,8 +3,8 @@
 namespace App\Filament\Admin\Resources\ClientResource\Pages;
 
 use App\Filament\Admin\Resources\ClientResource;
-use Filament\Resources\Pages\ListRecords;
 use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
 
 class ListClients extends ListRecords
 {

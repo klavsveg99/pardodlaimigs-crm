@@ -28,6 +28,7 @@ class SyncWpForms implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 1;
+
     public int $timeout = 3600;
 
     public const LAST_SYNC_KEY = 'wpforms_last_sync';
@@ -64,14 +65,14 @@ class SyncWpForms implements ShouldQueue
     private function row(object $entry): array
     {
         return [
-            'entry_id'   => (int) $entry->entry_id,
-            'form_id'    => (int) $entry->form_id,
-            'form_name'  => $entry->form_name ?: null,
-            'status'     => $entry->status ?: null,
-            'viewed'     => (bool) ($entry->viewed ?? false),
-            'starred'    => (bool) ($entry->starred ?? false),
+            'entry_id' => (int) $entry->entry_id,
+            'form_id' => (int) $entry->form_id,
+            'form_name' => $entry->form_name ?: null,
+            'status' => $entry->status ?: null,
+            'viewed' => (bool) ($entry->viewed ?? false),
+            'starred' => (bool) ($entry->starred ?? false),
             'ip_address' => $entry->ip_address ?: null,
-            'fields'     => $this->fields((array) ($entry->fields ?? [])),
+            'fields' => $this->fields((array) ($entry->fields ?? [])),
             'created_at' => $this->timestamp($entry->created_at),
             'updated_at' => $this->timestamp($entry->updated_at),
         ];
@@ -87,9 +88,9 @@ class SyncWpForms implements ShouldQueue
             $field = (array) $field;
 
             return [
-                'id'    => (int) ($field['id'] ?? 0),
-                'name'  => (string) ($field['name'] ?? ''),
-                'type'  => (string) ($field['type'] ?? ''),
+                'id' => (int) ($field['id'] ?? 0),
+                'name' => (string) ($field['name'] ?? ''),
+                'type' => (string) ($field['type'] ?? ''),
                 'value' => $field['value'] ?? null,
             ];
         }, $fields);

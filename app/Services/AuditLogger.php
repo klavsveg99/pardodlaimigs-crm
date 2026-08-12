@@ -23,14 +23,14 @@ class AuditLogger
     ): AuditLog {
         return AuditLog::create([
             'actor_user_id' => Auth::id(),
-            'action'        => $action,
-            'entity'        => $entity,
-            'entity_id'     => $entityId,
-            'before'        => $before,
-            'after'         => $after,
-            'ip'            => $this->request->ip(),
-            'route'         => optional($this->request->route())->getName() ?? $this->request->path(),
-            'created_at'    => now(),
+            'action' => $action,
+            'entity' => $entity,
+            'entity_id' => $entityId,
+            'before' => $before,
+            'after' => $after,
+            'ip' => $this->request->ip(),
+            'route' => $this->request->route()?->getName() ?? $this->request->path(),
+            'created_at' => now(),
         ]);
     }
 
@@ -38,12 +38,12 @@ class AuditLogger
     {
         return Activity::create([
             'actor_user_id' => Auth::id(),
-            'deal_id'       => $deal?->id,
-            'client_id'     => $deal?->client_id ?? ($payload['client_id'] ?? null),
-            'property_id'   => $payload['property_id'] ?? null,
-            'type'          => $type,
-            'payload'       => $payload,
-            'created_at'    => now(),
+            'deal_id' => $deal?->id,
+            'client_id' => $deal?->client_id ?? ($payload['client_id'] ?? null),
+            'property_id' => $payload['property_id'] ?? null,
+            'type' => $type,
+            'payload' => $payload,
+            'created_at' => now(),
         ]);
     }
 }

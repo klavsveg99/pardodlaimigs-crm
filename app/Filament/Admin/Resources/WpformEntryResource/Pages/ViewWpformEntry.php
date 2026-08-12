@@ -5,6 +5,8 @@ namespace App\Filament\Admin\Resources\WpformEntryResource\Pages;
 use App\Filament\Admin\Resources\WpformEntryResource;
 use App\Models\Client;
 use Filament\Actions;
+use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewWpformEntry extends ViewRecord
@@ -27,8 +29,8 @@ class ViewWpformEntry extends ViewRecord
                 ->color(fn () => $this->record->viewed ? 'gray' : 'success')
                 ->requiresConfirmation(false)
                 ->action(function () {
-                    $this->record->update(['viewed' => !$this->record->viewed]);
-                    \Filament\Notifications\Notification::make()
+                    $this->record->update(['viewed' => ! $this->record->viewed]);
+                    Notification::make()
                         ->title($this->record->viewed ? 'Atzīmēts kā lasīts' : 'Atzīmēts kā nelasīts')
                         ->success()
                         ->send();
@@ -48,7 +50,7 @@ class ViewWpformEntry extends ViewRecord
                     $phone = $this->record->fieldValue('Telefona numurs');
 
                     if ($email && Client::where('email', $email)->whereNull('gdpr_erased_at')->exists()) {
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Klients ar šo e-pastu jau eksistē')
                             ->body('Piesaistīts esošais klients.')
                             ->warning()
@@ -56,19 +58,20 @@ class ViewWpformEntry extends ViewRecord
 
                         $existing = Client::where('email', $email)->whereNull('gdpr_erased_at')->first();
                         $this->record->update(['client_id' => $existing->id]);
+
                         return;
                     }
 
                     $client = Client::create([
-                        'name'  => $name,
+                        'name' => $name,
                         'email' => $email,
                         'phone' => $phone,
-                        'source'=> 'Tīmekļa vietne',
+                        'source' => 'Tīmekļa vietne',
                     ]);
 
                     $this->record->update(['client_id' => $client->id]);
 
-                    \Filament\Notifications\Notification::make()
+                    Notification::make()
                         ->title('Klients izveidots un piesaistīts')
                         ->body("Klients #{$client->id} · {$client->name}")
                         ->success()
@@ -79,16 +82,16 @@ class ViewWpformEntry extends ViewRecord
                 ->icon('heroicon-o-link')
                 ->visible(fn () => $this->record->client_id === null)
                 ->form([
-                    \Filament\Forms\Components\Select::make('client_id')
+                    Select::make('client_id')
                         ->label('Klients')
                         ->searchable()
-                        ->options(fn () => \App\Models\Client::query()->orderBy('name')->limit(20)->pluck('name', 'id')->all())
-                        ->getOptionLabelUsing(fn ($value): ?string => \App\Models\Client::find($value)?->name)
+                        ->options(fn () => Client::query()->orderBy('name')->limit(20)->pluck('name', 'id')->all())
+                        ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name)
                         ->required(),
                 ])
                 ->action(function (array $data) {
                     $this->record->update(['client_id' => $data['client_id']]);
-                    \Filament\Notifications\Notification::make()
+                    Notification::make()
                         ->title('Klients piesaistīts')
                         ->success()
                         ->send();
@@ -101,7 +104,7 @@ class ViewWpformEntry extends ViewRecord
                 ->requiresConfirmation()
                 ->action(function () {
                     $this->record->update(['client_id' => null]);
-                    \Filament\Notifications\Notification::make()
+                    Notification::make()
                         ->title('Klients atsaistīts')
                         ->success()
                         ->send();

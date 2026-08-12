@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 class DealsByStage extends BaseWidget
 {
     protected static ?int $sort = 2;
+
     protected int|string|array $columnSpan = 'full';
 
     public function getTableRecordKey(EloquentModel|array $record): string
@@ -41,8 +42,8 @@ class DealsByStage extends BaseWidget
                     ->label('Posms')
                     ->badge()
                     ->colors([
-                        'gray'    => 'lead',
-                        'info'    => 'viewing_scheduled',
+                        'gray' => 'lead',
+                        'info' => 'viewing_scheduled',
                         'warning' => 'offer',
                         'primary' => 'reserved',
                     ])
@@ -50,7 +51,7 @@ class DealsByStage extends BaseWidget
                 Tables\Columns\TextColumn::make('count')->label('Skaits'),
                 Tables\Columns\TextColumn::make('total_cents')
                     ->label('Kopā')
-                    ->formatStateUsing(fn ($state) => number_format(((int) $state) / 100, 0, '.', ' ') . ' €'),
+                    ->formatStateUsing(fn ($state) => number_format(((int) $state) / 100, 0, '.', ' ').' €'),
             ])
             ->paginated(false);
     }
