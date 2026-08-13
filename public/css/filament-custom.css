@@ -114,6 +114,16 @@ button.fi-btn-primary:hover {
     color: var(--pdc-primary) !important;
 }
 
+.fi-simple-page button.fi-btn.fi-color-primary {
+    background-color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+}
+
+.fi-simple-page button.fi-btn.fi-color-primary:hover {
+    background-color: var(--pdc-primary-darker) !important;
+    border-color: var(--pdc-primary-darker) !important;
+}
+
 .fi-btn.fi-bg-color-400.fi-color-primary,
 .fi-btn.fi-color-primary,
 .fi-btn.fi-color-primary.fi-bg-color-400 {
