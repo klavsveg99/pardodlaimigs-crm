@@ -45,9 +45,8 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook('panels::body.start', fn () => view('filament.brand-fonts'))
             ->renderHook('panels::head.end', fn () => view('filament.calendar-assets'))
             ->renderHook('panels::styles.after', fn () => view('filament.page-animations'))
+            ->renderHook('panels::styles.after', fn () => view('filament.filament-custom-inline'))
             ->renderHook('panels::scripts.after', fn () => view('filament.badge-poll'))
-            ->renderHook('panels::styles.after', fn () => '<link rel="stylesheet" href="'
-                .asset('css/filament-custom.css').'">')
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
