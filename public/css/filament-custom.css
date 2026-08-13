@@ -62,14 +62,12 @@ button.fi-btn-primary:hover {
     border-color: var(--pdc-primary-darker) !important;
 }
 
-.fi-simple-page button.fi-btn-primary,
-.fi-login button.fi-btn-primary {
+.fi-btn.fi-bg-color-400.fi-color-primary {
     background-color: var(--pdc-primary) !important;
     border-color: var(--pdc-primary) !important;
 }
 
-.fi-simple-page button.fi-btn-primary:hover,
-.fi-login button.fi-btn-primary:hover {
+.fi-btn.fi-bg-color-400.fi-color-primary:hover {
     background-color: var(--pdc-primary-darker) !important;
     border-color: var(--pdc-primary-darker) !important;
 }
@@ -80,21 +78,6 @@ button.fi-btn-primary:hover {
 
 .fi-link {
     color: var(--pdc-primary) !important;
-}
-
-.fi-simple-page {
-    background-color: var(--pdc-primary) !important;
-    background-image: linear-gradient(180deg, #1e4843 0%, #285854 100%) !important;
-}
-
-.fi-simple-page.fi-bg-color-400,
-body.fi-bg-color-400,
-.fi-body.fi-bg-color-400 {
-    background-color: var(--pdc-primary) !important;
-}
-
-.fi-simple-page .fi-bg-color-400 {
-    background-color: transparent !important;
 }
 
 .fi-ta-text-item span.fi-size-md.fi-font-bold {
