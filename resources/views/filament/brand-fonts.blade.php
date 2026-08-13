@@ -4,7 +4,7 @@
 
 <style>
 html, body {
-    background: #285854;
+    background: #f9fafb;
     margin: 0;
     padding: 0;
 }
