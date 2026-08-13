@@ -4,32 +4,38 @@
     --pdc-secondary: #414042;
 }
 
+:root {
+    --pdc-primary: #285854;
+    --pdc-primary-darker: #1e4843;
+    --pdc-secondary: #414042;
+}
+
 :root, :root.dark {
-    --primary-50: var(--pdc-primary);
-    --primary-100: var(--pdc-primary);
-    --primary-200: var(--pdc-primary);
-    --primary-300: var(--pdc-primary);
-    --primary-400: var(--pdc-primary);
-    --primary-500: var(--pdc-primary);
-    --primary-600: var(--pdc-primary-darker);
-    --primary-700: var(--pdc-primary-darker);
-    --primary-800: var(--pdc-primary-darker);
-    --primary-900: var(--pdc-primary-darker);
-    --primary-950: var(--pdc-primary-darker);
+    --primary-50: var(--pdc-primary) !important;
+    --primary-100: var(--pdc-primary) !important;
+    --primary-200: var(--pdc-primary) !important;
+    --primary-300: var(--pdc-primary) !important;
+    --primary-400: var(--pdc-primary) !important;
+    --primary-500: var(--pdc-primary) !important;
+    --primary-600: var(--pdc-primary-darker) !important;
+    --primary-700: var(--pdc-primary-darker) !important;
+    --primary-800: var(--pdc-primary-darker) !important;
+    --primary-900: var(--pdc-primary-darker) !important;
+    --primary-950: var(--pdc-primary-darker) !important;
 }
 
 .fi-color-primary {
-    --color-50: var(--pdc-primary);
-    --color-100: var(--pdc-primary);
-    --color-200: var(--pdc-primary);
-    --color-300: var(--pdc-primary);
-    --color-400: var(--pdc-primary);
-    --color-500: var(--pdc-primary);
-    --color-600: var(--pdc-primary-darker);
-    --color-700: var(--pdc-primary-darker);
-    --color-800: var(--pdc-primary-darker);
-    --color-900: var(--pdc-primary-darker);
-    --color-950: var(--pdc-primary-darker);
+    --color-50: var(--pdc-primary) !important;
+    --color-100: var(--pdc-primary) !important;
+    --color-200: var(--pdc-primary) !important;
+    --color-300: var(--pdc-primary) !important;
+    --color-400: var(--pdc-primary) !important;
+    --color-500: var(--pdc-primary) !important;
+    --color-600: var(--pdc-primary-darker) !important;
+    --color-700: var(--pdc-primary-darker) !important;
+    --color-800: var(--pdc-primary-darker) !important;
+    --color-900: var(--pdc-primary-darker) !important;
+    --color-950: var(--pdc-primary-darker) !important;
 }
 
 .fi-sidebar {
