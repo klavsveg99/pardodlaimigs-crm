@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Admin\Auth\Login;
 use App\Filament\Admin\Widgets\CalendarViewings;
 use App\Filament\Admin\Widgets\CrmStatsOverview;
 use App\Filament\Admin\Widgets\DealsByStage;
@@ -75,6 +76,6 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->login();
+            ->login(Login::class);
     }
 }
