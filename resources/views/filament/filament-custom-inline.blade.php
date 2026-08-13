@@ -70,6 +70,7 @@
 .fi-simple-page button.fi-btn.fi-color-primary {
     background-color: var(--pdc-primary) !important;
     border-color: var(--pdc-primary) !important;
+    color: #ffffff !important;
 }
 .fi-bg-color-400 {
     background-color: var(--pdc-primary) !important;
