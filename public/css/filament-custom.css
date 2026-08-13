@@ -54,10 +54,24 @@
 
 .fi-btn-color-primary, button.fi-btn-primary {
     background-color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
 }
 
 button.fi-btn-primary:hover {
     background-color: var(--pdc-primary-darker) !important;
+    border-color: var(--pdc-primary-darker) !important;
+}
+
+.fi-simple-page button.fi-btn-primary,
+.fi-login button.fi-btn-primary {
+    background-color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+}
+
+.fi-simple-page button.fi-btn-primary:hover,
+.fi-login button.fi-btn-primary:hover {
+    background-color: var(--pdc-primary-darker) !important;
+    border-color: var(--pdc-primary-darker) !important;
 }
 
 .fi-modal-close-btn, .fi-input-wrp {
