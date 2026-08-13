@@ -82,6 +82,20 @@ button.fi-btn-primary:hover {
     color: var(--pdc-primary) !important;
 }
 
+.fi-simple-page {
+    background-color: #f9fafb !important;
+}
+
+.fi-simple-page.fi-bg-color-400,
+body.fi-bg-color-400,
+.fi-body.fi-bg-color-400 {
+    background-color: #f9fafb !important;
+}
+
+.fi-simple-page .fi-bg-color-400 {
+    background-color: transparent !important;
+}
+
 .fi-ta-text-item span.fi-size-md.fi-font-bold {
     letter-spacing: 0.01em;
 }
