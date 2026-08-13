@@ -28,7 +28,7 @@ class TrustCrmHost
                 return $next($request);
             }
 
-            abort(404);
+            return redirect('https://'.$expected.$request->getRequestUri(), 301);
         }
 
         return $next($request);
