@@ -28,7 +28,9 @@ class TrustCrmHost
                 return $next($request);
             }
 
-            return redirect('https://'.$expected.$request->getRequestUri(), 301);
+            $uri = preg_replace('#^/crm(/|$)#', '/', $request->getRequestUri());
+
+            return redirect('https://'.$expected.$uri, 301);
         }
 
         return $next($request);
