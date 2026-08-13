@@ -3,11 +3,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&family=Maven+Pro:wght@400;700&family=Yanone+Kaffeesatz:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
-    html, body {
-        background: #f9fafb;
-        margin: 0;
-        padding: 0;
-    }
+html, body {
+    background: #285854;
+    margin: 0;
+    padding: 0;
+}
     html, body, .fi-body, .fi-ta-ctw {
         font-family: 'Source Sans Pro', system-ui, sans-serif !important;
     }

@@ -83,13 +83,14 @@ button.fi-btn-primary:hover {
 }
 
 .fi-simple-page {
-    background-color: #f9fafb !important;
+    background-color: var(--pdc-primary) !important;
+    background-image: linear-gradient(180deg, #1e4843 0%, #285854 100%) !important;
 }
 
 .fi-simple-page.fi-bg-color-400,
 body.fi-bg-color-400,
 .fi-body.fi-bg-color-400 {
-    background-color: #f9fafb !important;
+    background-color: var(--pdc-primary) !important;
 }
 
 .fi-simple-page .fi-bg-color-400 {
