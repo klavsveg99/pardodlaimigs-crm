@@ -96,6 +96,14 @@ button.fi-btn-primary:hover,
 .fi-sidebar-item-badge-ctn .fi-badge-label-ctn {
     color: #ffffff !important;
 }
+.fi-btn.fi-color-primary,
+.fi-btn.fi-color-primary *,
+.fi-badge.fi-color-primary,
+.fi-badge.fi-color-primary *,
+.fi-bg-color-400.fi-color-primary,
+.fi-bg-color-400.fi-color-primary * {
+    color: #ffffff !important;
+}
 .fi-ta-text-item span.fi-size-md.fi-font-bold {
     letter-spacing: 0.01em;
 }
