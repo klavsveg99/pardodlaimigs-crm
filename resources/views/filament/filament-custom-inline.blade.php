@@ -135,11 +135,19 @@ button.fi-btn-primary:hover,
 }
 .fi-ta-ctn {
     max-width: 100% !important;
-    overflow: visible !important;
+    min-width: 0 !important;
+}
+.fi-ta-content-ctn,
+.fi-ta-content {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
 }
 .fi-ta-table {
     table-layout: fixed !important;
     width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
 }
 .fi-ta-table td,
 .fi-ta-table th {
@@ -151,5 +159,9 @@ button.fi-btn-primary:hover,
 .fi-ta-table .fi-ta-text {
     overflow: visible !important;
     text-overflow: clip !important;
+}
+.fi-ta-actions {
+    flex-wrap: wrap !important;
+    max-width: 100% !important;
 }
 </style>
