@@ -1,29 +1,30 @@
 <x-filament-panels::page>
     <x-filament::section>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nosaukums</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->title ?: '—' }}</dd>
             </div>
-            <div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Klients</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->client?->name ?: '—' }}</dd>
             </div>
-            <div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Vērtība</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->value_eur ? number_format((float) $record->value_eur, 2, ',', ' ') . ' €' : '—' }}</dd>
             </div>
-            <div>
+            <div class="rounded-xl border border-primary-200 bg-primary-50 p-4 dark:border-primary-400/30 dark:bg-primary-400/10">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pašreizējais posms</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->stage_label }}</dd>
+                <dd class="mt-1 text-sm font-bold text-primary-700 dark:text-primary-300">{{ $record->stage_label }}</dd>
             </div>
         </div>
     </x-filament::section>
 
     <x-filament::section heading="Posmu vēsture">
-        <div class="space-y-4">
+        <div class="relative space-y-3 ps-3">
             @forelse ($record->stageChanges as $change)
-                <div class="border-s-2 border-primary-500 ps-4">
+                <div class="relative rounded-xl border border-gray-200 bg-gray-50 p-4 ps-5 dark:border-white/10 dark:bg-white/5">
+                    <span class="absolute -start-[0.45rem] top-5 h-3 w-3 rounded-full bg-primary-500 ring-4 ring-white dark:ring-gray-900"></span>
                     <div class="text-sm font-semibold text-gray-900 dark:text-white">
                         {{ \App\Models\Deal::STAGES[$change->payload['from'] ?? ''] ?? ($change->payload['from'] ?? '—') }}
                         <span class="px-1 text-gray-400">→</span>
