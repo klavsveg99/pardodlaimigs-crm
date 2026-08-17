@@ -44,6 +44,66 @@ function pdc_ensure_category(string $category_name): int
     return is_wp_error($term) ? 0 : (int) $term['term_id'];
 }
 
+// ─── Import CRM attachments into the WordPress media library ─────
+function pdc_sync_attachments(int $post_id, array $attachments): void
+{
+    require_once ABSPATH.'wp-admin/includes/file.php';
+    require_once ABSPATH.'wp-admin/includes/media.php';
+    require_once ABSPATH.'wp-admin/includes/image.php';
+
+    $image_ids = [];
+    $documents = [];
+
+    foreach ($attachments as $attachment) {
+        $url = esc_url_raw($attachment['url'] ?? '');
+        $name = sanitize_file_name($attachment['name'] ?? basename((string) $url));
+        $mime = (string) ($attachment['mime_type'] ?? '');
+
+        if ($url === '') {
+            continue;
+        }
+
+        $existing = get_posts([
+            'post_type' => 'attachment',
+            'post_status' => 'inherit',
+            'meta_key' => '_pdc_crm_attachment_url',
+            'meta_value' => $url,
+            'numberposts' => 1,
+        ]);
+
+        $media_id = $existing ? (int) $existing[0]->ID : 0;
+        if (! $media_id) {
+            $media_id = (int) media_sideload_image($url, $post_id, $name, 'id');
+            if ($media_id > 0) {
+                update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
+            }
+        }
+
+        if ($media_id <= 0) {
+            continue;
+        }
+
+        if (str_starts_with($mime, 'image/')) {
+            $image_ids[] = $media_id;
+        } else {
+            $documents[] = [
+                'url' => $url,
+                'name' => $name,
+                'mime_type' => $mime,
+            ];
+        }
+    }
+
+    update_post_meta($post_id, 'ere_property_gallery', implode(',', $image_ids));
+    update_post_meta($post_id, '_pdc_crm_documents', $documents);
+
+    if ($image_ids) {
+        set_post_thumbnail($post_id, $image_ids[0]);
+    } else {
+        delete_post_thumbnail($post_id);
+    }
+}
+
 // ─── Fetch all properties from CRM ───────────────────────────────
 function pdc_fetch_properties(): array
 {
@@ -146,6 +206,7 @@ function pdc_upsert_property(array $data): int
     update_post_meta($post_id, 'ere_property_latitude', $lat);
     update_post_meta($post_id, 'ere_property_longitude', $lng);
     update_post_meta($post_id, '_pdc_last_sync', current_time('mysql'));
+    pdc_sync_attachments($post_id, $data['attachments'] ?? []);
 
     // Category (taxonomy)
     if ($category) {
