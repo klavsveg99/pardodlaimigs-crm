@@ -46,7 +46,7 @@ class ClientResource extends Resource
                     Forms\Components\TextInput::make('personas_kods')->label('Personas kods')
                         ->maxLength(32)
                         ->regex('/^\d{11}$/')
-                        ->validationMessage('Personas kodam jābūt tieši 11 cipariem'),
+                        ->helperText('Ievadiet tieši 11 ciparus.'),
                     Forms\Components\Select::make('source')
                         ->label('Avots (kā uzzināja)')
                         ->searchable()

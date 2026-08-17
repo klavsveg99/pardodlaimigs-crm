@@ -133,38 +133,23 @@ button.fi-btn-primary:hover,
 .fi-ta-text-item span.fi-size-md.fi-font-bold {
     letter-spacing: 0.01em;
 }
-.fi-table-container,
-.fi-ta-wrp,
-.fi-section-content .fi-ta {
-    overflow-x: hidden !important;
+.fi-ta-ctn {
     max-width: 100% !important;
+    overflow: visible !important;
 }
-.fi-table-container table,
-.fi-ta table {
-    table-layout: auto !important;
+.fi-ta-table {
+    table-layout: fixed !important;
     width: 100% !important;
 }
-.fi-table-container td,
-.fi-ta td,
-.fi-table-container th,
-.fi-ta th {
+.fi-ta-table td,
+.fi-ta-table th {
     white-space: normal !important;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
     min-width: 0 !important;
 }
-.fi-table-container .fi-ta-text,
-.fi-ta .fi-ta-text {
+.fi-ta-table .fi-ta-text {
     overflow: visible !important;
     text-overflow: clip !important;
-}
-.fi-page-content {
-    overflow-x: hidden !important;
-}
-.fi-content {
-    overflow-x: hidden !important;
-}
-.fi-main {
-    overflow-x: hidden !important;
 }
 </style>
