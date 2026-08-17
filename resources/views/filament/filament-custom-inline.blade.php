@@ -154,6 +154,11 @@ button.fi-btn-primary:hover,
     overflow-wrap: break-word !important;
     min-width: 0 !important;
 }
+.fi-ta-table th {
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+}
 .fi-ta-table .fi-ta-text {
     overflow: visible !important;
     text-overflow: clip !important;

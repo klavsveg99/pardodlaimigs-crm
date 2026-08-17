@@ -32,6 +32,7 @@ class WpformEntryResource extends Resource
         'replied' => 'Atbildēts',
         'spam' => 'Mēstule',
         'archived' => 'Arhivēts',
+        'klients_pievienots' => 'Klients pievienots',
     ];
 
     protected static ?string $model = WpformEntry::class;
@@ -51,10 +52,9 @@ class WpformEntryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->orderByDesc('created_at'))
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')->label('Iesniegts')->dateTime('d.m.Y H:i')->sortable(),
-                Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->color('info'),
+                Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->color('info')->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('E-pasts'))
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%E-pasts%')->where('fields', 'like', "%{$search}%")),
@@ -87,6 +87,7 @@ class WpformEntryResource extends Resource
                 ]),
             ])
             ->paginated([25, 50, 100])
+            ->defaultSort('created_at', 'desc')
             ->poll('30s');
     }
 

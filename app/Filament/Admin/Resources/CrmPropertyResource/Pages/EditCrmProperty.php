@@ -23,7 +23,11 @@ class EditCrmProperty extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\ViewAction::make()->label('Skatīt'),
+            Actions\Action::make('open_site')
+                ->label('Skatīt')
+                ->icon('heroicon-o-arrow-top-right-on-square')
+                ->url(fn () => $this->record->public_url)
+                ->openUrlInNewTab(),
         ];
     }
 }
