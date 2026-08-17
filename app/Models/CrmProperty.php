@@ -91,6 +91,12 @@ class CrmProperty extends Model
         return implode(' · ', $parts);
     }
 
+    public function getPublicUrlAttribute(): string
+    {
+        return rtrim((string) config('wp-bridge.wordpress.site_url'), '/')
+            .'/ipasums/'.($this->slug ?: $this->wp_post_id ?: $this->id).'/';
+    }
+
     public function toWpPayload(): array
     {
         return [
