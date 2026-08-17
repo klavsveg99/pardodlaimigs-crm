@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers;
 
 use App\Models\Client;
+use App\Models\ClientCrmProperty;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -35,14 +36,9 @@ class ClientsRelationManager extends RelationManager
                 ->required(),
             Forms\Components\Select::make('relation')
                 ->label('Saistība')
-                ->options([
-                    'seller' => 'Pārdevējs',
-                    'buyer' => 'Pircējs',
-                    'tenant' => 'Īrnieks',
-                    'landlord' => 'Izīrētājs',
-                    'interested' => 'Interesents',
-                    'contacted' => 'Sazināts',
-                ])
+                ->options(fn () => $this->getOwnerRecord()->status === 'sold'
+                    ? ['seller' => 'Pārdevējs', 'buyer' => 'Pircējs', 'tenant' => 'Īrnieks', 'landlord' => 'Izīrētājs', 'interested' => 'Interesents', 'contacted' => 'Sazināts']
+                    : collect(ClientCrmProperty::RELATIONS)->except('buyer')->all())
                 ->required(),
             Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
         ]);
@@ -80,14 +76,9 @@ class ClientsRelationManager extends RelationManager
                             $action->getRecordSelect(),
                             Forms\Components\Select::make('relation')
                                 ->label('Saistība')
-                                ->options([
-                                    'seller' => 'Pārdevējs',
-                                    'buyer' => 'Pircējs',
-                                    'tenant' => 'Īrnieks',
-                                    'landlord' => 'Izīrētājs',
-                                    'interested' => 'Interesents',
-                                    'contacted' => 'Sazināts',
-                                ])
+                                ->options(fn () => $this->getOwnerRecord()->status === 'sold'
+                                    ? ['seller' => 'Pārdevējs', 'buyer' => 'Pircējs', 'tenant' => 'Īrnieks', 'landlord' => 'Izīrētājs', 'interested' => 'Interesents', 'contacted' => 'Sazināts']
+                                    : collect(ClientCrmProperty::RELATIONS)->except('buyer')->all())
                                 ->required(),
                             Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
                         ];
@@ -95,14 +86,20 @@ class ClientsRelationManager extends RelationManager
                     ->validateRecordUsing(function (array $data): void {
                         $clientId = $data['recordId'] ?? null;
                         $relation = $data['relation'] ?? null;
-                        $propertyId = $this->getOwnerRecord()->id;
+                        $property = $this->getOwnerRecord();
 
                         if ($relation !== 'buyer') {
                             return;
                         }
 
+                        if ($property->status !== 'sold') {
+                            throw ValidationException::withMessages([
+                                'data.relation' => 'Īpašumam jābūt ar statusu "Pārdots", lai piesaistītu pircēju.',
+                            ]);
+                        }
+
                         $hasSeller = DB::table('client_crm_properties')
-                            ->where('crm_property_id', $propertyId)
+                            ->where('crm_property_id', $property->id)
                             ->where('relation', 'seller')
                             ->exists();
 
