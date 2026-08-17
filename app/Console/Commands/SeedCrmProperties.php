@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Jobs\ReconcileAllProperties;
+use App\Models\Attachment;
 use App\Models\CrmProperty;
 use App\Models\PropertyCache;
 use App\Services\Wp\PropertyNormalizer;
 use App\Services\Wp\WpSource;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class SeedCrmProperties extends Command
 {
@@ -63,11 +66,48 @@ class SeedCrmProperties extends Command
             );
 
             $crm->wasRecentlyCreated ? $created++ : $updated++;
+            $this->importPhotos($crm, $crm->image_urls ?? []);
         }
 
         $this->info("CRM properties seeded: {$created} created, {$updated} updated.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Copy WordPress-hosted images into CRM storage so the CRM owns its seed data.
+     * Existing CRM attachments are kept; deterministic paths prevent duplicates.
+     *
+     * @param  array<int, string>  $urls
+     */
+    private function importPhotos(CrmProperty $property, array $urls): void
+    {
+        foreach (array_values(array_filter($urls)) as $index => $url) {
+            $extension = pathinfo(parse_url($url, PHP_URL_PATH) ?: '', PATHINFO_EXTENSION) ?: 'jpg';
+            $path = "attachments/crm-properties/{$property->id}/".sha1($url).'.'.strtolower($extension);
+
+            if (! Storage::disk('public')->exists($path)) {
+                $response = Http::timeout(30)->get($url);
+                if ($response->failed()) {
+                    $this->warn("Photo download failed for CRM property #{$property->id}: {$url}");
+
+                    continue;
+                }
+
+                Storage::disk('public')->put($path, $response->body());
+            }
+
+            if (! Attachment::query()->where('attachable_type', CrmProperty::class)->where('attachable_id', $property->id)->where('path', $path)->exists()) {
+                $property->attachments()->create([
+                    'disk' => 'public',
+                    'path' => $path,
+                    'original_name' => basename(parse_url($url, PHP_URL_PATH) ?: "photo-{$index}.jpg"),
+                    'mime_type' => Storage::disk('public')->mimeType($path),
+                    'size' => Storage::disk('public')->size($path),
+                    'sort_order' => $index,
+                ]);
+            }
+        }
     }
 
     private function crmStatus(PropertyCache $property): string
