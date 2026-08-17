@@ -224,7 +224,7 @@ h1.fi-header-heading {
 /* Select options in dropdowns */
 .dark .fi-select-options,
 .dark .fi-fo-select-options {
-    background: #1f2937 !important;
+    background: #0b0f14 !important;
     border-color: #374151 !important;
 }
 
@@ -246,7 +246,7 @@ h1.fi-header-heading {
 
 /* File upload dropzone */
 .dark .fi-file-upload-dropzone {
-    background: #1f2937 !important;
+    background: #0b0f14 !important;
     border-color: #4b5563 !important;
 }
 
@@ -255,7 +255,7 @@ h1.fi-header-heading {
 }
 
 .dark .fi-file-upload-item {
-    background: #1f2937 !important;
+    background: #0b0f14 !important;
     border-color: #374151 !important;
 }
 
@@ -306,7 +306,7 @@ h1.fi-header-heading {
 }
 
 .dark .fi-ta-table tr:hover td {
-    background: #1f2937 !important;
+    background: #0b0f14 !important;
 }
 
 /* Table action buttons in dark mode */
@@ -341,7 +341,7 @@ h1.fi-header-heading {
 /* Table action dropdown/menu */
 .dark .fi-ta-table [x-float],
 .dark .fi-ta-table .fi-dropdown-panel {
-    background: #1f2937 !important;
+    background: #0b0f14 !important;
     border-color: #374151 !important;
 }
 
@@ -364,14 +364,14 @@ h1.fi-header-heading {
 
 /* Badges in dark mode */
 .dark .fi-badge {
-    background: #1f2937 !important;
+    background: #0b0f14 !important;
     color: #f3f4f6 !important;
     border-color: #374151 !important;
 }
 
 /* Alerts in dark mode */
 .dark .fi-alert {
-    background: #1f2937 !important;
+    background: #0b0f14 !important;
     border-color: #374151 !important;
     color: #f3f4f6 !important;
 }
@@ -399,7 +399,7 @@ h1.fi-header-heading {
 .dark [data-filament-table-search] input,
 .dark [data-filament-table-filter] input,
 .dark .fi-table-filters-form .fi-input {
-    background: #1f2937 !important;
+    background: #0b0f14 !important;
     border-color: #4b5563 !important;
     color: #f3f4f6 !important;
 }
@@ -422,7 +422,7 @@ h1.fi-header-heading {
 .dark .fi-ta-table .fi-btn,
 .dark .fi-table .fi-btn,
 .dark .fi-ta-actions .fi-btn {
-    color: #f3f4f6 !important;
+    color: #ffffff !important;
 }
 
 .dark .fi-ta-table .fi-btn.fi-color-primary,
@@ -442,9 +442,56 @@ h1.fi-header-heading {
 .dark .fi-ta-table .fi-btn.fi-color-gray,
 .dark .fi-table .fi-btn.fi-color-gray,
 .dark .fi-ta-actions .fi-btn.fi-color-gray {
+    background: #4b5563 !important;
+    border-color: #6b7280 !important;
+    color: #ffffff !important;
+}
+
+.dark .fi-ta-table .fi-btn.fi-color-gray:hover,
+.dark .fi-table .fi-btn.fi-color-gray:hover,
+.dark .fi-ta-actions .fi-btn.fi-color-gray:hover {
+    background: #6b7280 !important;
+    border-color: #9ca3af !important;
+}
+
+.dark .fi-ta-table .fi-btn.fi-color-success,
+.dark .fi-table .fi-btn.fi-color-success,
+.dark .fi-ta-actions .fi-btn.fi-color-success {
+    background: #16a34a !important;
+    border-color: #16a34a !important;
+}
+
+.dark .fi-ta-table .fi-btn.fi-color-warning,
+.dark .fi-table .fi-btn.fi-color-warning,
+.dark .fi-ta-actions .fi-btn.fi-color-warning {
+    background: #ca8a04 !important;
+    border-color: #ca8a04 !important;
+}
+
+.dark .fi-ta-table .fi-btn.fi-color-danger,
+.dark .fi-table .fi-btn.fi-color-danger,
+.dark .fi-ta-actions .fi-btn.fi-color-danger {
+    background: #dc2626 !important;
+    border-color: #dc2626 !important;
+}
+
+.dark .fi-ta-table .fi-btn.fi-color-info,
+.dark .fi-table .fi-btn.fi-color-info,
+.dark .fi-ta-actions .fi-btn.fi-color-info {
+    background: #0ea5e9 !important;
+    border-color: #0ea5e9 !important;
+}
+
+/* Dropdown action buttons inside table */
+.dark .fi-ta-table .fi-dropdown-panel .fi-btn,
+.dark .fi-table .fi-dropdown-panel .fi-btn {
+    background: transparent !important;
+    color: #ffffff !important;
+}
+
+.dark .fi-ta-table .fi-dropdown-panel .fi-btn:hover,
+.dark .fi-table .fi-dropdown-panel .fi-btn:hover {
     background: #374151 !important;
-    border-color: #4b5563 !important;
-    color: #f3f4f6 !important;
 }
 
 .dark .fi-ta-table .fi-btn.fi-color-gray:hover,

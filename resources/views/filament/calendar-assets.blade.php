@@ -234,7 +234,7 @@
     .dark .fc {
         --fc-border-color: #374151;
         --fc-page-bg-color: #0b0f14;
-        --fc-neutral-bg-color: #1f2937;
+        --fc-neutral-bg-color: #0b0f14;
         --fc-today-bg-color: #1a2e2d;
         --fc-today-border-color: #2d5a56;
         --fc-event-text-color: #fff;
@@ -287,7 +287,7 @@
     }
 
     .dark .fc .fc-col-header-cell {
-        background-color: #1f2937 !important;
+        background: #0b0f14 !important;
         color: #9ca3af !important;
         border-color: #374151 !important;
     }
@@ -305,7 +305,7 @@
     }
 
     .dark .fc .fc-daygrid-day:hover {
-        background-color: #1f2937 !important;
+        background: #0b0f14 !important;
     }
 
     .dark .fc .fc-more-link {
