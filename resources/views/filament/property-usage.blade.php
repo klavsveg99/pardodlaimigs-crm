@@ -1,7 +1,7 @@
 <div class="space-y-3">
     @if($clients->isNotEmpty())
         <div>
-            <h4 class="text-sm font-bold text-gray-700 mb-1">Piesaistīts {{ $clients->count() }} klientiem:</h4>
+            <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Piesaistīts {{ $clients->count() }} klientiem:</h4>
             <ul class="text-sm space-y-1">
                 @foreach($clients as $c)
                     <li class="flex justify-between">
@@ -15,7 +15,7 @@
 
     @if($deals->isNotEmpty())
         <div>
-            <h4 class="text-sm font-bold text-gray-700 mb-1">Piesaistīts {{ $deals->count() }} darījumiem:</h4>
+            <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Piesaistīts {{ $deals->count() }} darījumiem:</h4>
             <ul class="text-sm space-y-1">
                 @foreach($deals as $d)
                     <li class="flex justify-between">
@@ -31,6 +31,6 @@
     @endif
 
     @if($clients->isEmpty() && $deals->isEmpty())
-        <p class="text-gray-500">Šis īpašums vēl nav piesaistīts nevienam klientam vai darījumam CRM.</p>
+        <p class="text-gray-500 dark:text-gray-400">Šis īpašums vēl nav piesaistīts nevienam klientam vai darījumam CRM.</p>
     @endif
 </div>

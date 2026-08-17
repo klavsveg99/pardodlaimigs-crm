@@ -10,9 +10,4 @@ use Filament\Resources\Pages\ListRecords;
 class ListWpformEntries extends ListRecords
 {
     protected static string $resource = WpformEntryResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [];
-    }
 }

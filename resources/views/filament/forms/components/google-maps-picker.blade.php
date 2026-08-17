@@ -80,12 +80,13 @@
                 outline: none;
             "
             @focus="this.style.borderColor = 'var(--pdc-primary)'"
-            @blur="this.style.borderColor = '#d1d5db'"
+            @blur="this.style.borderColor = ''"
         />
     </div>
     <div
         x-ref="mapContainer"
         wire:ignore
+        class="pdc-map-container"
         style="
             width: 100%;
             height: 350px;

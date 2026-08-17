@@ -35,15 +35,6 @@ class WpformEntryResource extends Resource
         'klients_pievienots' => 'success',
     ];
 
-    public const EDITABLE_STATUSES = [
-        'new' => 'Jauns',
-        'review' => 'Izvērtēts',
-        'replied' => 'Atbildēts',
-        'spam' => 'Mēstule',
-        'archived' => 'Arhivēts',
-        'klients_pievienots' => 'Klients pievienots',
-    ];
-
     protected static ?string $model = WpformEntry::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-inbox-stack';
@@ -76,7 +67,7 @@ class WpformEntryResource extends Resource
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('Telefona numurs'))
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Telefona numurs%')->where('fields', 'like', "%{$search}%")),
                 Tables\Columns\SelectColumn::make('status')->label('Statuss')
-                    ->options(self::EDITABLE_STATUSES)
+                    ->options(self::STATUSES)
                     ->sortable(),
             ])
             ->filters([

@@ -1,16 +1,6 @@
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
 
 <style>
-    /* ── Filament teal palette ─────────────────────────────────── */
-    :root {
-        --crm-primary: #285854;
-        --crm-primary-light: #3a7d78;
-        --crm-primary-dark: #1e4340;
-        --crm-primary-50: #eef6f5;
-        --crm-primary-100: #d4ece9;
-        --crm-primary-200: #a8d9d3;
-    }
-
     /* ── Container ─────────────────────────────────────────────── */
     .fc-calendar-wrapper {
         border: 1px solid var(--fi-color-base-200, #e5e7eb);
@@ -44,13 +34,13 @@
         --fc-border-color: #e5e7eb;
         --fc-page-bg-color: #fff;
         --fc-neutral-bg-color: #f9fafb;
-        --fc-today-bg-color: var(--crm-primary-50);
-        --fc-today-border-color: var(--crm-primary-200);
-        --fc-event-bg-color: var(--crm-primary);
-        --fc-event-border-color: var(--crm-primary-dark);
+        --fc-today-bg-color: rgba(40, 88, 84, 0.08);
+        --fc-today-border-color: rgba(40, 88, 84, 0.25);
+        --fc-event-bg-color: var(--pdc-primary);
+        --fc-event-border-color: var(--pdc-primary-darker);
         --fc-event-text-color: #fff;
-        --fc-more-link-text-color: var(--crm-primary);
-        --fc-more-link-bg-color: var(--crm-primary-100);
+        --fc-more-link-text-color: var(--pdc-primary);
+        --fc-more-link-bg-color: rgba(40, 88, 84, 0.1);
     }
 
     /* ── Toolbar ───────────────────────────────────────────────── */
@@ -79,24 +69,24 @@
         border-radius: 0.375rem !important;
         box-shadow: none !important;
         transition: background-color 0.15s, border-color 0.15s !important;
-        background-color: var(--crm-primary) !important;
-        border-color: var(--crm-primary) !important;
+        background-color: var(--pdc-primary) !important;
+        border-color: var(--pdc-primary) !important;
         color: #fff !important;
     }
 
     .fc .fc-button:hover:not(:disabled) {
-        background-color: var(--crm-primary-light) !important;
-        border-color: var(--crm-primary-light) !important;
+        background-color: color-mix(in srgb, var(--pdc-primary) 80%, white) !important;
+        border-color: color-mix(in srgb, var(--pdc-primary) 80%, white) !important;
     }
 
     .fc .fc-button:not(:disabled):active,
     .fc .fc-button:not(:disabled).fc-button-active {
-        background-color: var(--crm-primary-dark) !important;
-        border-color: var(--crm-primary-dark) !important;
+        background-color: var(--pdc-primary-darker) !important;
+        border-color: var(--pdc-primary-darker) !important;
     }
 
     .fc .fc-button:focus-visible {
-        outline: 2px solid var(--crm-primary-light);
+        outline: 2px solid color-mix(in srgb, var(--pdc-primary) 80%, white);
         outline-offset: 2px;
     }
 
@@ -159,11 +149,11 @@
     }
 
     .fc .fc-daygrid-day.fc-day-today {
-        background-color: var(--crm-primary-50) !important;
+        background-color: rgba(40, 88, 84, 0.08) !important;
     }
 
     .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-        color: var(--crm-primary-dark) !important;
+        color: var(--pdc-primary-darker) !important;
         font-weight: 700 !important;
     }
 
@@ -189,7 +179,7 @@
     .fc .fc-more-link {
         font-size: 0.75rem !important;
         font-weight: 600 !important;
-        color: var(--crm-primary) !important;
+        color: var(--pdc-primary) !important;
     }
 
     /* ── Responsive ────────────────────────────────────────────── */

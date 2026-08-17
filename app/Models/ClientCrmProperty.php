@@ -12,16 +12,17 @@ class ClientCrmProperty extends Pivot
 
     protected $fillable = ['client_id', 'crm_property_id', 'relation', 'notes_md'];
 
+    public const RELATIONS = [
+        'seller' => 'Pārdevējs',
+        'buyer' => 'Pircējs',
+        'tenant' => 'Īrnieks',
+        'landlord' => 'Izīrētājs',
+        'interested' => 'Interesents',
+        'contacted' => 'Sazināts',
+    ];
+
     public function getRelationLabelAttribute(): string
     {
-        return match ($this->relation) {
-            'seller' => 'Pārdevējs',
-            'buyer' => 'Pircējs',
-            'tenant' => 'Īrnieks',
-            'landlord' => 'Īzīrētājs',
-            'interested' => 'Interesents',
-            'contacted' => 'Sazināts',
-            default => ucfirst($this->relation),
-        };
+        return self::RELATIONS[$this->relation] ?? ucfirst($this->relation);
     }
 }
