@@ -4,7 +4,7 @@
         <select
             id="agent-filter"
             wire:model.live="agentFilter"
-            class="fi-input block w-48 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-white/5 dark:text-white"
+            class="fi-input block w-48 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition focus:border-[var(--pdc-primary)] focus:ring-2 focus:ring-[var(--pdc-primary)]/20 dark:border-white/10 dark:bg-white/5 dark:text-white"
         >
             <option value="">Visi</option>
             @foreach ($agentOptions as $id => $name)

@@ -84,7 +84,7 @@
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
                 @foreach ($record->attachments as $attachment)
                     <a href="{{ $attachment->url }}" target="_blank"
-                       class="group relative rounded-xl border border-gray-200 dark:border-white/10 overflow-hidden hover:border-primary-400 dark:hover:border-primary-500 transition-colors aspect-video bg-gray-50 dark:bg-white/5">
+                       class="group relative rounded-xl border border-gray-200 dark:border-white/10 overflow-hidden hover:border-[var(--pdc-primary)] dark:hover:border-[var(--pdc-primary)] transition-colors aspect-video bg-gray-50 dark:bg-white/5">
                         <img src="{{ $attachment->url }}"
                              alt="{{ $attachment->original_name }}"
                              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
@@ -110,7 +110,7 @@
                 @foreach ($record->clients as $client)
                     <div class="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
                         <div class="flex items-center gap-3">
-                            <x-filament::avatar :label="$client->name" class="h-10 w-10 bg-primary-600" />
+                            <x-filament::avatar :label="$client->name" class="h-10 w-10 bg-[var(--pdc-primary)]" />
                             <div>
                                 <p class="font-medium text-gray-900 dark:text-white">{{ $client->name }}</p>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -138,7 +138,7 @@
                             </div>
                         </div>
                         <a href="{{ ClientResource::getUrl('view', ['record' => $client]) }}"
-                           class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                           class="text-sm text-[var(--pdc-primary-darker)] dark:text-[var(--pdc-primary)] hover:underline">
                             Skatīt klientu
                         </a>
                     </div>

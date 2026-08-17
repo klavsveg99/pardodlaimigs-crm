@@ -11,7 +11,7 @@
                     @if ($record->client)
                         <a
                             href="{{ \App\Filament\Admin\Resources\ClientResource::getUrl('view', ['record' => $record->client_id]) }}"
-                            class="font-semibold text-primary-600 underline decoration-primary-300 underline-offset-2 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+                            class="font-semibold text-[var(--pdc-primary-darker)] dark:text-[var(--pdc-primary)] underline decoration-[var(--pdc-primary)]/30 underline-offset-2 hover:text-[var(--pdc-primary)] dark:hover:text-[var(--pdc-primary-darker)]"
                         >
                             {{ $record->client->name }}
                         </a>
@@ -24,9 +24,9 @@
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Vērtība</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->value_eur ? number_format((float) $record->value_eur, 2, ',', ' ') . ' €' : '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-primary-200 bg-primary-50 p-4 dark:border-primary-400/30 dark:bg-primary-400/10">
+            <div class="rounded-xl border border-[var(--pdc-primary)]/30 bg-[var(--pdc-primary)]/10 p-4 dark:border-[var(--pdc-primary)]/30 dark:bg-[var(--pdc-primary)]/10">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pašreizējais posms</dt>
-                <dd class="mt-1 text-sm font-bold text-primary-700 dark:text-primary-300">{{ $record->stage_label }}</dd>
+                <dd class="mt-1 text-sm font-bold text-[var(--pdc-primary-darker)] dark:text-[var(--pdc-primary)]">{{ $record->stage_label }}</dd>
             </div>
         </div>
     </x-filament::section>
@@ -35,7 +35,7 @@
         <div class="relative space-y-3 ps-3">
             @forelse ($record->stageChanges as $change)
                 <div class="relative rounded-xl border border-gray-200 bg-gray-50 p-4 ps-5 dark:border-white/10 dark:bg-white/5">
-                    <span class="absolute -start-[0.45rem] top-5 h-3 w-3 rounded-full bg-primary-500 ring-4 ring-white dark:ring-gray-900"></span>
+                    <span class="absolute -start-[0.45rem] top-5 h-3 w-3 rounded-full bg-[var(--pdc-primary)] ring-4 ring-white dark:ring-gray-900"></span>
                     <div class="text-sm font-semibold text-gray-900 dark:text-white">
                         @if ($change->payload['initial'] ?? false)
                             Sākotnējais posms:

@@ -5,8 +5,8 @@
             <ul class="text-sm space-y-1">
                 @foreach($clients as $c)
                     <li class="flex justify-between">
-                        <a href="{{ route('filament.admin.resources.clients.edit', $c->id) }}" class="text-primary-600 underline">{{ $c->name }}</a>
-                        <span class="text-xs px-2 py-0.5 rounded bg-gray-100">{{ $c->relation }}</span>
+                        <a href="{{ route('filament.admin.resources.clients.edit', $c->id) }}" class="text-[var(--pdc-primary-darker)] dark:text-[var(--pdc-primary)] underline">{{ $c->name }}</a>
+                        <span class="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-white/10">{{ $c->relation }}</span>
                     </li>
                 @endforeach
             </ul>
@@ -20,10 +20,10 @@
                 @foreach($deals as $d)
                     <li class="flex justify-between">
                         <span>
-                            <a href="{{ route('filament.admin.resources.deals.edit', $d->id) }}" class="text-primary-600 underline">#{{ $d->id }}</a>
+                            <a href="{{ route('filament.admin.resources.deals.edit', $d->id) }}" class="text-[var(--pdc-primary-darker)] dark:text-[var(--pdc-primary)] underline">#{{ $d->id }}</a>
                             — {{ $d->client?->name }}
                         </span>
-                        <span class="text-xs px-2 py-0.5 rounded bg-gray-100">{{ \App\Models\Deal::STAGES[$d->stage] ?? $d->stage }}</span>
+                        <span class="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-white/10">{{ \App\Models\Deal::STAGES[$d->stage] ?? $d->stage }}</span>
                     </li>
                 @endforeach
             </ul>
