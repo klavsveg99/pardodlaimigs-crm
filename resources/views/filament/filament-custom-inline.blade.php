@@ -36,12 +36,12 @@
 
 .fi-section-header-heading,
 h1.fi-header-heading {
-    color: var(--primary-600) !important;
+    color: var(--pdc-primary-darker) !important;
 }
 
 .dark .fi-section-header-heading,
 .dark h1.fi-header-heading {
-    color: var(--primary-400) !important;
+    color: #f9fafb !important;
 }
 
 /* Keep the dark shell intentionally monochrome. */
@@ -115,7 +115,7 @@ h1.fi-header-heading {
 }
 
 .fi-link {
-    color: var(--primary-600) !important;
+    color: var(--pdc-primary) !important;
 }
 
 .dark .fi-link {
@@ -142,6 +142,54 @@ h1.fi-header-heading {
 .fi-ta-content {
     max-width: 100% !important;
     min-width: 0 !important;
+}
+
+/* Login page dark mode - match admin dark shell */
+.dark .fi-login,
+.dark .fi-login-page,
+.dark body.fi-login {
+    background: #0b0f14 !important;
+}
+
+.dark .fi-login .fi-card,
+.dark .fi-login-page .fi-card {
+    background: #111827 !important;
+    border-color: #27303a !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .fi-login .fi-card *,
+.dark .fi-login-page .fi-card * {
+    color: #f9fafb !important;
+}
+
+.dark .fi-login .fi-btn.fi-color-primary,
+.dark .fi-login-page .fi-btn.fi-color-primary {
+    background-color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+}
+
+.dark .fi-login .fi-btn.fi-color-primary:hover,
+.dark .fi-login-page .fi-btn.fi-color-primary:hover {
+    background-color: var(--pdc-primary-darker) !important;
+    border-color: var(--pdc-primary-darker) !important;
+}
+
+.dark .fi-login .fi-input,
+.dark .fi-login-page .fi-input {
+    background: #1f2937 !important;
+    border-color: #4b5563 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .fi-login .fi-input::placeholder,
+.dark .fi-login-page .fi-input::placeholder {
+    color: #9ca3af !important;
+}
+
+.dark .fi-login .fi-label,
+.dark .fi-login-page .fi-label {
+    color: #f9fafb !important;
 }
 
 .fi-ta-content-ctn {

@@ -24,47 +24,17 @@ class CrmPropertiesRelationManager extends RelationManager
     public function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Forms\Components\Select::make('id')
-                ->label('Īpašums')
-                ->searchable()
-                ->getSearchResultsUsing(function (string $search): array {
-                    return CrmProperty::query()
-                        ->where(function ($query) use ($search): void {
-                            $query->where('title', 'like', "%{$search}%")
-                                ->orWhere('city', 'like', "%{$search}%")
-                                ->orWhere('kadastra_nr', 'like', "%{$search}%")
-                                ->orWhere('id', '=', $search);
-                        })
-                        ->limit(20)
-                        ->get()
-                        ->mapWithKeys(fn (CrmProperty $property): array => [
-                            $property->id => $property->selection_label,
-                        ])
-                        ->all();
-                })
-                ->getOptionLabelUsing(fn ($value): ?string => CrmProperty::find($value)?->selection_label)
-                ->required(),
             Forms\Components\Select::make('relation')
                 ->label('Saistība')
-                ->options(function (Get $get): array {
-                    $property = CrmProperty::find($get('id'));
-
-                    if ($property?->status === 'sold') {
-                        return ['buyer' => 'Pircējs'];
-                    }
-
-                    return [
-                        'seller' => 'Pārdevējs',
-                        'tenant' => 'Īrnieks',
-                        'landlord' => 'Izīrētājs',
-                        'interested' => 'Interesents',
-                        'contacted' => 'Sazināts',
-                    ];
-                })
+                ->options([
+                    'seller' => 'Pārdevējs',
+                    'tenant' => 'Īrnieks',
+                    'landlord' => 'Izīrētājs',
+                    'interested' => 'Interesents',
+                    'contacted' => 'Sazināts',
+                ])
                 ->required(),
-            Forms\Components\Textarea::make('notes_md')
-                ->label('Piezīmes par šo interesi')
-                ->rows(3),
+            Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
         ]);
     }
 
@@ -173,7 +143,6 @@ class CrmPropertiesRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                Actions\EditAction::make(),
                 Actions\DetachAction::make()->label('Noņemt'),
             ]);
     }
