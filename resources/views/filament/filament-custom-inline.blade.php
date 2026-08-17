@@ -144,7 +144,7 @@ button.fi-btn-primary:hover,
     overflow-x: hidden !important;
 }
 .fi-ta-table {
-    table-layout: fixed !important;
+    table-layout: auto !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
