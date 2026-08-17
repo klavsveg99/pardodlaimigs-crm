@@ -79,7 +79,7 @@
                 font-size: 0.875rem;
                 outline: none;
             "
-            @focus="this.style.borderColor = '#285854'"
+            @focus="this.style.borderColor = 'var(--pdc-primary)'"
             @blur="this.style.borderColor = '#d1d5db'"
         />
     </div>
