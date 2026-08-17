@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\CrmPropertyResource\Pages;
-use App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
@@ -128,6 +127,7 @@ class CrmPropertyResource extends Resource
                     ->options(fn () => CrmProperty::distinct()->pluck('city', 'city')->filter()->toArray()),
             ])
             ->actions([
+                Actions\ViewAction::make()->label('Skatīt'),
                 Actions\EditAction::make()->label('Rediģēt'),
             ])
             ->defaultSort('updated_at', 'desc');
@@ -138,14 +138,8 @@ class CrmPropertyResource extends Resource
         return [
             'index' => Pages\ListCrmProperties::route('/'),
             'create' => Pages\CreateCrmProperty::route('/create'),
+            'view' => Pages\ViewCrmProperty::route('/{record}'),
             'edit' => Pages\EditCrmProperty::route('/{record}/edit'),
-        ];
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            RelationManagers\ClientsRelationManager::class,
         ];
     }
 }
