@@ -29,7 +29,7 @@ class CrmProperty extends Model
     ];
 
     protected $fillable = [
-        'title', 'slug', 'description', 'price_cents', 'price_eur',
+        'wp_post_id', 'title', 'slug', 'description', 'image_urls', 'price_cents', 'price_eur',
         'currency', 'category', 'status', 'beds', 'baths',
         'size_m2', 'land_m2', 'kadastra_nr', 'city', 'address',
         'lat', 'lng', 'owner_user_id',
@@ -38,6 +38,7 @@ class CrmProperty extends Model
     protected $casts = [
         'price_cents' => 'integer',
         'price_eur' => 'decimal:2',
+        'image_urls' => 'array',
         'beds' => 'integer',
         'baths' => 'integer',
         'size_m2' => 'integer',
@@ -115,7 +116,12 @@ class CrmProperty extends Model
                 'name' => $attachment->original_name,
                 'mime_type' => $attachment->mime_type,
                 'sort_order' => $attachment->sort_order,
-            ])->values()->all(),
+            ])->concat(collect($this->image_urls ?? [])->values()->map(fn (string $url, int $index): array => [
+                'url' => $url,
+                'name' => basename(parse_url($url, PHP_URL_PATH) ?: "image-{$index}.jpg"),
+                'mime_type' => 'image/*',
+                'sort_order' => $index,
+            ]))->values()->all(),
         ];
     }
 }

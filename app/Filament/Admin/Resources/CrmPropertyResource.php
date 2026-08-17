@@ -38,6 +38,7 @@ class CrmPropertyResource extends Resource
         return $schema->schema([
             Section::make()->columns(2)->schema([
                 Forms\Components\TextInput::make('title')->label('Nosaukums')->required()->maxLength(255),
+                Forms\Components\TextInput::make('wp_post_id')->label('WordPress ID')->disabled()->dehydrated(false),
                 Forms\Components\TextInput::make('slug')->label('Slugs')->maxLength(255),
                 Forms\Components\Select::make('category')->label('Kategorija')
                     ->options(CrmProperty::CATEGORIES)->searchable(),
