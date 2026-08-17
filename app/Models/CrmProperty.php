@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class CrmProperty extends Model
@@ -48,6 +49,13 @@ class CrmProperty extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_user_id');
+    }
+
+    public function clients(): BelongsToMany
+    {
+        return $this->belongsToMany(Client::class, 'client_crm_properties', 'crm_property_id', 'client_id')
+            ->withPivot('relation', 'notes_md')
+            ->withTimestamps();
     }
 
     public function attachments(): MorphMany
