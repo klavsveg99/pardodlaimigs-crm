@@ -192,6 +192,162 @@ h1.fi-header-heading {
     color: #f9fafb !important;
 }
 
+/* Form inputs dark mode - avoid white-on-white */
+.dark .fi-input,
+.dark .fi-textarea,
+.dark .fi-select,
+.dark .fi-select select,
+.dark .fi-multi-select,
+.dark .fi-multi-select select,
+.dark .fi-date-time-picker input,
+.dark .fi-date-picker input,
+.dark .fi-time-picker input,
+.dark .fi-color-picker input,
+.dark .fi-file-upload input,
+.dark .fi-rich-editor .tiptap {
+    background: #1f2937 !important;
+    border-color: #4b5563 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .fi-input::placeholder,
+.dark .fi-textarea::placeholder {
+    color: #9ca3af !important;
+}
+
+.dark .fi-label {
+    color: #f9fafb !important;
+}
+
+.dark .fi-hint {
+    color: #9ca3af !important;
+}
+
+/* Select options in dropdowns */
+.dark .fi-select-options,
+.dark .fi-fo-select-options {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark .fi-select-options .fi-select-option,
+.dark .fi-fo-select-options .fi-select-option {
+    color: #f3f4f6 !important;
+}
+
+.dark .fi-select-options .fi-select-option:hover,
+.dark .fi-fo-select-options .fi-select-option:hover {
+    background: #374151 !important;
+}
+
+.dark .fi-select-options .fi-select-option[aria-selected="true"],
+.dark .fi-fo-select-options .fi-select-option[aria-selected="true"] {
+    background: #2d5a56 !important;
+    color: #fff !important;
+}
+
+/* File upload dropzone */
+.dark .fi-file-upload-dropzone {
+    background: #1f2937 !important;
+    border-color: #4b5563 !important;
+}
+
+.dark .fi-file-upload-dropzone:hover {
+    border-color: var(--pdc-primary) !important;
+}
+
+.dark .fi-file-upload-item {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+/* Checkbox/radio/toggle */
+.dark .fi-checkbox input,
+.dark .fi-radio input,
+.dark .fi-toggle input {
+    accent-color: var(--pdc-primary) !important;
+}
+
+.dark .fi-form-check-label {
+    color: #f3f4f6 !important;
+}
+
+/* Tabs */
+.dark .fi-tabs-nav {
+    border-color: #374151 !important;
+}
+
+.dark .fi-tabs-tab {
+    color: #9ca3af !important;
+}
+
+.dark .fi-tabs-tab.fi-active {
+    color: var(--pdc-primary) !important;
+}
+
+/* Cards in dark mode */
+.dark .fi-card {
+    background: #0b0f14 !important;
+    border-color: #27303a !important;
+}
+
+/* Tables in dark mode */
+.dark .fi-ta-table {
+    border-color: #374151 !important;
+}
+
+.dark .fi-ta-table th {
+    background: #111827 !important;
+    color: #f9fafb !important;
+    border-color: #374151 !important;
+}
+
+.dark .fi-ta-table td {
+    border-color: #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .fi-ta-table tr:hover td {
+    background: #1f2937 !important;
+}
+
+/* Section headers in dark mode */
+.dark .fi-section-header {
+    border-color: #27303a !important;
+}
+
+.dark .fi-section-header-heading {
+    color: #f9fafb !important;
+}
+
+/* Badges in dark mode */
+.dark .fi-badge {
+    background: #1f2937 !important;
+    color: #f3f4f6 !important;
+    border-color: #374151 !important;
+}
+
+/* Alerts in dark mode */
+.dark .fi-alert {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+/* Modals in dark mode */
+.dark .fi-modal-content {
+    background: #0b0f14 !important;
+    border-color: #27303a !important;
+}
+
+.dark .fi-modal-header {
+    border-color: #27303a !important;
+}
+
+.dark .fi-modal-footer {
+    border-color: #27303a !important;
+}
+
 .fi-ta-content-ctn {
     overflow-x: hidden !important;
 }
