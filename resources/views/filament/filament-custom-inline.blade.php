@@ -397,15 +397,16 @@ h1.fi-header-heading {
 .dark .fi-ta-table .fi-btn.fi-color-primary,
 .dark .fi-table .fi-btn.fi-color-primary,
 .dark .fi-ta-actions .fi-btn.fi-color-primary {
-    background: var(--pdc-primary) !important;
-    border-color: var(--pdc-primary) !important;
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+    color: #ffffff !important;
 }
 
 .dark .fi-ta-table .fi-btn.fi-color-primary:hover,
 .dark .fi-table .fi-btn.fi-color-primary:hover,
 .dark .fi-ta-actions .fi-btn.fi-color-primary:hover {
-    background: var(--pdc-primary-darker) !important;
-    border-color: var(--pdc-primary-darker) !important;
+    background: #4b5563 !important;
+    border-color: #6b7280 !important;
 }
 
 .dark .fi-ta-table .fi-btn.fi-color-gray,
