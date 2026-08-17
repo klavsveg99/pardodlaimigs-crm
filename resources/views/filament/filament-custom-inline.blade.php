@@ -177,7 +177,6 @@ h1.fi-header-heading {
 
 .dark .fi-login .fi-input,
 .dark .fi-login-page .fi-input {
-    background: #1f2937 !important;
     border-color: #4b5563 !important;
     color: #f3f4f6 !important;
 }
@@ -205,7 +204,6 @@ h1.fi-header-heading {
 .dark .fi-color-picker input,
 .dark .fi-file-upload input,
 .dark .fi-rich-editor .tiptap {
-    background: #1f2937 !important;
     border-color: #4b5563 !important;
     color: #f3f4f6 !important;
 }
