@@ -10,62 +10,68 @@
         </div>
     </x-slot>
 
-    <x-filament::section heading="Pamatdati" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kategorija</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->category ?: '—' }}</dd>
-        </div>
-        <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Cena</dt>
-            <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->price_display ?: '—' }}</dd>
-        </div>
-        <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atbildīgais</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->owner?->name ?: '—' }}</dd>
-        </div>
-        <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Slug</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">{{ $record->slug ?: '—' }}</dd>
-        </div>
-    </x-filament::section>
-
-    <x-filament::section heading="Īpašuma dati" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Istabas</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->beds ?: '—' }}</dd>
-        </div>
-        <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Vannas istabas</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->baths ?: '—' }}</dd>
-        </div>
-        <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Platība (m²)</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->size_m2 ?: '—' }}</dd>
-        </div>
-        <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Zemes platība (m²)</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->land_m2 ?: '—' }}</dd>
-        </div>
-        <div class="sm:col-span-2 lg:col-span-2">
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kadastra nr.</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">{{ $record->kadastra_nr ?: '—' }}</dd>
+    <x-filament::section heading="Pamatdati">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kategorija</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->category ?: '—' }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Cena</dt>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->price_display ?: '—' }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atbildīgais</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->owner?->name ?: '—' }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Slug</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">{{ $record->slug ?: '—' }}</dd>
+            </div>
         </div>
     </x-filament::section>
 
-    <x-filament::section heading="Atrašanās vieta" class="grid gap-3 sm:grid-cols-3">
-        <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pilsēta</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->city ?: '—' }}</dd>
+    <x-filament::section heading="Īpašuma dati">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Istabas</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->beds ?: '—' }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Vannas istabas</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->baths ?: '—' }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Platība (m²)</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->size_m2 ?: '—' }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Zemes platība (m²)</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->land_m2 ?: '—' }}</dd>
+            </div>
+            <div class="sm:col-span-2 lg:col-span-2">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kadastra nr.</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">{{ $record->kadastra_nr ?: '—' }}</dd>
+            </div>
         </div>
-        <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Adrese</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->address ?: '—' }}</dd>
-        </div>
-        <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Koordinātes</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">
-                {{ $record->lat && $record->lng ? "{$record->lat}, {$record->lng}" : '—' }}
-            </dd>
+    </x-filament::section>
+
+    <x-filament::section heading="Atrašanās vieta">
+        <div class="grid gap-3 sm:grid-cols-3">
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pilsēta</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->city ?: '—' }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Adrese</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->address ?: '—' }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Koordinātes</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">
+                    {{ $record->lat && $record->lng ? "{$record->lat}, {$record->lng}" : '—' }}
+                </dd>
+            </div>
         </div>
     </x-filament::section>
 
