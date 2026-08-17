@@ -141,9 +141,11 @@ button.fi-btn-primary:hover,
 }
 .fi-ta-table {
     table-layout: auto !important;
-    width: 100% !important;
-    max-width: 100% !important;
+    box-sizing: border-box !important;
+    width: calc(100% - 2px) !important;
+    max-width: calc(100% - 2px) !important;
     min-width: 0 !important;
+    margin-inline: 1px !important;
 }
 .fi-ta-table td,
 .fi-ta-table th {
