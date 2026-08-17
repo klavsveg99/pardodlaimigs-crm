@@ -10,7 +10,5 @@ Route::post('/gdpr/request-erase', [GdprController::class, 'requestErase']);
 Route::get('/gdpr/erase/{email}', [GdprController::class, 'erase'])->name('gdpr.erase');
 
 // ── CRM Property Feed (WordPress pulls from here) ─────────────
-Route::get('/crm/properties', [CrmPropertyFeedController::class, 'index'])
-    ->middleware('auth:sanctum');
-Route::get('/crm/properties/{id}', [CrmPropertyFeedController::class, 'show'])
-    ->middleware('auth:sanctum');
+Route::get('/crm/properties', [CrmPropertyFeedController::class, 'index']);
+Route::get('/crm/properties/{id}', [CrmPropertyFeedController::class, 'show']);

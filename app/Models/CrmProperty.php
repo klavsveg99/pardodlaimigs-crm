@@ -102,6 +102,12 @@ class CrmProperty extends Model
             'lat' => $this->lat,
             'lng' => $this->lng,
             'crm_id' => $this->id,
+            'attachments' => $this->attachments->map(fn (Attachment $attachment) => [
+                'url' => $attachment->url,
+                'name' => $attachment->original_name,
+                'mime_type' => $attachment->mime_type,
+                'sort_order' => $attachment->sort_order,
+            ])->values()->all(),
         ];
     }
 }
