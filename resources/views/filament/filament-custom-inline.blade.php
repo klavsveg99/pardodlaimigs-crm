@@ -165,14 +165,21 @@ button.fi-btn-primary:hover,
 @media (min-width: 640px) {
     .fi-ta-table td:has(> .fi-ta-actions) {
         width: 1% !important;
-        min-width: 8rem !important;
+        min-width: 9rem !important;
+        padding-inline: 1rem !important;
+        vertical-align: middle !important;
         white-space: nowrap !important;
     }
     .fi-ta-table td > .fi-ta-actions {
         flex-wrap: nowrap !important;
         justify-content: flex-end !important;
-        gap: 0.75rem !important;
+        align-items: center !important;
+        gap: 1rem !important;
         white-space: nowrap !important;
+    }
+    .fi-ta-table td > .fi-ta-actions > * {
+        flex: 0 0 auto !important;
+        margin: 0 !important;
     }
 }
 </style>
