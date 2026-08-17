@@ -70,6 +70,13 @@ h1.fi-header-heading {
     color: #0b0f14 !important;
 }
 
+.dark .fi-sidebar-item.fi-active .fi-sidebar-item-badge-ctn .fi-badge,
+.dark .fi-sidebar-item.fi-active .fi-sidebar-item-badge-ctn .fi-badge-label,
+.dark .fi-sidebar-item.fi-active .fi-sidebar-item-badge-ctn .fi-badge-label-ctn {
+    background: #0b0f14 !important;
+    color: #ffffff !important;
+}
+
 /* Floating menus and select popovers must clear tables, buttons and cards. */
 [x-float],
 .fi-dropdown-panel,
