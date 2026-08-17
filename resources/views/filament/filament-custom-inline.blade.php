@@ -119,7 +119,7 @@ h1.fi-header-heading {
 }
 
 .dark .fi-link {
-    color: var(--primary-400) !important;
+    color: var(--pdc-primary) !important;
 }
 
 .dark .pdc-map-search {
