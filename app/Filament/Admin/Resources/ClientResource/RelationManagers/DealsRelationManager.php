@@ -28,7 +28,6 @@ class DealsRelationManager extends RelationManager
                 ->options(Deal::STAGES)->default('jauns')->required(),
             Forms\Components\TextInput::make('value_eur')->label('Vērtība (€)')
                 ->numeric()->prefix('€'),
-            Forms\Components\DatePicker::make('expected_close_date')->label('Plānotais datums'),
             Forms\Components\Select::make('owner_user_id')->label('Īpašnieks')
                 ->relationship('owner', 'name')->searchable(),
         ]);
@@ -56,7 +55,6 @@ class DealsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('value_eur')
                     ->label('Vērtība')
                     ->money('EUR')->sortable(),
-                Tables\Columns\TextColumn::make('expected_close_date')->label('Plānots')->date('d.m.Y')->sortable(),
                 Tables\Columns\TextColumn::make('closed_at')->label('Slēgts')->date('d.m.Y')->sortable(),
             ])
             ->headerActions([

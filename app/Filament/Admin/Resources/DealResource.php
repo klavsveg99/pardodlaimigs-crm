@@ -72,7 +72,6 @@ class DealResource extends Resource
             Forms\Components\Select::make('stage')->label('Posms')
                 ->options(Deal::STAGES)->default('jauns')->required(),
             Forms\Components\TextInput::make('value_eur')->label('Vērtība (€)')->numeric()->prefix('€'),
-            Forms\Components\DatePicker::make('expected_close_date')->label('Plānotais datums'),
             Forms\Components\Select::make('owner_user_id')->label('Atbildīgais')
                 ->relationship('owner', 'name')->searchable()->preload()->optionsLimit(20),
             Forms\Components\FileUpload::make('attachments')
@@ -118,7 +117,6 @@ class DealResource extends Resource
                     ->label('Vērtība')
                     ->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->money('EUR')->sortable(),
-                Tables\Columns\TextColumn::make('expected_close_date')->label('Plānots')->date('d.m.Y')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('owner.name')->label('Atbildīgais')->sortable()->wrap(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->extraCellAttributes(['class' => 'pdc-nowrap']),
             ])
@@ -129,6 +127,7 @@ class DealResource extends Resource
             ])
             ->actions([
                 Actions\EditAction::make()->label('Rediģēt'),
+                Actions\ViewAction::make()->label('Skatīt'),
             ])
             ->defaultSort('updated_at', 'desc');
     }
@@ -145,6 +144,7 @@ class DealResource extends Resource
         return [
             'index' => Pages\ListDeals::route('/'),
             'create' => Pages\CreateDeal::route('/create'),
+            'view' => Pages\ViewDeal::route('/{record}'),
             'edit' => Pages\EditDeal::route('/{record}/edit'),
         ];
     }

@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Services\AuditLogger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Deal extends Model
@@ -82,5 +83,12 @@ class Deal extends Model
     public function attachments(): MorphMany
     {
         return $this->morphMany(Attachment::class, 'attachable')->orderBy('sort_order');
+    }
+
+    public function stageChanges(): HasMany
+    {
+        return $this->hasMany(Activity::class)
+            ->where('type', 'stage_changed')
+            ->orderByDesc('created_at');
     }
 }
