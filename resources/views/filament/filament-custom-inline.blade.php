@@ -593,15 +593,29 @@ h1.fi-header-heading {
 }
 
 .fi-section-content {
-    padding: 1rem 0 0.5rem 0 !important;
+    padding: 1.25rem 0 1rem 0 !important;
+}
+
+/* Restore Filament form field container spacing */
+.fi-section-content .fi-fo-field,
+.fi-section-content .fi-form-field,
+.fi-section-content > div[class*="fi-fo"],
+.fi-section-content > div[class*="fi-form"] {
+    margin-bottom: 1rem !important;
+}
+
+.fi-section-content .fi-fo-field:last-child,
+.fi-section-content .fi-form-field:last-child {
+    margin-bottom: 0 !important;
 }
 
 /* Grid field spacing in sections */
 .fi-section-content > .grid,
 .fi-section-content > div[class*="grid"] {
-    gap: 1rem !important;
+    gap: 1.25rem !important;
 }
 
+/* View page dt/dd spacing */
 .fi-section-content dt {
     font-size: 0.75rem !important;
     font-weight: 500 !important;
@@ -619,7 +633,7 @@ h1.fi-header-heading {
     font-size: 0.875rem !important;
     font-weight: 400 !important;
     color: #111827 !important;
-    margin: 0 0 0.75rem 0 !important;
+    margin: 0 0 1rem 0 !important;
     line-height: 1.5 !important;
 }
 
