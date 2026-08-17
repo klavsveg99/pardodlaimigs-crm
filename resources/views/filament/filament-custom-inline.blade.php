@@ -392,6 +392,89 @@ h1.fi-header-heading {
     border-color: #27303a !important;
 }
 
+/* Table search/filter inputs - comprehensive override */
+.dark .fi-ta-search-input,
+.dark .fi-ta-filter-form .fi-input,
+.dark .fi-table-search-input,
+.dark .fi-table-filter-form .fi-input,
+.dark .fi-toolbar .fi-input,
+.dark [data-filament-table-search] input,
+.dark [data-filament-table-filter] input,
+.dark .fi-table-filters-form .fi-input {
+    background: #1f2937 !important;
+    border-color: #4b5563 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .fi-ta-search-input::placeholder,
+.dark .fi-table-search-input::placeholder,
+.dark .fi-toolbar .fi-input::placeholder {
+    color: #9ca3af !important;
+}
+
+.dark .fi-ta-search-input:focus,
+.dark .fi-table-search-input:focus,
+.dark .fi-toolbar .fi-input:focus {
+    --tw-ring-color: var(--pdc-primary) !important;
+    --tw-ring-offset-color: #0b0f14 !important;
+    border-color: var(--pdc-primary) !important;
+}
+
+/* Table action buttons - all variations */
+.dark .fi-ta-table .fi-btn,
+.dark .fi-table .fi-btn,
+.dark .fi-ta-actions .fi-btn {
+    color: #f3f4f6 !important;
+}
+
+.dark .fi-ta-table .fi-btn.fi-color-primary,
+.dark .fi-table .fi-btn.fi-color-primary,
+.dark .fi-ta-actions .fi-btn.fi-color-primary {
+    background: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+}
+
+.dark .fi-ta-table .fi-btn.fi-color-primary:hover,
+.dark .fi-table .fi-btn.fi-color-primary:hover,
+.dark .fi-ta-actions .fi-btn.fi-color-primary:hover {
+    background: var(--pdc-primary-darker) !important;
+    border-color: var(--pdc-primary-darker) !important;
+}
+
+.dark .fi-ta-table .fi-btn.fi-color-gray,
+.dark .fi-table .fi-btn.fi-color-gray,
+.dark .fi-ta-actions .fi-btn.fi-color-gray {
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .fi-ta-table .fi-btn.fi-color-gray:hover,
+.dark .fi-table .fi-btn.fi-color-gray:hover,
+.dark .fi-ta-actions .fi-btn.fi-color-gray:hover {
+    background: #4b5563 !important;
+    border-color: #6b7280 !important;
+}
+
+/* Table action icons */
+.dark .fi-ta-table .fi-btn svg,
+.dark .fi-table .fi-btn svg,
+.dark .fi-ta-actions .fi-btn svg {
+    color: inherit !important;
+}
+
+/* Dropdown action buttons inside table */
+.dark .fi-ta-table .fi-dropdown-panel .fi-btn,
+.dark .fi-table .fi-dropdown-panel .fi-btn {
+    background: transparent !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .fi-ta-table .fi-dropdown-panel .fi-btn:hover,
+.dark .fi-table .fi-dropdown-panel .fi-btn:hover {
+    background: #374151 !important;
+}
+
 .fi-ta-content-ctn {
     overflow-x: hidden !important;
 }
