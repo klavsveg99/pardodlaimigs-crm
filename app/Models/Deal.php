@@ -42,6 +42,11 @@ class Deal extends Model
         static::created(function (Deal $d) {
             app(AuditLogger::class)->log('create', 'deal', $d->id, null, $d->toArray());
             app(AuditLogger::class)->activity('created', $d);
+            app(AuditLogger::class)->activity('stage_changed', $d, [
+                'from' => null,
+                'to' => $d->stage,
+                'initial' => true,
+            ]);
         });
 
         static::updated(function (Deal $d) {
