@@ -118,6 +118,10 @@ h1.fi-header-heading {
     color: var(--pdc-primary) !important;
 }
 
+.dark .fi-link {
+    color: #ffffff !important;
+}
+
 .dark .pdc-map-search {
     background: #0b0f14 !important;
     border-color: #4b5563 !important;
