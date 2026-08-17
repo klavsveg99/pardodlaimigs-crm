@@ -27,7 +27,7 @@ class ReconcileAllProperties implements ShouldQueue
         $seen = [];
 
         foreach ($source->eachProperty($perPage) as $wp) {
-            $id = (int) $wp->id;
+            $id = (int) ($wp->ID ?? $wp->id ?? 0);
             $seen[$id] = true;
 
             $data = $normalizer->normalize($wp);

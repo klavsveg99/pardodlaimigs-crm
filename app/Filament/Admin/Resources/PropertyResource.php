@@ -58,6 +58,7 @@ class PropertyResource extends Resource
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('address')->label('Adrese')->searchable()->wrap()->limit(40)->placeholder('—'),
+                Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->searchable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('size_m2')
                     ->label('m²')
                     ->formatStateUsing(function ($record) {

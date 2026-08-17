@@ -21,7 +21,7 @@ class CrmStatsOverview extends StatsOverviewWidget
             Stat::make('Aktīvie klienti', Client::whereNull('gdpr_erased_at')->count())
                 ->descriptionIcon('heroicon-o-user-group')
                 ->color('success'),
-            Stat::make('Atvērtie darījumi', Deal::whereNotIn('stage', ['closed_won', 'closed_lost'])->count())
+            Stat::make('Atvērtie darījumi', Deal::where('stage', '!=', 'pardots')->count())
                 ->descriptionIcon('heroicon-o-currency-euro')
                 ->color('primary'),
             Stat::make('Šodienas apskates', Viewing::whereBetween('scheduled_at', [now()->startOfDay(), now()->endOfDay()])->count())

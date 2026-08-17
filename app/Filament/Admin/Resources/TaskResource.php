@@ -55,7 +55,7 @@ class TaskResource extends Resource
                         ->get()
                         ->mapWithKeys(function ($d) {
                             $client = $d->client?->name ?? '—';
-                            $property = $d->property?->title ?? '—';
+                            $property = $d->property?->selection_label ?? '—';
                             $stage = Deal::STAGES[$d->stage] ?? $d->stage;
 
                             return [$d->id => "#{$d->id} · {$client} · {$property} · {$stage}"];
@@ -69,14 +69,14 @@ class TaskResource extends Resource
                         ->where(function ($q) use ($search) {
                             $q->where('id', 'like', "%{$search}%")
                                 ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$search}%"))
-                                ->orWhereHas('property', fn ($p) => $p->where('title', 'like', "%{$search}%"));
+                                ->orWhereHas('property', fn ($p) => $p->where('title', 'like', "%{$search}%")->orWhere('kadastra_nr', 'like', "%{$search}%"));
                         })
                         ->orderByDesc('id')
                         ->limit(20)
                         ->get()
                         ->mapWithKeys(function ($d) {
                             $client = $d->client?->name ?? '—';
-                            $property = $d->property?->title ?? '—';
+                            $property = $d->property?->selection_label ?? '—';
                             $stage = Deal::STAGES[$d->stage] ?? $d->stage;
 
                             return [$d->id => "#{$d->id} · {$client} · {$property} · {$stage}"];
@@ -89,7 +89,7 @@ class TaskResource extends Resource
                         return null;
                     }
                     $client = $d->client?->name ?? '—';
-                    $property = $d->property?->title ?? '—';
+                    $property = $d->property?->selection_label ?? '—';
                     $stage = Deal::STAGES[$d->stage] ?? $d->stage;
 
                     return "#{$d->id} · {$client} · {$property} · {$stage}";
@@ -102,6 +102,7 @@ class TaskResource extends Resource
                 ->reorderable()
                 ->deletable()
                 ->previewable()
+                ->openable()
                 ->storeFileNamesIn('attachment_original_names')
                 ->acceptedFileTypes(config('attachments.accepted_file_types'))
                 ->maxSize((int) config('attachments.max_size_kb'))

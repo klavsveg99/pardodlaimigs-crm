@@ -36,20 +36,33 @@ class ViewingResource extends Resource
     {
         return $schema->schema([
             Forms\Components\Select::make('property_id')->label('Īpašums')
+                ->searchable()
+                ->getSearchResultsUsing(function (string $search) {
+                    return PropertyCache::query()
+                        ->where(function ($q) use ($search) {
+                            $q->where('title', 'like', "%{$search}%")
+                                ->orWhere('city', 'like', "%{$search}%")
+                                ->orWhere('kadastra_nr', 'like', "%{$search}%")
+                                ->orWhere('id', '=', $search);
+                        })
+                        ->orderBy('title')
+                        ->limit(20)
+                        ->get()
+                        ->mapWithKeys(fn (PropertyCache $p) => [$p->id => $p->selection_label])
+                        ->toArray();
+                })
+                ->getOptionLabelUsing(fn ($value): ?string => PropertyCache::find($value)?->selection_label)
                 ->options(function (mixed $state, Forms\Components\Select $component): array {
                     $query = PropertyCache::query()
                         ->where('status', 'publish')
                         ->orderBy('title');
 
-                    // Keep the currently-linked property selectable even when it
-                    // is no longer published, so editing an old apskate works.
                     if ($component->getRecord()?->property_id) {
                         $query->orWhere('id', $component->getRecord()->property_id);
                     }
 
-                    return $query->pluck('title', 'id')->all();
+                    return $query->get()->mapWithKeys(fn (PropertyCache $property) => [$property->id => $property->selection_label])->all();
                 })
-                ->searchable()
                 ->required()
                 ->default(request()->query('property_id')),
             Forms\Components\Select::make('client_id')->label('Klients')
@@ -76,6 +89,7 @@ class ViewingResource extends Resource
                 ->reorderable()
                 ->deletable()
                 ->previewable()
+                ->openable()
                 ->storeFileNamesIn('attachment_original_names')
                 ->acceptedFileTypes(config('attachments.accepted_file_types'))
                 ->maxSize((int) config('attachments.max_size_kb'))

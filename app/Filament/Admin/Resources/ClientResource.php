@@ -43,6 +43,10 @@ class ClientResource extends Resource
                     Forms\Components\TextInput::make('name')->label('Vārds, uzvārds')->required()->maxLength(255),
                     Forms\Components\TextInput::make('phone')->label('Tālrunis')->tel()->maxLength(40),
                     Forms\Components\TextInput::make('email')->label('E-pasts')->email()->maxLength(255),
+                    Forms\Components\TextInput::make('personas_kods')->label('Personas kods')
+                        ->maxLength(32)
+                        ->regex('/^\d{11}$/')
+                        ->validationMessage('Personas kodam jābūt tieši 11 cipariem'),
                     Forms\Components\Select::make('source')
                         ->label('Avots (kā uzzināja)')
                         ->searchable()
@@ -58,7 +62,9 @@ class ClientResource extends Resource
                             'Cits' => 'Cits',
                         ])
                         ->placeholder('Izvēlieties avotu'),
-                    Forms\Components\DateTimePicker::make('gdpr_consent_at')->label('GDPR piekrišana')->native(false)->columnSpan(2),
+                    Forms\Components\Checkbox::make('marketing_consent')
+                        ->label('Klients atļauj izmantot datus mārketingam')
+                        ->columnSpan(2),
                     Forms\Components\Select::make('owner_user_id')
                         ->label('Atbildīgais aģents')
                         ->relationship('owner', 'name')
@@ -76,6 +82,7 @@ class ClientResource extends Resource
                         ->reorderable()
                         ->deletable()
                         ->previewable()
+                        ->openable()
                         ->storeFileNamesIn('attachment_original_names')
                         ->acceptedFileTypes(config('attachments.accepted_file_types'))
                         ->maxSize((int) config('attachments.max_size_kb'))
@@ -93,6 +100,7 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable()->weight('bold'),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable(),
+                Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('source')->label('Avots'),
                 Tables\Columns\TextColumn::make('deals_count')
                     ->counts('deals')

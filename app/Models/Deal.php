@@ -12,23 +12,25 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class Deal extends Model
 {
     public const STAGES = [
-        'lead' => 'Sākotnējais interesents',
-        'viewing_scheduled' => 'Apskate ieplānota',
-        'offer' => 'Piedāvājums',
-        'reserved' => 'Rezervēts',
-        'closed_won' => 'Pārdots',
-        'closed_lost' => 'Zaudēts',
+        'jauns' => 'Jauns',
+        'pirma_tiksanas' => 'Pirmā tikšanās',
+        'noslegta_sadarbiba' => 'Noslēgta sadarbība',
+        'foto_video' => 'Foto/video',
+        'tirgosana' => 'Tirgošana',
+        'dokumentu_saskanosana' => 'Dokumentu saskaņošana',
+        'pardots' => 'Pārdots',
     ];
 
     protected $fillable = [
-        'client_id', 'property_id', 'stage',
-        'value_cents', 'currency', 'expected_close_date',
+        'title', 'client_id', 'property_id', 'stage',
+        'value_eur', 'value_cents', 'currency', 'expected_close_date',
         'closed_at', 'owner_user_id',
     ];
 
     protected $with = ['attachments'];
 
     protected $casts = [
+        'value_eur' => 'decimal:2',
         'value_cents' => 'integer',
         'expected_close_date' => 'date',
         'closed_at' => 'datetime',

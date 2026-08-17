@@ -203,6 +203,93 @@
             font-size: 1rem !important;
         }
     }
+
+    /* ── Dark mode ─────────────────────────────────────────────── */
+    .dark .fc {
+        --fc-border-color: #374151;
+        --fc-page-bg-color: #111827;
+        --fc-neutral-bg-color: #1f2937;
+        --fc-today-bg-color: #1a2e2d;
+        --fc-today-border-color: #2d5a56;
+        --fc-event-text-color: #fff;
+        --fc-more-link-text-color: #5eead4;
+        --fc-more-link-bg-color: #1a2e2d;
+    }
+
+    .dark .fc-calendar-wrapper {
+        border-color: #374151;
+        background: #111827;
+    }
+
+    .dark .fc .fc-toolbar {
+        border-bottom-color: #374151;
+    }
+
+    .dark .fc .fc-toolbar-title {
+        color: #f3f4f6 !important;
+    }
+
+    .dark .fc .fc-button {
+        background-color: #2d5a56 !important;
+        border-color: #2d5a56 !important;
+        color: #fff !important;
+    }
+
+    .dark .fc .fc-button:hover:not(:disabled) {
+        background-color: #3a7d78 !important;
+        border-color: #3a7d78 !important;
+    }
+
+    .dark .fc .fc-button:not(:disabled):active,
+    .dark .fc .fc-button:not(:disabled).fc-button-active {
+        background-color: #1e4843 !important;
+        border-color: #1e4843 !important;
+    }
+
+    .dark .fc .fc-today-button {
+        background-color: #4b5563 !important;
+        border-color: #4b5563 !important;
+    }
+
+    .dark .fc .fc-scrollgrid {
+        border-color: #374151 !important;
+    }
+
+    .dark .fc .fc-scrollgrid td,
+    .dark .fc .fc-scrollgrid th {
+        border-color: #374151 !important;
+    }
+
+    .dark .fc .fc-col-header-cell {
+        background-color: #1f2937 !important;
+        color: #9ca3af !important;
+        border-color: #374151 !important;
+    }
+
+    .dark .fc .fc-daygrid-day-number {
+        color: #d1d5db !important;
+    }
+
+    .dark .fc .fc-daygrid-day.fc-day-today {
+        background-color: #1a2e2d !important;
+    }
+
+    .dark .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+        color: #5eead4 !important;
+    }
+
+    .dark .fc .fc-daygrid-day:hover {
+        background-color: #1f2937 !important;
+    }
+
+    .dark .fc .fc-more-link {
+        color: #5eead4 !important;
+    }
+
+    .dark .fi-wi-calendar-viewings .fi-section-header-heading,
+    .dark .fi-wi-calendar-viewings .fi-section .fi-section-heading {
+        color: #f3f4f6 !important;
+    }
 </style>
 
 <script>
