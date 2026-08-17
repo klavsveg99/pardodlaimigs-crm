@@ -67,6 +67,7 @@
 >
     <div style="position: relative; margin-bottom: 0.5rem;">
         <input
+            class="pdc-map-search"
             x-ref="searchBox"
             type="text"
             placeholder="Meklēt adresi..."
@@ -93,7 +94,7 @@
             overflow: hidden;
         "
     ></div>
-    <div style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
+    <div class="pdc-map-help" style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
         <span>Adrese un pilsēta nav obligātas. Noklikšķiniet kartē, lai saglabātu tikai atrašanās vietas punktu, vai meklējiet adresi.</span>
         <span x-show="lat && lng" x-text="'Lat: ' + lat + ', Lng: ' + lng"></span>
     </div>
