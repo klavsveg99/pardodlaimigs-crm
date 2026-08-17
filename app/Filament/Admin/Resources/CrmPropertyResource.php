@@ -9,6 +9,7 @@ use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,7 +21,7 @@ class CrmPropertyResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 
-    protected static ?string $navigationLabel = 'Īpašumi (CRM)';
+    protected static ?string $navigationLabel = 'Īpašumi';
 
     protected static string|UnitEnum|null $navigationGroup = 'Avots';
 
@@ -28,12 +29,12 @@ class CrmPropertyResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Īpašumi';
 
-    protected static ?int $navigationSort = 41;
+    protected static ?int $navigationSort = 40;
 
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Forms\Components\Section::make()->columns(2)->schema([
+            Section::make()->columns(2)->schema([
                 Forms\Components\TextInput::make('title')->label('Nosaukums')->required()->maxLength(255),
                 Forms\Components\TextInput::make('slug')->label('Slugs')->maxLength(255),
                 Forms\Components\Select::make('category')->label('Kategorija')
@@ -45,7 +46,7 @@ class CrmPropertyResource extends Resource
                     ->relationship('owner', 'name')->searchable()->preload(),
             ]),
 
-            Forms\Components\Section::make('Īpašuma dati')->columns(2)->schema([
+            Section::make('Īpašuma dati')->columns(2)->schema([
                 Forms\Components\TextInput::make('beds')->label('Istabas')->numeric(),
                 Forms\Components\TextInput::make('baths')->label('Vannas istabas')->numeric(),
                 Forms\Components\TextInput::make('size_m2')->label('Platība (m²)')->numeric(),
@@ -53,14 +54,14 @@ class CrmPropertyResource extends Resource
                 Forms\Components\TextInput::make('kadastra_nr')->label('Kadastra nr.')->maxLength(32),
             ]),
 
-            Forms\Components\Section::make('Atrašanās vieta')->columns(2)->schema([
+            Section::make('Atrašanās vieta')->columns(2)->schema([
                 Forms\Components\TextInput::make('city')->label('Pilsēta')->maxLength(128),
                 Forms\Components\TextInput::make('address')->label('Adrese')->maxLength(255),
                 Forms\Components\TextInput::make('lat')->label('Platums')->numeric()->suffix('°'),
                 Forms\Components\TextInput::make('lng')->label('Garums')->numeric()->suffix('°'),
             ]),
 
-            Forms\Components\Section::make()->columnSpanFull()->schema([
+            Section::make()->columnSpanFull()->schema([
                 Forms\Components\RichEditor::make('description')->label('Apraksts')->columnSpanFull(),
             ]),
         ]);
