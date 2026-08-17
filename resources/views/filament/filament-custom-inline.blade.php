@@ -547,8 +547,7 @@ h1.fi-header-heading {
 }
 
 .fi-section-content {
-    padding-block: 1.25rem 1rem !important;
-    padding-inline: 1.25rem !important;
+    padding: 1.5rem 2rem !important;
 }
 
 /* Restore Filament form field container spacing */

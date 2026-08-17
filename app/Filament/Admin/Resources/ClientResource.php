@@ -110,8 +110,8 @@ class ClientResource extends Resource
                     ->counts('viewings')
                     ->label('Apskates')
                     ->alignCenter()->sortable(),
-                Tables\Columns\TextColumn::make('properties_count')
-                    ->counts('properties')
+                Tables\Columns\TextColumn::make('crm_properties_count')
+                    ->counts('crmProperties')
                     ->label('Īpašumi')
                     ->alignCenter()->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->sortable(),
