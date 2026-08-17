@@ -73,7 +73,22 @@ function pdc_sync_attachments(int $post_id, array $attachments): void
 
         $media_id = $existing ? (int) $existing[0]->ID : 0;
         if (! $media_id) {
-            $media_id = (int) media_sideload_image($url, $post_id, $name, 'id');
+            if (str_starts_with($mime, 'image/')) {
+                $media_id = (int) media_sideload_image($url, $post_id, $name, 'id');
+            } else {
+                $tmp = download_url($url);
+                if (! is_wp_error($tmp)) {
+                    $media_id = (int) media_handle_sideload([
+                        'name' => $name,
+                        'tmp_name' => $tmp,
+                    ], $post_id, $name);
+                    if (is_wp_error($media_id)) {
+                        @unlink($tmp);
+                        $media_id = 0;
+                    }
+                }
+            }
+
             if ($media_id > 0) {
                 update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
             }
