@@ -56,8 +56,8 @@ class CrmPropertyResource extends Resource
             ]),
 
             Section::make('Atrašanās vieta')->schema([
-                Forms\Components\TextInput::make('city')->label('Pilsēta')->maxLength(128)->columnSpan(1),
-                Forms\Components\TextInput::make('address')->label('Adrese')->maxLength(255)->columnSpan(1),
+                Forms\Components\TextInput::make('city')->label('Pilsēta')->maxLength(128)->nullable()->columnSpan(1),
+                Forms\Components\TextInput::make('address')->label('Adrese')->maxLength(255)->nullable()->columnSpan(1),
                 Forms\Components\Hidden::make('lat'),
                 Forms\Components\Hidden::make('lng'),
                 View::make('filament.forms.components.google-maps-picker')
@@ -69,7 +69,10 @@ class CrmPropertyResource extends Resource
             ]),
 
             Section::make()->columnSpanFull()->schema([
-                Forms\Components\RichEditor::make('description')->label('Apraksts')->columnSpanFull(),
+                Forms\Components\RichEditor::make('description')
+                    ->label('Apraksts')
+                    ->extraInputAttributes(['style' => 'min-height: 280px'])
+                    ->columnSpanFull(),
             ]),
 
             Section::make('Pielikumi')->columnSpanFull()->schema([

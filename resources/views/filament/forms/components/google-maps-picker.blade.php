@@ -94,7 +94,7 @@
         "
     ></div>
     <div style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
-        <span>Klikšķiniet kartē vai meklējiet adresi, lai iestatītu atrašanās vietu.</span>
+        <span>Adrese un pilsēta nav obligātas. Noklikšķiniet kartē, lai saglabātu tikai atrašanās vietas punktu, vai meklējiet adresi.</span>
         <span x-show="lat && lng" x-text="'Lat: ' + lat + ', Lng: ' + lng"></span>
     </div>
 </div>
