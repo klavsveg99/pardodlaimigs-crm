@@ -73,13 +73,14 @@ class CrmPropertiesRelationManager extends RelationManager
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('#')->sortable(),
-                Tables\Columns\TextColumn::make('title')->label('Īpašums')->weight('bold')->wrap(),
-                Tables\Columns\TextColumn::make('city')->label('Pilsēta')->wrap(),
-                Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->placeholder('—')->wrap(),
+                Tables\Columns\TextColumn::make('title')->label('Īpašums')->sortable()->weight('bold')->wrap(),
+                Tables\Columns\TextColumn::make('city')->label('Pilsēta')->sortable()->wrap(),
+                Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->sortable()->placeholder('—')->wrap(),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
+                    ->sortable()
                     ->formatStateUsing(fn ($state) => CrmProperty::STATUSES[$state] ?? $state),
-                Tables\Columns\TextColumn::make('price_eur')->label('Cena')->money('EUR'),
+                Tables\Columns\TextColumn::make('price_eur')->label('Cena')->money('EUR')->sortable(),
                 Tables\Columns\TextColumn::make('pivot.relation')
                     ->label('Saistība')
                     ->badge()

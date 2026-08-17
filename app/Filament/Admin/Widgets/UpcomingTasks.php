@@ -25,10 +25,10 @@ class UpcomingTasks extends BaseWidget
             ->heading('Nākamie uzdevumi un nokavētie')
             ->query(fn () => $this->getQuery())
             ->columns([
-                Tables\Columns\TextColumn::make('title')->label('Uzdevums')->weight('bold')->wrap(),
-                Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i'),
-                Tables\Columns\TextColumn::make('assignedTo.name')->label('Kam')->placeholder('—'),
-                Tables\Columns\TextColumn::make('client.name')->label('Klients')->placeholder('—'),
+                Tables\Columns\TextColumn::make('title')->label('Uzdevums')->sortable()->weight('bold')->wrap(),
+                Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable(),
+                Tables\Columns\TextColumn::make('assignedTo.name')->label('Kam')->sortable()->placeholder('—'),
+                Tables\Columns\TextColumn::make('client.name')->label('Klients')->sortable()->placeholder('—'),
                 Tables\Columns\IconColumn::make('is_overdue')
                     ->label('Nokavēts')->boolean()
                     ->getStateUsing(fn ($record) => $record->isOverdue())

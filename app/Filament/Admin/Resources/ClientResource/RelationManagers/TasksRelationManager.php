@@ -34,9 +34,9 @@ class TasksRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable(),
-                Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i'),
-                Tables\Columns\IconColumn::make('completed_at')->label('Pabeigts')->boolean(),
+                Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable(),
+                Tables\Columns\IconColumn::make('completed_at')->label('Pabeigts')->boolean()->sortable(),
             ])
             ->headerActions([
                 Actions\CreateAction::make()->label('Jauns uzdevums'),

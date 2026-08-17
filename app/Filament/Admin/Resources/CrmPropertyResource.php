@@ -102,10 +102,11 @@ class CrmPropertyResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('#')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
-                Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->weight('bold'),
-                Tables\Columns\TextColumn::make('category')->label('Kategorija')->badge(),
+                Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->sortable()->weight('bold'),
+                Tables\Columns\TextColumn::make('category')->label('Kategorija')->badge()->sortable(),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
+                    ->sortable()
                     ->colors([
                         'gray' => 'draft',
                         'success' => 'published',
@@ -114,11 +115,11 @@ class CrmPropertyResource extends Resource
                         'info' => 'sold',
                     ])
                     ->formatStateUsing(fn ($state) => CrmProperty::STATUSES[$state] ?? $state),
-                Tables\Columns\TextColumn::make('city')->label('Pilsēta'),
-                Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->placeholder('—'),
+                Tables\Columns\TextColumn::make('city')->label('Pilsēta')->sortable(),
+                Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->sortable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('price_eur')->label('Cena')->money('EUR')->extraCellAttributes(['class' => 'pdc-nowrap']),
-                Tables\Columns\TextColumn::make('owner.name')->label('Atbildīgais'),
-                Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since(),
+                Tables\Columns\TextColumn::make('owner.name')->label('Atbildīgais')->sortable(),
+                Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->options(CrmProperty::STATUSES),

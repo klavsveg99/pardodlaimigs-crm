@@ -39,10 +39,11 @@ class DealsRelationManager extends RelationManager
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('#'),
-                Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->placeholder('—'),
+                Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->sortable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('stage')
                     ->label('Posms')
                     ->badge()
+                    ->sortable()
                     ->colors([
                         'info' => ['jauns', 'tirgosana'],
                         'warning' => 'pirma_tiksanas',
@@ -54,9 +55,9 @@ class DealsRelationManager extends RelationManager
                     ->formatStateUsing(fn ($state) => Deal::STAGES[$state] ?? $state),
                 Tables\Columns\TextColumn::make('value_eur')
                     ->label('Vērtība')
-                    ->money('EUR'),
-                Tables\Columns\TextColumn::make('expected_close_date')->label('Plānots')->date('d.m.Y'),
-                Tables\Columns\TextColumn::make('closed_at')->label('Slēgts')->date('d.m.Y'),
+                    ->money('EUR')->sortable(),
+                Tables\Columns\TextColumn::make('expected_close_date')->label('Plānots')->date('d.m.Y')->sortable(),
+                Tables\Columns\TextColumn::make('closed_at')->label('Slēgts')->date('d.m.Y')->sortable(),
             ])
             ->headerActions([
                 Actions\CreateAction::make()->label('Jauns darījums'),

@@ -61,8 +61,8 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable(),
-                Tables\Columns\TextColumn::make('role')->label('Loma')->badge(),
+                Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('role')->label('Loma')->badge()->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('role')

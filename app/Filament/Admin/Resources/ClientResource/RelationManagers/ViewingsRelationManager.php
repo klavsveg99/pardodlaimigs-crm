@@ -41,9 +41,9 @@ class ViewingsRelationManager extends RelationManager
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('scheduled_at')->label('Kad')->dateTime('d.m.Y H:i')->sortable(),
-                Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40),
-                Tables\Columns\TextColumn::make('status')->label('Statuss')->badge(),
-                Tables\Columns\TextColumn::make('agent.name')->label('Aģents'),
+                Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40)->sortable(),
+                Tables\Columns\TextColumn::make('status')->label('Statuss')->badge()->sortable(),
+                Tables\Columns\TextColumn::make('agent.name')->label('Aģents')->sortable(),
             ])
             ->headerActions([
                 Actions\CreateAction::make()->label('Jauna apskate'),
