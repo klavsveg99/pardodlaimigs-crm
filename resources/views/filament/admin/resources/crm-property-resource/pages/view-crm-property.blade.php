@@ -24,8 +24,8 @@
             <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->owner?->name ?: '—' }}</dd>
         </div>
         <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">WordPress ID</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->wp_post_id ?: '—' }}</dd>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Slug</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">{{ $record->slug ?: '—' }}</dd>
         </div>
     </x-filament::section>
 

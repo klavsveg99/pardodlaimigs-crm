@@ -35,30 +35,63 @@ class CrmPropertyResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Section::make()->columns(2)->schema([
-                Forms\Components\TextInput::make('title')->label('Nosaukums')->required()->maxLength(255),
-                Forms\Components\TextInput::make('wp_post_id')->label('WordPress ID')->disabled()->dehydrated(false),
-                Forms\Components\TextInput::make('slug')->label('Slugs')->maxLength(255),
-                Forms\Components\Select::make('category')->label('Kategorija')
-                    ->options(CrmProperty::CATEGORIES)->searchable(),
-                Forms\Components\Select::make('status')->label('Statuss')
-                    ->options(CrmProperty::STATUSES)->default('draft')->required(),
-                Forms\Components\TextInput::make('price_eur')->label('Cena (€)')->numeric()->prefix('€'),
-                Forms\Components\Select::make('owner_user_id')->label('Atbildīgais')
-                    ->relationship('owner', 'name')->searchable()->preload(),
+            Section::make('Pamatdati')->columns(2)->schema([
+                Forms\Components\TextInput::make('title')
+                    ->label('Nosaukums')
+                    ->required()
+                    ->maxLength(255)
+                    ->columnSpanFull(),
+
+                Forms\Components\Select::make('category')
+                    ->label('Kategorija')
+                    ->options(CrmProperty::CATEGORIES)
+                    ->searchable(),
+
+                Forms\Components\Select::make('status')
+                    ->label('Statuss')
+                    ->options(CrmProperty::STATUSES)
+                    ->default('draft')
+                    ->required(),
+
+                Forms\Components\TextInput::make('price_eur')
+                    ->label('Cena (€)')
+                    ->numeric()
+                    ->prefix('€'),
+
+                Forms\Components\Select::make('owner_user_id')
+                    ->label('Atbildīgais')
+                    ->relationship('owner', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                Forms\Components\TextInput::make('slug')
+                    ->label('Slug')
+                    ->maxLength(255)
+                    ->columnSpanFull(),
             ]),
 
-            Section::make('Īpašuma dati')->columns(2)->schema([
+            Section::make('Īpašuma dati')->columns(3)->schema([
                 Forms\Components\TextInput::make('beds')->label('Istabas')->numeric(),
                 Forms\Components\TextInput::make('baths')->label('Vannas istabas')->numeric(),
                 Forms\Components\TextInput::make('size_m2')->label('Platība (m²)')->numeric(),
                 Forms\Components\TextInput::make('land_m2')->label('Zemes platība (m²)')->numeric(),
-                Forms\Components\TextInput::make('kadastra_nr')->label('Kadastra nr.')->maxLength(32),
+                Forms\Components\TextInput::make('kadastra_nr')
+                    ->label('Kadastra nr.')
+                    ->maxLength(32)
+                    ->columnSpanFull(),
             ]),
 
-            Section::make('Atrašanās vieta')->columnSpanFull()->schema([
-                Forms\Components\TextInput::make('city')->label('Pilsēta')->maxLength(128)->nullable()->columnSpan(1),
-                Forms\Components\TextInput::make('address')->label('Adrese')->maxLength(255)->nullable()->columnSpan(1),
+            Section::make('Atrašanās vieta')->columns(2)->schema([
+                Forms\Components\TextInput::make('city')
+                    ->label('Pilsēta')
+                    ->maxLength(128)
+                    ->nullable(),
+
+                Forms\Components\TextInput::make('address')
+                    ->label('Adrese')
+                    ->maxLength(255)
+                    ->nullable(),
+
                 Forms\Components\Hidden::make('lat'),
                 Forms\Components\Hidden::make('lng'),
                 View::make('filament.forms.components.google-maps-picker')
@@ -69,7 +102,7 @@ class CrmPropertyResource extends Resource
                     ]),
             ]),
 
-            Section::make()->columnSpanFull()->schema([
+            Section::make('Apraksts')->columnSpanFull()->schema([
                 Forms\Components\RichEditor::make('description')
                     ->label('Apraksts')
                     ->extraInputAttributes(['style' => 'min-height: 280px'])
