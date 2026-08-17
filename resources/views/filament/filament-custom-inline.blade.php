@@ -387,76 +387,28 @@ h1.fi-header-heading {
     border-color: var(--pdc-primary) !important;
 }
 
-/* Table action buttons - all variations */
-.dark .fi-ta-table .fi-btn,
-.dark .fi-table .fi-btn,
-.dark .fi-ta-actions .fi-btn {
+/* Table action buttons - force white icons on transparent in dark mode */
+.dark .fi-ta-actions .fi-btn,
+.dark .fi-ta-header-actions .fi-btn,
+.dark .fi-page-header .fi-btn,
+.dark .fi-ta-table .fi-btn {
+    background: transparent !important;
     color: #ffffff !important;
+    border-color: transparent !important;
 }
 
-.dark .fi-ta-table .fi-btn.fi-color-primary,
-.dark .fi-table .fi-btn.fi-color-primary,
-.dark .fi-ta-actions .fi-btn.fi-color-primary {
-    background: #374151 !important;
-    border-color: #4b5563 !important;
+.dark .fi-ta-actions .fi-btn:hover,
+.dark .fi-ta-header-actions .fi-btn:hover,
+.dark .fi-page-header .fi-btn:hover,
+.dark .fi-ta-table .fi-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .fi-ta-actions .fi-btn svg,
+.dark .fi-ta-header-actions .fi-btn svg,
+.dark .fi-page-header .fi-btn svg,
+.dark .fi-ta-table .fi-btn svg {
     color: #ffffff !important;
-}
-
-.dark .fi-ta-table .fi-btn.fi-color-primary:hover,
-.dark .fi-table .fi-btn.fi-color-primary:hover,
-.dark .fi-ta-actions .fi-btn.fi-color-primary:hover {
-    background: #4b5563 !important;
-    border-color: #6b7280 !important;
-}
-
-.dark .fi-ta-table .fi-btn.fi-color-gray,
-.dark .fi-table .fi-btn.fi-color-gray,
-.dark .fi-ta-actions .fi-btn.fi-color-gray {
-    background: #4b5563 !important;
-    border-color: #6b7280 !important;
-    color: #ffffff !important;
-}
-
-.dark .fi-ta-table .fi-btn.fi-color-gray:hover,
-.dark .fi-table .fi-btn.fi-color-gray:hover,
-.dark .fi-ta-actions .fi-btn.fi-color-gray:hover {
-    background: #6b7280 !important;
-    border-color: #9ca3af !important;
-}
-
-.dark .fi-ta-table .fi-btn.fi-color-success,
-.dark .fi-table .fi-btn.fi-color-success,
-.dark .fi-ta-actions .fi-btn.fi-color-success {
-    background: #16a34a !important;
-    border-color: #16a34a !important;
-}
-
-.dark .fi-ta-table .fi-btn.fi-color-warning,
-.dark .fi-table .fi-btn.fi-color-warning,
-.dark .fi-ta-actions .fi-btn.fi-color-warning {
-    background: #ca8a04 !important;
-    border-color: #ca8a04 !important;
-}
-
-.dark .fi-ta-table .fi-btn.fi-color-danger,
-.dark .fi-table .fi-btn.fi-color-danger,
-.dark .fi-ta-actions .fi-btn.fi-color-danger {
-    background: #dc2626 !important;
-    border-color: #dc2626 !important;
-}
-
-.dark .fi-ta-table .fi-btn.fi-color-info,
-.dark .fi-table .fi-btn.fi-color-info,
-.dark .fi-ta-actions .fi-btn.fi-color-info {
-    background: #0ea5e9 !important;
-    border-color: #0ea5e9 !important;
-}
-
-/* Table action icons */
-.dark .fi-ta-table .fi-btn svg,
-.dark .fi-table .fi-btn svg,
-.dark .fi-ta-actions .fi-btn svg {
-    color: inherit !important;
 }
 
 /* Dropdown action buttons inside table */
@@ -591,7 +543,8 @@ h1.fi-header-heading {
 }
 
 .fi-section-content {
-    padding: 1.25rem 0 1rem 0 !important;
+    padding-block: 1.25rem 1rem !important;
+    padding-inline: 1.25rem !important;
 }
 
 /* Restore Filament form field container spacing */
