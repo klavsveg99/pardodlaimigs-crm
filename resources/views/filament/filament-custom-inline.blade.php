@@ -576,4 +576,93 @@ h1.fi-header-heading {
         margin: 0 !important;
     }
 }
+
+/* Standardized section spacing for view pages */
+.fi-section {
+    margin-bottom: 1.5rem !important;
+}
+
+.fi-section-header {
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.75rem !important;
+    border-bottom-width: 1px !important;
+}
+
+.fi-section-header-heading {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+}
+
+.fi-section-content {
+    padding: 1rem 0 0.5rem 0 !important;
+}
+
+/* Grid field spacing in sections */
+.fi-section-content > .grid,
+.fi-section-content > div[class*="grid"] {
+    gap: 1rem !important;
+}
+
+.fi-section-content dt {
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #6b7280 !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.dark .fi-section-content dt {
+    color: #9ca3af !important;
+}
+
+.fi-section-content dd {
+    font-size: 0.875rem !important;
+    font-weight: 400 !important;
+    color: #111827 !important;
+    margin: 0 0 0.75rem 0 !important;
+    line-height: 1.5 !important;
+}
+
+.dark .fi-section-content dd {
+    color: #f3f4f6 !important;
+}
+
+/* Description/prose spacing */
+.fi-section-content .prose {
+    margin: 0 !important;
+    padding-top: 0.5rem !important;
+}
+
+/* Attachment grid spacing */
+.fi-section-content .grid[class*="grid-cols"] {
+    gap: 0.75rem !important;
+}
+
+/* Related records list spacing */
+.fi-section-content .space-y-2 > * + * {
+    margin-top: 0.5rem !important;
+}
+
+.fi-section-content .space-y-3 > * + * {
+    margin-top: 0.75rem !important;
+}
+
+/* Empty state spacing */
+.fi-section-content > p.text-center {
+    padding: 2rem 1rem !important;
+    margin: 0 !important;
+}
+
+/* Badge spacing in sections */
+.fi-section-content .fi-badge {
+    font-size: 0.7rem !important;
+    padding: 0.125rem 0.5rem !important;
+}
+
+/* Avatar + text spacing */
+.fi-section-content .flex.items-center.gap-3 {
+    gap: 0.75rem !important;
+}
 </style>
