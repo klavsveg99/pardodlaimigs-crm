@@ -30,7 +30,7 @@
     /* ── Widget heading — match Filament table widget style ────── */
     .fi-wi-calendar-viewings .fi-section-header-heading,
     .fi-wi-calendar-viewings .fi-section .fi-section-heading {
-        color: var(--fi-color-base-900, #111827) !important;
+        color: var(--fi-color-base-900, #0b0f14) !important;
         font-weight: 600 !important;
     }
 
@@ -65,7 +65,7 @@
     .fc .fc-toolbar-title {
         font-size: 1.125rem !important;
         font-weight: 600 !important;
-        color: #111827 !important;
+        color: #0b0f14 !important;
         text-transform: none !important;
         letter-spacing: normal !important;
     }
@@ -233,7 +233,7 @@
     /* ── Dark mode ─────────────────────────────────────────────── */
     .dark .fc {
         --fc-border-color: #374151;
-        --fc-page-bg-color: #111827;
+        --fc-page-bg-color: #0b0f14;
         --fc-neutral-bg-color: #1f2937;
         --fc-today-bg-color: #1a2e2d;
         --fc-today-border-color: #2d5a56;
@@ -244,7 +244,7 @@
 
     .dark .fc-calendar-wrapper {
         border-color: #374151;
-        background: #111827;
+        background: #0b0f14;
     }
 
     .dark .fc .fc-toolbar {

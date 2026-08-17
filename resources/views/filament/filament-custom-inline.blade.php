@@ -123,7 +123,7 @@ h1.fi-header-heading {
 }
 
 .dark .pdc-map-search {
-    background: #111827 !important;
+    background: #0b0f14 !important;
     border-color: #4b5563 !important;
     color: #f3f4f6 !important;
 }
@@ -153,7 +153,7 @@ h1.fi-header-heading {
 
 .dark .fi-login .fi-card,
 .dark .fi-login-page .fi-card {
-    background: #111827 !important;
+    background: #0b0f14 !important;
     border-color: #27303a !important;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
 }
