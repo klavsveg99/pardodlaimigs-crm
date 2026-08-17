@@ -6,7 +6,6 @@ use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -76,12 +75,16 @@ class CrmPropertiesRelationManager extends RelationManager
                     ->label('Pievienot CRM īpašumu')
                     ->recordSelectSearchColumns(['title', 'city', 'kadastra_nr', 'id'])
                     ->schema(function (Actions\AttachAction $action): array {
+                        $recordSelect = $action->getRecordSelect();
+
                         return [
-                            $action->getRecordSelect(),
+                            $recordSelect,
                             Forms\Components\Select::make('relation')
                                 ->label('Saistība')
-                                ->options(function (Get $get): array {
-                                    return CrmProperty::find($get('recordId'))?->status === 'sold'
+                                ->options(function (callable $get) use ($recordSelect): array {
+                                    $recordId = $get($recordSelect->getName());
+
+                                    return CrmProperty::find($recordId)?->status === 'sold'
                                         ? ['buyer' => 'Pircējs']
                                         : [
                                             'seller' => 'Pārdevējs',
@@ -91,7 +94,8 @@ class CrmPropertiesRelationManager extends RelationManager
                                             'contacted' => 'Sazināts',
                                         ];
                                 })
-                                ->required(),
+                                ->required()
+                                ->reactive(),
                             Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
                         ];
                     })
