@@ -29,7 +29,7 @@ class UserResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Lietotāji';
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 10;
 
     public static function canAccess(): bool
     {
