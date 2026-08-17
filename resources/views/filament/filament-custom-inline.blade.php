@@ -70,6 +70,19 @@ h1.fi-header-heading {
     color: #0b0f14 !important;
 }
 
+/* Floating menus and select popovers must clear tables, buttons and cards. */
+[x-float],
+.fi-dropdown-panel,
+.fi-select-options,
+.fi-fo-select-options {
+    z-index: 9999 !important;
+}
+
+.fi-modal,
+.fi-modal-window {
+    z-index: 10000 !important;
+}
+
 /* Colored buttons have solid backgrounds, so their labels stay white. */
 .fi-btn.fi-color-primary,
 .fi-btn.fi-color-primary *,
