@@ -26,8 +26,12 @@
                 <div class="relative rounded-xl border border-gray-200 bg-gray-50 p-4 ps-5 dark:border-white/10 dark:bg-white/5">
                     <span class="absolute -start-[0.45rem] top-5 h-3 w-3 rounded-full bg-primary-500 ring-4 ring-white dark:ring-gray-900"></span>
                     <div class="text-sm font-semibold text-gray-900 dark:text-white">
-                        {{ \App\Models\Deal::STAGES[$change->payload['from'] ?? ''] ?? ($change->payload['from'] ?? '—') }}
-                        <span class="px-1 text-gray-400">→</span>
+                        @if ($change->payload['initial'] ?? false)
+                            Sākotnējais posms:
+                        @else
+                            {{ \App\Models\Deal::STAGES[$change->payload['from'] ?? ''] ?? ($change->payload['from'] ?? '—') }}
+                            <span class="px-1 text-gray-400">→</span>
+                        @endif
                         {{ \App\Models\Deal::STAGES[$change->payload['to'] ?? ''] ?? ($change->payload['to'] ?? '—') }}
                     </div>
                     <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
