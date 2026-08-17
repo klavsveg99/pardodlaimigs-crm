@@ -72,6 +72,13 @@ class PropertyNormalizer
     private function normalizeLegacy(object $wp): array
     {
         $title = $this->clean((string) ($wp->title ?? '')) ?: '—';
+        $location = (array) ($wp->location ?? []);
+        $address = $this->clean((string) ($wp->address ?? '')) ?: null;
+        $city = $this->clean((string) ($location['city'] ?? $location['name'] ?? '')) ?: null;
+
+        if ($city === null && $address !== null && str_contains($address, ',')) {
+            $city = trim(explode(',', $address, 2)[0]);
+        }
 
         return [
             'id' => (int) $wp->id,
@@ -89,9 +96,9 @@ class PropertyNormalizer
             'lng' => $this->num($wp->longitude ?? null),
             'country' => null,
             'state' => null,
-            'city' => null,
+            'city' => $city,
             'neighborhood' => null,
-            'address' => $this->clean((string) ($wp->address ?? '')) ?: null,
+            'address' => $address,
             'kadastra_nr' => $this->clean((string) ($wp->kadastra_nr ?? $wp->kadastra_numurs ?? $wp->cadastral_number ?? '')) ?: null,
             'type_ids' => $this->termIds($wp->property_type ?? []),
             'feature_ids' => [],
