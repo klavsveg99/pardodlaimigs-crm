@@ -7,7 +7,18 @@
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Klients</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->client?->name ?: '—' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    @if ($record->client)
+                        <a
+                            href="{{ \App\Filament\Admin\Resources\ClientResource::getUrl('view', ['record' => $record->client_id]) }}"
+                            class="font-semibold text-primary-600 underline decoration-primary-300 underline-offset-2 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+                        >
+                            {{ $record->client->name }}
+                        </a>
+                    @else
+                        —
+                    @endif
+                </dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Vērtība</dt>
