@@ -35,7 +35,7 @@
 
     <x-filament::section heading="Iesniegtā informācija">
         @forelse ($record->fields ?? [] as $field)
-            <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-white/10 dark:bg-gray-800">
+            <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-white/10 dark:bg-white/5">
                 <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     {{ $field['name'] ?? '' }}
                 </dt>

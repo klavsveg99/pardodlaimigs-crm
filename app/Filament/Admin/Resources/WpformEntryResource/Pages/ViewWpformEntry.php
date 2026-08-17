@@ -32,7 +32,7 @@ class ViewWpformEntry extends ViewRecord
                 ->form([
                     Select::make('status')
                         ->label('Statuss')
-                        ->options(WpformEntryResource::EDITABLE_STATUSES)
+                        ->options(WpformEntryResource::STATUSES)
                         ->default(fn () => $this->record->status)
                         ->required(),
                 ])

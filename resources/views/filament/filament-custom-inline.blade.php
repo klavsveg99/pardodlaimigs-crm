@@ -118,14 +118,14 @@ h1.fi-header-heading {
     color: var(--pdc-primary) !important;
 }
 
-.dark .fi-link {
-    color: var(--pdc-primary) !important;
-}
-
 .dark .pdc-map-search {
     background: #0b0f14 !important;
     border-color: #4b5563 !important;
     color: #f3f4f6 !important;
+}
+
+.dark .pdc-map-container {
+    border-color: #4b5563 !important;
 }
 
 .dark .pdc-map-search::placeholder {
@@ -184,11 +184,6 @@ h1.fi-header-heading {
 .dark .fi-login .fi-input::placeholder,
 .dark .fi-login-page .fi-input::placeholder {
     color: #9ca3af !important;
-}
-
-.dark .fi-login .fi-label,
-.dark .fi-login-page .fi-label {
-    color: #f9fafb !important;
 }
 
 /* Form inputs dark mode - avoid white-on-white */
@@ -309,47 +304,21 @@ h1.fi-header-heading {
     background: #0b0f14 !important;
 }
 
-/* Table action buttons in dark mode */
-.dark .fi-ta-table .fi-btn {
-    color: #f3f4f6 !important;
-}
-
-.dark .fi-ta-table .fi-btn.fi-color-primary,
-.dark .fi-ta-table .fi-btn.fi-color-primary *,
-.dark .fi-ta-table .fi-btn.fi-color-success,
-.dark .fi-ta-table .fi-btn.fi-color-success *,
-.dark .fi-ta-table .fi-btn.fi-color-warning,
-.dark .fi-ta-table .fi-btn.fi-color-warning *,
-.dark .fi-ta-table .fi-btn.fi-color-danger,
-.dark .fi-ta-table .fi-btn.fi-color-danger *,
-.dark .fi-ta-table .fi-btn.fi-color-info,
-.dark .fi-ta-table .fi-btn.fi-color-info * {
-    color: #ffffff !important;
-}
-
-.dark .fi-ta-table .fi-btn.fi-color-gray {
-    background: #374151 !important;
-    border-color: #4b5563 !important;
-    color: #f3f4f6 !important;
-}
-
-.dark .fi-ta-table .fi-btn.fi-color-gray:hover {
-    background: #4b5563 !important;
-    border-color: #6b7280 !important;
-}
-
 /* Table action dropdown/menu */
 .dark .fi-ta-table [x-float],
-.dark .fi-ta-table .fi-dropdown-panel {
+.dark .fi-ta-table .fi-dropdown-panel,
+.dark .fi-table .fi-dropdown-panel {
     background: #0b0f14 !important;
     border-color: #374151 !important;
 }
 
-.dark .fi-ta-table .fi-dropdown-panel .fi-dropdown-item {
+.dark .fi-ta-table .fi-dropdown-panel .fi-dropdown-item,
+.dark .fi-table .fi-dropdown-panel .fi-dropdown-item {
     color: #f3f4f6 !important;
 }
 
-.dark .fi-ta-table .fi-dropdown-panel .fi-dropdown-item:hover {
+.dark .fi-ta-table .fi-dropdown-panel .fi-dropdown-item:hover,
+.dark .fi-table .fi-dropdown-panel .fi-dropdown-item:hover {
     background: #374151 !important;
 }
 
@@ -500,8 +469,6 @@ h1.fi-header-heading {
 .dark .fi-table .fi-dropdown-panel .fi-btn:hover {
     background: #374151 !important;
 }
-    background: #374151 !important;
-}
 
 .fi-ta-content-ctn {
     overflow-x: hidden !important;
@@ -639,22 +606,6 @@ h1.fi-header-heading {
     margin-bottom: 0 !important;
 }
 
-/* Form field inner padding - Filament 3 uses fi-fo-field-wrapper */
-.fi-section-content .fi-fo-field-wrapper,
-.fi-section-content .fi-form-field-wrapper {
-    padding: 0.5rem 0 !important;
-}
-
-.fi-section-content .fi-fo-label,
-.fi-section-content .fi-form-label {
-    margin-bottom: 0.375rem !important;
-}
-
-.fi-section-content .fi-fo-input,
-.fi-section-content .fi-form-input {
-    padding: 0 !important;
-}
-
 /* Grid field spacing in sections */
 .fi-section-content > .grid,
 .fi-section-content > div[class*="grid"] {
@@ -678,7 +629,6 @@ h1.fi-header-heading {
 .fi-section-content dd {
     font-size: 0.875rem !important;
     font-weight: 400 !important;
-    color: #111827 !important;
     margin: 0 0 1rem 0 !important;
     line-height: 1.5 !important;
 }

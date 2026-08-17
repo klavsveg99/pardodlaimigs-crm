@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\ClientResource\RelationManagers;
 
+use App\Models\ClientCrmProperty;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
@@ -25,13 +26,7 @@ class CrmPropertiesRelationManager extends RelationManager
         return $schema->schema([
             Forms\Components\Select::make('relation')
                 ->label('Saistība')
-                ->options([
-                    'seller' => 'Pārdevējs',
-                    'tenant' => 'Īrnieks',
-                    'landlord' => 'Izīrētājs',
-                    'interested' => 'Interesents',
-                    'contacted' => 'Sazināts',
-                ])
+                ->options(ClientCrmProperty::RELATIONS)
                 ->required(),
             Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
         ]);
@@ -60,15 +55,7 @@ class CrmPropertiesRelationManager extends RelationManager
                         'info' => 'landlord',
                         'gray' => ['interested', 'contacted'],
                     ])
-                    ->formatStateUsing(fn ($state) => match ($state) {
-                        'buyer' => 'Pircējs',
-                        'seller' => 'Pārdevējs',
-                        'tenant' => 'Īrnieks',
-                        'landlord' => 'Izīrētājs',
-                        'interested' => 'Interesents',
-                        'contacted' => 'Sazināts',
-                        default => $state,
-                    }),
+                    ->formatStateUsing(fn ($state) => ClientCrmProperty::RELATIONS[$state] ?? $state),
             ])
             ->headerActions([
                 Actions\AttachAction::make()
@@ -85,14 +72,10 @@ class CrmPropertiesRelationManager extends RelationManager
                                     $recordId = $get($recordSelect->getName());
 
                                     return CrmProperty::find($recordId)?->status === 'sold'
-                                        ? ['buyer' => 'Pircējs']
-                                        : [
-                                            'seller' => 'Pārdevējs',
-                                            'tenant' => 'Īrnieks',
-                                            'landlord' => 'Izīrētājs',
-                                            'interested' => 'Interesents',
-                                            'contacted' => 'Sazināts',
-                                        ];
+                                        ? ['buyer' => ClientCrmProperty::RELATIONS['buyer']]
+                                        : collect(ClientCrmProperty::RELATIONS)
+                                            ->except('buyer')
+                                            ->all();
                                 })
                                 ->required()
                                 ->reactive(),

@@ -52,7 +52,7 @@
         </div>
     </x-filament::section>
 
-    <x-filament::section heading="Atrašanās vieta" class="grid gap-3 sm:grid-cols-2">
+    <x-filament::section heading="Atrašanās vieta" class="grid gap-3 sm:grid-cols-3">
         <div>
             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pilsēta</dt>
             <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->city ?: '—' }}</dd>
@@ -64,12 +64,8 @@
         <div>
             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Koordinātes</dt>
             <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">
-                {{ $record->lat && $record->lng ? "$record->lat, $record->lng" : '—' }}
+                {{ $record->lat && $record->lng ? "{$record->lat}, {$record->lng}" : '—' }}
             </dd>
-        </div>
-        <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Slug</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">{{ $record->slug ?: '—' }}</dd>
         </div>
     </x-filament::section>
 
