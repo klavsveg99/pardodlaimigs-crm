@@ -14,6 +14,7 @@ use Filament\Resources\Pages\EditRecord;
 class EditCrmProperty extends EditRecord
 {
     use SyncsAttachments;
+
     protected static string $resource = CrmPropertyResource::class;
 
     public function getTitle(): string

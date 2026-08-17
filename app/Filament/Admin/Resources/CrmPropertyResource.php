@@ -54,11 +54,17 @@ class CrmPropertyResource extends Resource
                 Forms\Components\TextInput::make('kadastra_nr')->label('Kadastra nr.')->maxLength(32),
             ]),
 
-            Section::make('Atrašanās vieta')->columns(2)->schema([
-                Forms\Components\TextInput::make('city')->label('Pilsēta')->maxLength(128),
-                Forms\Components\TextInput::make('address')->label('Adrese')->maxLength(255),
-                Forms\Components\TextInput::make('lat')->label('Garums (lat)')->numeric()->suffix('°'),
-                Forms\Components\TextInput::make('lng')->label('Platums (lng)')->numeric()->suffix('°'),
+            Section::make('Atrašanās vieta')->schema([
+                Forms\Components\TextInput::make('city')->label('Pilsēta')->maxLength(128)->columnSpan(1),
+                Forms\Components\TextInput::make('address')->label('Adrese')->maxLength(255)->columnSpan(1),
+                Forms\Components\Hidden::make('lat'),
+                Forms\Components\Hidden::make('lng'),
+                Forms\Components\View::make('filament.forms.components.google-maps-picker')
+                    ->columnSpanFull()
+                    ->viewData([
+                        'latField' => 'lat',
+                        'lngField' => 'lng',
+                    ]),
             ]),
 
             Section::make()->columnSpanFull()->schema([
