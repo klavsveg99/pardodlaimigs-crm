@@ -44,6 +44,32 @@ h1.fi-header-heading {
     color: var(--primary-400) !important;
 }
 
+/* Keep the dark shell intentionally monochrome. */
+.dark .fi-sidebar,
+.dark .fi-topbar,
+.dark .fi-header,
+.dark .fi-header-ctn,
+.dark .fi-main-ctn {
+    background: #0b0f14 !important;
+    border-color: #27303a !important;
+}
+
+.dark .fi-topbar *,
+.dark .fi-header *,
+.dark .fi-header-ctn * {
+    color: #f9fafb !important;
+}
+
+.dark .fi-sidebar-item.fi-active .fi-sidebar-item-btn {
+    background: #ffffff !important;
+    color: #0b0f14 !important;
+}
+
+.dark .fi-sidebar-item.fi-active .fi-sidebar-item-label,
+.dark .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+    color: #0b0f14 !important;
+}
+
 /* Colored buttons have solid backgrounds, so their labels stay white. */
 .fi-btn.fi-color-primary,
 .fi-btn.fi-color-primary *,
