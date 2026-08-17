@@ -41,13 +41,13 @@ class WpformEntryResource extends Resource
 
     protected static ?string $navigationLabel = 'Pieteikumi';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Avots';
+    protected static string|UnitEnum|null $navigationGroup = 'CRM';
 
     protected static ?string $modelLabel = 'Formas ieraksts';
 
     protected static ?string $pluralModelLabel = 'Pieteikumi';
 
-    protected static ?int $navigationSort = 12;
+    protected static ?int $navigationSort = 30;
 
     public static function table(Table $table): Table
     {

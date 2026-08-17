@@ -30,7 +30,7 @@ class ViewingResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Apskates';
 
-    protected static ?int $navigationSort = 31;
+    protected static ?int $navigationSort = 30;
 
     public static function form(Schema $schema): Schema
     {

@@ -24,13 +24,13 @@ class CrmPropertyResource extends Resource
 
     protected static ?string $navigationLabel = 'Īpašumi';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Avots';
+    protected static string|UnitEnum|null $navigationGroup = 'CRM';
 
     protected static ?string $modelLabel = 'Īpašums';
 
     protected static ?string $pluralModelLabel = 'Īpašumi';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 20;
 
     public static function form(Schema $schema): Schema
     {

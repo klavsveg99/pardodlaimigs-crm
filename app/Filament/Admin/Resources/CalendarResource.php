@@ -24,7 +24,7 @@ class CalendarResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Kalendārs';
 
-    protected static ?int $navigationSort = 29;
+    protected static ?int $navigationSort = 10;
 
     protected static ?string $slug = 'kalendars';
 
