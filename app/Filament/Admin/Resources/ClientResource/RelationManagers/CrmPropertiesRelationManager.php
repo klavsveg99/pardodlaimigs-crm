@@ -101,9 +101,31 @@ class CrmPropertiesRelationManager extends RelationManager
                     }),
             ])
             ->headerActions([
-                Actions\AttachAction::make()->label('Pievienot CRM īpašumu')
+                Actions\AttachAction::make()
+                    ->label('Pievienot CRM īpašumu')
+                    ->recordSelectSearchColumns(['title', 'city', 'kadastra_nr', 'id'])
+                    ->schema(function (Actions\AttachAction $action): array {
+                        return [
+                            $action->getRecordSelect(),
+                            Forms\Components\Select::make('relation')
+                                ->label('Saistība')
+                                ->options(function (Get $get): array {
+                                    return CrmProperty::find($get('recordId'))?->status === 'sold'
+                                        ? ['buyer' => 'Pircējs']
+                                        : [
+                                            'seller' => 'Pārdevējs',
+                                            'tenant' => 'Īrnieks',
+                                            'landlord' => 'Izīrētājs',
+                                            'interested' => 'Interesents',
+                                            'contacted' => 'Sazināts',
+                                        ];
+                                })
+                                ->required(),
+                            Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
+                        ];
+                    })
                     ->validateRecordUsing(function (array $data): void {
-                        $propertyId = $data['id'] ?? null;
+                        $propertyId = $data['recordId'] ?? null;
                         $relation = $data['relation'] ?? null;
                         $clientId = $this->getOwnerRecord()->id;
 

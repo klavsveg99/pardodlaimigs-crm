@@ -163,7 +163,7 @@ button.fi-btn-primary:hover,
 @media (min-width: 640px) {
     .fi-ta-table td:has(> .fi-ta-actions) {
         width: 1% !important;
-        min-width: 7rem !important;
+        min-width: 8rem !important;
         white-space: nowrap !important;
     }
     .fi-ta-table td > .fi-ta-actions {
