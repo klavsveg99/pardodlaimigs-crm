@@ -11,7 +11,7 @@ html, body {
 
 html.dark,
 html.dark body {
-    background: #111827 !important;
+    background: #0b0f14 !important;
 }
     html, body, .fi-body, .fi-ta-ctw {
         font-family: 'Source Sans Pro', system-ui, sans-serif !important;
