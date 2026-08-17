@@ -132,19 +132,19 @@ function pdc_upsert_property(array $data): int
     }
 
     // ── Overwrite ALL meta fields (CRM is source of truth) ───────
+    // Essential Real Estate meta keys (ere_property_*)
     update_post_meta($post_id, '_pdc_crm_id', $crm_id);
-    update_post_meta($post_id, '_property_price', $price);
-    update_post_meta($post_id, '_property_currency', $currency);
-    update_post_meta($post_id, '_property_bedrooms', $beds);
-    update_post_meta($post_id, '_property_bathrooms', $baths);
-    update_post_meta($post_id, '_property_size', $size_m2);
-    update_post_meta($post_id, '_property_land_size', $land_m2);
-    update_post_meta($post_id, '_property_cadastral_number', $kadastra);
-    update_post_meta($post_id, '_property_city', $city);
-    update_post_meta($post_id, '_property_address', $address);
-    update_post_meta($post_id, '_property_lat', $lat);
-    update_post_meta($post_id, '_property_lng', $lng);
-    update_post_meta($post_id, '_property_sold', $is_sold ? 'yes' : 'no');
+    update_post_meta($post_id, 'ere_property_price', $price);
+    update_post_meta($post_id, 'ere_property_price_prefix', $currency);
+    update_post_meta($post_id, 'ere_property_bedrooms', $beds);
+    update_post_meta($post_id, 'ere_property_bathrooms', $baths);
+    update_post_meta($post_id, 'ere_property_area', $size_m2);
+    update_post_meta($post_id, 'ere_property_land_area', $land_m2);
+    update_post_meta($post_id, 'ere_property_land_area_unit', 'm²');
+    update_post_meta($post_id, 'ere_property_cadastral_number', $kadastra);
+    update_post_meta($post_id, 'ere_property_address', $address);
+    update_post_meta($post_id, 'ere_property_latitude', $lat);
+    update_post_meta($post_id, 'ere_property_longitude', $lng);
     update_post_meta($post_id, '_pdc_last_sync', current_time('mysql'));
 
     // Category (taxonomy)
