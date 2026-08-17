@@ -23,7 +23,7 @@ class WpformEntriesRelationManager extends RelationManager
             ->heading('Pieteikumi')
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')->label('Iesniegts')->dateTime('d.m.Y H:i')->sortable(),
-                Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->color('info'),
+                Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->color('info')->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')
                     ->getStateUsing(fn ($record) => $record->fieldValue('E-pasts'))
                     ->placeholder('—'),
@@ -35,6 +35,7 @@ class WpformEntriesRelationManager extends RelationManager
                     ->placeholder('—'),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
+                    ->sortable()
                     ->formatStateUsing(fn ($state) => WpformEntryResource::STATUSES[$state] ?? $state ?? '—')
                     ->color(fn ($state) => match ($state) {
                         'new' => 'info',

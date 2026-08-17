@@ -67,7 +67,8 @@ class WpformEntryResource extends Resource
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('Telefona numurs'))
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Telefona numurs%')->where('fields', 'like', "%{$search}%")),
                 Tables\Columns\SelectColumn::make('status')->label('Statuss')
-                    ->options(self::EDITABLE_STATUSES),
+                    ->options(self::EDITABLE_STATUSES)
+                    ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->label('Statuss')

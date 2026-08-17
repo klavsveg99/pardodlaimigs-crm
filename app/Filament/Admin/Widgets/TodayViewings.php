@@ -25,12 +25,13 @@ class TodayViewings extends BaseWidget
             ->heading('Šodien ieplānotās apskates')
             ->query(fn () => $this->getQuery())
             ->columns([
-                Tables\Columns\TextColumn::make('scheduled_at')->label('Laiks')->dateTime('H:i')->alignCenter(),
-                Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40)->placeholder('—'),
-                Tables\Columns\TextColumn::make('client.name')->label('Klients'),
-                Tables\Columns\TextColumn::make('agent.name')->label('Aģents')->placeholder('—'),
+                Tables\Columns\TextColumn::make('scheduled_at')->label('Laiks')->dateTime('H:i')->sortable()->alignCenter(),
+                Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40)->sortable()->placeholder('—'),
+                Tables\Columns\TextColumn::make('client.name')->label('Klients')->sortable(),
+                Tables\Columns\TextColumn::make('agent.name')->label('Aģents')->sortable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Statuss')->badge()
+                    ->sortable()
                     ->colors([
                         'info' => 'scheduled',
                         'success' => 'done',

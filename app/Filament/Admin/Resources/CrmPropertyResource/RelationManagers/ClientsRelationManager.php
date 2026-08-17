@@ -53,9 +53,9 @@ class ClientsRelationManager extends RelationManager
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('#')->sortable(),
-                Tables\Columns\TextColumn::make('name')->label('Klients')->weight('bold')->wrap(),
-                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->wrap(),
-                Tables\Columns\TextColumn::make('email')->label('E-pasts')->wrap(),
+                Tables\Columns\TextColumn::make('name')->label('Klients')->sortable()->weight('bold')->wrap(),
+                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->sortable()->wrap(),
+                Tables\Columns\TextColumn::make('email')->label('E-pasts')->sortable()->wrap(),
                 Tables\Columns\TextColumn::make('pivot.relation')
                     ->label('Saistība')
                     ->badge()
@@ -69,7 +69,7 @@ class ClientsRelationManager extends RelationManager
                         default => $state,
                     }),
                 Tables\Columns\IconColumn::make('marketing_consent')
-                    ->label('Mārketings')->boolean(),
+                    ->label('Mārketings')->boolean()->sortable(),
             ])
             ->headerActions([
                 Actions\AttachAction::make()

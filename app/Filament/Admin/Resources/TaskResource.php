@@ -119,14 +119,15 @@ class TaskResource extends Resource
                 Tables\Columns\IconColumn::make('completed_at')
                     ->label('')
                     ->boolean()
+                    ->sortable()
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-clock')
                     ->trueColor('success')
                     ->falseColor('warning'),
-                Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->weight('bold')->wrap(),
+                Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable()->weight('bold')->wrap(),
                 Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
-                Tables\Columns\TextColumn::make('assignedTo.name')->label('Kam'),
-                Tables\Columns\TextColumn::make('client.name')->label('Klients'),
+                Tables\Columns\TextColumn::make('assignedTo.name')->label('Kam')->sortable(),
+                Tables\Columns\TextColumn::make('client.name')->label('Klients')->sortable(),
                 Tables\Columns\IconColumn::make('is_overdue')
                     ->label('Nokavēts')
                     ->boolean()

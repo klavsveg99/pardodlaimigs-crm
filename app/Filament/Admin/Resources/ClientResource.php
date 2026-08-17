@@ -98,23 +98,23 @@ class ClientResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable()->weight('bold'),
-                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable(),
-                Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable(),
-                Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->placeholder('—'),
-                Tables\Columns\TextColumn::make('source')->label('Avots'),
+                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable()->sortable(),
+                Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->sortable()->placeholder('—'),
+                Tables\Columns\TextColumn::make('source')->label('Avots')->sortable(),
                 Tables\Columns\TextColumn::make('deals_count')
                     ->counts('deals')
                     ->label('Darījumi')
-                    ->alignCenter(),
+                    ->alignCenter()->sortable(),
                 Tables\Columns\TextColumn::make('viewings_count')
                     ->counts('viewings')
                     ->label('Apskates')
-                    ->alignCenter(),
+                    ->alignCenter()->sortable(),
                 Tables\Columns\TextColumn::make('properties_count')
                     ->counts('properties')
                     ->label('Īpašumi')
-                    ->alignCenter(),
-                Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since(),
+                    ->alignCenter()->sortable(),
+                Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->sortable(),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
