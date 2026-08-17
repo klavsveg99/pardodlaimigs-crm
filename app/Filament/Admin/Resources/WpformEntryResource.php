@@ -26,6 +26,15 @@ class WpformEntryResource extends Resource
         'klients_pievienots' => 'Klients pievienots',
     ];
 
+    public const STATUS_COLORS = [
+        'new' => 'info',
+        'review' => 'warning',
+        'replied' => 'success',
+        'spam' => 'danger',
+        'archived' => 'gray',
+        'klients_pievienots' => 'success',
+    ];
+
     public const EDITABLE_STATUSES = [
         'new' => 'Jauns',
         'review' => 'Izvērtēts',
