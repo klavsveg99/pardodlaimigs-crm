@@ -6,6 +6,7 @@ use App\Models\PropertyCache;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -46,14 +47,21 @@ class PropertiesRelationManager extends RelationManager
                 ->required(),
             Forms\Components\Select::make('relation')
                 ->label('Saistība')
-                ->options([
-                    'buyer' => 'Pircējs',
-                    'seller' => 'Pārdevējs',
-                    'tenant' => 'Īrnieks',
-                    'landlord' => 'Izīrētājs',
-                    'interested' => 'Interesents',
-                    'contacted' => 'Sazināts',
-                ])
+                ->options(function (Get $get): array {
+                    $property = PropertyCache::find($get('id'));
+
+                    if ($property && $this->isSold($property)) {
+                        return ['buyer' => 'Pircējs'];
+                    }
+
+                    return [
+                        'seller' => 'Pārdevējs',
+                        'tenant' => 'Īrnieks',
+                        'landlord' => 'Izīrētājs',
+                        'interested' => 'Interesents',
+                        'contacted' => 'Sazināts',
+                    ];
+                })
                 ->required(),
             Forms\Components\Textarea::make('notes_md')
                 ->label('Piezīmes par šo interesi')
@@ -124,6 +132,14 @@ class PropertiesRelationManager extends RelationManager
 
                         // Buyer requires an existing seller on the property.
                         if ($relation === 'buyer') {
+                            $property = PropertyCache::find($propertyId);
+
+                            if (! $property || ! $this->isSold($property)) {
+                                throw ValidationException::withMessages([
+                                    'data.relation' => 'Pircēju drīkst piesaistīt tikai pārdotam īpašumam.',
+                                ]);
+                            }
+
                             $hasSeller = DB::table('client_properties')
                                 ->where('property_id', $propertyId)
                                 ->where('relation', 'seller')
@@ -136,14 +152,11 @@ class PropertiesRelationManager extends RelationManager
                             }
 
                             // Buyer on a sold property requires marketing consent.
-                            $property = PropertyCache::find($propertyId);
-                            if ($property && $property->status === 'publish' && str($property->category)->contains('Pārdots')) {
-                                $client = $this->getOwnerRecord();
-                                if (! $client->marketing_consent) {
-                                    throw ValidationException::withMessages([
-                                        'data.relation' => 'Lai piesaistītu pircēju pārdotam īpašumam, klientam jābūt mārketinga piekrišanai.',
-                                    ]);
-                                }
+                            $client = $this->getOwnerRecord();
+                            if (! $client->marketing_consent) {
+                                throw ValidationException::withMessages([
+                                    'data.relation' => 'Lai piesaistītu pircēju pārdotam īpašumam, klientam jābūt mārketinga piekrišanai.',
+                                ]);
                             }
                         }
                     }),
@@ -152,5 +165,16 @@ class PropertiesRelationManager extends RelationManager
                 Actions\EditAction::make(),
                 Actions\DetachAction::make()->label('Noņemt'),
             ]);
+    }
+
+    private function isSold(PropertyCache $property): bool
+    {
+        $status = mb_strtolower((string) $property->status);
+        $category = mb_strtolower((string) $property->category);
+
+        return in_array($status, ['sold', 'pārdots', 'pardots'], true)
+            || str_contains($category, 'sold')
+            || str_contains($category, 'pārdot')
+            || str_contains($category, 'pardot');
     }
 }
