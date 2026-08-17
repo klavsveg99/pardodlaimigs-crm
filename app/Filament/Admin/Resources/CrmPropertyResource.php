@@ -10,6 +10,7 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -59,7 +60,7 @@ class CrmPropertyResource extends Resource
                 Forms\Components\TextInput::make('address')->label('Adrese')->maxLength(255)->columnSpan(1),
                 Forms\Components\Hidden::make('lat'),
                 Forms\Components\Hidden::make('lng'),
-                Forms\Components\View::make('filament.forms.components.google-maps-picker')
+                View::make('filament.forms.components.google-maps-picker')
                     ->columnSpanFull()
                     ->viewData([
                         'latField' => 'lat',
