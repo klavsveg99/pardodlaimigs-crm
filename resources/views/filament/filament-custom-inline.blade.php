@@ -297,7 +297,7 @@ h1.fi-header-heading {
 }
 
 .dark .fi-ta-table th {
-    background: #111827 !important;
+    background: #0b0f14 !important;
     color: #f9fafb !important;
     border-color: #374151 !important;
 }
@@ -309,6 +309,50 @@ h1.fi-header-heading {
 
 .dark .fi-ta-table tr:hover td {
     background: #1f2937 !important;
+}
+
+/* Table action buttons in dark mode */
+.dark .fi-ta-table .fi-btn {
+    color: #f3f4f6 !important;
+}
+
+.dark .fi-ta-table .fi-btn.fi-color-primary,
+.dark .fi-ta-table .fi-btn.fi-color-primary *,
+.dark .fi-ta-table .fi-btn.fi-color-success,
+.dark .fi-ta-table .fi-btn.fi-color-success *,
+.dark .fi-ta-table .fi-btn.fi-color-warning,
+.dark .fi-ta-table .fi-btn.fi-color-warning *,
+.dark .fi-ta-table .fi-btn.fi-color-danger,
+.dark .fi-ta-table .fi-btn.fi-color-danger *,
+.dark .fi-ta-table .fi-btn.fi-color-info,
+.dark .fi-ta-table .fi-btn.fi-color-info * {
+    color: #ffffff !important;
+}
+
+.dark .fi-ta-table .fi-btn.fi-color-gray {
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .fi-ta-table .fi-btn.fi-color-gray:hover {
+    background: #4b5563 !important;
+    border-color: #6b7280 !important;
+}
+
+/* Table action dropdown/menu */
+.dark .fi-ta-table [x-float],
+.dark .fi-ta-table .fi-dropdown-panel {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark .fi-ta-table .fi-dropdown-panel .fi-dropdown-item {
+    color: #f3f4f6 !important;
+}
+
+.dark .fi-ta-table .fi-dropdown-panel .fi-dropdown-item:hover {
+    background: #374151 !important;
 }
 
 /* Section headers in dark mode */
