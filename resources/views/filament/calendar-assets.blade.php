@@ -194,13 +194,39 @@
 
     /* ── Responsive ────────────────────────────────────────────── */
     @media (max-width: 768px) {
+        .fc-calendar-wrapper {
+            overflow: hidden;
+            padding: 0.5rem;
+        }
+
+        .fc-calendar-wrapper .fc,
+        .fc .fc-view-harness,
+        .fc .fc-scroller {
+            max-width: 100%;
+            min-width: 0;
+            overflow-x: hidden !important;
+        }
+
         .fc .fc-toolbar {
             flex-direction: column !important;
             align-items: flex-start !important;
+            gap: 0.35rem;
+        }
+
+        .fc .fc-toolbar-chunk {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            max-width: 100%;
         }
 
         .fc .fc-toolbar-title {
             font-size: 1rem !important;
+        }
+
+        .fc .fc-button {
+            padding: 0.3rem 0.45rem !important;
+            font-size: 0.7rem !important;
         }
     }
 
@@ -359,11 +385,11 @@
                         return;
                     }
                     this.calendar = new FullCalendar.Calendar(this.$refs.calendar, {
-                        initialView: 'dayGridMonth',
+                        initialView: window.innerWidth < 640 ? 'listWeek' : 'dayGridMonth',
                         headerToolbar: {
                             left: 'prev,next today',
                             center: 'title',
-                            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+                            right: window.innerWidth < 640 ? 'listWeek,dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
                         },
                         buttonText: {
                             today: 'Šodien',
