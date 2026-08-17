@@ -57,12 +57,30 @@ class CrmPropertyResource extends Resource
             Section::make('Atrašanās vieta')->columns(2)->schema([
                 Forms\Components\TextInput::make('city')->label('Pilsēta')->maxLength(128),
                 Forms\Components\TextInput::make('address')->label('Adrese')->maxLength(255),
-                Forms\Components\TextInput::make('lat')->label('Platums')->numeric()->suffix('°'),
-                Forms\Components\TextInput::make('lng')->label('Garums')->numeric()->suffix('°'),
+                Forms\Components\TextInput::make('lat')->label('Garums (lat)')->numeric()->suffix('°'),
+                Forms\Components\TextInput::make('lng')->label('Platums (lng)')->numeric()->suffix('°'),
             ]),
 
             Section::make()->columnSpanFull()->schema([
                 Forms\Components\RichEditor::make('description')->label('Apraksts')->columnSpanFull(),
+            ]),
+
+            Section::make('Pielikumi')->columnSpanFull()->schema([
+                Forms\Components\FileUpload::make('attachments')
+                    ->label('Fotogrāfijas un plānojumi')
+                    ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
+                        .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
+                    ->multiple()
+                    ->reorderable()
+                    ->deletable()
+                    ->previewable()
+                    ->openable()
+                    ->storeFileNamesIn('attachment_original_names')
+                    ->acceptedFileTypes(config('attachments.accepted_file_types'))
+                    ->maxSize((int) config('attachments.max_size_kb'))
+                    ->disk('public')
+                    ->directory('attachments')
+                    ->columnSpanFull(),
             ]),
         ]);
     }
