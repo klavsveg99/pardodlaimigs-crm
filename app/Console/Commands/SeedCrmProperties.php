@@ -44,10 +44,10 @@ class SeedCrmProperties extends Command
                     'title' => $property->title,
                     'slug' => $property->slug,
                     'description' => null,
-                    'image_urls' => array_values(array_filter(array_merge(
+                    'image_urls' => array_values(array_unique(array_filter(array_merge(
                         [$property->thumbnail_url],
                         $property->gallery_urls ?? [],
-                    ))),
+                    )))),
                     'price_cents' => $property->price_cents ?? 0,
                     'price_eur' => round(($property->price_cents ?? 0) / 100, 2),
                     'currency' => $property->currency ?: 'EUR',
