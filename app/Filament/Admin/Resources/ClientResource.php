@@ -176,7 +176,6 @@ class ClientResource extends Resource
     {
         return [
             RelationManagers\CrmPropertiesRelationManager::class,
-            RelationManagers\DealsRelationManager::class,
             RelationManagers\ViewingsRelationManager::class,
             RelationManagers\TasksRelationManager::class,
             RelationManagers\WpformEntriesRelationManager::class,
