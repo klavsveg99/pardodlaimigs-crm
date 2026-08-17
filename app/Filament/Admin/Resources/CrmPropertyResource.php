@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\CrmPropertyResource\Pages;
+use App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
@@ -136,6 +137,13 @@ class CrmPropertyResource extends Resource
             'index' => Pages\ListCrmProperties::route('/'),
             'create' => Pages\CreateCrmProperty::route('/create'),
             'edit' => Pages\EditCrmProperty::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\ClientsRelationManager::class,
         ];
     }
 }

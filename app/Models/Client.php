@@ -41,6 +41,13 @@ class Client extends Model
             ->withTimestamps();
     }
 
+    public function crmProperties(): BelongsToMany
+    {
+        return $this->belongsToMany(CrmProperty::class, 'client_crm_properties', 'client_id', 'crm_property_id')
+            ->withPivot('relation', 'notes_md')
+            ->withTimestamps();
+    }
+
     public function deals(): HasMany
     {
         return $this->hasMany(Deal::class);
