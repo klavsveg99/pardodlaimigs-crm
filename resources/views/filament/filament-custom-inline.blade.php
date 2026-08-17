@@ -434,6 +434,43 @@ h1.fi-header-heading {
     max-width: 100% !important;
 }
 
+/* Focus rings - override Filament default primary color */
+.fi-input:focus,
+.fi-textarea:focus,
+.fi-select:focus,
+.fi-multi-select:focus,
+.fi-date-time-picker input:focus,
+.fi-date-picker input:focus,
+.fi-time-picker input:focus,
+.fi-file-upload-dropzone:focus-within {
+    --tw-ring-color: var(--pdc-primary) !important;
+    --tw-ring-offset-color: #fff !important;
+}
+
+.dark .fi-input:focus,
+.dark .fi-textarea:focus,
+.dark .fi-select:focus,
+.dark .fi-multi-select:focus,
+.dark .fi-date-time-picker input:focus,
+.dark .fi-date-picker input:focus,
+.dark .fi-time-picker input:focus,
+.dark .fi-file-upload-dropzone:focus-within {
+    --tw-ring-color: var(--pdc-primary) !important;
+    --tw-ring-offset-color: #0b0f14 !important;
+}
+
+/* Checkbox/radio focus */
+.fi-checkbox input:focus,
+.fi-radio input:focus,
+.fi-toggle input:focus {
+    --tw-ring-color: var(--pdc-primary) !important;
+}
+
+/* Button focus */
+.fi-btn:focus {
+    --tw-ring-color: var(--pdc-primary) !important;
+}
+
 @media (min-width: 640px) {
     .fi-ta-table td:has(> .fi-ta-actions) {
         width: 1% !important;
