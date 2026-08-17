@@ -21,3 +21,9 @@ Schedule::job(new SyncWpForms)
     ->everyFiveMinutes()
     ->name('wpforms-sync')
     ->withoutOverlapping();
+
+// Reminder emails daily at 08:00
+Schedule::command('pdc:send-reminders')
+    ->dailyAt('08:00')
+    ->name('send-reminders')
+    ->withoutOverlapping();

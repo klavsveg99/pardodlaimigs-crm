@@ -19,7 +19,7 @@ class PropertyCache extends Model
     protected $fillable = [
         'id', 'title', 'slug', 'status', 'category', 'price_cents', 'currency',
         'beds', 'baths', 'size_m2', 'land_m2', 'lat', 'lng',
-        'country', 'state', 'city', 'neighborhood', 'address',
+        'country', 'state', 'city', 'neighborhood', 'address', 'kadastra_nr',
         'type_ids', 'feature_ids', 'label_ids',
         'thumbnail_url', 'gallery_urls',
         'agent_wp_user_id', 'agency_wp_term_id',
@@ -54,5 +54,10 @@ class PropertyCache extends Model
     public function getUrlAttribute(): ?string
     {
         return $this->wp_permalink;
+    }
+
+    public function getSelectionLabelAttribute(): string
+    {
+        return $this->title.($this->kadastra_nr ? " · {$this->kadastra_nr}" : '')." · #{$this->id}";
     }
 }

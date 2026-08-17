@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role'])]
+#[Fillable(['name', 'email', 'password', 'role', 'calendar_token'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -22,6 +22,22 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return true;
+    }
+
+    public function generateCalendarToken(): string
+    {
+        $token = bin2hex(random_bytes(32));
+        $this->update(['calendar_token' => $token]);
+
+        return $token;
+    }
+
+    public function getCalendarFeedUrl(): string
+    {
+        return route('calendar.feed', [
+            'user' => $this->id,
+            'token' => $this->calendar_token,
+        ]);
     }
 
     /**

@@ -28,12 +28,12 @@ class DealsByStage extends BaseWidget
             ->heading('Darījumu pašreizējais stāvoklis')
             ->query(
                 Deal::query()
-                    ->selectRaw('stage, COUNT(*) as count, COALESCE(SUM(value_cents), 0) as total_cents')
-                    ->whereNotIn('stage', ['closed_won', 'closed_lost'])
+                    ->selectRaw('stage, COUNT(*) as count, COALESCE(SUM(value_eur), 0) as total_eur')
+                    ->where('stage', '!=', 'pardots')
                     ->groupBy('stage')
                     ->when(
                         in_array(DB::getDriverName(), ['mysql', 'mariadb']),
-                        fn ($query) => $query->orderByRaw('FIELD(stage, "lead","viewing_scheduled","offer","reserved")'),
+                        fn ($query) => $query->orderByRaw('FIELD(stage, "jauns","pirma_tiksanas","noslegta_sadarbiba","foto_video","tirgosana","dokumentu_saskanosana")'),
                         fn ($query) => $query->orderBy('stage')
                     )
             )
@@ -42,16 +42,17 @@ class DealsByStage extends BaseWidget
                     ->label('Posms')
                     ->badge()
                     ->colors([
-                        'gray' => 'lead',
-                        'info' => 'viewing_scheduled',
-                        'warning' => 'offer',
-                        'primary' => 'reserved',
+                        'info' => ['jauns', 'tirgosana'],
+                        'warning' => 'pirma_tiksanas',
+                        'primary' => 'noslegta_sadarbiba',
+                        'gray' => 'foto_video',
+                        'danger' => 'dokumentu_saskanosana',
                     ])
                     ->formatStateUsing(fn ($state) => Deal::STAGES[$state] ?? $state),
                 Tables\Columns\TextColumn::make('count')->label('Skaits'),
-                Tables\Columns\TextColumn::make('total_cents')
+                Tables\Columns\TextColumn::make('total_eur')
                     ->label('Kopā')
-                    ->formatStateUsing(fn ($state) => number_format(((int) $state) / 100, 0, '.', ' ').' €'),
+                    ->money('EUR'),
             ])
             ->paginated(false);
     }

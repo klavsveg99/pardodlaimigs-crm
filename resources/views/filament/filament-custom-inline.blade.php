@@ -85,6 +85,12 @@ button.fi-btn-primary:hover,
     background-color: var(--pdc-primary-darker) !important;
     border-color: var(--pdc-primary-darker) !important;
 }
+.fi-btn.fi-color-success:hover,
+.fi-btn.fi-color-success.fi-bg-color-400:hover,
+.fi-bg-color-400.fi-color-success:hover {
+    background-color: #0a5c47 !important;
+    border-color: #0a5c47 !important;
+}
 .fi-modal-close-btn, .fi-input-wrp {
     border-color: #d1d5db;
 }
@@ -101,7 +107,31 @@ button.fi-btn-primary:hover,
 .fi-badge.fi-color-primary,
 .fi-badge.fi-color-primary *,
 .fi-bg-color-400.fi-color-primary,
-.fi-bg-color-400.fi-color-primary * {
+.fi-bg-color-400.fi-color-primary *,
+.fi-btn.fi-color-success,
+.fi-btn.fi-color-success *,
+.fi-badge.fi-color-success,
+.fi-badge.fi-color-success *,
+.fi-bg-color-400.fi-color-success,
+.fi-bg-color-400.fi-color-success *,
+.fi-btn.fi-color-warning,
+.fi-btn.fi-color-warning *,
+.fi-badge.fi-color-warning,
+.fi-badge.fi-color-warning *,
+.fi-bg-color-400.fi-color-warning,
+.fi-bg-color-400.fi-color-warning *,
+.fi-btn.fi-color-danger,
+.fi-btn.fi-color-danger *,
+.fi-badge.fi-color-danger,
+.fi-badge.fi-color-danger *,
+.fi-bg-color-400.fi-color-danger,
+.fi-bg-color-400.fi-color-danger *,
+.fi-btn.fi-color-info,
+.fi-btn.fi-color-info *,
+.fi-badge.fi-color-info,
+.fi-badge.fi-color-info *,
+.fi-bg-color-400.fi-color-info,
+.fi-bg-color-400.fi-color-info * {
     color: #ffffff !important;
 }
 .fi-ta-text-item span.fi-size-md.fi-font-bold {

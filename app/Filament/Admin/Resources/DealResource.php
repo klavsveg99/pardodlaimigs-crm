@@ -35,28 +35,43 @@ class DealResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
+            Forms\Components\TextInput::make('title')->label('Nosaukums')->maxLength(255)->columnSpanFull(),
             Forms\Components\Select::make('client_id')->label('Klients')
                 ->searchable()
                 ->required()
                 ->options(fn () => Client::query()->orderBy('name')->limit(20)->pluck('name', 'id')->all())
                 ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name),
             Forms\Components\Select::make('property_id')->label('Īpašums')
+                ->searchable()
+                ->getSearchResultsUsing(function (string $search) {
+                    return PropertyCache::query()
+                        ->where(function ($q) use ($search) {
+                            $q->where('title', 'like', "%{$search}%")
+                                ->orWhere('city', 'like', "%{$search}%")
+                                ->orWhere('kadastra_nr', 'like', "%{$search}%")
+                                ->orWhere('id', '=', $search);
+                        })
+                        ->orderBy('title')
+                        ->limit(20)
+                        ->get()
+                        ->mapWithKeys(fn (PropertyCache $p) => [$p->id => $p->selection_label])
+                        ->toArray();
+                })
+                ->getOptionLabelUsing(fn ($value): ?string => PropertyCache::find($value)?->selection_label)
                 ->options(function (mixed $state, Forms\Components\Select $component): array {
                     $query = PropertyCache::query()
                         ->orderBy('title');
-                    // Keep the currently-linked property selectable.
                     if ($component->getRecord()?->property_id) {
                         $query->where(fn ($q) => $q->where('status', 'publish')->orWhere('id', $component->getRecord()->property_id));
                     } else {
                         $query->where('status', 'publish');
                     }
 
-                    return $query->pluck('title', 'id')->all();
-                })
-                ->searchable(),
+                    return $query->get()->mapWithKeys(fn (PropertyCache $property) => [$property->id => $property->selection_label])->all();
+                }),
             Forms\Components\Select::make('stage')->label('Posms')
-                ->options(Deal::STAGES)->default('lead')->required(),
-            Forms\Components\TextInput::make('value_cents')->label('Vērtība (centos)')->numeric(),
+                ->options(Deal::STAGES)->default('jauns')->required(),
+            Forms\Components\TextInput::make('value_eur')->label('Vērtība (€)')->numeric()->prefix('€'),
             Forms\Components\DatePicker::make('expected_close_date')->label('Plānotais datums'),
             Forms\Components\Select::make('owner_user_id')->label('Atbildīgais')
                 ->relationship('owner', 'name')->searchable()->preload()->optionsLimit(20),
@@ -68,6 +83,7 @@ class DealResource extends Resource
                 ->reorderable()
                 ->deletable()
                 ->previewable()
+                ->openable()
                 ->storeFileNamesIn('attachment_original_names')
                 ->acceptedFileTypes(config('attachments.accepted_file_types'))
                 ->maxSize((int) config('attachments.max_size_kb'))
@@ -82,23 +98,24 @@ class DealResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('#'),
+                Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('client.name')->label('Klients')->searchable()->weight('bold'),
-                Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40)->placeholder('—'),
+                Tables\Columns\TextColumn::make('property.selection_label')->label('Īpašums')->limit(60)->placeholder('—'),
                 Tables\Columns\TextColumn::make('stage')
                     ->label('Posms')
                     ->badge()
                     ->colors([
-                        'gray' => 'lead',
-                        'info' => 'viewing_scheduled',
-                        'warning' => 'offer',
-                        'primary' => 'reserved',
-                        'success' => 'closed_won',
-                        'danger' => 'closed_lost',
+                        'info' => ['jauns', 'tirgosana'],
+                        'warning' => 'pirma_tiksanas',
+                        'primary' => 'noslegta_sadarbiba',
+                        'gray' => 'foto_video',
+                        'danger' => 'dokumentu_saskanosana',
+                        'success' => 'pardots',
                     ])
                     ->formatStateUsing(fn ($state) => Deal::STAGES[$state] ?? $state),
-                Tables\Columns\TextColumn::make('value_cents')
+                Tables\Columns\TextColumn::make('value_eur')
                     ->label('Vērtība')
-                    ->formatStateUsing(fn ($state) => $state ? number_format($state / 100, 0, '.', ' ').' €' : '—'),
+                    ->money('EUR'),
                 Tables\Columns\TextColumn::make('expected_close_date')->label('Plānots')->date('d.m.Y'),
                 Tables\Columns\TextColumn::make('owner.name')->label('Atbildīgais'),
                 Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since(),
@@ -116,7 +133,7 @@ class DealResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = Deal::whereNotIn('stage', ['closed_won', 'closed_lost'])->count();
+        $count = Deal::where('stage', '!=', 'pardots')->count();
 
         return $count > 0 ? (string) $count : null;
     }
