@@ -2,11 +2,9 @@
 
 namespace App\Filament\Admin\Resources\ClientResource\RelationManagers;
 
-use App\Models\Client;
 use App\Models\Deal;
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -59,22 +57,6 @@ class DealsRelationManager extends RelationManager
             ])
             ->headerActions([
                 Actions\CreateAction::make()->label('Jauns darījums'),
-                Actions\Action::make('new_client')
-                    ->label('Jauns klients')
-                    ->icon('heroicon-o-user-plus')
-                    ->form([
-                        Forms\Components\TextInput::make('name')->label('Vārds, uzvārds')->required(),
-                        Forms\Components\TextInput::make('phone')->label('Tālrunis'),
-                        Forms\Components\TextInput::make('email')->label('E-pasts')->email(),
-                    ])
-                    ->action(function (array $data): void {
-                        $client = Client::create($data + ['source' => 'Cits']);
-                        Notification::make()
-                            ->title('Klients izveidots')
-                            ->body("Klients #{$client->id} · {$client->name}")
-                            ->success()
-                            ->send();
-                    }),
             ]);
     }
 }
