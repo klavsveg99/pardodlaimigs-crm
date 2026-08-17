@@ -162,6 +162,11 @@ class ClientResource extends Resource
                                 ->warning()
                                 ->send();
                         }),
+                    Actions\DeleteAction::make()
+                        ->label('Dzēst klientu pilnībā')
+                        ->modalHeading('Dzēst klientu pilnībā?')
+                        ->modalDescription('Klients un visi ar to saistītie CRM dati tiks neatgriezeniski dzēsti.')
+                        ->using(fn (Client $record): ?bool => $record->forceDelete()),
                 ]),
             ])
             ->defaultSort('updated_at', 'desc');

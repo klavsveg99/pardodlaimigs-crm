@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Client extends Model
 {
@@ -28,6 +29,16 @@ class Client extends Model
         'marketing_consent' => 'boolean',
         'gdpr_erased_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::forceDeleting(function (Client $client): void {
+            $client->attachments()->get()->each(function ($attachment): void {
+                Storage::disk($attachment->disk)->delete($attachment->path);
+                $attachment->delete();
+            });
+        });
+    }
 
     public function owner(): BelongsTo
     {

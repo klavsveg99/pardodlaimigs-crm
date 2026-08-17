@@ -136,12 +136,6 @@ h1.fi-header-heading {
     color: #9ca3af !important;
 }
 
-.fi-sidebar-item-badge-ctn .fi-badge,
-.fi-sidebar-item-badge-ctn .fi-badge-label,
-.fi-sidebar-item-badge-ctn .fi-badge-label-ctn {
-    color: #ffffff !important;
-}
-
 /* Keep data cells readable without wrapping column headings or clipping cards. */
 .fi-ta-ctn,
 .fi-ta-content-ctn,
