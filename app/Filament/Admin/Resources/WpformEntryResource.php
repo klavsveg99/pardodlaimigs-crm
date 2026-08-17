@@ -53,7 +53,7 @@ class WpformEntryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')->label('Iesniegts')->dateTime('d.m.Y H:i')->sortable(),
+                Tables\Columns\TextColumn::make('created_at')->label('Iesniegts')->dateTime('d.m.Y H:i')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->color('info')->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('E-pasts'))

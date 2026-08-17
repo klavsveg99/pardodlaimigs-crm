@@ -124,7 +124,7 @@ class TaskResource extends Resource
                     ->trueColor('success')
                     ->falseColor('warning'),
                 Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->weight('bold')->wrap(),
-                Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable(),
+                Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('assignedTo.name')->label('Kam'),
                 Tables\Columns\TextColumn::make('client.name')->label('Klients'),
                 Tables\Columns\IconColumn::make('is_overdue')

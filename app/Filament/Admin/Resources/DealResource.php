@@ -97,7 +97,7 @@ class DealResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->label('#'),
+                Tables\Columns\TextColumn::make('id')->label('#')->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('client.name')->label('Klients')->searchable()->weight('bold')->wrap(),
                 Tables\Columns\TextColumn::make('property.selection_label')->label('Īpašums')->limit(60)->wrap()->placeholder('—'),
@@ -115,10 +115,11 @@ class DealResource extends Resource
                     ->formatStateUsing(fn ($state) => Deal::STAGES[$state] ?? $state),
                 Tables\Columns\TextColumn::make('value_eur')
                     ->label('Vērtība')
+                    ->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->money('EUR'),
-                Tables\Columns\TextColumn::make('expected_close_date')->label('Plānots')->date('d.m.Y'),
+                Tables\Columns\TextColumn::make('expected_close_date')->label('Plānots')->date('d.m.Y')->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('owner.name')->label('Atbildīgais')->wrap(),
-                Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->wrap(),
+                Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->extraCellAttributes(['class' => 'pdc-nowrap']),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('stage')

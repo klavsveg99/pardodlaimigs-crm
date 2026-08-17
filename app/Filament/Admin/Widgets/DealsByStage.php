@@ -49,9 +49,10 @@ class DealsByStage extends BaseWidget
                         'danger' => 'dokumentu_saskanosana',
                     ])
                     ->formatStateUsing(fn ($state) => Deal::STAGES[$state] ?? $state),
-                Tables\Columns\TextColumn::make('count')->label('Skaits'),
+                Tables\Columns\TextColumn::make('count')->label('Skaits')->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('total_eur')
                     ->label('Kopā')
+                    ->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->money('EUR'),
             ])
             ->paginated(false);

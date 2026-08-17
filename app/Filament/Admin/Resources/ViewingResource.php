@@ -108,6 +108,7 @@ class ViewingResource extends Resource
                     ->label('Kad')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
+                    ->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->color(fn ($record) => $record->status === 'scheduled' && $record->scheduled_at->isPast() ? 'danger' : null),
                 Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40),
                 Tables\Columns\TextColumn::make('client.name')->label('Klients')->searchable(),
@@ -128,7 +129,7 @@ class ViewingResource extends Resource
                         'no_show' => 'Neatnāca',
                         default => $state,
                     }),
-                Tables\Columns\TextColumn::make('duration_min')->label('Min')->alignCenter(),
+                Tables\Columns\TextColumn::make('duration_min')->label('Min')->alignCenter()->extraCellAttributes(['class' => 'pdc-nowrap']),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->options([

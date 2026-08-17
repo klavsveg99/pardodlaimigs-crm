@@ -124,6 +124,13 @@ h1.fi-header-heading {
     min-width: 0 !important;
 }
 
+.fi-ta-table td.pdc-nowrap,
+.fi-ta-table td.pdc-nowrap .fi-ta-text {
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+}
+
 .fi-ta-table th {
     white-space: nowrap !important;
     word-break: normal !important;
