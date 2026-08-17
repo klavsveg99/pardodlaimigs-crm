@@ -8,6 +8,11 @@ html, body {
     margin: 0;
     padding: 0;
 }
+
+html.dark,
+html.dark body {
+    background: #111827 !important;
+}
     html, body, .fi-body, .fi-ta-ctw {
         font-family: 'Source Sans Pro', system-ui, sans-serif !important;
     }
