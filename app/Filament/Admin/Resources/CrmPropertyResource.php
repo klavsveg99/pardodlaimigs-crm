@@ -57,7 +57,7 @@ class CrmPropertyResource extends Resource
                 Forms\Components\TextInput::make('kadastra_nr')->label('Kadastra nr.')->maxLength(32),
             ]),
 
-            Section::make('Atrašanās vieta')->schema([
+            Section::make('Atrašanās vieta')->columnSpanFull()->schema([
                 Forms\Components\TextInput::make('city')->label('Pilsēta')->maxLength(128)->nullable()->columnSpan(1),
                 Forms\Components\TextInput::make('address')->label('Adrese')->maxLength(255)->nullable()->columnSpan(1),
                 Forms\Components\Hidden::make('lat'),
