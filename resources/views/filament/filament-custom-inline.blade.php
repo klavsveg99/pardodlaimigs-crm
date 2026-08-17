@@ -482,25 +482,6 @@ h1.fi-header-heading {
     border-color: #0ea5e9 !important;
 }
 
-/* Dropdown action buttons inside table */
-.dark .fi-ta-table .fi-dropdown-panel .fi-btn,
-.dark .fi-table .fi-dropdown-panel .fi-btn {
-    background: transparent !important;
-    color: #ffffff !important;
-}
-
-.dark .fi-ta-table .fi-dropdown-panel .fi-btn:hover,
-.dark .fi-table .fi-dropdown-panel .fi-btn:hover {
-    background: #374151 !important;
-}
-
-.dark .fi-ta-table .fi-btn.fi-color-gray:hover,
-.dark .fi-table .fi-btn.fi-color-gray:hover,
-.dark .fi-ta-actions .fi-btn.fi-color-gray:hover {
-    background: #4b5563 !important;
-    border-color: #6b7280 !important;
-}
-
 /* Table action icons */
 .dark .fi-ta-table .fi-btn svg,
 .dark .fi-table .fi-btn svg,
@@ -512,11 +493,13 @@ h1.fi-header-heading {
 .dark .fi-ta-table .fi-dropdown-panel .fi-btn,
 .dark .fi-table .fi-dropdown-panel .fi-btn {
     background: transparent !important;
-    color: #f3f4f6 !important;
+    color: #ffffff !important;
 }
 
 .dark .fi-ta-table .fi-dropdown-panel .fi-btn:hover,
 .dark .fi-table .fi-dropdown-panel .fi-btn:hover {
+    background: #374151 !important;
+}
     background: #374151 !important;
 }
 
@@ -654,6 +637,22 @@ h1.fi-header-heading {
 .fi-section-content .fi-fo-field:last-child,
 .fi-section-content .fi-form-field:last-child {
     margin-bottom: 0 !important;
+}
+
+/* Form field inner padding - Filament 3 uses fi-fo-field-wrapper */
+.fi-section-content .fi-fo-field-wrapper,
+.fi-section-content .fi-form-field-wrapper {
+    padding: 0.5rem 0 !important;
+}
+
+.fi-section-content .fi-fo-label,
+.fi-section-content .fi-form-label {
+    margin-bottom: 0.375rem !important;
+}
+
+.fi-section-content .fi-fo-input,
+.fi-section-content .fi-form-input {
+    padding: 0 !important;
 }
 
 /* Grid field spacing in sections */
