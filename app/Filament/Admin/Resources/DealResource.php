@@ -99,8 +99,8 @@ class DealResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('#'),
                 Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->placeholder('—'),
-                Tables\Columns\TextColumn::make('client.name')->label('Klients')->searchable()->weight('bold'),
-                Tables\Columns\TextColumn::make('property.selection_label')->label('Īpašums')->limit(60)->placeholder('—'),
+                Tables\Columns\TextColumn::make('client.name')->label('Klients')->searchable()->weight('bold')->wrap(),
+                Tables\Columns\TextColumn::make('property.selection_label')->label('Īpašums')->limit(60)->wrap()->placeholder('—'),
                 Tables\Columns\TextColumn::make('stage')
                     ->label('Posms')
                     ->badge()
@@ -117,8 +117,8 @@ class DealResource extends Resource
                     ->label('Vērtība')
                     ->money('EUR'),
                 Tables\Columns\TextColumn::make('expected_close_date')->label('Plānots')->date('d.m.Y'),
-                Tables\Columns\TextColumn::make('owner.name')->label('Atbildīgais'),
-                Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since(),
+                Tables\Columns\TextColumn::make('owner.name')->label('Atbildīgais')->wrap(),
+                Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->wrap(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('stage')

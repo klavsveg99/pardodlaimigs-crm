@@ -109,8 +109,31 @@ class PropertiesRelationManager extends RelationManager
             ->headerActions([
                 Actions\AttachAction::make()
                     ->label('Pievienot īpašumu')
+                    ->recordSelectSearchColumns(['title', 'city', 'kadastra_nr', 'id'])
+                    ->schema(function (Actions\AttachAction $action): array {
+                        return [
+                            $action->getRecordSelect(),
+                            Forms\Components\Select::make('relation')
+                                ->label('Saistība')
+                                ->options(function (Get $get): array {
+                                    $property = PropertyCache::find($get('recordId'));
+
+                                    return $property && $this->isSold($property)
+                                        ? ['buyer' => 'Pircējs']
+                                        : [
+                                            'seller' => 'Pārdevējs',
+                                            'tenant' => 'Īrnieks',
+                                            'landlord' => 'Izīrētājs',
+                                            'interested' => 'Interesents',
+                                            'contacted' => 'Sazināts',
+                                        ];
+                                })
+                                ->required(),
+                            Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
+                        ];
+                    })
                     ->validateRecordUsing(function (array $data, $record): void {
-                        $propertyId = $data['id'] ?? $record?->id;
+                        $propertyId = $data['recordId'] ?? $record?->id;
                         $relation = $data['relation'] ?? null;
                         $clientId = $this->getOwnerRecord()->id;
 

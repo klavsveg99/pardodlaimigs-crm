@@ -72,9 +72,28 @@ class ClientsRelationManager extends RelationManager
                     ->label('Mārketings')->boolean(),
             ])
             ->headerActions([
-                Actions\AttachAction::make()->label('Piesaistīt klientu')
+                Actions\AttachAction::make()
+                    ->label('Piesaistīt klientu')
+                    ->recordSelectSearchColumns(['name', 'email', 'phone', 'id'])
+                    ->schema(function (Actions\AttachAction $action): array {
+                        return [
+                            $action->getRecordSelect(),
+                            Forms\Components\Select::make('relation')
+                                ->label('Saistība')
+                                ->options([
+                                    'seller' => 'Pārdevējs',
+                                    'buyer' => 'Pircējs',
+                                    'tenant' => 'Īrnieks',
+                                    'landlord' => 'Izīrētājs',
+                                    'interested' => 'Interesents',
+                                    'contacted' => 'Sazināts',
+                                ])
+                                ->required(),
+                            Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
+                        ];
+                    })
                     ->validateRecordUsing(function (array $data): void {
-                        $clientId = $data['id'] ?? null;
+                        $clientId = $data['recordId'] ?? null;
                         $relation = $data['relation'] ?? null;
                         $propertyId = $this->getOwnerRecord()->id;
 
