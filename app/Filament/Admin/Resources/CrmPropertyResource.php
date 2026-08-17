@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\CrmPropertyResource\Pages;
+use App\Models\ClientCrmProperty;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
@@ -14,6 +15,7 @@ use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Query\Builder;
 use UnitEnum;
 
 class CrmPropertyResource extends Resource
@@ -134,7 +136,10 @@ class CrmPropertyResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('#')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
-                Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->sortable()->weight('bold'),
+                Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->sortable()->weight('bold')
+                    ->description(fn (CrmProperty $record): ?string => $record->clients()
+                        ->wherePivot('relation', 'seller')
+                        ->first()?->name),
                 Tables\Columns\TextColumn::make('category')->label('Kategorija')->badge()->sortable(),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
@@ -158,6 +163,20 @@ class CrmPropertyResource extends Resource
                 Tables\Filters\SelectFilter::make('category')->options(CrmProperty::CATEGORIES),
                 Tables\Filters\SelectFilter::make('city')
                     ->options(fn () => CrmProperty::distinct()->pluck('city', 'city')->filter()->toArray()),
+                Tables\Filters\TernaryFilter::make('has_seller')
+                    ->label('Pārdevējs')
+                    ->boolean()
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereHas('clients', fn ($q) => $q->wherePivot('relation', 'seller')),
+                        false: fn (Builder $query) => $query->whereDoesntHave('clients', fn ($q) => $q->wherePivot('relation', 'seller')),
+                    ),
+                Tables\Filters\TernaryFilter::make('has_buyer')
+                    ->label('Pircējs')
+                    ->boolean()
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereHas('clients', fn ($q) => $q->wherePivot('relation', 'buyer')),
+                        false: fn (Builder $query) => $query->whereDoesntHave('clients', fn ($q) => $q->wherePivot('relation', 'buyer')),
+                    ),
             ])
             ->actions([
                 Actions\ViewAction::make()->label('Skatīt'),
