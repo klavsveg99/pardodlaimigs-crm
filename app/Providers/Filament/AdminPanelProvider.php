@@ -73,6 +73,11 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->login(Login::class);
+            ->login(Login::class)
+            ->navigationGroups([
+                'CRM',
+                'Darbplūsma',
+                'Sistēma',
+            ]);
     }
 }
