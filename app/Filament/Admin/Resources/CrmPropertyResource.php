@@ -10,6 +10,7 @@ use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
@@ -72,7 +73,7 @@ class CrmPropertyResource extends Resource
                     ->columnSpanFull(),
             ]),
 
-            Forms\Components\Grid::make(2)->schema([
+            Grid::make(2)->schema([
                 Section::make('Īpašuma dati')->columns(2)->schema([
                     Forms\Components\TextInput::make('beds')->label('Istabas')->numeric(),
                     Forms\Components\TextInput::make('baths')->label('Vannas istabas')->numeric(),
