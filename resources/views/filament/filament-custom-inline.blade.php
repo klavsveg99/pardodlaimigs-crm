@@ -34,6 +34,49 @@
     color: rgba(255, 255, 255, 0.85) !important;
 }
 
+/* ── Standardized icon colors ─────────────────────────────────── */
+/* Light mode: icons are var(--pdc-primary) on light backgrounds. */
+.fi-icon,
+.fi-btn .fi-icon,
+.fi-section .fi-icon,
+.fi-card .fi-icon,
+.fi-wi-stats-overview-stat .fi-icon,
+.fi-badge .fi-icon,
+.fi-alert .fi-icon,
+.fi-ta-table .fi-icon {
+    color: var(--pdc-primary) !important;
+}
+
+/* Colored button icons stay white (solid bg). */
+.fi-btn.fi-color-primary .fi-icon,
+.fi-btn.fi-color-success .fi-icon,
+.fi-btn.fi-color-warning .fi-icon,
+.fi-btn.fi-color-danger .fi-icon,
+.fi-btn.fi-color-info .fi-icon {
+    color: #ffffff !important;
+}
+
+/* Dark mode: icons are white on dark backgrounds. */
+.dark .fi-icon,
+.dark .fi-btn .fi-icon,
+.dark .fi-section .fi-icon,
+.dark .fi-card .fi-icon,
+.dark .fi-wi-stats-overview-stat .fi-icon,
+.dark .fi-badge .fi-icon,
+.dark .fi-alert .fi-icon,
+.dark .fi-ta-table .fi-icon,
+.dark .fi-modal .fi-icon,
+.dark .fi-dropdown-panel .fi-icon,
+.dark .fi-select-options .fi-icon,
+.dark .fi-fo-select-options .fi-icon {
+    color: #ffffff !important;
+}
+
+/* Sidebar icons stay as-is — excluded from global icon rules. */
+.fi-sidebar .fi-icon {
+    color: inherit !important;
+}
+
 .fi-section-header-heading,
 h1.fi-header-heading {
     color: var(--pdc-primary-darker) !important;
@@ -327,10 +370,6 @@ h1.fi-header-heading {
 }
 
 /* Section headers in dark mode */
-.dark .fi-section-header {
-    border-color: #27303a !important;
-}
-
 .dark .fi-section-header-heading {
     color: #f9fafb !important;
 }
@@ -529,15 +568,32 @@ h1.fi-header-heading {
     }
 }
 
-/* Standardized section spacing for view pages */
+/* Standardized section spacing */
 .fi-section {
     margin-bottom: 1.5rem !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.fi-section > .fi-section-content-ctn {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.fi-section > .fi-section-content-ctn > .fi-section-content {
+    flex: 1 !important;
+}
+
+/* Property form grid - stretch sections to fill row height */
+.fi-fo-field-wrp-grid > .fi-fo-field-wrp > .fi-section {
+    height: 100% !important;
 }
 
 .fi-section-header {
-    margin-bottom: 1rem !important;
-    padding-bottom: 0.75rem !important;
-    border-bottom-width: 1px !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 .fi-section-header-heading {
@@ -546,8 +602,23 @@ h1.fi-header-heading {
     margin: 0 !important;
 }
 
+/* Remove Filament's built-in header/content border on all sections */
+.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+    border-top-style: none !important;
+    border-top-width: 0 !important;
+}
+
 .fi-section-content {
     padding: 1.5rem 2rem !important;
+}
+
+/* Stats overview widget - remove outer padding */
+.fi-wi-stats-overview {
+    padding: 0 !important;
+}
+
+.fi-wi-stats-overview-stat {
+    padding: 1rem !important;
 }
 
 /* Restore Filament form field container spacing */

@@ -72,36 +72,38 @@ class CrmPropertyResource extends Resource
                     ->columnSpanFull(),
             ]),
 
-            Section::make('Īpašuma dati')->columns(3)->schema([
-                Forms\Components\TextInput::make('beds')->label('Istabas')->numeric(),
-                Forms\Components\TextInput::make('baths')->label('Vannas istabas')->numeric(),
-                Forms\Components\TextInput::make('size_m2')->label('Platība (m²)')->numeric(),
-                Forms\Components\TextInput::make('land_m2')->label('Zemes platība (m²)')->numeric(),
-                Forms\Components\TextInput::make('kadastra_nr')
-                    ->label('Kadastra nr.')
-                    ->maxLength(32)
-                    ->columnSpanFull(),
-            ]),
+            Forms\Components\Grid::make(2)->schema([
+                Section::make('Īpašuma dati')->columns(2)->schema([
+                    Forms\Components\TextInput::make('beds')->label('Istabas')->numeric(),
+                    Forms\Components\TextInput::make('baths')->label('Vannas istabas')->numeric(),
+                    Forms\Components\TextInput::make('size_m2')->label('Platība (m²)')->numeric(),
+                    Forms\Components\TextInput::make('land_m2')->label('Zemes platība (m²)')->numeric(),
+                    Forms\Components\TextInput::make('kadastra_nr')
+                        ->label('Kadastra nr.')
+                        ->maxLength(32)
+                        ->columnSpanFull(),
+                ])->columnSpan(1),
 
-            Section::make('Atrašanās vieta')->columns(2)->schema([
-                Forms\Components\TextInput::make('city')
-                    ->label('Pilsēta')
-                    ->maxLength(128)
-                    ->nullable(),
+                Section::make('Atrašanās vieta')->columns(2)->schema([
+                    Forms\Components\TextInput::make('city')
+                        ->label('Pilsēta')
+                        ->maxLength(128)
+                        ->nullable(),
 
-                Forms\Components\TextInput::make('address')
-                    ->label('Adrese')
-                    ->maxLength(255)
-                    ->nullable(),
+                    Forms\Components\TextInput::make('address')
+                        ->label('Adrese')
+                        ->maxLength(255)
+                        ->nullable(),
 
-                Forms\Components\Hidden::make('lat'),
-                Forms\Components\Hidden::make('lng'),
-                View::make('filament.forms.components.google-maps-picker')
-                    ->columnSpanFull()
-                    ->viewData([
-                        'latField' => 'lat',
-                        'lngField' => 'lng',
-                    ]),
+                    Forms\Components\Hidden::make('lat'),
+                    Forms\Components\Hidden::make('lng'),
+                    View::make('filament.forms.components.google-maps-picker')
+                        ->columnSpanFull()
+                        ->viewData([
+                            'latField' => 'lat',
+                            'lngField' => 'lng',
+                        ]),
+                ])->columnSpan(1),
             ]),
 
             Section::make('Apraksts')->columnSpanFull()->schema([
@@ -112,21 +114,15 @@ class CrmPropertyResource extends Resource
             ]),
 
             Section::make('Pielikumi')->columnSpanFull()->schema([
-                Forms\Components\FileUpload::make('attachments')
+                \App\Filament\Forms\Components\AttachmentsGrid::make('attachments')
                     ->label('Fotogrāfijas un plānojumi')
-                    ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
-                        .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
-                    ->multiple()
                     ->reorderable()
                     ->deletable()
-                    ->previewable()
-                    ->openable()
-                    ->storeFileNamesIn('attachment_original_names')
-                    ->acceptedFileTypes(config('attachments.accepted_file_types'))
-                    ->maxSize((int) config('attachments.max_size_kb'))
-                    ->disk('public')
-                    ->directory('attachments')
+                    ->multiselect()
                     ->columnSpanFull(),
+
+                Forms\Components\Hidden::make('attachment_original_names')
+                    ->default([]),
             ]),
         ]);
     }
