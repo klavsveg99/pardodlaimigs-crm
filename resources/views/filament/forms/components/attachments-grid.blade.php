@@ -116,7 +116,7 @@
                             x-on:click="deleteSelected()"
                             class="fi-btn fi-btn-size-sm fi-color-danger fi-btn-type-outlined"
                         >
-                            <x-heroicon-s-trash class="h-4 w-4" />
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clip-rule="evenodd"/></svg>
                             <span>Dzēst</span>
                         </button>
                         <button
@@ -134,7 +134,7 @@
             for="attachments-upload-{{ str_replace('.', '-', $statePath) }}"
             class="fi-btn fi-btn-size-sm fi-color-primary fi-btn-type-outlined cursor-pointer"
         >
-            <x-heroicon-s-plus class="h-4 w-4" />
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
             <span>Pievienot</span>
         </label>
         <input
@@ -190,7 +190,7 @@
                         x-on:click.stop="removeFile(file.id)"
                         class="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                     >
-                        <x-heroicon-s-x-mark class="h-3.5 w-3.5" />
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd"/></svg>
                     </button>
                 @endif
 
@@ -201,7 +201,7 @@
                 @if($isReorderable)
                     <div class="absolute top-2 right-9 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                         <div class="h-6 w-6 rounded bg-black/50 text-white flex items-center justify-center cursor-grab active:cursor-grabbing">
-                            <x-heroicon-s-bars-3 class="h-3.5 w-3.5" />
+                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg>
                         </div>
                     </div>
                 @endif
@@ -222,7 +222,7 @@
             for="attachments-upload-{{ str_replace('.', '-', $statePath) }}"
             class="mt-3 fi-btn fi-btn-size-sm fi-color-primary fi-btn-type-outlined cursor-pointer inline-flex"
         >
-            <x-heroicon-s-plus class="h-4 w-4" />
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
             <span>Pievienot failus</span>
         </label>
     </div>
