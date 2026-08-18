@@ -70,7 +70,7 @@ class ViewingResource extends Resource
                 ->required()
                 ->options(fn () => Client::query()->orderBy('name')->limit(20)->pluck('name', 'id')->all())
                 ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name),
-            Forms\Components\DateTimePicker::make('scheduled_at')->label('Kad')->native(false)->required(),
+            Forms\Components\DateTimePicker::make('scheduled_at')->label('Kad')->native(false)->required()->minDate(now()),
             Forms\Components\TextInput::make('duration_min')->label('Ilgums (min)')->numeric()->default(30),
             Forms\Components\Select::make('agent_user_id')->label('Aģents')
                 ->relationship('agent', 'name')->searchable()->preload()->optionsLimit(20),
