@@ -16,7 +16,7 @@ class AttachmentsGrid extends Field
 
     public bool $multiselect = true;
 
-    public static function make(string $name): static
+    public static function make(?string $name = null): static
     {
         return parent::make($name);
     }
