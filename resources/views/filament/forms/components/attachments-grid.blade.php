@@ -76,7 +76,7 @@
                 formData.append('file', file);
                 formData.append('_token', document.querySelector('meta[name=\"csrf-token\"]').content);
                 try {
-                    const resp = await fetch('{{ route(\'filament.admin.property.upload-attachment\") }}', {
+                    const resp = await fetch(@js(route('filament.admin.property.upload-attachment')), {
                         method: 'POST',
                         body: formData,
                         headers: {
