@@ -12,3 +12,4 @@ Route::get('/gdpr/erase/{email}', [GdprController::class, 'erase'])->name('gdpr.
 // ── CRM Property Feed (WordPress pulls from here) ─────────────
 Route::get('/crm/properties', [CrmPropertyFeedController::class, 'index']);
 Route::get('/crm/properties/{id}', [CrmPropertyFeedController::class, 'show']);
+Route::get('/crm/agents', [CrmPropertyFeedController::class, 'agents']);

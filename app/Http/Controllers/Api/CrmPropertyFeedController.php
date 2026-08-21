@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CrmProperty;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,6 +20,7 @@ class CrmPropertyFeedController extends Controller
         }
 
         $properties = CrmProperty::query()
+            ->with('owner')
             ->orderBy('updated_at', 'desc')
             ->get()
             ->map(fn (CrmProperty $p) => $p->toWpPayload());
@@ -35,10 +37,30 @@ class CrmPropertyFeedController extends Controller
             return response()->json(['message' => 'Unauthorized.'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $property = CrmProperty::findOrFail($id);
+        $property = CrmProperty::with('owner')->findOrFail($id);
 
         return response()->json([
             'property' => $property->toWpPayload(),
+        ]);
+    }
+
+    public function agents(Request $request): JsonResponse
+    {
+        if (! $this->hasValidApiKey($request)) {
+            return response()->json(['message' => 'Unauthorized.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $users = User::query()
+            ->where('role', 'agent')
+            ->get()
+            ->map(fn (User $u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email,
+            ]);
+
+        return response()->json([
+            'agents' => $users,
         ]);
     }
 
