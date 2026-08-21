@@ -11,64 +11,64 @@
     </x-slot>
 
     <x-filament::section heading="Pamatdati">
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div style="display: grid; gap: 1rem; grid-template-columns: repeat(4, 1fr);">
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kategorija</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->category ?: '—' }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Kategorija</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827;">{{ $record->category ?: '—' }}</dd>
             </div>
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Cena</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->price_display ?: '—' }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Cena</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; font-weight: 600; color: #111827;">{{ $record->price_display ?: '—' }}</dd>
             </div>
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atbildīgais</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->owner?->name ?: '—' }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Atbildīgais</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827;">{{ $record->owner?->name ?: '—' }}</dd>
             </div>
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Slug</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">{{ $record->slug ?: '—' }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Slug</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827; font-family: monospace;">{{ $record->slug ?: '—' }}</dd>
             </div>
         </div>
     </x-filament::section>
 
     <x-filament::section heading="Īpašuma dati">
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div style="display: grid; gap: 1rem; grid-template-columns: repeat(4, 1fr);">
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Istabas</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->beds ?: '—' }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Istabas</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827;">{{ $record->beds ?: '—' }}</dd>
             </div>
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Vannas istabas</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->baths ?: '—' }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Vannas istabas</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827;">{{ $record->baths ?: '—' }}</dd>
             </div>
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Platība (m²)</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->size_m2 ?: '—' }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Platība (m²)</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827;">{{ $record->size_m2 ?: '—' }}</dd>
             </div>
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Zemes platība (m²)</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->land_m2 ?: '—' }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Zemes platība (m²)</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827;">{{ $record->land_m2 ?: '—' }}</dd>
             </div>
-            <div class="sm:col-span-2 lg:col-span-2">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kadastra nr.</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">{{ $record->kadastra_nr ?: '—' }}</dd>
+            <div style="grid-column: span 2;">
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Kadastra nr.</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827; font-family: monospace;">{{ $record->kadastra_nr ?: '—' }}</dd>
             </div>
         </div>
     </x-filament::section>
 
     <x-filament::section heading="Atrašanās vieta">
-        <div class="grid gap-3 sm:grid-cols-3">
+        <div style="display: grid; gap: 0.75rem; grid-template-columns: repeat(3, 1fr);">
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pilsēta</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->city ?: '—' }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Pilsēta</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827;">{{ $record->city ?: '—' }}</dd>
             </div>
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Adrese</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->address ?: '—' }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Adrese</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827;">{{ $record->address ?: '—' }}</dd>
             </div>
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Koordinātes</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Koordinātes</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827; font-family: monospace;">
                     {{ $record->lat && $record->lng ? "{$record->lat}, {$record->lng}" : '—' }}
                 </dd>
             </div>
@@ -76,90 +76,93 @@
     </x-filament::section>
 
     <x-filament::section heading="Apraksts">
-        <div class="prose max-w-none text-sm text-gray-700 dark:prose-invert dark:text-gray-300">
-            {!! $record->description ?: '<span class="text-gray-400 dark:text-gray-500">Nav apraksta.</span>' !!}
+        <div style="font-size: 0.875rem; color: #374151;">
+            {!! $record->description ?: '<span style="color: #9ca3af;">Nav apraksta.</span>' !!}
         </div>
     </x-filament::section>
 
     <x-filament::section heading="Pielikumi">
         @if ($record->attachments->isNotEmpty())
-            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+            <div style="display: grid; gap: 0.75rem; grid-template-columns: repeat(5, 1fr);">
                 @foreach ($record->attachments as $attachment)
                     <a href="{{ $attachment->url }}" target="_blank"
-                       class="group relative rounded-xl border border-gray-200 dark:border-white/10 overflow-hidden hover:border-[var(--pdc-primary)] dark:hover:border-[var(--pdc-primary)] transition-colors aspect-video bg-gray-50 dark:bg-white/5">
+                       style="position: relative; border-radius: 0.75rem; overflow: hidden; border: 1px solid #e5e7eb; display: block; aspect-ratio: 16/9; background: #f9fafb; transition: border-color 0.2s;">
                         <img src="{{ $attachment->url }}"
                              alt="{{ $attachment->original_name }}"
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                            <span class="text-white text-xs truncate block w-full">{{ $attachment->original_name }}</span>
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent, transparent); opacity: 0; display: flex; align-items: flex-end; padding: 0.75rem; transition: opacity 0.2s;"
+                             onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
+                            <span style="color: white; font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; width: 100%;">{{ $attachment->original_name }}</span>
                         </div>
                     </a>
                 @endforeach
             </div>
         @else
-            <div class="text-center py-8 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-xl">
-                <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div style="text-align: center; padding: 2rem; border: 2px dashed #e5e7eb; border-radius: 0.75rem;">
+                <svg style="margin: 0 auto; height: 3rem; width: 3rem; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Pielikumu nav.</p>
+                <p style="margin-top: 0.75rem; font-size: 0.875rem; color: #6b7280;">Pielikumu nav.</p>
             </div>
         @endif
     </x-filament::section>
 
     <x-filament::section heading="Saistītie klienti">
         @if ($record->clients->isNotEmpty())
-            <div class="space-y-2">
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                 @foreach ($record->clients as $client)
-                    <div class="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
-                        <div class="flex items-center gap-3">
-                            <x-filament::avatar :label="$client->name" class="h-10 w-10 bg-[var(--pdc-primary)]" />
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background: #f9fafb;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: #285854; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 500;">
+                                {{ strtoupper(substr($client->name, 0, 1)) }}
+                            </div>
                             <div>
-                                <p class="font-medium text-gray-900 dark:text-white">{{ $client->name }}</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                <p style="font-weight: 500; color: #111827;">{{ $client->name }}</p>
+                                <p style="font-size: 0.875rem; color: #6b7280;">
                                     @php
                                         $relationClasses = [
-                                            'seller' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-                                            'buyer' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-                                            'tenant' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-                                            'landlord' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+                                            'seller' => 'background: #fee2e2; color: #991b1b;',
+                                            'buyer' => 'background: #dcfce7; color: #166534;',
+                                            'tenant' => 'background: #fef9c3; color: #854d0e;',
+                                            'landlord' => 'background: #dbeafe; color: #1e40af;',
                                         ];
-                                        $class = $relationClasses[$client->pivot->relation] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+                                        $style = $relationClasses[$client->pivot->relation] ?? 'background: #f3f4f6; color: #374151;';
                                     @endphp
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium {{ $class }}">
+                                    <span style="{{ $style }} padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.25rem;">
                                         {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
                                     </span>
                                 </p>
                             </div>
                         </div>
                         <a href="{{ ClientResource::getUrl('view', ['record' => $client]) }}"
-                           class="text-sm text-[var(--pdc-primary-darker)] dark:text-[var(--pdc-primary)] hover:underline">
+                           style="font-size: 0.875rem; color: #285854; text-decoration: none;">
                             Skatīt klientu
                         </a>
                     </div>
                 @endforeach
             </div>
         @else
-            <p class="text-sm text-gray-500 dark:text-gray-400">Nav saistītu klientu.</p>
+            <p style="font-size: 0.875rem; color: #6b7280;">Nav saistītu klientu.</p>
         @endif
     </x-filament::section>
 
     <x-filament::section heading="Datumi">
-        <div class="grid gap-3 sm:grid-cols-2">
+        <div style="display: grid; gap: 0.75rem; grid-template-columns: repeat(2, 1fr);">
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Izveidots</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->created_at->format('d.m.Y H:i') }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Izveidots</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827;">{{ $record->created_at->format('d.m.Y H:i') }}</dd>
             </div>
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atjaunināts</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->updated_at->format('d.m.Y H:i') }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Atjaunināts</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827;">{{ $record->updated_at->format('d.m.Y H:i') }}</dd>
             </div>
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Publicēts</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->published_at?->format('d.m.Y H:i') ?? '—' }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Publicēts</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827;">{{ $record->published_at?->format('d.m.Y H:i') ?? '—' }}</dd>
             </div>
             <div>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Aizvairs</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->expires_at?->format('d.m.Y') ?? '—' }}</dd>
+                <dt style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Aizvairs</dt>
+                <dd style="margin-top: 0.25rem; font-size: 0.875rem; color: #111827;">{{ $record->expires_at?->format('d.m.Y') ?? '—' }}</dd>
             </div>
         </div>
     </x-filament::section>

@@ -43,46 +43,12 @@ class ClientResource extends Resource
                     Forms\Components\TextInput::make('name')->label('Vārds, uzvārds')->required()->maxLength(255),
                     Forms\Components\TextInput::make('phone')->label('Tālrunis')->tel()->maxLength(40),
                     Forms\Components\TextInput::make('email')->label('E-pasts')->email()->maxLength(255),
-                    Forms\Components\TextInput::make('personas_kods')->label('Personas kods')
+                    \App\Filament\Forms\Components\PersonasKodsInput::make('personas_kods')
+                        ->label('Personas kods')
                         ->maxLength(12)
                         ->regex('/^\d{6}-\d{5}$/')
                         ->helperText('Formāts: XXXXXX-XXXXX')
-                        ->extraInputAttributes([
-                            'x-data' => '{
-                                format(v) {
-                                    let r = v.replace(/[^0-9]/g, "").slice(0, 11);
-                                    return r.length > 6 ? r.slice(0, 6) + "-" + r.slice(6) : r;
-                                },
-                                onKd(e) {
-                                    let p = $el.selectionStart;
-                                    if (e.key === "Backspace" && p === 7 && $el.value[6] === "-") {
-                                        e.preventDefault();
-                                        let d = $el.value.replace(/[^0-9]/g, "").split("");
-                                        d.splice(5, 1);
-                                        let v = this.format(d.join(""));
-                                        $el.value = v;
-                                        $wire.set("personas_kods", v);
-                                        $nextTick(() => { $el.selectionStart = $el.selectionEnd = 6; });
-                                    }
-                                    if (e.key === "Delete" && p === 6 && $el.value[6] === "-") {
-                                        e.preventDefault();
-                                        let d = $el.value.replace(/[^0-9]/g, "").split("");
-                                        d.splice(6, 1);
-                                        let v = this.format(d.join(""));
-                                        $el.value = v;
-                                        $wire.set("personas_kods", v);
-                                        $nextTick(() => { $el.selectionStart = $el.selectionEnd = 7; });
-                                    }
-                                },
-                                onIn() {
-                                    let v = this.format($el.value);
-                                    $el.value = v;
-                                    $wire.set("personas_kods", v);
-                                }
-                            }',
-                            'x-on:keydown' => 'onKd($event)',
-                            'x-on:input' => 'onIn()',
-                        ]),
+                        ->columnSpanFull(),
                     Forms\Components\Select::make('source')
                         ->label('Avots (kā uzzināja)')
                         ->searchable()
