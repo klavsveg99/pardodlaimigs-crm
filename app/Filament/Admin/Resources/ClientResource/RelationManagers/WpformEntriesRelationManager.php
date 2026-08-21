@@ -54,7 +54,7 @@ class WpformEntriesRelationManager extends RelationManager
                 Actions\Action::make('unlink')
                     ->label('Atsaistīt')
                     ->icon('heroicon-o-link-slash')
-                    ->color('warning')
+                    ->color('gray')
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update(['client_id' => null]);

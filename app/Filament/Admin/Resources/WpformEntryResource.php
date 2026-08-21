@@ -80,11 +80,11 @@ class WpformEntryResource extends Resource
             ])
             ->actions([
                 ViewAction::make()->label('Skatīt'),
-                DeleteAction::make()->label('Dzēst'),
+                DeleteAction::make()->label('Dzēst')->color('gray'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->label('Dzēst izvēlētos'),
+                    DeleteBulkAction::make()->label('Dzēst izvēlētos')->color('gray'),
                 ]),
             ])
             ->paginated([25, 50, 100])

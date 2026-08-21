@@ -46,7 +46,7 @@ class ViewWpformEntry extends ViewRecord
             Actions\Action::make('generate_client')
                 ->label('Ģenerēt klientu')
                 ->icon('heroicon-o-user-plus')
-                ->color('success')
+                ->color('primary')
                 ->visible(fn () => $this->record->client_id === null)
                 ->requiresConfirmation()
                 ->modalHeading('Ģenerēt klientu no pieteikuma')
@@ -107,7 +107,7 @@ class ViewWpformEntry extends ViewRecord
             Actions\Action::make('unlink_client')
                 ->label('Atsaistīt klientu')
                 ->icon('heroicon-o-link-slash')
-                ->color('warning')
+                ->color('gray')
                 ->visible(fn () => $this->record->client_id !== null)
                 ->requiresConfirmation()
                 ->action(function () {
@@ -117,7 +117,7 @@ class ViewWpformEntry extends ViewRecord
                         ->success()
                         ->send();
                 }),
-            Actions\DeleteAction::make()->label('Dzēst'),
+            Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
         ];
     }
 }
