@@ -35,7 +35,6 @@
             $wire.set('{{ $statePath }}', v);
         }
     }"
-    class="fi-fo-text-input"
 >
     <input
         type="text"
@@ -43,7 +42,8 @@
         wire:model.live="{{ $statePath }}"
         x-on:keydown="onKd($event)"
         x-on:input="onIn()"
-        class="fi-input"
+        class="fi-input fi-text-input"
         maxlength="12"
+        style="width: 100%;"
     />
 </div>
