@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Pārdod Laimīgs
  */
 
@@ -14,6 +14,10 @@ if (! defined('ABSPATH')) {
 define('PDC_CRM_API_URL', 'https://crm.pardodlaimigs.lv/api/crm/properties');
 define('PDC_CRM_API_KEY', 'g124gqAEeDe3125v523bVScac4v');
 define('PDC_SYNC_INTERVAL', 5 * MINUTE_IN_SECONDS);
+
+function pdc_log($msg) {
+    error_log('[PDC CRM] ' . $msg);
+}
 
 function pdc_map_status($crm_status) {
     switch ($crm_status) {
@@ -34,48 +38,111 @@ function pdc_ensure_category($category_name) {
     return is_wp_error($term) ? 0 : (int) $term['term_id'];
 }
 
+function pdc_find_existing_media($filename) {
+    global $wpdb;
+
+    $like = '%' . $wpdb->esc_like($filename);
+    $meta_id = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND meta_value LIKE %s LIMIT 1",
+            $like
+        )
+    );
+    if ($meta_id && (int) $meta_id > 0) {
+        return (int) $meta_id;
+    }
+
+    $guid_id = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'attachment' AND guid LIKE %s LIMIT 1",
+            $like
+        )
+    );
+    if ($guid_id && (int) $guid_id > 0) {
+        return (int) $guid_id;
+    }
+
+    return 0;
+}
+
 function pdc_sync_attachments($post_id, $attachments) {
+    if (empty($attachments)) {
+        update_post_meta($post_id, 'ere_property_gallery', '');
+        update_post_meta($post_id, '_pdc_crm_documents', []);
+        delete_post_thumbnail($post_id);
+        return;
+    }
+
     require_once ABSPATH . 'wp-admin/includes/file.php';
     require_once ABSPATH . 'wp-admin/includes/media.php';
     require_once ABSPATH . 'wp-admin/includes/image.php';
 
+    $seen = [];
+    $unique = [];
+    foreach ($attachments as $attachment) {
+        $url = isset($attachment['url']) ? esc_url_raw($attachment['url']) : '';
+        if ($url === '') { continue; }
+        $filename = basename($url);
+        if (isset($seen[$filename])) { continue; }
+        $seen[$filename] = true;
+        $attachment['url'] = $url;
+        $attachment['name'] = $filename;
+        $unique[] = $attachment;
+    }
+
     $image_ids = [];
     $documents = [];
+    $need_download = [];
 
-    foreach ($attachments as $attachment) {
-        $url = esc_url_raw($attachment['url'] ?? '');
-        $name = sanitize_file_name($attachment['name'] ?? basename((string) $url));
-        $mime = (string) ($attachment['mime_type'] ?? '');
+    foreach ($unique as $attachment) {
+        $url  = $attachment['url'];
+        $name = $attachment['name'];
+        $mime = isset($attachment['mime_type']) ? $attachment['mime_type'] : '';
 
-        if ($url === '') { continue; }
+        $media_id = pdc_find_existing_media($name);
 
-        $existing = get_posts([
-            'post_type'   => 'attachment',
-            'post_status' => 'inherit',
-            'meta_key'    => '_pdc_crm_attachment_url',
-            'meta_value'  => $url,
-            'numberposts' => 1,
-        ]);
-
-        $media_id = $existing ? (int) $existing[0]->ID : 0;
-        if (! $media_id) {
-            if (strpos($mime, 'image/') === 0) {
-                $media_id = (int) media_sideload_image($url, $post_id, $name, 'id');
-            } else {
-                $tmp = download_url($url);
-                if (! is_wp_error($tmp)) {
-                    $media_id = (int) media_handle_sideload(['name' => $name, 'tmp_name' => $tmp], $post_id, $name);
-                    if (is_wp_error($media_id)) { @unlink($tmp); $media_id = 0; }
-                }
-            }
-            if ($media_id > 0) {
-                update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
-            }
+        if ($media_id > 0) {
+            update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
+        } else {
+            $need_download[] = $attachment;
         }
 
         if ($media_id <= 0) { continue; }
 
-        if (strpos($mime, 'image/') === 0) {
+        if (strpos($mime, 'image/') === 0 || preg_match('/\.(jpe?g|png|gif|webp|bmp)$/i', $name)) {
+            $image_ids[] = $media_id;
+        } else {
+            $documents[] = ['url' => $url, 'name' => $name, 'mime_type' => $mime];
+        }
+    }
+
+    foreach ($need_download as $attachment) {
+        $url  = $attachment['url'];
+        $name = $attachment['name'];
+        $mime = isset($attachment['mime_type']) ? $attachment['mime_type'] : '';
+
+        if (strpos($url, 'crm.pardodlaimigs.lv') !== false) {
+            pdc_log('Skip CRM URL (not publicly accessible): ' . $name);
+            continue;
+        }
+
+        $tmp = @download_url($url, 15);
+        if (is_wp_error($tmp)) {
+            pdc_log('download failed: ' . $name . ': ' . $tmp->get_error_message());
+            continue;
+        }
+
+        $file_array = ['name' => $name, 'tmp_name' => $tmp];
+        $media_id = (int) media_handle_sideload($file_array, $post_id, $name);
+        if (is_wp_error($media_id)) {
+            @unlink($tmp);
+            pdc_log('sideload failed: ' . $name . ': ' . $media_id->get_error_message());
+            continue;
+        }
+
+        update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
+
+        if (strpos($mime, 'image/') === 0 || preg_match('/\.(jpe?g|png|gif|webp|bmp)$/i', $name)) {
             $image_ids[] = $media_id;
         } else {
             $documents[] = ['url' => $url, 'name' => $name, 'mime_type' => $mime];
@@ -90,6 +157,8 @@ function pdc_sync_attachments($post_id, $attachments) {
     } else {
         delete_post_thumbnail($post_id);
     }
+
+    pdc_log('Post #' . $post_id . ': ' . count($image_ids) . ' images (' . count($need_download) . ' downloaded), ' . count($documents) . ' documents');
 }
 
 function pdc_fetch_properties() {
@@ -102,13 +171,13 @@ function pdc_fetch_properties() {
     ]);
 
     if (is_wp_error($response)) {
-        error_log('[PDC CRM] Fetch failed: ' . $response->get_error_message());
+        pdc_log('Fetch failed: ' . $response->get_error_message());
         return [];
     }
 
     $code = wp_remote_retrieve_response_code($response);
     if ($code !== 200) {
-        error_log('[PDC CRM] HTTP ' . $code);
+        pdc_log('HTTP ' . $code);
         return [];
     }
 
@@ -161,7 +230,7 @@ function pdc_upsert_property($data) {
     } else {
         $post_id = wp_insert_post($post_data, true);
         if (is_wp_error($post_id)) {
-            error_log('[PDC CRM] Insert failed for ' . $title . ': ' . $post_id->get_error_message());
+            pdc_log('Insert failed for ' . $title . ': ' . $post_id->get_error_message());
             return 0;
         }
     }
@@ -202,6 +271,12 @@ function pdc_upsert_property($data) {
 }
 
 function pdc_full_sync() {
+    ignore_user_abort(true);
+    set_time_limit(0);
+
+    $start = time();
+    pdc_log('Sync started');
+
     $properties = pdc_fetch_properties();
     $synced = 0;
 
@@ -217,7 +292,6 @@ function pdc_full_sync() {
 
     $orphan_posts = get_posts([
         'post_type'   => 'property',
-        'meta_key'    => '_pdc_crm_id',
         'numberposts' => -1,
         'post_status' => 'any',
     ]);
@@ -227,6 +301,9 @@ function pdc_full_sync() {
             wp_update_post(['ID' => $orphan->ID, 'post_status' => 'private']);
         }
     }
+
+    $elapsed = time() - $start;
+    pdc_log('Sync completed: ' . $synced . ' properties in ' . $elapsed . 's');
 
     update_option('pdc_last_sync', current_time('mysql'));
     update_option('pdc_synced_count', $synced);
