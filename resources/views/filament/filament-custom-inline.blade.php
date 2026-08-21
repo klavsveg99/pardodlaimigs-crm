@@ -592,8 +592,7 @@ h1.fi-header-heading {
 }
 
 .fi-section-header {
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
+    padding: 1.25rem 1.5rem 0 !important;
 }
 
 .fi-section-header-heading {
@@ -609,7 +608,7 @@ h1.fi-header-heading {
 }
 
 .fi-section-content {
-    padding: 1.5rem 2rem !important;
+    padding: 1.25rem 1.5rem !important;
 }
 
 /* Stats overview widget - remove outer padding */
