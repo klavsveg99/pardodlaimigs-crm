@@ -6,20 +6,26 @@
     $isMultiselect = $isMultiselect();
 
     $existingAttachments = $record?->attachments?->sortBy('sort_order')?->values() ?? collect();
+    $attachmentsJson = $existingAttachments->map(fn ($a) => [
+        'id' => $a->id,
+        'path' => $a->path,
+        'url' => $a->url,
+        'name' => $a->original_name,
+    ])->values()->toJson();
 
-    // Compute the original names state path: replace last segment 'attachments' with 'attachment_original_names'
     $originalNamesPath = preg_replace('/attachments$/', 'attachment_original_names', $statePath);
+    $uid = 'att-' . str_replace('.', '-', $statePath);
 @endphp
+
+<script type="application/json" id="{{ $uid }}-data">{!! $attachmentsJson !!}</script>
 
 <div
     x-data="{
-        files: {!! json_encode($existingAttachments->map(fn ($a) => [
-            'id' => $a->id,
-            'path' => $a->path,
-            'url' => $a->url,
-            'name' => $a->original_name,
-        ])->values()) !!},
+        files: [],
         selected: [],
+        init() {
+            this.files = JSON.parse(document.getElementById('{{ $uid }}-data').textContent);
+        },
         get hasSelection() { return this.selected.length > 0 },
         get paths() { return this.files.map(f => f.path) },
         get names() {
@@ -102,7 +108,6 @@
         }
     }"
     wire:ignore
-    class="space-y-3"
 >
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -115,7 +120,7 @@
                             x-on:click="deleteSelected()"
                             class="fi-btn fi-btn-size-sm fi-color-danger fi-btn-type-outlined"
                         >
-                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clip-rule="evenodd"/></svg>
+                            <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clip-rule="evenodd"/></svg>
                             <span>Dzēst</span>
                         </button>
                         <button
@@ -130,23 +135,23 @@
             @endif
         </div>
         <label
-            for="attachments-upload-{{ str_replace('.', '-', $statePath) }}"
-            class="fi-btn fi-btn-size-sm fi-color-primary fi-btn-type-outlined cursor-pointer"
+            for="{{ $uid }}-upload"
+            class="fi-btn fi-btn-size-sm fi-color-primary fi-btn-type-outlined"
+            style="cursor: pointer;"
         >
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
+            <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
             <span>Pievienot</span>
         </label>
         <input
-            id="attachments-upload-{{ str_replace('.', '-', $statePath) }}"
+            id="{{ $uid }}-upload"
             type="file"
             multiple
             accept="{{ implode(',', config('attachments.accepted_file_types', [])) }}"
-            class="hidden"
+            style="display: none;"
             x-on:change="handleUpload($event)"
         />
     </div>
 
-    {{-- Image grid --}}
     <div style="display: grid; gap: 0.75rem; grid-template-columns: repeat(5, 1fr);">
         <template x-for="(file, index) in files" :key="file.id">
             <div
@@ -207,7 +212,6 @@
         </template>
     </div>
 
-    {{-- Empty state --}}
     <div
         x-show="files.length === 0"
         style="text-align: center; padding: 2rem; border: 2px dashed #e5e7eb; border-radius: 0.75rem;"
@@ -217,10 +221,11 @@
         </svg>
         <p style="margin-top: 0.75rem; font-size: 0.875rem; color: #6b7280;">Nav pielikumu.</p>
         <label
-            for="attachments-upload-{{ str_replace('.', '-', $statePath) }}"
-            class="mt-3 fi-btn fi-btn-size-sm fi-color-primary fi-btn-type-outlined cursor-pointer inline-flex"
+            for="{{ $uid }}-upload"
+            style="margin-top: 0.75rem; display: inline-flex; cursor: pointer;"
+            class="fi-btn fi-btn-size-sm fi-color-primary fi-btn-type-outlined"
         >
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
+            <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
             <span>Pievienot failus</span>
         </label>
     </div>
