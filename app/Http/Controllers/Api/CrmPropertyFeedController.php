@@ -51,12 +51,12 @@ class CrmPropertyFeedController extends Controller
         }
 
         $users = User::query()
-            ->where('role', 'agent')
             ->get()
             ->map(fn (User $u) => [
                 'id' => $u->id,
                 'name' => $u->name,
                 'email' => $u->email,
+                'role' => $u->role,
             ]);
 
         return response()->json([
