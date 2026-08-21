@@ -46,6 +46,7 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook('panels::styles.after', fn () => view('filament.page-animations'))
             ->renderHook('panels::styles.after', fn () => view('filament.filament-custom-inline'))
             ->renderHook('panels::scripts.after', fn () => view('filament.badge-poll'))
+            ->renderHook('panels::scripts.after', fn () => view('filament.table-tooltip'))
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([

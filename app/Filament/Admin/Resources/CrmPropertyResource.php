@@ -38,42 +38,42 @@ class CrmPropertyResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Section::make('Pamatdati')->columns(2)->schema([
-                Forms\Components\TextInput::make('title')
-                    ->label('Nosaukums')
-                    ->required()
-                    ->maxLength(255)
-                    ->columnSpanFull(),
-
-                Forms\Components\Select::make('category')
-                    ->label('Kategorija')
-                    ->options(CrmProperty::CATEGORIES)
-                    ->searchable(),
-
-                Forms\Components\Select::make('status')
-                    ->label('Statuss')
-                    ->options(CrmProperty::STATUSES)
-                    ->default('draft')
-                    ->required(),
-
-                Forms\Components\TextInput::make('price_eur')
-                    ->label('Cena (€)')
-                    ->numeric()
-                    ->prefix('€'),
-
-                Forms\Components\Select::make('owner_user_id')
-                    ->label('Atbildīgais')
-                    ->relationship('owner', 'name')
-                    ->searchable()
-                    ->preload(),
-
-                Forms\Components\TextInput::make('slug')
-                    ->label('Slug')
-                    ->maxLength(255)
-                    ->columnSpanFull(),
-            ]),
-
             Grid::make(2)->schema([
+                Section::make('Pamatdati')->columns(2)->schema([
+                    Forms\Components\TextInput::make('title')
+                        ->label('Nosaukums')
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpanFull(),
+
+                    Forms\Components\Select::make('category')
+                        ->label('Kategorija')
+                        ->options(CrmProperty::CATEGORIES)
+                        ->searchable(),
+
+                    Forms\Components\Select::make('status')
+                        ->label('Statuss')
+                        ->options(CrmProperty::STATUSES)
+                        ->default('draft')
+                        ->required(),
+
+                    Forms\Components\TextInput::make('price_eur')
+                        ->label('Cena (€)')
+                        ->numeric()
+                        ->prefix('€'),
+
+                    Forms\Components\Select::make('owner_user_id')
+                        ->label('Atbildīgais')
+                        ->relationship('owner', 'name')
+                        ->searchable()
+                        ->preload(),
+
+                    Forms\Components\TextInput::make('slug')
+                        ->label('Slug')
+                        ->maxLength(255)
+                        ->columnSpanFull(),
+                ])->columnSpan(1),
+
                 Section::make('Īpašuma dati')->columns(2)->schema([
                     Forms\Components\TextInput::make('beds')->label('Istabas')->numeric(),
                     Forms\Components\TextInput::make('baths')->label('Vannas istabas')->numeric(),
@@ -84,35 +84,35 @@ class CrmPropertyResource extends Resource
                         ->maxLength(32)
                         ->columnSpanFull(),
                 ])->columnSpan(1),
+            ])->columnSpanFull(),
 
-                Section::make('Atrašanās vieta')->columns(2)->schema([
-                    Forms\Components\TextInput::make('city')
-                        ->label('Pilsēta')
-                        ->maxLength(128)
-                        ->nullable(),
+            Section::make('Atrašanās vieta')->columns(2)->schema([
+                Forms\Components\TextInput::make('city')
+                    ->label('Pilsēta')
+                    ->maxLength(128)
+                    ->nullable(),
 
-                    Forms\Components\TextInput::make('address')
-                        ->label('Adrese')
-                        ->maxLength(255)
-                        ->nullable(),
+                Forms\Components\TextInput::make('address')
+                    ->label('Adrese')
+                    ->maxLength(255)
+                    ->nullable(),
 
-                    Forms\Components\Hidden::make('lat'),
-                    Forms\Components\Hidden::make('lng'),
-                    View::make('filament.forms.components.google-maps-picker')
-                        ->columnSpanFull()
-                        ->viewData([
-                            'latField' => 'lat',
-                            'lngField' => 'lng',
-                        ]),
-                ])->columnSpan(1),
-            ]),
+                Forms\Components\Hidden::make('lat'),
+                Forms\Components\Hidden::make('lng'),
+                View::make('filament.forms.components.google-maps-picker')
+                    ->columnSpanFull()
+                    ->viewData([
+                        'latField' => 'lat',
+                        'lngField' => 'lng',
+                    ]),
+            ])->columnSpanFull(),
 
             Section::make('Apraksts')->columnSpanFull()->schema([
                 Forms\Components\RichEditor::make('description')
                     ->label('Apraksts')
                     ->extraInputAttributes(['style' => 'min-height: 280px'])
                     ->columnSpanFull(),
-            ]),
+            ])->columnSpanFull(),
 
             Section::make('Pielikumi')->columnSpanFull()->schema([
                 \App\Filament\Forms\Components\AttachmentsGrid::make('attachments')
@@ -124,7 +124,7 @@ class CrmPropertyResource extends Resource
 
                 Forms\Components\Hidden::make('attachment_original_names')
                     ->default([]),
-            ]),
+            ])->columnSpanFull(),
         ]);
     }
 
@@ -150,7 +150,10 @@ class CrmPropertyResource extends Resource
                     ])
                     ->formatStateUsing(fn ($state) => CrmProperty::STATUSES[$state] ?? $state),
                 Tables\Columns\TextColumn::make('city')->label('Pilsēta')->sortable(),
-                Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->sortable()->placeholder('—'),
+                Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->sortable()
+                    ->placeholder(fn ($state) => $state ? null : '—')
+                    ->icon(fn ($state) => $state ? null : 'heroicon-o-exclamation-triangle')
+                    ->iconColor('warning'),
                 Tables\Columns\TextColumn::make('price_eur')->label('Cena')->money('EUR')->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('owner.name')->label('Atbildīgais')->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->sortable(),

@@ -74,11 +74,11 @@ class UserResource extends Resource
             ])
             ->actions([
                 Actions\EditAction::make()->label('Rediģēt'),
-                Actions\DeleteAction::make()->label('Dzēst'),
+                Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([
-                    Actions\DeleteBulkAction::make(),
+                    Actions\DeleteBulkAction::make()->color('gray'),
                 ]),
             ])
             ->paginated([25, 50, 100]);
