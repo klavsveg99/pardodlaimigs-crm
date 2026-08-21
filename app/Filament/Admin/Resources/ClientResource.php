@@ -45,6 +45,7 @@ class ClientResource extends Resource
                     Forms\Components\TextInput::make('email')->label('E-pasts')->email()->maxLength(255),
                     \App\Filament\Forms\Components\PersonasKodsInput::make('personas_kods')
                         ->label('Personas kods')
+                        ->maxLength(12)
                         ->helperText('Formāts: XXXXXX-XXXXX')
                         ->columnSpanFull(),
                     Forms\Components\Select::make('source')
