@@ -15,6 +15,7 @@
 
     $originalNamesPath = preg_replace('/attachments$/', 'attachment_original_names', $statePath);
     $uid = 'att-' . str_replace('.', '-', $statePath);
+    $uploadUrl = route('filament.admin.property.upload-attachment');
 @endphp
 
 <script type="application/json" id="{{ $uid }}-data">{!! $attachmentsJson !!}</script>
@@ -23,8 +24,12 @@
     x-data="{
         files: [],
         selected: [],
+        uploadUrl: null,
+        csrfToken: null,
         init() {
             this.files = JSON.parse(document.getElementById('{{ $uid }}-data').textContent);
+            this.uploadUrl = this.$el.dataset.uploadUrl;
+            this.csrfToken = document.querySelector('meta[name=&quot;csrf-token&quot;]').content;
         },
         get hasSelection() { return this.selected.length > 0 },
         get paths() { return this.files.map(f => f.path) },
@@ -80,13 +85,13 @@
             for (const file of newFiles) {
                 const formData = new FormData();
                 formData.append('file', file);
-                formData.append('_token', document.querySelector('meta[name=\"csrf-token\"]').content);
+                formData.append('_token', this.csrfToken);
                 try {
-                    const resp = await fetch({!! json_encode(route('filament.admin.property.upload-attachment')) !!}, {
+                    const resp = await fetch(this.uploadUrl, {
                         method: 'POST',
                         body: formData,
                         headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name=\"csrf-token\"]').content,
+                            'X-CSRF-TOKEN': this.csrfToken,
                             'X-Requested-With': 'XMLHttpRequest',
                         },
                     });
@@ -108,6 +113,7 @@
         }
     }"
     wire:ignore
+    data-upload-url="{{ $uploadUrl }}"
 >
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
