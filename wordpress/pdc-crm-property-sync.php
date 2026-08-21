@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 1.2.0
+ * Version: 2.0.0
  * Author: Pārdod Laimīgs
  */
 
@@ -13,6 +13,7 @@ if (! defined('ABSPATH')) {
 
 define('PDC_CRM_API_URL', 'https://crm.pardodlaimigs.lv/api/crm/properties');
 define('PDC_CRM_API_KEY', 'g124gqAEeDe3125v523bVScac4v');
+define('PDC_CRM_AGENTS_URL', 'https://crm.pardodlaimigs.lv/api/crm/agents');
 define('PDC_SYNC_INTERVAL', 5 * MINUTE_IN_SECONDS);
 
 function pdc_log($msg) {
@@ -31,6 +32,7 @@ function pdc_map_status($crm_status) {
 }
 
 function pdc_ensure_category($category_name) {
+    if (empty($category_name)) { return 0; }
     $term = term_exists($category_name, 'property-status');
     if (! $term) {
         $term = wp_insert_term($category_name, 'property-status');
@@ -66,16 +68,15 @@ function pdc_find_existing_media($filename) {
 }
 
 function pdc_sync_attachments($post_id, $attachments) {
-    if (empty($attachments)) {
-        update_post_meta($post_id, 'ere_property_gallery', '');
-        update_post_meta($post_id, '_pdc_crm_documents', []);
-        delete_post_thumbnail($post_id);
-        return;
-    }
-
     require_once ABSPATH . 'wp-admin/includes/file.php';
     require_once ABSPATH . 'wp-admin/includes/media.php';
     require_once ABSPATH . 'wp-admin/includes/image.php';
+
+    if (empty($attachments)) {
+        update_post_meta($post_id, 'real_estate_property_images', '');
+        delete_post_thumbnail($post_id);
+        return '';
+    }
 
     $seen = [];
     $unique = [];
@@ -91,13 +92,14 @@ function pdc_sync_attachments($post_id, $attachments) {
     }
 
     $image_ids = [];
-    $documents = [];
     $need_download = [];
 
     foreach ($unique as $attachment) {
         $url  = $attachment['url'];
         $name = $attachment['name'];
         $mime = isset($attachment['mime_type']) ? $attachment['mime_type'] : '';
+
+        $is_image = (strpos($mime, 'image/') === 0 || preg_match('/\.(jpe?g|png|gif|webp|bmp)$/i', $name));
 
         $media_id = pdc_find_existing_media($name);
 
@@ -107,12 +109,8 @@ function pdc_sync_attachments($post_id, $attachments) {
             $need_download[] = $attachment;
         }
 
-        if ($media_id <= 0) { continue; }
-
-        if (strpos($mime, 'image/') === 0 || preg_match('/\.(jpe?g|png|gif|webp|bmp)$/i', $name)) {
+        if ($media_id > 0 && $is_image) {
             $image_ids[] = $media_id;
-        } else {
-            $documents[] = ['url' => $url, 'name' => $name, 'mime_type' => $mime];
         }
     }
 
@@ -122,7 +120,7 @@ function pdc_sync_attachments($post_id, $attachments) {
         $mime = isset($attachment['mime_type']) ? $attachment['mime_type'] : '';
 
         if (strpos($url, 'crm.pardodlaimigs.lv') !== false) {
-            pdc_log('Skip CRM URL (not publicly accessible): ' . $name);
+            pdc_log('Skip CRM URL (not accessible): ' . $name);
             continue;
         }
 
@@ -142,15 +140,14 @@ function pdc_sync_attachments($post_id, $attachments) {
 
         update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
 
-        if (strpos($mime, 'image/') === 0 || preg_match('/\.(jpe?g|png|gif|webp|bmp)$/i', $name)) {
+        $is_image = (strpos($mime, 'image/') === 0 || preg_match('/\.(jpe?g|png|gif|webp|bmp)$/i', $name));
+        if ($is_image) {
             $image_ids[] = $media_id;
-        } else {
-            $documents[] = ['url' => $url, 'name' => $name, 'mime_type' => $mime];
         }
     }
 
-    update_post_meta($post_id, 'ere_property_gallery', implode(',', $image_ids));
-    update_post_meta($post_id, '_pdc_crm_documents', $documents);
+    $gallery = implode('|', $image_ids);
+    update_post_meta($post_id, 'real_estate_property_images', $gallery);
 
     if ($image_ids) {
         set_post_thumbnail($post_id, $image_ids[0]);
@@ -158,11 +155,12 @@ function pdc_sync_attachments($post_id, $attachments) {
         delete_post_thumbnail($post_id);
     }
 
-    pdc_log('Post #' . $post_id . ': ' . count($image_ids) . ' images (' . count($need_download) . ' downloaded), ' . count($documents) . ' documents');
+    pdc_log('Post #' . $post_id . ': ' . count($image_ids) . ' images (' . count($need_download) . ' downloaded)');
+    return $gallery;
 }
 
-function pdc_fetch_properties() {
-    $response = wp_remote_get(PDC_CRM_API_URL, [
+function pdc_fetch_json($url) {
+    $response = wp_remote_get($url, [
         'headers' => [
             'X-CRM-API-Key' => PDC_CRM_API_KEY,
             'Accept'        => 'application/json',
@@ -171,21 +169,69 @@ function pdc_fetch_properties() {
     ]);
 
     if (is_wp_error($response)) {
-        pdc_log('Fetch failed: ' . $response->get_error_message());
-        return [];
+        pdc_log('Fetch failed for ' . $url . ': ' . $response->get_error_message());
+        return null;
     }
 
     $code = wp_remote_retrieve_response_code($response);
     if ($code !== 200) {
-        pdc_log('HTTP ' . $code);
+        pdc_log('HTTP ' . $code . ' for ' . $url);
+        return null;
+    }
+
+    return json_decode(wp_remote_retrieve_body($response), true);
+}
+
+function pdc_sync_agents() {
+    $data = pdc_fetch_json(PDC_CRM_AGENTS_URL);
+    if (! $data || ! isset($data['agents'])) {
+        pdc_log('No agents data from CRM');
         return [];
     }
 
-    $body = json_decode(wp_remote_retrieve_body($response), true);
-    return isset($body['properties']) ? $body['properties'] : [];
+    $agent_map = [];
+    foreach ($data['agents'] as $agent) {
+        $crm_id = isset($agent['id']) ? $agent['id'] : 0;
+        $name = isset($agent['name']) ? $agent['name'] : '';
+        $email = isset($agent['email']) ? $agent['email'] : '';
+        if ($crm_id <= 0 || empty($name)) { continue; }
+
+        $existing = get_posts([
+            'post_type'   => 'agent',
+            'meta_key'    => '_pdc_crm_agent_id',
+            'meta_value'  => $crm_id,
+            'numberposts' => 1,
+            'post_status' => 'any',
+        ]);
+
+        $post_id = $existing ? $existing[0]->ID : 0;
+
+        if ($post_id) {
+            wp_update_post(['ID' => $post_id, 'post_title' => $name, 'post_status' => 'publish']);
+        } else {
+            $post_id = wp_insert_post([
+                'post_title'  => $name,
+                'post_type'   => 'agent',
+                'post_status' => 'publish',
+            ], true);
+            if (is_wp_error($post_id)) {
+                pdc_log('Agent insert failed: ' . $name . ': ' . $post_id->get_error_message());
+                continue;
+            }
+        }
+
+        update_post_meta($post_id, '_pdc_crm_agent_id', $crm_id);
+        update_post_meta($post_id, 'real_estate_agent_email', $email);
+        update_post_meta($post_id, 'real_estate_agent_display_option', 'agent_info');
+
+        $agent_map[$name] = $post_id;
+    }
+
+    pdc_log('Synced ' . count($agent_map) . ' agents');
+    return $agent_map;
 }
 
-function pdc_upsert_property($data) {
+function pdc_upsert_property($data, $agent_map = []) {
     $crm_id   = isset($data['crm_id']) ? $data['crm_id'] : 0;
     $title    = isset($data['title']) ? $data['title'] : '';
     $slug     = isset($data['slug']) ? $data['slug'] : sanitize_title($title);
@@ -203,16 +249,26 @@ function pdc_upsert_property($data) {
     $address  = isset($data['address']) ? $data['address'] : '';
     $lat      = isset($data['lat']) ? $data['lat'] : null;
     $lng      = isset($data['lng']) ? $data['lng'] : null;
+    $agent_name = isset($data['agent']['name']) ? $data['agent']['name'] : '';
 
     $existing = get_posts([
         'post_type'   => 'property',
         'meta_key'    => '_pdc_crm_id',
         'meta_value'  => $crm_id,
-        'numberposts' => 1,
+        'numberposts' => -1,
         'post_status' => 'any',
     ]);
 
-    $post_id = $existing ? $existing[0]->ID : 0;
+    $post_id = 0;
+    if (! empty($existing)) {
+        $post_id = $existing[0]->ID;
+        if (count($existing) > 1) {
+            foreach (array_slice($existing, 1) as $dup) {
+                wp_update_post(['ID' => $dup->ID, 'post_status' => 'private']);
+            }
+        }
+    }
+
     $wp_status = pdc_map_status($status);
 
     $post_data = [
@@ -236,19 +292,30 @@ function pdc_upsert_property($data) {
     }
 
     update_post_meta($post_id, '_pdc_crm_id', $crm_id);
-    update_post_meta($post_id, 'ere_property_price', $price);
-    update_post_meta($post_id, 'ere_property_price_prefix', $currency);
-    update_post_meta($post_id, 'ere_property_bedrooms', $beds);
-    update_post_meta($post_id, 'ere_property_bathrooms', $baths);
-    update_post_meta($post_id, 'ere_property_area', $size_m2);
-    update_post_meta($post_id, 'ere_property_land_area', $land_m2);
-    update_post_meta($post_id, 'ere_property_land_area_unit', 'm²');
-    update_post_meta($post_id, 'ere_property_cadastral_number', $kadastra);
-    update_post_meta($post_id, 'ere_property_address', $address);
-    update_post_meta($post_id, 'ere_property_latitude', $lat);
-    update_post_meta($post_id, 'ere_property_longitude', $lng);
     update_post_meta($post_id, '_pdc_last_sync', current_time('mysql'));
+
+    update_post_meta($post_id, 'real_estate_property_price', $price);
+    update_post_meta($post_id, 'real_estate_property_price_unit', '1');
+    update_post_meta($post_id, 'real_estate_property_price_short', $price);
+    update_post_meta($post_id, 'real_estate_property_price_on_call', 0);
+    update_post_meta($post_id, 'real_estate_property_identity', $post_id);
+    update_post_meta($post_id, 'real_estate_property_size', $size_m2);
+    update_post_meta($post_id, 'real_estate_property_land', $land_m2 ? round($land_m2 / 10000, 2) : '');
+    update_post_meta($post_id, 'real_estate_property_bedrooms', $beds);
+    update_post_meta($post_id, 'real_estate_property_bathrooms', $baths);
+    update_post_meta($post_id, 'real_estate_property_address', $address);
+    update_post_meta($post_id, 'real_estate_property_country', 'LV');
+    update_post_meta($post_id, 'real_estate_property_location', serialize([
+        'location' => ($lat && $lng) ? $lat . ',' . $lng : '',
+        'address'  => $address,
+    ]));
+
     pdc_sync_attachments($post_id, isset($data['attachments']) ? $data['attachments'] : []);
+
+    if (! empty($agent_name) && isset($agent_map[$agent_name])) {
+        update_post_meta($post_id, 'real_estate_property_agent', $agent_map[$agent_name]);
+        update_post_meta($post_id, 'real_estate_agent_display_option', 'agent_info');
+    }
 
     if ($category) {
         $cat_id = pdc_ensure_category($category);
@@ -277,11 +344,19 @@ function pdc_full_sync() {
     $start = time();
     pdc_log('Sync started');
 
-    $properties = pdc_fetch_properties();
+    $agent_map = pdc_sync_agents();
+
+    $data = pdc_fetch_json(PDC_CRM_API_URL);
+    if (! $data || ! isset($data['properties'])) {
+        pdc_log('No properties data from CRM');
+        return 0;
+    }
+
+    $properties = $data['properties'];
     $synced = 0;
 
     foreach ($properties as $prop) {
-        $result = pdc_upsert_property($prop);
+        $result = pdc_upsert_property($prop, $agent_map);
         if ($result > 0) { $synced++; }
     }
 
@@ -314,6 +389,42 @@ add_action('init', function () {
     if (! wp_next_scheduled('pdc_crm_sync_hook')) {
         wp_schedule_event(time(), 'pdc_five_minute', 'pdc_crm_sync_hook');
     }
+});
+
+add_filter('cron_schedules', function ($schedules) {
+    $schedules['pdc_five_minute'] = [
+        'interval' => PDC_SYNC_INTERVAL,
+        'display'  => __('Every 5 Minutes (PDC CRM)'),
+    ];
+    return $schedules;
+});
+
+add_action('pdc_crm_sync_hook', 'pdc_full_sync');
+
+add_action('admin_menu', function () {
+    add_management_page(
+        'CRM Property Sync',
+        'CRM Property Sync',
+        'manage_options',
+        'pdc-crm-sync',
+        function () {
+            if (isset($_POST['pdc_sync_now']) && check_admin_referer('pdc_sync')) {
+                $count = pdc_full_sync();
+                echo '<div class="notice notice-success"><p>Synced ' . esc_html($count) . ' properties from CRM.</p></div>';
+            }
+            $last = get_option('pdc_last_sync', 'Never');
+            $count = get_option('pdc_synced_count', 0);
+            echo '<div class="wrap">';
+            echo '<h1>CRM Property Sync</h1>';
+            echo '<p>Last sync: <strong>' . esc_html($last) . '</strong> &middot; Properties synced: <strong>' . esc_html($count) . '</strong></p>';
+            echo '<form method="post">';
+            wp_nonce_field('pdc_sync');
+            echo '<button type="submit" name="pdc_sync_now" class="button button-primary">Sync Now</button>';
+            echo '</form>';
+            echo '<p>Automatic sync runs every 5 minutes via WP-Cron.</p>';
+            echo '</div>';
+        }
+    );
 });
 
 add_filter('cron_schedules', function ($schedules) {

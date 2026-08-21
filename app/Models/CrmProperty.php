@@ -100,6 +100,14 @@ class CrmProperty extends Model
 
     public function toWpPayload(): array
     {
+        $agent = null;
+        if ($this->owner) {
+            $agent = [
+                'name' => $this->owner->name,
+                'email' => $this->owner->email,
+            ];
+        }
+
         return [
             'title' => $this->title,
             'slug' => $this->slug,
@@ -118,6 +126,7 @@ class CrmProperty extends Model
             'lat' => $this->lat,
             'lng' => $this->lng,
             'crm_id' => $this->id,
+            'agent' => $agent,
             'attachments' => $this->attachments->map(fn (Attachment $attachment) => [
                 'url' => $attachment->url,
                 'name' => $attachment->original_name,
