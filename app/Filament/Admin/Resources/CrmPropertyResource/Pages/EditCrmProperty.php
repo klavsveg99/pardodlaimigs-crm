@@ -25,7 +25,16 @@ class EditCrmProperty extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('save')
+                ->label('Saglabāt')
+                ->icon('heroicon-o-check')
+                ->color('primary')
+                ->keyBindings(['mod+s'])
+                ->action(function () {
+                    $this->save();
+                }),
             $this->getAttachSellerAction(),
+            $this->getAttachBuyerAction(),
             Actions\Action::make('open_site')
                 ->label('Skatīt')
                 ->icon('heroicon-o-arrow-top-right-on-square')

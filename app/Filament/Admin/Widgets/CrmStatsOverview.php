@@ -17,6 +17,11 @@ class CrmStatsOverview extends StatsOverviewWidget
 
     protected function getStats(): array
     {
+        $overdueTasks = Task::whereNull('completed_at')->where('due_at', '<', now())->count();
+        $lateViewings = Viewing::where('scheduled_at', '<', now())
+            ->where('status', '!=', 'done')
+            ->count();
+
         return [
             Stat::make('Aktīvie klienti', Client::whereNull('gdpr_erased_at')->count())
                 ->descriptionIcon('heroicon-o-user-group')
@@ -24,13 +29,14 @@ class CrmStatsOverview extends StatsOverviewWidget
             Stat::make('Atvērtie darījumi', Deal::where('stage', '!=', 'pardots')->count())
                 ->descriptionIcon('heroicon-o-currency-euro')
                 ->color('primary'),
-            Stat::make('Šodienas apskates', Viewing::whereBetween('scheduled_at', [now()->startOfDay(), now()->endOfDay()])->count())
+            Stat::make('Atvērtas apskates', Viewing::whereBetween('scheduled_at', [now()->startOfDay(), now()->endOfDay()])->count())
                 ->descriptionIcon('heroicon-o-calendar-days')
-                ->color('info'),
-            Stat::make('Nokavētie uzdevumi', Task::whereNull('completed_at')->where('due_at', '<', now())->count())
-                ->description('Gaida darītāju')
-                ->descriptionIcon('heroicon-o-exclamation-triangle')
-                ->color('warning'),
+                ->color('info')
+                ->description($lateViewings > 0 ? 'Uzstādejas: '.$lateViewings : ''),
+            Stat::make('Nokavētie uzdevumi', $overdueTasks)
+                ->description($overdueTasks > 0 ? 'Gaida darītāju' : '')
+                ->descriptionIcon($overdueTasks > 0 ? 'heroicon-o-exclamation-triangle' : null)
+                ->color($overdueTasks > 0 ? 'warning' : 'secondary'),
         ];
     }
 }

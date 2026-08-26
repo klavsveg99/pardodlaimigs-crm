@@ -21,6 +21,11 @@ class CrmPropertiesRelationManager extends RelationManager
 
     protected static string|\BackedEnum|null $icon = 'heroicon-o-building-office-2';
 
+    public function query(): Builder
+    {
+        return $this->getOwnerRecord()->crmProperties()->with('owner');
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema->schema([

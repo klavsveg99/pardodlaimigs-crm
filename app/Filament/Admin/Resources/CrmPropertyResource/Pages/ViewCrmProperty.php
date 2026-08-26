@@ -21,6 +21,7 @@ class ViewCrmProperty extends ViewRecord
     {
         return [
             $this->getAttachSellerAction(),
+            $this->getAttachBuyerAction(),
             Actions\EditAction::make()->label('Rediģēt'),
             Actions\Action::make('open_site')
                 ->label('Atvērt vietnē')

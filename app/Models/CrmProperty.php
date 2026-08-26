@@ -32,7 +32,7 @@ class CrmProperty extends Model
         'wp_post_id', 'title', 'slug', 'description', 'image_urls', 'price_cents', 'price_eur',
         'currency', 'category', 'status', 'beds', 'baths',
         'size_m2', 'land_m2', 'kadastra_nr', 'city', 'address',
-        'lat', 'lng', 'owner_user_id',
+        'lat', 'lng', 'owner_user_id', 'sort_order',
     ];
 
     protected $casts = [
@@ -45,6 +45,7 @@ class CrmProperty extends Model
         'land_m2' => 'integer',
         'lat' => 'decimal:7',
         'lng' => 'decimal:7',
+        'sort_order' => 'integer',
     ];
 
     public function owner(): BelongsTo
@@ -126,6 +127,7 @@ class CrmProperty extends Model
             'lat' => $this->lat,
             'lng' => $this->lng,
             'crm_id' => $this->id,
+            'sort_order' => $this->sort_order ?? $this->id,
             'agent' => $agent,
             'attachments' => $this->attachments->map(fn (Attachment $attachment) => [
                 'url' => $attachment->url,
