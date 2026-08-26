@@ -785,6 +785,7 @@ html:has(.cropper-container) .fi-sidebar {
 .fi-section-content .bg-gray-50 { background-color: #f9fafb !important; }
 .fi-section-content .bg-white { background-color: #fff !important; }
 .fi-section-content .p-4 { padding: 1rem !important; }
+.fi-section-content .grid { display: grid !important; }
 .fi-section-content .p-8 { padding: 2rem !important; }
 .fi-section-content .gap-3 { gap: 0.75rem !important; }
 .fi-section-content .text-center { text-align: center !important; }
