@@ -624,6 +624,11 @@ h1.fi-header-heading {
 }
 
 .fi-section-content {
+    padding: 1rem 1.5rem 1.5rem !important;
+}
+
+/* Home stats 4-col box inner padding must be 0 (20px side / 16px top removed) */
+.fi-wi-stats-overview .fi-section-content {
     padding: 0 !important;
 }
 
@@ -671,7 +676,7 @@ h1.fi-header-heading {
     text-transform: uppercase !important;
     letter-spacing: 0.05em !important;
     color: #6b7280 !important;
-    padding: 0 1.25rem 0.25rem 1.25rem !important;
+    margin-bottom: 0.25rem !important;
 }
 
 .dark .fi-section-content dt {
@@ -683,7 +688,6 @@ h1.fi-header-heading {
     font-weight: 400 !important;
     margin: 0 0 1rem 0 !important;
     line-height: 1.5 !important;
-    padding: 0 1.25rem 0 1.25rem !important;
 }
 
 .dark .fi-section-content dd {
@@ -751,5 +755,26 @@ h1.fi-header-heading {
     background: transparent !important;
     border: 2px solid var(--pdc-primary) !important;
     color: var(--pdc-primary) !important;
+}
+
+/* Save button in editor should also use accent, not green */
+.fi-fo-file-upload-editor-control-panel-footer .fi-btn.fi-color-success,
+.fi-fo-file-upload-editor-control-panel-footer .fi-btn.fi-color-success:hover {
+    background-color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+    color: #ffffff !important;
+}
+
+/* Hide admin sidebar/topbar when photo editor modal is open - must appear behind overlay */
+html:has(.fi-modal) .fi-sidebar {
+    display: none !important;
+}
+html:has(.fi-modal) .fi-topbar,
+html:has(.fi-modal) .fi-header,
+html:has(.fi-modal) [class*="form-actions"] {
+    z-index: 1 !important;
+}
+html:has(.cropper-container) .fi-sidebar {
+    display: none !important;
 }
 </style>
