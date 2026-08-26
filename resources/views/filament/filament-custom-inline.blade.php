@@ -271,6 +271,11 @@ h1.fi-header-heading {
     color: #9ca3af !important;
 }
 
+.fi-label {
+    margin-bottom: 0.375rem !important;
+    display: block !important;
+}
+
 .dark .fi-label {
     color: #f9fafb !important;
 }
@@ -483,16 +488,14 @@ h1.fi-header-heading {
 }
 
 .fi-ta-content-ctn {
-    overflow-x: hidden !important;
+    overflow-x: auto !important;
 }
 
 .fi-ta-table {
     table-layout: auto !important;
     box-sizing: border-box !important;
-    width: calc(100% - 2px) !important;
-    max-width: calc(100% - 2px) !important;
-    min-width: 0 !important;
-    margin-inline: 1px !important;
+    width: 100% !important;
+    min-width: 720px !important;
 }
 
 .fi-ta-table td {
