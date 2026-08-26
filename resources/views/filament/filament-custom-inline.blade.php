@@ -790,4 +790,15 @@ html:has(.cropper-container) .fi-sidebar {
 .fi-section-content .text-center { text-align: center !important; }
 .fi-section-content .border-dashed { border-style: dashed !important; }
 .fi-section-content .border-2 { border-width: 2px !important; }
+.fi-section-content .block { display: block !important; }
+.fi-section-content .overflow-hidden { overflow: hidden !important; }
+.fi-section-content .relative { position: relative !important; }
+.fi-section-content .absolute { position: absolute !important; }
+.fi-section-content .inset-0 { inset: 0 !important; }
+.fi-section-content .left-2 { left: 0.5rem !important; }
+.fi-section-content .top-2 { top: 0.5rem !important; }
+.fi-section-content .h-32 { height: 8rem !important; }
+.fi-section-content .w-full { width: 100% !important; }
+.fi-section-content .object-cover { object-fit: cover !important; }
+@media (min-width: 768px) { .fi-section-content .md\:h-36 { height: 9rem !important; } }
 </style>
