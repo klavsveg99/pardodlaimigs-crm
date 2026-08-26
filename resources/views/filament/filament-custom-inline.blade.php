@@ -777,4 +777,17 @@ html:has(.fi-modal) [class*="form-actions"] {
 html:has(.cropper-container) .fi-sidebar {
     display: none !important;
 }
+
+/* View page cards fallback - Tailwind utilities not in compiled app.css */
+.fi-section-content .rounded-xl { border-radius: 0.75rem !important; }
+.fi-section-content .border { border-width: 1px !important; border-style: solid !important; }
+.fi-section-content .border-gray-200 { border-color: #e5e7eb !important; }
+.fi-section-content .bg-gray-50 { background-color: #f9fafb !important; }
+.fi-section-content .bg-white { background-color: #fff !important; }
+.fi-section-content .p-4 { padding: 1rem !important; }
+.fi-section-content .p-8 { padding: 2rem !important; }
+.fi-section-content .gap-3 { gap: 0.75rem !important; }
+.fi-section-content .text-center { text-align: center !important; }
+.fi-section-content .border-dashed { border-style: dashed !important; }
+.fi-section-content .border-2 { border-width: 2px !important; }
 </style>
