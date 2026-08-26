@@ -587,19 +587,14 @@ h1.fi-header-heading {
 /* Standardized section spacing */
 .fi-section {
     margin-bottom: 1.5rem !important;
-    height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
 }
 
 .fi-section > .fi-section-content-ctn {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
+    display: block !important;
 }
 
 .fi-section > .fi-section-content-ctn > .fi-section-content {
-    flex: 1 !important;
+    display: block !important;
 }
 
 /* Property form grid - stretch sections to fill row height */
