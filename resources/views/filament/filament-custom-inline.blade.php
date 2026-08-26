@@ -800,5 +800,8 @@ html:has(.cropper-container) .fi-sidebar {
 .fi-section-content .h-32 { height: 8rem !important; }
 .fi-section-content .w-full { width: 100% !important; }
 .fi-section-content .object-cover { object-fit: cover !important; }
-@media (min-width: 768px) { .fi-section-content .md\:h-36 { height: 9rem !important; } }
+.fi-section-content .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+.fi-section-content .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+@media (min-width: 768px) { .fi-section-content .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } .fi-section-content .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } .fi-section-content .md\:h-36 { height: 9rem !important; } }
+@media (min-width: 1024px) { .fi-section-content .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; } .fi-section-content .lg\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; } }
 </style>
