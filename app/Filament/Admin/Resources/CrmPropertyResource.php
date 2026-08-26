@@ -112,7 +112,7 @@ class CrmPropertyResource extends Resource
 
             Section::make('Apraksts')->columnSpanFull()->schema([
                 Forms\Components\RichEditor::make('description')
-                    ->label('Apraksts')
+                    ->hiddenLabel()
                     ->extraInputAttributes(['style' => 'min-height: 280px'])
                     ->columnSpanFull(),
             ])->columnSpanFull(),

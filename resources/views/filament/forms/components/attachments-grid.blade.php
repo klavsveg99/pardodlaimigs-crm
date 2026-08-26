@@ -213,10 +213,10 @@
                     <button
                         type="button"
                         x-on:click.stop="toggleSelect(file.id)"
-                        style="position: absolute; top: 0.5rem; left: 0.5rem; z-index: 10; height: 1.25rem; width: 1.25rem; border-radius: 0.25rem; border: 2px solid; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                        style="position: absolute; top: 0.5rem; left: 0.5rem; z-index: 10; height: 1.25rem; width: 1.25rem; border-radius: 0.25rem; border: 2px solid; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"
                         :style="selected.includes(file.id)
                             ? 'background: var(--pdc-primary); border-color: var(--pdc-primary); color: white;'
-                            : 'background: rgba(255,255,255,0.8); border-color: #d1d5db; color: transparent;'"
+                            : 'background: rgba(255,255,255,0.95); border-color: #6b7280; color: transparent;'"
                     >
                         <svg x-show="selected.includes(file.id)" style="width: 0.75rem; height: 0.75rem;" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -239,7 +239,7 @@
                 </div>
 
                 @if($isReorderable)
-                    <div class="opacity-0 group-hover:opacity-100 transition-opacity" style="position: absolute; top: 0.5rem; right: 2.25rem; z-index: 10; pointer-events: none;">
+                    <div class="opacity-60 group-hover:opacity-100 transition-opacity" style="position: absolute; top: 0.5rem; right: 2.25rem; z-index: 10; pointer-events: none;">
                         <div style="height: 1.5rem; width: 1.5rem; border-radius: 0.25rem; background: rgba(0,0,0,0.6); color: white; display: flex; align-items: center; justify-content: center; cursor: grab; pointer-events: auto;">
                             <svg style="width: 0.875rem; height: 0.875rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg>
                         </div>
