@@ -10,7 +10,6 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -21,11 +20,6 @@ class CrmPropertiesRelationManager extends RelationManager
     protected static ?string $title = 'Piesaistītie īpašumi';
 
     protected static string|\BackedEnum|null $icon = 'heroicon-o-building-office-2';
-
-    public function query(): Builder
-    {
-        return $this->getOwnerRecord()->crmProperties()->with('owner');
-    }
 
     public function form(Schema $schema): Schema
     {
@@ -88,10 +82,10 @@ class CrmPropertiesRelationManager extends RelationManager
                             Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
                         ];
                     })
-                    ->validateRecordUsing(function (array $data): void {
+                    ->before(function (array $data, $livewire): void {
                         $propertyId = $data['recordId'] ?? null;
                         $relation = $data['relation'] ?? null;
-                        $clientId = $this->getOwnerRecord()->id;
+                        $clientId = $livewire->getOwnerRecord()->id;
 
                         if (! $propertyId || ! $relation) {
                             return;
@@ -127,7 +121,7 @@ class CrmPropertiesRelationManager extends RelationManager
                                 ]);
                             }
 
-                            if (! $this->getOwnerRecord()->marketing_consent) {
+                            if (! $livewire->getOwnerRecord()->marketing_consent) {
                                 throw ValidationException::withMessages([
                                     'data.relation' => 'Lai piesaistītu pircēju pārdotam īpašumam, klientam jābūt mārketinga piekrišanai.',
                                 ]);
