@@ -30,9 +30,9 @@ class CrmStatsOverview extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-o-currency-euro')
                 ->color('primary'),
             Stat::make('Atvērtas apskates', Viewing::whereBetween('scheduled_at', [now()->startOfDay(), now()->endOfDay()])->count())
-                ->descriptionIcon('heroicon-o-calendar-days')
-                ->color('info')
-                ->description($lateViewings > 0 ? 'Uzstādejas: '.$lateViewings : ''),
+                ->description($lateViewings > 0 ? 'Nokavētas: '.$lateViewings : null)
+                ->descriptionIcon($lateViewings > 0 ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-calendar-days')
+                ->color($lateViewings > 0 ? 'warning' : 'info'),
             Stat::make('Nokavētie uzdevumi', $overdueTasks)
                 ->description($overdueTasks > 0 ? 'Gaida darītāju' : '')
                 ->descriptionIcon($overdueTasks > 0 ? 'heroicon-o-exclamation-triangle' : null)

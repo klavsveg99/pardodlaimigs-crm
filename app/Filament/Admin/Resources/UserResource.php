@@ -50,7 +50,8 @@ class UserResource extends Resource
                     ->searchable()
                     ->default(null)
                     ->nullable()
-                    ->native(false),
+                    ->native(false)
+                    ->dehydrateStateUsing(fn ($state) => $state === 'agent' ? 'aģents' : $state),
                 Forms\Components\TextInput::make('password')
                     ->label('Parole (atstāj tukšu, ja nemainīt)')
                     ->password()
@@ -97,12 +98,12 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->toggleable(),
                 Tables\Columns\TextColumn::make('role')->label('Loma')->badge()->sortable()
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        'aģents' => 'Aģents',
+                        'aģents', 'agent' => 'Aģents',
                         'admin' => 'Admin',
                         default => $state ?: '—',
                     })
                     ->color(fn ($state) => match ($state) {
-                        'aģents' => 'gray',
+                        'aģents', 'agent' => 'gray',
                         'admin' => 'success',
                         default => 'gray',
                     }),
