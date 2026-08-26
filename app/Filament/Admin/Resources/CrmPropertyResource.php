@@ -181,26 +181,10 @@ class CrmPropertyResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->label('Statuss')->options(CrmProperty::STATUSES)->multiple()->preload()->searchable(),
                 Tables\Filters\SelectFilter::make('category')->label('Kategorija')->options(CrmProperty::CATEGORIES)->multiple()->preload()->searchable(),
-                Tables\Filters\SelectFilter::make('city')->label('Pilsēta')
-                    ->options(fn () => CrmProperty::distinct()->pluck('city', 'city')->filter()->mapWithKeys(fn ($v) => [$v => $v])->toArray())->searchable()->preload(),
                 Tables\Filters\SelectFilter::make('owner_user_id')->label('Aģents')
                     ->relationship('owner', 'name')
                     ->searchable()
                     ->preload(),
-                Tables\Filters\TernaryFilter::make('has_seller')
-                    ->label('Pārdevējs')
-                    ->boolean()
-                    ->queries(
-                        true: fn (Builder $query) => $query->whereHas('clients', fn ($q) => $q->wherePivot('relation', 'seller')),
-                        false: fn (Builder $query) => $query->whereDoesntHave('clients', fn ($q) => $q->wherePivot('relation', 'seller')),
-                    ),
-                Tables\Filters\TernaryFilter::make('has_buyer')
-                    ->label('Pircējs')
-                    ->boolean()
-                    ->queries(
-                        true: fn (Builder $query) => $query->whereHas('clients', fn ($q) => $q->wherePivot('relation', 'buyer')),
-                        false: fn (Builder $query) => $query->whereDoesntHave('clients', fn ($q) => $q->wherePivot('relation', 'buyer')),
-                    ),
             ])
             ->filtersLayout(FiltersLayout::AboveContent)
             ->filtersFormColumns(3)
