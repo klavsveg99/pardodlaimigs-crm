@@ -271,10 +271,14 @@ h1.fi-header-heading {
     color: #9ca3af !important;
 }
 
-.fi-label {
+.fi-label,
+.fi-fo-field-label {
     margin-bottom: 0.375rem !important;
     display: block !important;
 }
+.opacity-60 { opacity: 0.6 !important; }
+.opacity-0 { opacity: 0 !important; }
+.group:hover .group-hover\:opacity-100 { opacity: 1 !important; }
 
 .dark .fi-label {
     color: #f9fafb !important;
