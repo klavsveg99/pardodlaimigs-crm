@@ -104,6 +104,8 @@ class CrmPropertyResource extends Resource
                     ->viewData([
                         'latField' => 'lat',
                         'lngField' => 'lng',
+                        'cityField' => 'city',
+                        'addressField' => 'address',
                     ]),
             ])->columnSpanFull(),
 
@@ -131,8 +133,25 @@ class CrmPropertyResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->reorderable('sort_order')
+            ->defaultSort('sort_order', 'asc')
             ->columns([
-                Tables\Columns\TextColumn::make('id')->label('#')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
+                Tables\Columns\ImageColumn::make('featured_thumb')
+                    ->label('')
+                    ->getStateUsing(function (CrmProperty $record) {
+                        $first = $record->attachments()->orderBy('sort_order')->first();
+                        if ($first) {
+                            return $first->url;
+                        }
+                        $urls = $record->image_urls ?? [];
+                        return is_array($urls) && !empty($urls[0]) ? $urls[0] : null;
+                    })
+                    ->height(40)
+                    ->width(60)
+                    ->extraAttributes(['style' => 'object-fit: cover; border-radius: 0.375rem;'])
+                    ->defaultImageUrl('https://via.placeholder.com/60x40?text=—'),
+                Tables\Columns\TextColumn::make('sort_order')->label('#')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap'])
+                    ->formatStateUsing(fn ($state, CrmProperty $record) => $record->sort_order ?: $record->id),
                 Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->sortable()->weight('bold')
                     ->description(fn (CrmProperty $record): ?string => $record->clients()
                         ->wherePivot('relation', 'seller')
@@ -149,7 +168,7 @@ class CrmPropertyResource extends Resource
                         'info' => 'sold',
                     ])
                     ->formatStateUsing(fn ($state) => CrmProperty::STATUSES[$state] ?? $state),
-                Tables\Columns\TextColumn::make('city')->label('Pilsēta')->sortable(),
+                Tables\Columns\TextColumn::make('city')->label('Pilsēta')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->sortable()
                     ->placeholder(fn ($state) => $state ? null : '—')
                     ->icon(fn ($state) => $state ? null : 'heroicon-o-exclamation-triangle')
@@ -159,10 +178,14 @@ class CrmPropertyResource extends Resource
                 Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')->options(CrmProperty::STATUSES),
-                Tables\Filters\SelectFilter::make('category')->options(CrmProperty::CATEGORIES),
-                Tables\Filters\SelectFilter::make('city')
-                    ->options(fn () => CrmProperty::distinct()->pluck('city', 'city')->filter()->toArray()),
+                Tables\Filters\SelectFilter::make('status')->label('Statuss')->options(CrmProperty::STATUSES)->multiple()->preload()->searchable(),
+                Tables\Filters\SelectFilter::make('category')->label('Kategorija')->options(CrmProperty::CATEGORIES)->multiple()->preload()->searchable(),
+                Tables\Filters\SelectFilter::make('city')->label('Pilsēta')
+                    ->options(fn () => CrmProperty::distinct()->pluck('city', 'city')->filter()->mapWithKeys(fn ($v) => [$v => $v])->toArray())->searchable()->preload(),
+                Tables\Filters\SelectFilter::make('owner_user_id')->label('Aģents')
+                    ->relationship('owner', 'name')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\TernaryFilter::make('has_seller')
                     ->label('Pārdevējs')
                     ->boolean()
@@ -178,11 +201,11 @@ class CrmPropertyResource extends Resource
                         false: fn (Builder $query) => $query->whereDoesntHave('clients', fn ($q) => $q->wherePivot('relation', 'buyer')),
                     ),
             ])
+            ->filtersFormColumns(3)
             ->actions([
                 Actions\ViewAction::make()->label('Skatīt'),
                 Actions\EditAction::make()->label('Rediģēt'),
-            ])
-            ->defaultSort('updated_at', 'desc');
+            ]);
     }
 
     public static function getPages(): array

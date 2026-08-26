@@ -26,10 +26,13 @@
         selected: [],
         uploadUrl: null,
         csrfToken: null,
+        draggedIndex: null,
         init() {
-            this.files = JSON.parse(document.getElementById('{{ $uid }}-data').textContent);
+            try { this.files = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || []; } catch(e){ this.files=[]; }
             this.uploadUrl = this.$el.dataset.uploadUrl;
-            this.csrfToken = document.querySelector('meta[name=&quot;csrf-token&quot;]').content;
+            this.csrfToken = document.querySelector('meta[name=&quot;csrf-token&quot;]')?.content || document.querySelector('meta[name=csrf-token]')?.content;
+            // expose for debugging
+            window.__pdcAttachments = this;
         },
         get hasSelection() { return this.selected.length > 0 },
         get paths() { return this.files.map(f => f.path) },
@@ -39,8 +42,11 @@
             return map;
         },
         sync() {
-            $wire.set('{{ $statePath }}', this.paths);
-            $wire.set('{{ $originalNamesPath }}', this.names);
+            // Filament v4: use $wire.set with nextTick to ensure Livewire picks up
+            $wire.set('{{ $statePath }}', this.paths, false);
+            $wire.set('{{ $originalNamesPath }}', this.names, false);
+            // also dispatch for Entangle if needed
+            this.$nextTick(() => { $wire.$refresh && $wire.$refresh(); });
         },
         toggleSelect(id) {
             const idx = this.selected.indexOf(id);
@@ -52,32 +58,54 @@
         },
         clearSelection() { this.selected = []; },
         deleteSelected() {
+            if (!this.selected.length) return;
+            if (!confirm(`Dzēst ${this.selected.length} atlasītos failus?`)) return;
             this.files = this.files.filter(f => !this.selected.includes(f.id));
             this.selected = [];
             this.sync();
+            $wire.$refresh && $wire.$refresh();
         },
         removeFile(id) {
+            if (!confirm('Dzēst šo failu?')) return;
             this.files = this.files.filter(f => f.id !== id);
+            this.selected = this.selected.filter(s => s !== id);
             this.sync();
         },
-        dragIndex: null,
         onDragStart(e, index) {
-            this.dragIndex = index;
+            this.draggedIndex = index;
             e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', index);
+            // style feedback
+            setTimeout(() => { e.target.style.opacity = '0.5'; }, 0);
         },
         onDragOver(e, index) {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
+            // visual hint
+            const el = e.currentTarget;
+            el.style.outline = '2px dashed var(--pdc-primary)';
+        },
+        onDragLeave(e) {
+            e.currentTarget.style.outline = '';
         },
         onDrop(e, index) {
             e.preventDefault();
-            if (this.dragIndex === null || this.dragIndex === index) return;
-            const item = this.files.splice(this.dragIndex, 1)[0];
-            this.files.splice(index, 0, item);
-            this.dragIndex = null;
+            e.currentTarget.style.outline = '';
+            const from = this.draggedIndex;
+            if (from === null || from === index) { this.draggedIndex = null; return; }
+            const item = this.files.splice(from, 1)[0];
+            // adjust index if dragging forward
+            const to = from < index ? index - 1 : index;
+            this.files.splice(to, 0, item);
+            this.draggedIndex = null;
             this.sync();
         },
-        onDragEnd() { this.dragIndex = null; },
+        onDragEnd(e) {
+            if (e.target) e.target.style.opacity = '';
+            this.draggedIndex = null;
+            // clear all outlines
+            this.$el.querySelectorAll('[data-attach-card]').forEach(el => el.style.outline = '');
+        },
         async handleUpload(e) {
             const input = e.target || e;
             const newFiles = Array.from(input.files || []);
@@ -112,7 +140,7 @@
             input.value = '';
         }
     }"
-    wire:ignore
+    wire:ignore.self
     data-upload-url="{{ $uploadUrl }}"
 >
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
@@ -158,18 +186,21 @@
         />
     </div>
 
-    <div style="display: grid; gap: 0.75rem; grid-template-columns: repeat(5, 1fr);">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <template x-for="(file, index) in files" :key="file.id">
             <div
-                style="position: relative; border-radius: 0.75rem; overflow: hidden; aspect-ratio: 16/9; background: #f9fafb; transition: border-color 0.2s;"
+                data-attach-card
+                class="group"
+                style="position: relative; border-radius: 0.75rem; overflow: hidden; aspect-ratio: 16/9; background: #f9fafb; transition: all 0.2s; cursor: grab;"
                 :style="selected.includes(file.id)
                     ? 'border: 2px solid var(--pdc-primary); box-shadow: 0 0 0 3px rgba(40,88,84,0.2);'
                     : 'border: 1px solid #e5e7eb;'"
                 @if($isReorderable) draggable="true"
                 x-on:dragstart="onDragStart($event, index)"
                 x-on:dragover="onDragOver($event, index)"
+                x-on:dragleave="onDragLeave($event)"
                 x-on:drop="onDrop($event, index)"
-                x-on:dragend="onDragEnd()"
+                x-on:dragend="onDragEnd($event)"
                 @endif
             >
                 <img
@@ -208,11 +239,12 @@
                 </div>
 
                 @if($isReorderable)
-                    <div style="position: absolute; top: 0.5rem; right: 2.25rem; z-index: 10; opacity: 0; transition: opacity 0.2s; pointer-events: none;">
-                        <div style="height: 1.5rem; width: 1.5rem; border-radius: 0.25rem; background: rgba(0,0,0,0.5); color: white; display: flex; align-items: center; justify-content: center; cursor: grab;">
+                    <div class="opacity-0 group-hover:opacity-100 transition-opacity" style="position: absolute; top: 0.5rem; right: 2.25rem; z-index: 10; pointer-events: none;">
+                        <div style="height: 1.5rem; width: 1.5rem; border-radius: 0.25rem; background: rgba(0,0,0,0.6); color: white; display: flex; align-items: center; justify-content: center; cursor: grab; pointer-events: auto;">
                             <svg style="width: 0.875rem; height: 0.875rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg>
                         </div>
                     </div>
+                    <div x-show="index === 0" style="position: absolute; bottom: 0.5rem; left: 0.5rem; z-index: 10; background: var(--pdc-primary); color: white; font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.4rem; border-radius: 0.25rem; letter-spacing: 0.02em;">GALVENĀ</div>
                 @endif
             </div>
         </template>

@@ -182,6 +182,43 @@ function pdc_fetch_json($url) {
     return json_decode(wp_remote_retrieve_body($response), true);
 }
 
+function pdc_sync_agent_avatar($post_id, $avatar_url) {
+    if (empty($avatar_url)) {
+        delete_post_thumbnail($post_id);
+        return;
+    }
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+    require_once ABSPATH . 'wp-admin/includes/media.php';
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+
+    $url = esc_url_raw($avatar_url);
+    $filename = basename(parse_url($url, PHP_URL_PATH) ?: 'avatar.jpg');
+    if ($filename === '') { $filename = 'avatar.jpg'; }
+
+    $existing = pdc_find_existing_media($filename);
+    if ($existing > 0) {
+        set_post_thumbnail($post_id, $existing);
+        update_post_meta($existing, '_pdc_crm_agent_avatar_url', $url);
+        return;
+    }
+
+    $tmp = @download_url($url, 15);
+    if (is_wp_error($tmp)) {
+        pdc_log('agent avatar download failed: ' . $filename . ': ' . $tmp->get_error_message() . ' url=' . $url);
+        return;
+    }
+    $file_array = ['name' => $filename, 'tmp_name' => $tmp];
+    $media_id = (int) media_handle_sideload($file_array, $post_id, $filename);
+    if (is_wp_error($media_id)) {
+        @unlink($tmp);
+        pdc_log('agent avatar sideload failed: ' . $filename . ': ' . $media_id->get_error_message());
+        return;
+    }
+    update_post_meta($media_id, '_pdc_crm_agent_avatar_url', $url);
+    set_post_thumbnail($post_id, $media_id);
+    pdc_log('Agent #' . $post_id . ' avatar set to ' . $media_id);
+}
+
 function pdc_sync_agents() {
     $data = pdc_fetch_json(PDC_CRM_AGENTS_URL);
     if (! $data || ! isset($data['agents'])) {
@@ -194,6 +231,14 @@ function pdc_sync_agents() {
         $crm_id = isset($agent['id']) ? $agent['id'] : 0;
         $name = isset($agent['name']) ? $agent['name'] : '';
         $email = isset($agent['email']) ? $agent['email'] : '';
+        $phone = isset($agent['phone']) ? $agent['phone'] : '';
+        $position = isset($agent['position']) ? $agent['position'] : '';
+        $description = isset($agent['description']) ? $agent['description'] : '';
+        $avatar_url = isset($agent['avatar_url']) ? $agent['avatar_url'] : '';
+        $facebook_url = isset($agent['facebook_url']) ? $agent['facebook_url'] : '';
+        $instagram_url = isset($agent['instagram_url']) ? $agent['instagram_url'] : '';
+        $linkedin_url = isset($agent['linkedin_url']) ? $agent['linkedin_url'] : '';
+        $website_url = isset($agent['website_url']) ? $agent['website_url'] : '';
         if ($crm_id <= 0 || empty($name)) { continue; }
 
         $existing = get_posts([
@@ -207,10 +252,11 @@ function pdc_sync_agents() {
         $post_id = $existing ? $existing[0]->ID : 0;
 
         if ($post_id) {
-            wp_update_post(['ID' => $post_id, 'post_title' => $name, 'post_status' => 'publish']);
+            wp_update_post(['ID' => $post_id, 'post_title' => $name, 'post_content' => $description, 'post_status' => 'publish']);
         } else {
             $post_id = wp_insert_post([
                 'post_title'  => $name,
+                'post_content' => $description,
                 'post_type'   => 'agent',
                 'post_status' => 'publish',
             ], true);
@@ -222,7 +268,16 @@ function pdc_sync_agents() {
 
         update_post_meta($post_id, '_pdc_crm_agent_id', $crm_id);
         update_post_meta($post_id, 'real_estate_agent_email', $email);
+        update_post_meta($post_id, 'real_estate_agent_mobile_number', $phone);
+        update_post_meta($post_id, 'real_estate_agent_position', $position);
+        update_post_meta($post_id, 'real_estate_agent_description', $description);
+        update_post_meta($post_id, 'real_estate_agent_facebook_url', $facebook_url);
+        update_post_meta($post_id, 'real_estate_agent_instagram_url', $instagram_url);
+        update_post_meta($post_id, 'real_estate_agent_linkedin_url', $linkedin_url);
+        update_post_meta($post_id, 'real_estate_agent_website_url', $website_url);
         update_post_meta($post_id, 'real_estate_agent_display_option', 'agent_info');
+
+        pdc_sync_agent_avatar($post_id, $avatar_url);
 
         $agent_map[$name] = $post_id;
     }
@@ -249,6 +304,7 @@ function pdc_upsert_property($data, $agent_map = []) {
     $address  = isset($data['address']) ? $data['address'] : '';
     $lat      = isset($data['lat']) ? $data['lat'] : null;
     $lng      = isset($data['lng']) ? $data['lng'] : null;
+    $sort_order = isset($data['sort_order']) ? (int) $data['sort_order'] : 0;
     $agent_name = isset($data['agent']['name']) ? $data['agent']['name'] : '';
 
     $existing = get_posts([
@@ -277,7 +333,7 @@ function pdc_upsert_property($data, $agent_map = []) {
         'post_content' => $content,
         'post_status'  => $wp_status,
         'post_type'    => 'property',
-        'menu_order'   => 0,
+        'menu_order'   => $sort_order,
     ];
 
     if ($post_id) {
@@ -299,16 +355,20 @@ function pdc_upsert_property($data, $agent_map = []) {
     update_post_meta($post_id, 'real_estate_property_price_short', $price);
     update_post_meta($post_id, 'real_estate_property_price_on_call', 0);
     update_post_meta($post_id, 'real_estate_property_identity', $post_id);
-    update_post_meta($post_id, 'real_estate_property_size', $size_m2);
+    // Size may be NULL for land-only properties (e.g., Zeme) — store 0 so ERE size slider (0-3000) doesn't exclude them via meta_query
+    update_post_meta($post_id, 'real_estate_property_size', $size_m2 !== null && $size_m2 !== '' ? $size_m2 : 0);
     update_post_meta($post_id, 'real_estate_property_land', $land_m2 ? round($land_m2 / 10000, 2) : '');
     update_post_meta($post_id, 'real_estate_property_bedrooms', $beds);
     update_post_meta($post_id, 'real_estate_property_bathrooms', $baths);
     update_post_meta($post_id, 'real_estate_property_address', $address);
     update_post_meta($post_id, 'real_estate_property_country', 'LV');
-    update_post_meta($post_id, 'real_estate_property_location', serialize([
+    // ERE expects property_location as array ['location' => 'lat,lng', 'address' => '...']
+    // Must pass array directly — WP will serialize once. Passing serialize() causes double-serialization
+    // (s:"a:2:{...}") which breaks ERE maps. Coords are critical for LV addresses that don't geocode reliably.
+    update_post_meta($post_id, 'real_estate_property_location', [
         'location' => ($lat && $lng) ? $lat . ',' . $lng : '',
         'address'  => $address,
-    ]));
+    ]);
 
     pdc_sync_attachments($post_id, isset($data['attachments']) ? $data['attachments'] : []);
 

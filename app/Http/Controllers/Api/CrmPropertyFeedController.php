@@ -57,6 +57,14 @@ class CrmPropertyFeedController extends Controller
                 'name' => $u->name,
                 'email' => $u->email,
                 'role' => $u->role,
+                'phone' => $u->phone,
+                'position' => $u->position,
+                'description' => $u->description,
+                'avatar_url' => $u->avatar_url,
+                'facebook_url' => $u->facebook_url,
+                'instagram_url' => $u->instagram_url,
+                'linkedin_url' => $u->linkedin_url,
+                'website_url' => $u->website_url,
             ]);
 
         return response()->json([

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'calendar_token'])]
+#[Fillable(['name', 'email', 'password', 'role', 'calendar_token', 'phone', 'position', 'description', 'avatar_path', 'facebook_url', 'instagram_url', 'linkedin_url', 'website_url', 'office_address'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -38,6 +38,15 @@ class User extends Authenticatable implements FilamentUser
             'user' => $this->id,
             'token' => $this->calendar_token,
         ]);
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (! $this->avatar_path) {
+            return null;
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->avatar_path);
     }
 
     /**

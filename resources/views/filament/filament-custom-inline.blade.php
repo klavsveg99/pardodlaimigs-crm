@@ -129,8 +129,24 @@ h1.fi-header-heading {
 }
 
 .fi-modal,
-.fi-modal-window {
-    z-index: 10000 !important;
+.fi-modal-window,
+.fi-file-upload .fi-modal,
+.cropper-container,
+.cropper-modal,
+.fi-file-upload-image-editor {
+    z-index: 99999 !important;
+}
+
+.fi-modal .fi-modal-overlay,
+.fi-modal .fi-modal-window {
+    z-index: 99999 !important;
+}
+
+.fi-file-upload .fi-btn.fi-color-primary,
+.fi-file-upload-image-editor .fi-btn.fi-color-primary {
+    background-color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+    color: #ffffff !important;
 }
 
 /* Colored buttons have solid backgrounds, so their labels stay white. */
@@ -608,7 +624,16 @@ h1.fi-header-heading {
 }
 
 .fi-section-content {
-    padding: 1.25rem 1.5rem 2rem !important;
+    padding: 0 !important;
+}
+
+/* Fix massive perceived bottom padding: remove extra dd margin on last card */
+.fi-section-content .grid > div:last-child dd,
+.fi-section-content .rounded-xl dd {
+    margin-bottom: 0 !important;
+}
+.fi-section-content dd:last-child {
+    margin-bottom: 0 !important;
 }
 
 /* Stats overview widget - remove outer padding */
@@ -646,7 +671,7 @@ h1.fi-header-heading {
     text-transform: uppercase !important;
     letter-spacing: 0.05em !important;
     color: #6b7280 !important;
-    margin-bottom: 0.25rem !important;
+    padding: 0 1.25rem 0.25rem 1.25rem !important;
 }
 
 .dark .fi-section-content dt {
@@ -658,6 +683,7 @@ h1.fi-header-heading {
     font-weight: 400 !important;
     margin: 0 0 1rem 0 !important;
     line-height: 1.5 !important;
+    padding: 0 1.25rem 0 1.25rem !important;
 }
 
 .dark .fi-section-content dd {
@@ -699,5 +725,31 @@ h1.fi-header-heading {
 /* Avatar + text spacing */
 .fi-section-content .flex.items-center.gap-3 {
     gap: 0.75rem !important;
+}
+
+/* File upload editor control panel footer buttons */
+.fi-fo-file-upload-editor-control-panel-footer {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.fi-fo-file-upload-editor-control-panel-footer .fi-btn {
+    flex: 1;
+    font-size: 0.875rem;
+}
+
+.fi-fo-file-upload-editor-control-panel-footer .fi-btn.fi-color-primary,
+.fi-fo-file-upload-editor-control-panel-footer .fi-btn.fi-color-primary:hover {
+    background-color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+    color: #ffffff !important;
+}
+
+.fi-fo-file-upload-editor-control-panel-footer .fi-btn.fi-color-primary.fi-btn-type-outlined,
+.fi-fo-file-upload-editor-control-panel-footer .fi-btn.fi-color-primary.fi-btn-type-outlined:hover {
+    background: transparent !important;
+    border: 2px solid var(--pdc-primary) !important;
+    color: var(--pdc-primary) !important;
 }
 </style>
