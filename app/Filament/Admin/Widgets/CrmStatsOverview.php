@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Client;
-use App\Models\Deal;
 use App\Models\Task;
 use App\Models\Viewing;
 use Filament\Widgets\StatsOverviewWidget;
@@ -19,7 +18,7 @@ class CrmStatsOverview extends StatsOverviewWidget
     {
         return [
             'md' => 2,
-            'lg' => 4,
+            'lg' => 3,
         ];
     }
 
@@ -34,9 +33,6 @@ class CrmStatsOverview extends StatsOverviewWidget
             Stat::make('Aktīvie klienti', Client::whereNull('gdpr_erased_at')->count())
                 ->descriptionIcon('heroicon-o-user-group')
                 ->color('success'),
-            Stat::make('Atvērtie darījumi', Deal::where('stage', '!=', 'pardots')->count())
-                ->descriptionIcon('heroicon-o-currency-euro')
-                ->color('primary'),
             Stat::make('Atvērtas apskates', Viewing::whereBetween('scheduled_at', [now()->startOfDay(), now()->endOfDay()])->count())
                 ->description($lateViewings > 0 ? 'Nokavētas: '.$lateViewings : null)
                 ->descriptionIcon($lateViewings > 0 ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-calendar-days')
