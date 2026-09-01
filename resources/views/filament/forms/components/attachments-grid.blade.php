@@ -318,6 +318,7 @@
 
     <!-- Lightbox Gallery -->
     <div
+        x-cloak
         x-show="lightboxOpen"
         x-transition.opacity
         style="position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.92); padding: 1rem;"

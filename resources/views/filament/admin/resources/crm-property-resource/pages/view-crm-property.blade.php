@@ -88,17 +88,23 @@
 
     <x-filament::section heading="Pielikumi">
         @if ($record->attachments->isNotEmpty())
+            @php
+                $galleryJson = $record->attachments->map(fn($a)=>["url"=>$a->url,"name"=>$a->original_name])->values()->toJson();
+                $galleryUid = "view-gallery-".$record->id;
+            @endphp
+            <script type="application/json" id="{{ $galleryUid }}-data">{!! $galleryJson !!}</script>
             <div
-                x-data='{
+                x-data="{
                     open: false,
                     index: 0,
-                    items: @js($record->attachments->map(fn($a)=>["url"=>$a->url,"name"=>$a->original_name])->values()),
+                    items: [],
+                    init(){ try{ this.items = JSON.parse(document.getElementById('{{ $galleryUid }}-data').textContent) || []; }catch(e){ this.items=[]; } },
                     get current() { return this.items[this.index] || null; },
-                    show(i){ this.index=i; this.open=true; document.body.style.overflow="hidden"; },
-                    close(){ this.open=false; document.body.style.overflow=""; },
+                    show(i){ this.index=i; this.open=true; document.body.style.overflow='hidden'; },
+                    close(){ this.open=false; document.body.style.overflow=''; },
                     prev(){ this.index = this.index>0 ? this.index-1 : this.items.length-1; },
                     next(){ this.index = this.index < this.items.length-1 ? this.index+1 : 0; },
-                }'
+                }"
                 x-on:keydown.escape.window="if(open) close()"
                 x-on:keydown.arrow-left.window="if(open) prev()"
                 x-on:keydown.arrow-right.window="if(open) next()"
@@ -126,6 +132,7 @@
 
                 <!-- Lightbox Gallery -->
                 <div
+                    x-cloak
                     x-show="open"
                     x-transition.opacity
                     style="position:fixed; inset:0; z-index:99999; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.92); padding:1rem;"
