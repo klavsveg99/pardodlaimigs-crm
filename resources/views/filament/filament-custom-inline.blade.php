@@ -271,10 +271,30 @@ h1.fi-header-heading {
     color: #9ca3af !important;
 }
 
-.fi-label,
-.fi-fo-field-label {
+/* Regular field labels are block above input; checkbox/radio inline labels are flex row */
+.fi-label {
     margin-bottom: 0.375rem !important;
     display: block !important;
+}
+.fi-fo-field:not(.fi-fo-field-has-inline-label) .fi-fo-field-label {
+    margin-bottom: 0.375rem !important;
+    display: block !important;
+}
+.fi-fo-field.fi-fo-field-has-inline-label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.625rem !important;
+}
+.fi-fo-field.fi-fo-field-has-inline-label .fi-fo-field-label {
+    margin-bottom: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+.fi-fo-field.fi-fo-field-has-inline-label .fi-checkbox-input,
+.fi-fo-field.fi-fo-field-has-inline-label .fi-radio-input {
+    margin: 0 !important;
+    flex-shrink: 0 !important;
 }
 .opacity-60 { opacity: 0.6 !important; }
 .opacity-0 { opacity: 0 !important; }
@@ -600,8 +620,15 @@ h1.fi-header-heading {
     display: block !important;
 }
 
-.fi-section > .fi-section-content-ctn > .fi-section-content {
+/* Do NOT force .fi-section-content to block when it is a grid (e.g. Section columns(2) or StatsOverview).
+   Filament renders .fi-section-content as .fi-grid + .fi-sc when columns are set – forcing block
+   collapses the 2-col form (Client Piezīmes/Pielikumi) and the 4-col stats. */
+.fi-section > .fi-section-content-ctn > .fi-section-content:not(.fi-grid) {
     display: block !important;
+}
+.fi-section > .fi-section-content-ctn > .fi-section-content.fi-grid {
+    /* keep Filament's grid (display:grid) – only normalize padding here, grid itself is required */
+    display: grid !important;
 }
 
 /* Property form grid - stretch sections to fill row height */
