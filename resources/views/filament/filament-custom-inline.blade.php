@@ -786,6 +786,9 @@ html:has(.cropper-container) .fi-sidebar {
 .fi-section-content .h-32 { height: 8rem !important; }
 .fi-section-content .w-full { width: 100% !important; }
 .fi-section-content .object-cover { object-fit: cover !important; }
+.fi-section-content .mt-4 { margin-top: 1rem !important; }
+.fi-section-content .mt-6 { margin-top: 1.5rem !important; }
+.fi-section-content .shadow-sm { --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 1px 2px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1)); box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow); }
 .fi-section-content .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
 .fi-section-content .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 @media (min-width: 768px) { .fi-section-content .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } .fi-section-content .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } .fi-section-content .md\:h-36 { height: 9rem !important; } }
