@@ -48,14 +48,25 @@ class UserResource extends Resource
                         'admin' => 'Admin',
                     ])
                     ->searchable()
-                    ->default(null)
-                    ->nullable()
+                    ->default('aģents')
+                    ->required()
                     ->native(false)
                     ->dehydrateStateUsing(fn ($state) => $state === 'agent' ? 'aģents' : $state),
                 Forms\Components\TextInput::make('password')
-                    ->label('Parole (atstāj tukšu, ja nemainīt)')
+                    ->label('Parole')
+                    ->hint(fn (string $operation): ?string => $operation === 'edit' ? 'Atstāj tukšu, ja nemainīt' : null)
                     ->password()
+                    ->revealable()
+                    ->required(fn (string $operation): bool => $operation === 'create')
                     ->dehydrated(fn ($state) => filled($state))
+                    ->maxLength(255)
+                    ->confirmed(),
+                Forms\Components\TextInput::make('password_confirmation')
+                    ->label('Parole atkārtoti')
+                    ->password()
+                    ->revealable()
+                    ->required(fn (string $operation): bool => $operation === 'create')
+                    ->dehydrated(false)
                     ->maxLength(255),
             ])->columns(2),
 
@@ -84,6 +95,7 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('instagram_url')->label('Instagram URL')->url()->maxLength(500)->columnSpan(1),
                 Forms\Components\TextInput::make('linkedin_url')->label('LinkedIn URL')->url()->maxLength(500)->columnSpan(1),
                 Forms\Components\TextInput::make('website_url')->label('Mājaslapa')->url()->maxLength(500)->columnSpan(1),
+                Forms\Components\TextInput::make('office_address')->label('Biroja adrese')->maxLength(500)->placeholder('Rīga, Brīvības iela 1')->columnSpanFull(),
             ])->columns(2),
         ]);
     }
@@ -96,6 +108,7 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->toggleable(),
+                Tables\Columns\TextColumn::make('office_address')->label('Birojs')->searchable()->toggleable(isToggledHiddenByDefault: true)->placeholder('—'),
                 Tables\Columns\TextColumn::make('role')->label('Loma')->badge()->sortable()
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'aģents', 'agent' => 'Aģents',

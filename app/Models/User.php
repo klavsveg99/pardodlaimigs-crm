@@ -19,6 +19,19 @@ class User extends Authenticatable implements FilamentUser
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    protected static function booted(): void
+    {
+        static::creating(function (self $user) {
+            if (empty($user->calendar_token)) {
+                $user->calendar_token = bin2hex(random_bytes(32));
+            }
+            // Ensure role defaults to aģents for new agents via UI
+            if (empty($user->role)) {
+                $user->role = 'aģents';
+            }
+        });
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return true;
