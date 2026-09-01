@@ -124,8 +124,10 @@ h1.fi-header-heading {
 [x-float],
 .fi-dropdown-panel,
 .fi-select-options,
-.fi-fo-select-options {
-    z-index: 9999 !important;
+.fi-fo-select-options,
+.fi-fo-field .fi-select-options,
+.fi-dropdown-panel[x-float] {
+    z-index: 50000 !important;
 }
 
 /* Reduce sidebar/header authority – modals/lightbox/editor must be on top */
@@ -162,18 +164,31 @@ h1.fi-header-heading {
     color: #ffffff !important;
 }
 
-/* Colored buttons have solid backgrounds, so their labels stay white. */
-.fi-btn.fi-color-primary,
-.fi-btn.fi-color-primary *,
-.fi-btn.fi-color-success,
-.fi-btn.fi-color-success *,
-.fi-btn.fi-color-warning,
-.fi-btn.fi-color-warning *,
-.fi-btn.fi-color-danger,
-.fi-btn.fi-color-danger *,
-.fi-btn.fi-color-info,
-.fi-btn.fi-color-info * {
+/* Colored buttons have solid backgrounds, so their labels stay white – only for solid (not outlined/ghost) */
+.fi-btn.fi-color-primary:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost),
+.fi-btn.fi-color-primary:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost) *,
+.fi-btn.fi-color-success:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost),
+.fi-btn.fi-color-success:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost) *,
+.fi-btn.fi-color-warning:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost),
+.fi-btn.fi-color-warning:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost) *,
+.fi-btn.fi-color-danger:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost),
+.fi-btn.fi-color-danger:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost) *,
+.fi-btn.fi-color-info:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost),
+.fi-btn.fi-color-info:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost) * {
     color: #ffffff !important;
+}
+
+/* Outlined danger (Dzēst atlasītos) must be red on transparent, not white-on-white */
+.fi-btn.fi-color-danger.fi-btn-type-outlined {
+    background-color: transparent !important;
+    border-color: #cf2e2e !important;
+    color: #cf2e2e !important;
+}
+.fi-btn.fi-color-danger.fi-btn-type-outlined * {
+    color: #cf2e2e !important;
+}
+.fi-btn.fi-color-danger.fi-btn-type-outlined:hover {
+    background-color: rgba(207,46,46,0.08) !important;
 }
 
 .fi-btn.fi-color-primary {
