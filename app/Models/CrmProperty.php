@@ -33,11 +33,14 @@ class CrmProperty extends Model
         'currency', 'category', 'status', 'beds', 'baths',
         'size_m2', 'land_m2', 'kadastra_nr', 'city', 'address',
         'lat', 'lng', 'owner_user_id', 'sort_order',
+        'final_price_eur', 'commission_eur',
     ];
 
     protected $casts = [
         'price_cents' => 'integer',
         'price_eur' => 'decimal:2',
+        'final_price_eur' => 'decimal:2',
+        'commission_eur' => 'decimal:2',
         'image_urls' => 'array',
         'beds' => 'integer',
         'baths' => 'integer',
@@ -97,6 +100,18 @@ class CrmProperty extends Model
     {
         return rtrim((string) config('wp-bridge.wordpress.site_url'), '/')
             .'/ipasums/'.($this->slug ?: $this->wp_post_id ?: $this->id).'/';
+    }
+
+    public function getCommissionPercentAttribute(): ?float
+    {
+        $final = (float) ($this->final_price_eur ?? 0);
+        $comm = (float) ($this->commission_eur ?? 0);
+
+        if ($final <= 0 || $comm <= 0) {
+            return null;
+        }
+
+        return round($comm / $final * 100, 2);
     }
 
     public function toWpPayload(): array

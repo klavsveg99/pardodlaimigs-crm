@@ -29,6 +29,29 @@
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all">{{ $record->slug ?: '—' }}</dd>
             </div>
         </div>
+        @if($record->status === 'sold')
+            <div class="mt-6 grid gap-3 grid-cols-1 md:grid-cols-3">
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800/30 dark:bg-emerald-900/20">
+                    <dt class="text-sm font-medium text-emerald-700 dark:text-emerald-300">Gala cena (pārdots)</dt>
+                    <dd class="mt-1 text-lg font-bold text-emerald-900 dark:text-emerald-100">{{ $record->final_price_eur ? number_format((float) $record->final_price_eur, 2, ',', ' ') . ' €' : '—' }}</dd>
+                </div>
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800/30 dark:bg-emerald-900/20">
+                    <dt class="text-sm font-medium text-emerald-700 dark:text-emerald-300">Komisijas summa</dt>
+                    <dd class="mt-1 text-lg font-bold text-emerald-900 dark:text-emerald-100">{{ $record->commission_eur ? number_format((float) $record->commission_eur, 2, ',', ' ') . ' €' : '—' }}</dd>
+                </div>
+                <div class="rounded-xl border border-[var(--pdc-primary)]/20 bg-[var(--pdc-primary)]/10 p-4 dark:bg-[var(--pdc-primary)]/15">
+                    <dt class="text-sm font-medium text-[var(--pdc-primary)] dark:text-white">Komisija %</dt>
+                    <dd class="mt-1 text-lg font-bold text-[var(--pdc-primary-darker)] dark:text-white">
+                        @if($record->commission_percent !== null)
+                            {{ number_format($record->commission_percent, 2, ',', ' ') }} %
+                        @else
+                            —
+                        @endif
+                    </dd>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">No gala cenas</p>
+                </div>
+            </div>
+        @endif
     </x-filament::section>
 
     <x-filament::section heading="Īpašuma dati">

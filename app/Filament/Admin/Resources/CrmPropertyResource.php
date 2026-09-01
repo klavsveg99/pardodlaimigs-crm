@@ -12,6 +12,7 @@ use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -56,7 +57,38 @@ class CrmPropertyResource extends Resource
                         ->label('Statuss')
                         ->options(CrmProperty::STATUSES)
                         ->default('draft')
-                        ->required(),
+                        ->required()
+                        ->live(),
+
+                    Grid::make(3)
+                        ->columnSpanFull()
+                        ->visible(fn (Get $get): bool => $get('status') === 'sold')
+                        ->schema([
+                            Forms\Components\TextInput::make('final_price_eur')
+                                ->label('Gala cena (€)')
+                                ->numeric()
+                                ->prefix('€')
+                                ->placeholder('Ievadi gala cenu')
+                                ->live(onBlur: false),
+                            Forms\Components\TextInput::make('commission_eur')
+                                ->label('Komisijas summa (€)')
+                                ->numeric()
+                                ->prefix('€')
+                                ->placeholder('Ievadi komisiju')
+                                ->live(onBlur: false),
+                            Forms\Components\Placeholder::make('commission_percent_display')
+                                ->label('Komisija %')
+                                ->content(function (Get $get): string {
+                                    $final = (float) ($get('final_price_eur') ?? 0);
+                                    $comm = (float) ($get('commission_eur') ?? 0);
+                                    if ($final <= 0 || $comm <= 0) {
+                                        return '—';
+                                    }
+                                    $percent = $comm / $final * 100;
+
+                                    return number_format($percent, 2, ',', ' ') . ' %';
+                                }),
+                        ]),
 
                     Forms\Components\TextInput::make('price_eur')
                         ->label('Cena (€)')
