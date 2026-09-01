@@ -271,30 +271,15 @@ h1.fi-header-heading {
     color: #9ca3af !important;
 }
 
-/* Regular field labels are block above input; checkbox/radio inline labels are flex row */
-.fi-label {
-    margin-bottom: 0.375rem !important;
-    display: block !important;
-}
-.fi-fo-field:not(.fi-fo-field-has-inline-label) .fi-fo-field-label {
-    margin-bottom: 0.375rem !important;
-    display: block !important;
-}
-.fi-fo-field.fi-fo-field-has-inline-label {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.625rem !important;
-}
+/* Let Filament handle field-label <-> input gap (fi-fo-field gap-y-2 / field.css).
+   Only normalize checkbox/radio inline vertical alignment which was broken by the
+   previous global block label override. No global margin-bottom override here. */
 .fi-fo-field.fi-fo-field-has-inline-label .fi-fo-field-label {
-    margin-bottom: 0 !important;
-    display: inline-flex !important;
     align-items: center !important;
-    gap: 0.5rem !important;
 }
 .fi-fo-field.fi-fo-field-has-inline-label .fi-checkbox-input,
 .fi-fo-field.fi-fo-field-has-inline-label .fi-radio-input {
     margin: 0 !important;
-    flex-shrink: 0 !important;
 }
 .opacity-60 { opacity: 0.6 !important; }
 .opacity-0 { opacity: 0 !important; }
@@ -679,24 +664,9 @@ h1.fi-header-heading {
     padding: 1rem !important;
 }
 
-/* Restore Filament form field container spacing */
-.fi-section-content .fi-fo-field,
-.fi-section-content .fi-form-field,
-.fi-section-content > div[class*="fi-fo"],
-.fi-section-content > div[class*="fi-form"] {
-    margin-bottom: 1rem !important;
-}
-
-.fi-section-content .fi-fo-field:last-child,
-.fi-section-content .fi-form-field:last-child {
-    margin-bottom: 0 !important;
-}
-
-/* Grid field spacing in sections */
-.fi-section-content > .grid,
-.fi-section-content > div[class*="grid"] {
-    gap: 1.25rem !important;
-}
+/* Form field & grid gaps are owned by Filament (fi-sc gap / fi-fo-field gap-y-2).
+   Previous margin-bottom + gap overrides created double-spacing and inconsistency
+   between resources. Remove them; keep Filament defaults uniform. */
 
 /* View page dt/dd spacing */
 .fi-section-content dt {
