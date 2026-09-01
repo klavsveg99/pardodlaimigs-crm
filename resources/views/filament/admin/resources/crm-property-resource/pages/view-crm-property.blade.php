@@ -131,14 +131,12 @@
                 </div>
 
                 <!-- Lightbox Gallery -->
-                <div
-                    x-cloak
-                    x-show="open"
-                    x-transition.opacity
-                    style="position:fixed; inset:0; z-index:99999; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.92); padding:1rem;"
-                    x-bind:style="open ? 'display:flex;' : 'display:none;'"
-                    x-on:click.self="close()"
-                >
+                <template x-if="open">
+                    <div
+                        x-transition.opacity
+                        style="position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.92); padding:1rem;"
+                        x-on:click.self="close()"
+                    >
                     <button type="button" x-on:click="close()" style="position:absolute; top:1rem; right:1rem; z-index:10; width:2.5rem; height:2.5rem; border-radius:9999px; background:rgba(255,255,255,0.12); color:white; border:1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(4px);">
                         <svg style="width:1.25rem;height:1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
@@ -156,7 +154,8 @@
                             <span x-show="index===0" style="background:var(--pdc-primary); color:white; font-size:0.7rem; font-weight:700; padding:0.3rem 0.6rem; border-radius:0.4rem; letter-spacing:0.04em;">GALVENĀ</span>
                         </div>
                     </div>
-                </div>
+                    </div>
+                </template>
             </div>
         @else
             <div class="text-center rounded-xl border-2 border-dashed border-gray-200 p-8 dark:border-white/10">
@@ -208,7 +207,7 @@
     </x-filament::section>
 
     <x-filament::section heading="Datumi">
-        <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Izveidots</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->created_at->format('d.m.Y H:i') }}</dd>
@@ -220,10 +219,6 @@
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Publicēts</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->published_at?->format('d.m.Y H:i') ?? '—' }}</dd>
-            </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Derīgs līdz</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->expires_at?->format('d.m.Y') ?? '—' }}</dd>
             </div>
         </div>
     </x-filament::section>
