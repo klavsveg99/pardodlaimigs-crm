@@ -88,21 +88,68 @@
 
     <x-filament::section heading="Pielikumi">
         @if ($record->attachments->isNotEmpty())
-            <div class="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-                @foreach ($record->attachments as $idx => $attachment)
-                    <a href="{{ $attachment->url }}" target="_blank"
-                       class="group relative block overflow-hidden rounded-xl border bg-gray-50 dark:bg-white/5 dark:border-white/10 {{ $idx === 0 ? 'border-[var(--pdc-primary)] ring-2 ring-[var(--pdc-primary)]/20' : 'border-gray-200' }}">
-                        <img src="{{ $attachment->url }}"
-                             alt="{{ $attachment->original_name }}"
-                             class="h-32 w-full object-cover md:h-36">
-                        @if($idx === 0)
-                            <span class="absolute left-2 top-2 rounded bg-[var(--pdc-primary)] px-2 py-0.5 text-xs font-semibold text-white">GALVENĀ</span>
-                        @endif
-                        <div class="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-2 opacity-0 transition group-hover:opacity-100">
-                            <span class="truncate text-xs text-white">{{ $attachment->original_name }}</span>
+            <div
+                x-data='{
+                    open: false,
+                    index: 0,
+                    items: @js($record->attachments->map(fn($a)=>["url"=>$a->url,"name"=>$a->original_name])->values()),
+                    get current() { return this.items[this.index] || null; },
+                    show(i){ this.index=i; this.open=true; document.body.style.overflow="hidden"; },
+                    close(){ this.open=false; document.body.style.overflow=""; },
+                    prev(){ this.index = this.index>0 ? this.index-1 : this.items.length-1; },
+                    next(){ this.index = this.index < this.items.length-1 ? this.index+1 : 0; },
+                }'
+                x-on:keydown.escape.window="if(open) close()"
+                x-on:keydown.arrow-left.window="if(open) prev()"
+                x-on:keydown.arrow-right.window="if(open) next()"
+            >
+                <div class="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+                    @foreach ($record->attachments as $idx => $attachment)
+                        <button
+                            type="button"
+                            x-on:click="show({{ $idx }})"
+                            class="group relative block overflow-hidden rounded-xl border bg-gray-50 dark:bg-white/5 text-left transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-zoom-in {{ $idx === 0 ? 'border-[var(--pdc-primary)] ring-2 ring-[var(--pdc-primary)]/20' : 'border-gray-200 dark:border-white/10' }}"
+                            title="Atvērt galerijā • {{ $attachment->original_name }}"
+                        >
+                            <img src="{{ $attachment->url }}"
+                                 alt="{{ $attachment->original_name }}"
+                                 class="h-32 w-full object-cover md:h-36 pointer-events-none">
+                            @if($idx === 0)
+                                <span style="position:absolute; left:0.5rem; top:0.5rem; background:var(--pdc-primary); color:white; font-size:0.68rem; font-weight:700; padding:0.28rem 0.55rem; border-radius:0.4rem; letter-spacing:0.04em; box-shadow:0 2px 8px rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.2); line-height:1;">GALVENĀ</span>
+                            @endif
+                            <div class="absolute inset-0 flex items-end p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" style="background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 45%);">
+                                <span style="background:var(--pdc-primary); color:white; font-size:0.72rem; font-weight:600; padding:0.22rem 0.5rem; border-radius:0.35rem; box-shadow:0 1px 4px rgba(0,0,0,0.25); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; max-width:100%;">{{ $attachment->original_name }}</span>
+                            </div>
+                        </button>
+                    @endforeach
+                </div>
+
+                <!-- Lightbox Gallery -->
+                <div
+                    x-show="open"
+                    x-transition.opacity
+                    style="position:fixed; inset:0; z-index:99999; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.92); padding:1rem;"
+                    x-bind:style="open ? 'display:flex;' : 'display:none;'"
+                    x-on:click.self="close()"
+                >
+                    <button type="button" x-on:click="close()" style="position:absolute; top:1rem; right:1rem; z-index:10; width:2.5rem; height:2.5rem; border-radius:9999px; background:rgba(255,255,255,0.12); color:white; border:1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(4px);">
+                        <svg style="width:1.25rem;height:1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    <button type="button" x-show="items.length>1" x-on:click.stop="prev()" style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); z-index:10; width:2.75rem; height:2.75rem; border-radius:9999px; background:rgba(255,255,255,0.12); color:white; border:1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(4px);">
+                        <svg style="width:1.4rem;height:1.4rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <button type="button" x-show="items.length>1" x-on:click.stop="next()" style="position:absolute; right:1rem; top:50%; transform:translateY(-50%); z-index:10; width:2.75rem; height:2.75rem; border-radius:9999px; background:rgba(255,255,255,0.12); color:white; border:1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(4px);">
+                        <svg style="width:1.4rem;height:1.4rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                    <div style="max-width:90vw; max-height:90vh; display:flex; flex-direction:column; align-items:center; gap:0.75rem;">
+                        <img :src="current?.url" :alt="current?.name" style="max-width:90vw; max-height:78vh; object-fit:contain; border-radius:0.5rem; box-shadow:0 8px 32px rgba(0,0,0,0.5);"/>
+                        <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
+                            <span style="background:var(--pdc-primary); color:white; font-size:0.78rem; font-weight:600; padding:0.3rem 0.7rem; border-radius:9999px;" x-text="(index+1)+' / '+items.length"></span>
+                            <span style="background:var(--pdc-primary); color:white; font-size:0.78rem; font-weight:600; padding:0.3rem 0.7rem; border-radius:0.5rem; max-width:60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" x-text="current?.name"></span>
+                            <span x-show="index===0" style="background:var(--pdc-primary); color:white; font-size:0.7rem; font-weight:700; padding:0.3rem 0.6rem; border-radius:0.4rem; letter-spacing:0.04em;">GALVENĀ</span>
                         </div>
-                    </a>
-                @endforeach
+                    </div>
+                </div>
             </div>
         @else
             <div class="text-center rounded-xl border-2 border-dashed border-gray-200 p-8 dark:border-white/10">
