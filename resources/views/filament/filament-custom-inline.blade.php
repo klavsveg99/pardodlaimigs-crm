@@ -596,24 +596,10 @@ h1.fi-header-heading {
     }
 }
 
-/* Standardized section spacing */
+/* Standardized section spacing – keep Filament's grid for content containers;
+   previous display:block override broke StatsOverview 4-col (@xl/fi-grid) */
 .fi-section {
     margin-bottom: 1.5rem !important;
-}
-
-.fi-section > .fi-section-content-ctn {
-    display: block !important;
-}
-
-/* Do NOT force .fi-section-content to block when it is a grid (e.g. Section columns(2) or StatsOverview).
-   Filament renders .fi-section-content as .fi-grid + .fi-sc when columns are set – forcing block
-   collapses the 2-col form (Client Piezīmes/Pielikumi) and the 4-col stats. */
-.fi-section > .fi-section-content-ctn > .fi-section-content:not(.fi-grid) {
-    display: block !important;
-}
-.fi-section > .fi-section-content-ctn > .fi-section-content.fi-grid {
-    /* keep Filament's grid (display:grid) – only normalize padding here, grid itself is required */
-    display: grid !important;
 }
 
 /* Property form grid - stretch sections to fill row height */
