@@ -53,10 +53,6 @@
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kadastra nr.</dt>
                 <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">{{ $record->kadastra_nr ?: '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5 md:col-span-2 lg:col-span-2">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Rādīšanas secība</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->sort_order ?? $record->id }} <span class="text-xs text-gray-500">(velc tabulā, lai mainītu)</span></dd>
-            </div>
         </div>
     </x-filament::section>
 
@@ -172,7 +168,7 @@
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->published_at?->format('d.m.Y H:i') ?? '—' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Aizvairs</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Derīgs līdz</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->expires_at?->format('d.m.Y') ?? '—' }}</dd>
             </div>
         </div>
