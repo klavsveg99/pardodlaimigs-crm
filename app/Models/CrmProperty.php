@@ -33,7 +33,7 @@ class CrmProperty extends Model
         'currency', 'category', 'status', 'beds', 'baths',
         'size_m2', 'land_m2', 'kadastra_nr', 'city', 'address',
         'lat', 'lng', 'owner_user_id', 'sort_order',
-        'final_price_eur', 'commission_eur',
+        'final_price_eur', 'commission_eur', 'sold_at',
     ];
 
     protected $casts = [
@@ -41,6 +41,7 @@ class CrmProperty extends Model
         'price_eur' => 'decimal:2',
         'final_price_eur' => 'decimal:2',
         'commission_eur' => 'decimal:2',
+        'sold_at' => 'datetime',
         'image_urls' => 'array',
         'beds' => 'integer',
         'baths' => 'integer',
@@ -50,6 +51,19 @@ class CrmProperty extends Model
         'lng' => 'decimal:7',
         'sort_order' => 'integer',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $property) {
+            if ($property->isDirty('status')) {
+                if ($property->status === 'sold' && empty($property->sold_at)) {
+                    $property->sold_at = now();
+                }
+            }
+            // If final_price/commission set without sold status, keep sold_at; if needed, clear when not sold:
+            // if ($property->status !== 'sold') { $property->sold_at = null; }
+        });
+    }
 
     public function owner(): BelongsTo
     {

@@ -6,6 +6,7 @@ use App\Filament\Admin\Auth\Login;
 use App\Filament\Admin\Widgets\CalendarViewings;
 use App\Filament\Admin\Widgets\CrmStatsOverview;
 use App\Filament\Admin\Widgets\TodayViewings;
+use App\Filament\Admin\Widgets\TopAgents;
 use App\Filament\Admin\Widgets\UpcomingTasks;
 use App\Http\Middleware\TrustCrmHost;
 use Filament\Http\Middleware\Authenticate;
@@ -55,6 +56,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
                 CrmStatsOverview::class,
+                TopAgents::class,
                 UpcomingTasks::class,
                 TodayViewings::class,
                 CalendarViewings::class,
