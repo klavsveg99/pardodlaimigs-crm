@@ -359,7 +359,27 @@ h1.fi-header-heading {
     border-color: #374151 !important;
 }
 
-/* Checkbox/radio/toggle */
+/* All checked checkboxes use global accent via var(--pdc-primary) (#285854) – not hardcoded */
+input[type="checkbox"]:checked,
+.fi-checkbox-input:checked,
+.fi-checkbox input:checked,
+.fi-fo-field input[type="checkbox"]:checked,
+.fi-checkbox-input[checked],
+input[type="checkbox"][checked] {
+    accent-color: var(--pdc-primary) !important;
+    background-color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+    --tw-ring-color: var(--pdc-primary) !important;
+    --tw-ring-offset-color: var(--pdc-primary) !important;
+}
+.dark .fi-checkbox input:checked,
+.dark .fi-checkbox-input:checked,
+.dark input[type="checkbox"]:checked {
+    accent-color: var(--pdc-primary) !important;
+    background-color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+}
+/* Checkbox/radio/toggle (unchecked dark) */
 .dark .fi-checkbox input,
 .dark .fi-radio input,
 .dark .fi-toggle input {

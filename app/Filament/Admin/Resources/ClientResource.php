@@ -46,8 +46,7 @@ class ClientResource extends Resource
                     \App\Filament\Forms\Components\PersonasKodsInput::make('personas_kods')
                         ->label('Personas kods')
                         ->maxLength(12)
-                        ->helperText('Formāts: XXXXXX-XXXXX')
-                        ->columnSpanFull(),
+                        ->helperText('Formāts: XXXXXX-XXXXX'),
                     Forms\Components\Select::make('source')
                         ->label('Avots (kā uzzināja)')
                         ->searchable()
@@ -64,8 +63,7 @@ class ClientResource extends Resource
                         ])
                         ->placeholder('Izvēlieties avotu'),
                     Forms\Components\Checkbox::make('marketing_consent')
-                        ->label('Klients atļauj izmantot datus mārketingam')
-                        ->columnSpanFull(),
+                        ->label('Klients atļauj izmantot datus mārketingam'),
                     Forms\Components\Select::make('owner_user_id')
                         ->label('Atbildīgais aģents')
                         ->relationship('owner', 'name')
