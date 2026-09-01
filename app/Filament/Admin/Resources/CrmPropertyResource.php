@@ -241,7 +241,7 @@ Forms\Components\TextInput::make('kadastra_nr')
     public static function getRelations(): array
     {
         return [
-            RelationManagers\ClientsRelationManager::class,
+            \App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers\ClientsRelationManager::class,
         ];
     }
 }
