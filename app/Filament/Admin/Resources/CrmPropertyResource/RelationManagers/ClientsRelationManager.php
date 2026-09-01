@@ -68,6 +68,27 @@ class ClientsRelationManager extends RelationManager
                     ->label('Mārketings')->boolean()->sortable(),
             ])
             ->headerActions([
+                Actions\AttachAction::make('attachBuyer')
+                    ->label('Piesaistīt pircēju')
+                    ->color('primary')
+                    ->icon('heroicon-o-user-plus')
+                    ->visible(fn () => $this->getOwnerRecord()->status === 'sold')
+                    ->recordSelectSearchColumns(['name', 'email', 'phone', 'id'])
+                    ->schema(fn (Actions\AttachAction $action): array => [
+                        $action->getRecordSelect(),
+                        Forms\Components\Hidden::make('relation')->default('buyer'),
+                        Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
+                    ])
+                    ->validateRecordUsing(function (array $data): void {
+                        $clientId = $data['recordId'] ?? null;
+                        $property = $this->getOwnerRecord();
+
+                        if (! Client::find($clientId)?->marketing_consent) {
+                            throw ValidationException::withMessages([
+                                'data.recordId' => 'Lai piesaistītu pircēju pārdotam īpašumam, klientam jābūt mārketinga piekrišanai.',
+                            ]);
+                        }
+                    }),
                 Actions\AttachAction::make()
                     ->label('Piesaistīt klientu')
                     ->recordSelectSearchColumns(['name', 'email', 'phone', 'id'])

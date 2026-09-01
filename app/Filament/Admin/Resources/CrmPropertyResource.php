@@ -112,10 +112,12 @@ class CrmPropertyResource extends Resource
                     Forms\Components\TextInput::make('baths')->label('Vannas istabas')->numeric(),
                     Forms\Components\TextInput::make('size_m2')->label('Platība (m²)')->numeric(),
                     Forms\Components\TextInput::make('land_m2')->label('Zemes platība (m²)')->numeric(),
-                    Forms\Components\TextInput::make('kadastra_nr')
-                        ->label('Kadastra nr.')
-                        ->maxLength(32)
-                        ->columnSpanFull(),
+Forms\Components\TextInput::make('kadastra_nr')
+                         ->label('Kadastra nr.')
+                         ->required(fn (Get $get): bool => !filled($get('id')))
+                         ->maxLength(32)
+                         ->columnSpanFull()
+                         ->helperText(fn (Get $get): ?string => !filled($get('kadastra_nr')) ? 'Lauku aizpildīšana ir obligāta' : null),
                 ])->columnSpan(1),
             ])->columnSpanFull(),
 
@@ -233,6 +235,13 @@ class CrmPropertyResource extends Resource
             'create' => Pages\CreateCrmProperty::route('/create'),
             'view' => Pages\ViewCrmProperty::route('/{record}'),
             'edit' => Pages\EditCrmProperty::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\ClientsRelationManager::class,
         ];
     }
 }

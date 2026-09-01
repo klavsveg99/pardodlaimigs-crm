@@ -29,7 +29,7 @@
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all">{{ $record->slug ?: '—' }}</dd>
             </div>
         </div>
-        @if($record->status === 'sold')
+@if($record->status === 'sold')
             <div class="mt-6 grid gap-3 grid-cols-1 md:grid-cols-3">
                 <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800/30 dark:bg-emerald-900/20">
                     <dt class="text-sm font-medium text-emerald-700 dark:text-emerald-300">Gala cena (pārdots)</dt>
@@ -39,14 +39,19 @@
                     <dt class="text-sm font-medium text-emerald-700 dark:text-emerald-300">Komisijas summa</dt>
                     <dd class="mt-1 text-lg font-bold text-emerald-900 dark:text-emerald-100">{{ $record->commission_eur ? number_format((float) $record->commission_eur, 2, ',', ' ') . ' €' : '—' }}</dd>
                 </div>
-                <div class="rounded-xl border border-[var(--pdc-primary)]/20 bg-[var(--pdc-primary)]/10 p-4 dark:bg-[var(--pdc-primary)]/15">
+                <div class="rounded-xl border border-[var(--pdc-primary)] bg-[var(--pdc-primary)]/10 p-4 dark:border-[var(--pdc-primary)]/30 dark:bg-[var(--pdc-primary)]/20">
                     <dt class="text-sm font-medium text-[var(--pdc-primary)] dark:text-white">Komisija %</dt>
-                    <dd class="mt-1 text-lg font-bold text-[var(--pdc-primary-darker)] dark:text-white">
+                    <dd class="mt-1 text-lg font-bold text-[var(--pdc-primary)-darker] dark:text-white">
                         @if($record->commission_percent !== null)
                             {{ number_format($record->commission_percent, 2, ',', ' ') }} %
                         @else
                             —
                         @endif
+                    </dd>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">No gala cenas</p>
+                </div>
+            </div>
+        @endif
                     </dd>
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">No gala cenas</p>
                 </div>
@@ -190,44 +195,48 @@
         @endif
     </x-filament::section>
 
-    <x-filament::section heading="Saistītie klienti">
-        @if ($record->clients->isNotEmpty())
-            <div class="flex flex-col gap-2">
-                @foreach ($record->clients as $client)
-                    <div class="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-white/10 dark:bg-white/5">
-                        <div class="flex items-center gap-3">
-                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--pdc-primary)] text-sm font-semibold text-white">
-                                {{ strtoupper(substr($client->name, 0, 1)) }}
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-900 dark:text-white">{{ $client->name }}</p>
-                                <p class="text-sm text-gray-500">
-                                    @php
-                                        $relationClasses = [
-                                            'seller' => 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-                                            'buyer' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-                                            'tenant' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-                                            'landlord' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-                                        ];
-                                        $cls = $relationClasses[$client->pivot->relation] ?? 'bg-gray-100 text-gray-800 dark:bg-white/10 dark:text-gray-300';
-                                    @endphp
-                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $cls }}">
-                                        {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-                        <a href="{{ \App\Filament\Admin\Resources\ClientResource::getUrl('view', ['record' => $client]) }}"
-                           class="text-sm font-medium text-[var(--pdc-primary)] hover:underline">
-                            Skatīt klientu
-                        </a>
-                    </div>
-                @endforeach
-            </div>
-        @else
-            <p class="text-sm text-gray-500">Nav saistītu klientu.</p>
-        @endif
-    </x-filament::section>
+<x-filament::section heading="Saistītie klienti">
+         @if ($record->clients->isNotEmpty())
+             <div class="flex flex-col gap-4">
+                 @foreach ($record->clients as $client)
+                     <?php
+                         $relationColors = [
+                             'seller' => 'danger',
+                             'buyer' => 'success',
+                             'tenant' => 'warning',
+                             'landlord' => 'info',
+                             'interested' => 'gray',
+                             'contacted' => 'gray',
+                         ];
+                         $relationColor = $relationColors[$client->pivot->relation] ?? 'gray';
+                     ?>
+                     <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+                         <div class="mb-2 flex items-center gap-3">
+                             <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--pdc-primary)] text-sm font-semibold text-white">
+                                 {{ strtoupper(substr($client->name, 0, 1)) }}
+                             </div>
+                             <div>
+                                 <p class="font-medium text-gray-900 dark:text-white">{{ $client->name }}</p>
+                                 <p class="text-sm text-gray-500">
+                                     <x-filament::badge :color="$relationColor" class="text-xs">
+                                         {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
+                                     </x-filament::badge>
+                                 </p>
+                             </div>
+                         </div>
+                         <div class="mt-2 flex justify-end">
+                             <a href="{{ \App\Filament\Admin\Resources\ClientResource::getUrl('view', ['record' => $client]) }}"
+                                class="text-sm font-medium text-[var(--pdc-primary)] hover:underline">
+                                 Skatīt klientu
+                             </a>
+                         </div>
+                     </div>
+                 @endforeach
+             </div>
+         @else
+             <p class="text-sm text-gray-500">Nav saistītu klientu.</p>
+         @endif
+     </x-filament::section>
 
     <x-filament::section heading="Datumi">
         <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
