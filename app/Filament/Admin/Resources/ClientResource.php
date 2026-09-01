@@ -38,8 +38,8 @@ class ClientResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Section::make()->columnSpanFull()->columns(2)->schema([
-                Grid::make(2)->schema([
+            Section::make()->columnSpanFull()->columns(['lg' => 2])->schema([
+                Grid::make(2)->columnSpan(1)->schema([
                     Forms\Components\TextInput::make('name')->label('Vārds, uzvārds')->required()->maxLength(255),
                     Forms\Components\TextInput::make('phone')->label('Tālrunis')->tel()->maxLength(40),
                     Forms\Components\TextInput::make('email')->label('E-pasts')->email()->maxLength(255),
@@ -65,15 +65,15 @@ class ClientResource extends Resource
                         ->placeholder('Izvēlieties avotu'),
                     Forms\Components\Checkbox::make('marketing_consent')
                         ->label('Klients atļauj izmantot datus mārketingam')
-                        ->columnSpan(2),
+                        ->columnSpanFull(),
                     Forms\Components\Select::make('owner_user_id')
                         ->label('Atbildīgais aģents')
                         ->relationship('owner', 'name')
                         ->searchable()
                         ->preload()
-                        ->columnSpan(2),
+                        ->columnSpanFull(),
                 ]),
-                Grid::make(1)->schema([
+                Grid::make(1)->columnSpan(1)->schema([
                     Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(8),
                     Forms\Components\FileUpload::make('attachments')
                         ->label('Pielikumi')

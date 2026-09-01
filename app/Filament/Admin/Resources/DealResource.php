@@ -39,7 +39,7 @@ class DealResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema->schema([
+        return $schema->columns(2)->schema([
             Forms\Components\TextInput::make('title')->label('Nosaukums')->maxLength(255)->columnSpanFull(),
             Forms\Components\Select::make('client_id')->label('Klients')
                 ->searchable()
