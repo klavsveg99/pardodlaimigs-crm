@@ -15,6 +15,14 @@ class CrmStatsOverview extends StatsOverviewWidget
 {
     protected static ?int $sort = 1;
 
+    protected function getColumns(): int | array | null
+    {
+        return [
+            'md' => 2,
+            'lg' => 4,
+        ];
+    }
+
     protected function getStats(): array
     {
         $overdueTasks = Task::whereNull('completed_at')->where('due_at', '<', now())->count();
