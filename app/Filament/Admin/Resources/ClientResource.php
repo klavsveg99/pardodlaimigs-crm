@@ -62,8 +62,9 @@ class ClientResource extends Resource
                             'Cits' => 'Cits',
                         ])
                         ->placeholder('Izvēlieties avotu'),
-                    Forms\Components\Checkbox::make('marketing_consent')
-                        ->label('Klients atļauj izmantot datus mārketingam'),
+Forms\Components\Checkbox::make('marketing_consent')
+                         ->label('Klients atļauj izmantot datus mārketingam')
+                         ->wrapperAttributes(['class' => 'flex items-end']),
                     Forms\Components\Select::make('owner_user_id')
                         ->label('Atbildīgais aģents')
                         ->relationship('owner', 'name')
@@ -175,7 +176,8 @@ class ClientResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\CrmPropertiesRelationManager::class,
+            RelationManagers\CrmPropertiesAsSellerRelationManager::class,
+            RelationManagers\CrmPropertiesAsBuyerRelationManager::class,
             RelationManagers\ViewingsRelationManager::class,
             RelationManagers\TasksRelationManager::class,
             RelationManagers\WpformEntriesRelationManager::class,

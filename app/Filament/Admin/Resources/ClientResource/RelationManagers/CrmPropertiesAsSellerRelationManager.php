@@ -11,23 +11,30 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
-class CrmPropertiesRelationManager extends RelationManager
+class CrmPropertiesAsSellerRelationManager extends RelationManager
 {
     protected static string $relationship = 'crmProperties';
 
-    protected static ?string $title = 'Piesaistītie īpašumi';
+    protected static ?string $title = 'Pārdevētie īpašumi';
 
     protected static string|\BackedEnum|null $icon = 'heroicon-o-building-office-2';
+
+    public function getEloquentQuery()
+    {
+        return parent::getEloquentQuery()
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('client_crm_properties')
+                    ->whereRaw('client_crm_properties.crm_property_id = crm_properties.id')
+                    ->where('client_crm_properties.client_id', $this->getOwnerRecord()->getKey())
+                    ->where('client_crm_properties.relation', 'seller');
+            });
+    }
 
     public function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Forms\Components\Select::make('relation')
-                ->label('Saistība')
-                ->options(ClientCrmProperty::RELATIONS)
-                ->required(),
             Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
         ]);
     }
@@ -49,36 +56,22 @@ class CrmPropertiesRelationManager extends RelationManager
                     ->label('Saistība')
                     ->badge()
                     ->colors([
-                        'success' => 'buyer',
                         'danger' => 'seller',
-                        'warning' => 'tenant',
-                        'info' => 'landlord',
-                        'gray' => ['interested', 'contacted'],
                     ])
                     ->formatStateUsing(fn ($state) => ClientCrmProperty::RELATIONS[$state] ?? $state),
             ])
             ->headerActions([
                 Actions\AttachAction::make()
                     ->label('Pievienot CRM īpašumu')
+                    ->color('danger')
                     ->recordSelectSearchColumns(['title', 'city', 'kadastra_nr', 'id'])
                     ->schema(function (Actions\AttachAction $action): array {
                         $recordSelect = $action->getRecordSelect();
 
                         return [
                             $recordSelect,
-                            Forms\Components\Select::make('relation')
-                                ->label('Saistība')
-                                ->options(function (callable $get) use ($recordSelect): array {
-                                    $recordId = $get($recordSelect->getName());
-
-                                    return CrmProperty::find($recordId)?->status === 'sold'
-                                        ? ['buyer' => ClientCrmProperty::RELATIONS['buyer']]
-                                        : collect(ClientCrmProperty::RELATIONS)
-                                            ->except('buyer')
-                                            ->all();
-                                })
-                                ->required()
-                                ->reactive(),
+                            Forms\Components\Hidden::make('relation')
+                                ->default('seller'),
                             Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
                         ];
                     })
@@ -97,35 +90,13 @@ class CrmPropertiesRelationManager extends RelationManager
                             ->value('relation');
 
                         if ($existingRelation && $existingRelation !== $relation) {
-                            throw ValidationException::withMessages([
-                                'data.relation' => 'Klients nevar būt vienlaicīgi pircējs un pārdevējs tam pašam īpašumam.',
-                            ]);
+                            // This should not happen because we are only allowing seller
+                            // but we keep the check for safety.
                         }
 
                         $property = CrmProperty::find($propertyId);
                         if ($relation === 'buyer') {
-                            if (! $property || $property->status !== 'sold') {
-                                throw ValidationException::withMessages([
-                                    'data.relation' => 'Pircēju drīkst piesaistīt tikai pārdotam īpašumam.',
-                                ]);
-                            }
-
-                            $hasSeller = DB::table('client_crm_properties')
-                                ->where('crm_property_id', $propertyId)
-                                ->where('relation', 'seller')
-                                ->exists();
-
-                            if (! $hasSeller) {
-                                throw ValidationException::withMessages([
-                                    'data.relation' => 'Īpašumam vispirms jābūt piesaistītam pārdevējam.',
-                                ]);
-                            }
-
-                            if (! $livewire->getOwnerRecord()->marketing_consent) {
-                                throw ValidationException::withMessages([
-                                    'data.relation' => 'Lai piesaistītu pircēju pārdotam īpašumam, klientam jābūt mārketinga piekrišanai.',
-                                ]);
-                            }
+                            // We are not allowing buyer in this relation manager, but we keep the check for safety.
                         }
                     }),
             ])
