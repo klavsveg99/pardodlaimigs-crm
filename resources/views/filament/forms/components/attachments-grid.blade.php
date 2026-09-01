@@ -20,6 +20,8 @@
 
 <script type="application/json" id="{{ $uid }}-data">{!! $attachmentsJson !!}</script>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+
 <style>
     [data-attach-card] { cursor: grab; }
     [data-attach-card]:active { cursor: grabbing; }
@@ -37,6 +39,123 @@
         outline-offset: 2px;
         box-shadow: 0 0 0 4px rgba(40,88,84,0.15) !important;
     }
+    .pdc-editor-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0,0,0,0.85);
+        padding: 1rem;
+    }
+    .pdc-editor-panel {
+        background: #0b0f14;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 0.75rem;
+        width: 100%;
+        max-width: 960px;
+        max-height: 92vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .pdc-editor-header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+    .pdc-editor-title {
+        color: white;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    .pdc-editor-body {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0b0f14;
+        min-height: 320px;
+        max-height: 60vh;
+        position: relative;
+    }
+    .pdc-editor-body img {
+        max-width: 100%;
+        max-height: 60vh;
+        display: block;
+    }
+    .pdc-editor-footer {
+        padding: 1rem 1.25rem;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        background: #0b0f14;
+    }
+    .pdc-editor-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .pdc-editor-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        padding: 0.5rem 0.85rem;
+        border-radius: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .pdc-editor-btn-primary {
+        background: var(--pdc-primary);
+        color: white;
+        border-color: var(--pdc-primary);
+    }
+    .pdc-editor-btn-primary:hover {
+        background: var(--pdc-primary-darker);
+        border-color: var(--pdc-primary-darker);
+    }
+    .pdc-editor-btn-secondary {
+        background: #1f2937;
+        color: white;
+        border-color: rgba(255,255,255,0.15);
+    }
+    .pdc-editor-btn-secondary:hover {
+        background: #111827;
+        border-color: rgba(255,255,255,0.25);
+    }
+    .pdc-editor-btn-ghost {
+        background: rgba(255,255,255,0.08);
+        color: white;
+        border-color: rgba(255,255,255,0.12);
+    }
+    .pdc-editor-btn-ghost:hover {
+        background: rgba(255,255,255,0.14);
+    }
+    .pdc-editor-btn-ghost.active {
+        background: var(--pdc-primary);
+        border-color: var(--pdc-primary);
+        color: white;
+    }
+    .cropper-container {
+        z-index: 100001 !important;
+    }
+    .cropper-modal {
+        background: rgba(0,0,0,0.5) !important;
+    }
 </style>
 
 <div
@@ -48,11 +167,23 @@
         draggedIndex: null,
         lightboxOpen: false,
         lightboxIndex: 0,
+        editorOpen: false,
+        editorIndex: null,
+        editorFile: null,
+        cropper: null,
+        editorAspectRatio: null,
         init() {
             try { this.files = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || []; } catch(e){ this.files=[]; }
             this.uploadUrl = this.$el.dataset.uploadUrl;
             this.csrfToken = document.querySelector('meta[name=&quot;csrf-token&quot;]')?.content || document.querySelector('meta[name=csrf-token]')?.content;
             window.__pdcAttachments = this;
+            // Load cropper.js if not already loaded
+            if (!window.Cropper && !document.querySelector('script[data-cropper]')) {
+                const s = document.createElement('script');
+                s.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js';
+                s.setAttribute('data-cropper','1');
+                document.head.appendChild(s);
+            }
         },
         get hasSelection() { return this.selected.length > 0 },
         get allSelected() { return this.files.length > 0 && this.selected.length === this.files.length },
@@ -121,6 +252,7 @@
             this.$el.querySelectorAll('[data-attach-card]').forEach(el => el.classList.remove('pdc-drag-over','pdc-dragging'));
         },
         openLightbox(index) {
+            if (this.editorOpen) return;
             this.lightboxIndex = index;
             this.lightboxOpen = true;
             document.body.style.overflow = 'hidden';
@@ -136,6 +268,138 @@
             this.lightboxIndex = this.lightboxIndex < this.files.length - 1 ? this.lightboxIndex + 1 : 0;
         },
         get lightboxFile() { return this.files[this.lightboxIndex] || null; },
+        openEditor(index) {
+            const file = this.files[index];
+            if (!file || !file.url.match(/\.(jpe?g|png|webp|gif|bmp)$/i) && !file.name.match(/\.(jpe?g|png|webp|gif|bmp)$/i)) {
+                alert('Rediģēt var tikai attēlus (jpg, png, webp).');
+                return;
+            }
+            this.editorIndex = index;
+            this.editorFile = file;
+            this.editorOpen = true;
+            document.body.style.overflow = 'hidden';
+            this.$nextTick(() => this.initCropper());
+        },
+        closeEditor() {
+            this.editorOpen = false;
+            document.body.style.overflow = '';
+            this.destroyCropper();
+            this.editorFile = null;
+            this.editorIndex = null;
+        },
+        initCropper() {
+            this.destroyCropper();
+            const img = this.$refs.editorImage;
+            if (!img) return;
+            // Wait for Cropper to be available
+            const tryInit = () => {
+                if (!window.Cropper) {
+                    setTimeout(tryInit, 200);
+                    return;
+                }
+                img.src = this.editorFile.url;
+                img.onload = () => {
+                    this.cropper = new window.Cropper(img, {
+                        viewMode: 1,
+                        autoCropArea: 1,
+                        responsive: true,
+                        background: false,
+                        guides: true,
+                        center: true,
+                        highlight: true,
+                        cropBoxMovable: true,
+                        cropBoxResizable: true,
+                        toggleDragModeOnDblclick: false,
+                    });
+                };
+                // If already cached
+                if (img.complete) {
+                    setTimeout(() => {
+                        if (!this.cropper) {
+                            this.cropper = new window.Cropper(img, {
+                                viewMode: 1,
+                                autoCropArea: 1,
+                                responsive: true,
+                                background: false,
+                            });
+                        }
+                    }, 100);
+                }
+            };
+            tryInit();
+        },
+        destroyCropper() {
+            if (this.cropper && this.cropper.destroy) {
+                try { this.cropper.destroy(); } catch(e) {}
+                this.cropper = null;
+            }
+        },
+        setAspectRatio(ratio) {
+            this.editorAspectRatio = ratio;
+            if (!this.cropper) return;
+            this.cropper.setAspectRatio(ratio);
+        },
+        rotate(deg) {
+            if (!this.cropper) return;
+            this.cropper.rotate(deg);
+        },
+        resetCropper() {
+            if (!this.cropper) return;
+            this.cropper.reset();
+        },
+        async saveEditor() {
+            if (!this.cropper || this.editorIndex === null) return;
+            const canvas = this.cropper.getCroppedCanvas({
+                maxWidth: 2400,
+                maxHeight: 2400,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+                fillColor: '#fff',
+            });
+            if (!canvas) {
+                alert('Neizdevās apgriezt attēlu.');
+                return;
+            }
+            canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    alert('Neizdevās saglabāt attēlu.');
+                    return;
+                }
+                const ext = (this.editorFile.name.split('.').pop() || 'jpg').toLowerCase();
+                const fileName = this.editorFile.name.replace(/\.[^/.]+$/, '') + '-crop.' + ext;
+                const file = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('_token', this.csrfToken);
+                try {
+                    const resp = await fetch(this.uploadUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': this.csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                    const result = await resp.json();
+                    if (result.path) {
+                        // Replace old file with new cropped one, keep same position
+                        this.files[this.editorIndex] = {
+                            id: this.editorFile.id,
+                            path: result.path,
+                            url: result.url,
+                            name: result.name || fileName,
+                        };
+                        this.sync();
+                        this.closeEditor();
+                    } else {
+                        alert('Augšupielāde neizdevās.');
+                    }
+                } catch (err) {
+                    console.error('Crop upload failed:', err);
+                    alert('Kļūda saglabājot.');
+                }
+            }, this.editorFile.name.match(/\.png$/i) ? 'image/png' : 'image/jpeg', 0.92);
+        },
         async handleUpload(e) {
             const input = e.target || e;
             const newFiles = Array.from(input.files || []);
@@ -172,7 +436,7 @@
     }"
     wire:ignore.self
     data-upload-url="{{ $uploadUrl }}"
-    x-on:keydown.escape.window="if(lightboxOpen) closeLightbox()"
+    x-on:keydown.escape.window="if(lightboxOpen) closeLightbox(); if(editorOpen) closeEditor()"
     x-on:keydown.arrow-left.window="if(lightboxOpen) lightboxPrev()"
     x-on:keydown.arrow-right.window="if(lightboxOpen) lightboxNext()"
 >
@@ -267,6 +531,15 @@
                     </button>
                 @endif
 
+                <button
+                    type="button"
+                    x-on:click.stop="openEditor(index)"
+                    style="position: absolute; top: 0.5rem; right: 2.7rem; z-index: 10; height: 1.6rem; width: 1.6rem; border-radius: 0.35rem; background: rgba(0,0,0,0.62); color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.22); cursor: pointer; backdrop-filter: blur(2px);"
+                    title="Rediģēt attēlu"
+                >
+                    <svg style="width: 0.85rem; height: 0.85rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.83 15.83a2 2 0 01-1.415.586H9a1 1 0 01-1-1v-1.415a2 2 0 01.586-1.414l9-9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 5l4 4"/></svg>
+                </button>
+
                 @if($isDeletable)
                     <button
                         type="button"
@@ -283,7 +556,7 @@
                 </div>
 
                 @if($isReorderable)
-                    <div class="opacity-60 group-hover:opacity-100 transition-opacity" style="position: absolute; top: 0.5rem; right: 2.4rem; z-index: 10; pointer-events: none;">
+                    <div class="opacity-60 group-hover:opacity-100 transition-opacity" style="position: absolute; top: 0.5rem; right: 4.6rem; z-index: 10; pointer-events: none;">
                         <div style="height: 1.6rem; width: 1.6rem; border-radius: 0.35rem; background: rgba(0,0,0,0.6); color: white; display: flex; align-items: center; justify-content: center; cursor: grab; border: 1px solid rgba(255,255,255,0.2);">
                             <svg style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg>
                         </div>
@@ -312,11 +585,48 @@
         </label>
     </div>
 
+    <!-- Editor Modal -->
+    <template x-if="editorOpen">
+        <div style="position: fixed; inset: 0; z-index: 100000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.88); padding: 1rem;" x-transition.opacity x-on:click.self="closeEditor()">
+            <div class="pdc-editor-panel" x-on:click.stop>
+                <div class="pdc-editor-header">
+                    <span class="pdc-editor-title" x-text="editorFile ? editorFile.name : 'Rediģēt attēlu'"></span>
+                    <button type="button" x-on:click="closeEditor()" style="width: 2rem; height: 2rem; border-radius: 9999px; background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="pdc-editor-body">
+                    <img x-ref="editorImage" style="max-width: 100%; max-height: 100%; display: block;" alt="Editor preview" />
+                </div>
+                <div class="pdc-editor-footer">
+                    <div class="pdc-editor-controls">
+                        <button type="button" x-on:click="setAspectRatio(null)" :class="editorAspectRatio === null ? 'active' : ''" class="pdc-editor-btn pdc-editor-btn-ghost" title="Brīva forma">Brīvi</button>
+                        <button type="button" x-on:click="setAspectRatio(16/9)" :class="editorAspectRatio === 16/9 ? 'active' : ''" class="pdc-editor-btn pdc-editor-btn-ghost">16:9</button>
+                        <button type="button" x-on:click="setAspectRatio(4/3)" :class="editorAspectRatio === 4/3 ? 'active' : ''" class="pdc-editor-btn pdc-editor-btn-ghost">4:3</button>
+                        <button type="button" x-on:click="setAspectRatio(1)" :class="editorAspectRatio === 1 ? 'active' : ''" class="pdc-editor-btn pdc-editor-btn-ghost">1:1</button>
+                        <span style="width: 1px; height: 1.5rem; background: rgba(255,255,255,0.12); margin: 0 0.25rem;"></span>
+                        <button type="button" x-on:click="rotate(-90)" class="pdc-editor-btn pdc-editor-btn-ghost" title="Pagriezt pa kreisi">
+                            <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 016 6v3"/></svg>
+                        </button>
+                        <button type="button" x-on:click="rotate(90)" class="pdc-editor-btn pdc-editor-btn-ghost" title="Pagriezt pa labi">
+                            <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 15l6-6m0 0l-6-6M21 9H9a6 6 0 00-6 6v3"/></svg>
+                        </button>
+                        <button type="button" x-on:click="resetCropper()" class="pdc-editor-btn pdc-editor-btn-ghost">Atiestatīt</button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" x-on:click="closeEditor()" class="pdc-editor-btn pdc-editor-btn-secondary">Atcelt</button>
+                        <button type="button" x-on:click="saveEditor()" class="pdc-editor-btn pdc-editor-btn-primary">Saglabāt</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
     <!-- Lightbox Gallery -->
     <template x-if="lightboxOpen">
         <div
             x-transition.opacity
-            style="position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.92); padding: 1rem;"
+            style="position: fixed; inset: 0; z-index: 100000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.92); padding: 1rem;"
             x-on:click.self="closeLightbox()"
         >
         <button type="button" x-on:click="closeLightbox()" style="position: absolute; top: 1rem; right: 1rem; z-index: 10; width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter: blur(4px);">

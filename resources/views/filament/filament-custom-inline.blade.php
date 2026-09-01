@@ -128,22 +128,35 @@ h1.fi-header-heading {
     z-index: 9999 !important;
 }
 
+/* Reduce sidebar/header authority – modals/lightbox/editor must be on top */
+.fi-sidebar,
+.fi-topbar,
+.fi-header,
+.fi-main-ctn {
+    z-index: 10 !important;
+}
+
 .fi-modal,
 .fi-modal-window,
 .fi-file-upload .fi-modal,
+.pdc-editor-modal,
+.pdc-editor-panel,
 .cropper-container,
 .cropper-modal,
-.fi-file-upload-image-editor {
-    z-index: 99999 !important;
+.fi-file-upload-image-editor,
+.fi-file-upload-image-editor .fi-modal {
+    z-index: 100000 !important;
 }
 
 .fi-modal .fi-modal-overlay,
-.fi-modal .fi-modal-window {
-    z-index: 99999 !important;
+.fi-modal .fi-modal-window,
+.pdc-editor-modal .fi-modal-overlay {
+    z-index: 100000 !important;
 }
 
 .fi-file-upload .fi-btn.fi-color-primary,
-.fi-file-upload-image-editor .fi-btn.fi-color-primary {
+.fi-file-upload-image-editor .fi-btn.fi-color-primary,
+.pdc-editor-panel .fi-btn.fi-color-primary {
     background-color: var(--pdc-primary) !important;
     border-color: var(--pdc-primary) !important;
     color: #ffffff !important;
@@ -750,18 +763,7 @@ h1.fi-header-heading {
     color: #ffffff !important;
 }
 
-/* Hide admin sidebar/topbar when photo editor modal is open - must appear behind overlay */
-html:has(.fi-modal) .fi-sidebar {
-    display: none !important;
-}
-html:has(.fi-modal) .fi-topbar,
-html:has(.fi-modal) .fi-header,
-html:has(.fi-modal) [class*="form-actions"] {
-    z-index: 1 !important;
-}
-html:has(.cropper-container) .fi-sidebar {
-    display: none !important;
-}
+/* Sidebar/header no longer hide behind modals – proper z-index above handles it */
 
 /* View page cards fallback - Tailwind utilities not in compiled app.css */
 .fi-section-content .rounded-xl { border-radius: 0.75rem !important; }
