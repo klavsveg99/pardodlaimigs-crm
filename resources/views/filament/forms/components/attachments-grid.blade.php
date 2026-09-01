@@ -235,10 +235,8 @@
             <div
                 data-attach-card
                 class="group"
-                style="position: relative; border-radius: 0.75rem; overflow: hidden; aspect-ratio: 16/9; background: #f9fafb; transition: all 0.2s ease; cursor: grab;"
-                :style="selected.includes(file.id)
-                    ? 'border: 2px solid var(--pdc-primary); box-shadow: 0 0 0 3px rgba(40,88,84,0.2);'
-                    : 'border: 1px solid #e5e7eb;'"
+                style="position: relative; border-radius: 0.75rem; overflow: hidden; aspect-ratio: 16/9; background: #f9fafb; transition: all 0.2s ease; cursor: grab; border: 1px solid #e5e7eb;"
+                :style="{ border: selected.includes(file.id) ? '2px solid var(--pdc-primary)' : '1px solid #e5e7eb', boxShadow: selected.includes(file.id) ? '0 0 0 3px rgba(40,88,84,0.2)' : 'none' }"
                 @if($isReorderable) draggable="true"
                 x-on:dragstart="onDragStart($event, index)"
                 x-on:dragover="onDragOver($event, index)"
@@ -260,10 +258,8 @@
                     <button
                         type="button"
                         x-on:click.stop="toggleSelect(file.id)"
-                        style="position: absolute; top: 0.5rem; left: 0.5rem; z-index: 10; height: 1.4rem; width: 1.4rem; border-radius: 0.35rem; border: 2px solid; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.35); cursor: pointer;"
-                        :style="selected.includes(file.id)
-                            ? 'background: var(--pdc-primary); border-color: var(--pdc-primary); color: white;'
-                            : 'background: rgba(255,255,255,0.96); border-color: #6b7280; color: transparent;'"
+                        style="position: absolute; top: 0.5rem; left: 0.5rem; z-index: 10; height: 1.4rem; width: 1.4rem; border-radius: 0.35rem; border: 2px solid; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.35); cursor: pointer; background: rgba(255,255,255,0.96); border-color: #6b7280; color: transparent;"
+                        :style="{ background: selected.includes(file.id) ? 'var(--pdc-primary)' : 'rgba(255,255,255,0.96)', borderColor: selected.includes(file.id) ? 'var(--pdc-primary)' : '#6b7280', color: selected.includes(file.id) ? 'white' : 'transparent' }"
                     >
                         <svg x-show="selected.includes(file.id)" style="width: 0.85rem; height: 0.85rem;" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -317,14 +313,12 @@
     </div>
 
     <!-- Lightbox Gallery -->
-    <div
-        x-cloak
-        x-show="lightboxOpen"
-        x-transition.opacity
-        style="position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.92); padding: 1rem;"
-        x-bind:style="lightboxOpen ? 'display:flex;' : 'display:none;'"
-        x-on:click.self="closeLightbox()"
-    >
+    <template x-if="lightboxOpen">
+        <div
+            x-transition.opacity
+            style="position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.92); padding: 1rem;"
+            x-on:click.self="closeLightbox()"
+        >
         <button type="button" x-on:click="closeLightbox()" style="position: absolute; top: 1rem; right: 1rem; z-index: 10; width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter: blur(4px);">
             <svg style="width: 1.25rem; height:1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
@@ -342,5 +336,6 @@
                 <span x-show="lightboxIndex===0" style="background: var(--pdc-primary); color:white; font-size:0.7rem; font-weight:700; padding:0.3rem 0.6rem; border-radius:0.4rem; letter-spacing:0.04em;">GALVENĀ</span>
             </div>
         </div>
-    </div>
+        </div>
+    </template>
 </div>
