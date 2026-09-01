@@ -74,8 +74,8 @@
             </div>
         </div>
         @if($record->lat && $record->lng)
-            <div class="mt-4 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10" style="height: 220px;">
-                <iframe width="100%" height="100%" frameborder="0" style="border:0" src="https://maps.google.com/maps?q={{ $record->lat }},{{ $record->lng }}&z=15&output=embed" allowfullscreen></iframe>
+            <div class="mt-6 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm" style="height: 220px;">
+                <iframe width="100%" height="100%" frameborder="0" style="border:0" src="https://maps.google.com/maps?q={{ $record->lat }},{{ $record->lng }}&z=15&output=embed" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
         @endif
     </x-filament::section>
