@@ -8,7 +8,7 @@ use App\Filament\Admin\Resources\ClientResource\Pages;
 use App\Filament\Admin\Resources\ClientResource\RelationManagers;
 use App\Models\Client;
 use Filament\Actions;
-use Filament\Schemas;
+use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
@@ -40,14 +40,14 @@ class ClientResource extends Resource
         return $schema->schema([
             Section::make()->columnSpanFull()->columns(['lg' => 2])->schema([
                 Grid::make(2)->columnSpan(1)->schema([
-                    Filament\Schemas\Components\TextInput::make('name')->label('Vārds, uzvārds')->required()->maxLength(255),
-                    Filament\Schemas\Components\TextInput::make('phone')->label('Tālrunis')->tel()->maxLength(40),
-                    Filament\Schemas\Components\TextInput::make('email')->label('E-pasts')->email()->maxLength(255),
-                    \App\Filament\Filament\Schemas\Components\PersonasKodsInput::make('personas_kods')
+                    Forms\Components\TextInput::make('name')->label('Vārds, uzvārds')->required()->maxLength(255),
+                    Forms\Components\TextInput::make('phone')->label('Tālrunis')->tel()->maxLength(40),
+                    Forms\Components\TextInput::make('email')->label('E-pasts')->email()->maxLength(255),
+                    \App\Filament\Forms\Components\PersonasKodsInput::make('personas_kods')
                         ->label('Personas kods')
                         ->maxLength(12)
                         ->helperText('Formāts: XXXXXX-XXXXX'),
-                    Filament\Schemas\Components\Select::make('source')
+                    Forms\Components\Select::make('source')
                         ->label('Avots (kā uzzināja)')
                         ->searchable()
                         ->options([
@@ -62,10 +62,10 @@ class ClientResource extends Resource
                             'Cits' => 'Cits',
                         ])
                         ->placeholder('Izvēlieties avotu'),
-Filament\Schemas\Components\Checkbox::make('marketing_consent')
+                    Forms\Components\Checkbox::make('marketing_consent')
                          ->label('Klients atļauj izmantot datus mārketingam')
                          ->inline(),
-                    Filament\Schemas\Components\Select::make('owner_user_id')
+                    Forms\Components\Select::make('owner_user_id')
                         ->label('Atbildīgais aģents')
                         ->relationship('owner', 'name')
                         ->searchable()
@@ -73,8 +73,8 @@ Filament\Schemas\Components\Checkbox::make('marketing_consent')
                         ->columnSpanFull(),
                 ]),
                 Grid::make(1)->columnSpan(1)->schema([
-                    Filament\Schemas\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(8),
-                    Filament\Schemas\Components\FileUpload::make('attachments')
+                    Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(8),
+                    Forms\Components\FileUpload::make('attachments')
                         ->label('Pielikumi')
                         ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
                             .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
