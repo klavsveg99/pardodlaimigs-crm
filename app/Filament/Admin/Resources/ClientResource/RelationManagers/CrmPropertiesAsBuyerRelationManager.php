@@ -17,7 +17,7 @@ class CrmPropertiesAsBuyerRelationManager extends RelationManager
 {
     protected static string $relationship = 'crmProperties';
 
-    protected static ?string $title = 'Pircētie īpašumi';
+    protected static ?string $title = 'Pircēja īpašumi';
 
     protected static string|\BackedEnum|null $icon = 'heroicon-o-shopping-cart';
 
