@@ -115,6 +115,28 @@
     background-color: var(--pdc-primary) !important;
 }
 
+/* Marketing consent – bottom align with flex */
+.fi-sc-component:has(#form\.marketing_consent) {
+    display: flex !important;
+    align-items: end !important;
+    align-self: end !important;
+    height: 100% !important;
+}
+.fi-sc-component:has(#form\.marketing_consent) .fi-fo-field,
+.fi-fo-field:has(#form\.marketing_consent) {
+    display: flex !important;
+    align-items: end !important;
+    height: 100% !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+#form\.marketing_consent:checked,
+.fi-fo-field:has(#form\.marketing_consent) .fi-checkbox-input:checked {
+    background-color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+    accent-color: var(--pdc-primary) !important;
+}
+
 .fi-sidebar {
     background: linear-gradient(180deg, #1e4843 0%, #285854 100%) !important;
 }

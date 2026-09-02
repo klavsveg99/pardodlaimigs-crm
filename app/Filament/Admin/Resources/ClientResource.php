@@ -65,7 +65,8 @@ class ClientResource extends Resource
                     Forms\Components\Checkbox::make('marketing_consent')
                         ->label('Klients atļauj izmantot datus mārketingam')
                         ->inline()
-                        ->extraFieldWrapperAttributes(['class' => 'flex items-end pt-6']),
+                        ->extraAttributes(['class' => 'self-end'])
+                        ->extraFieldWrapperAttributes(['class' => 'flex items-end h-full pb-1']),
                     Forms\Components\Select::make('owner_user_id')
                         ->label('Atbildīgais aģents')
                         ->relationship('owner', 'name')
