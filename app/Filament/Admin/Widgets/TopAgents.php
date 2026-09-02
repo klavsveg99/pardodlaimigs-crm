@@ -121,7 +121,7 @@ class TopAgents extends BaseWidget
                 Tables\Columns\ImageColumn::make('avatar')
                     ->label('Foto')
                     ->circular()
-                    ->defaultImageUrl(asset('images/default-avatar.png'))
+                    ->defaultImageUrl(asset('images/no-photo.svg'))
                     ->getStateUsing(fn ($record) => $record['user']?->avatar_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($record['user']->avatar_path) : null)
                     ->height(36)
                     ->width(36),
