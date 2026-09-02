@@ -13,15 +13,7 @@
         animation: pdc-fadeInUp 0.25s ease-out !important;
     }
 
-    .fi-section {
-        animation: pdc-fadeIn 0.3s ease-out both !important;
-    }
-    .fi-section:nth-child(1) { animation-delay: 0ms !important; }
-    .fi-section:nth-child(2) { animation-delay: 40ms !important; }
-    .fi-section:nth-child(3) { animation-delay: 80ms !important; }
-    .fi-section:nth-child(4) { animation-delay: 120ms !important; }
-    .fi-section:nth-child(5) { animation-delay: 160ms !important; }
-    .fi-section:nth-child(6) { animation-delay: 200ms !important; }
+
 
     .fi-sidebar-item {
         transition: background-color 0.15s ease, color 0.15s ease !important;
