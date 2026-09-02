@@ -38,7 +38,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => '#285854',
                 'gray' => '#414042',
                 'success' => '#0f7d60',
-                'warning' => '#966830',
+                'warning' => '#f97316',
                 'danger' => '#cf2e2e',
                 'info' => '#236D63',
             ])

@@ -34,7 +34,15 @@ class TasksRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable(),
-                Tables\Columns\IconColumn::make('completed_at')->label('Pabeigts')->boolean()->sortable(),
+                Tables\Columns\IconColumn::make('is_overdue')
+                    ->label('')
+                    ->boolean()
+                    ->getStateUsing(fn ($record) => $record->isOverdue())
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon(false)
+                    ->trueColor('warning')
+                    ->tooltip(fn ($record) => $record->isOverdue() ? 'Nokavēts' : null)
+                    ->sortable(query: fn ($query, $direction) => $query->orderBy('due_at', $direction)),
             ])
             ->headerActions([
                 Actions\CreateAction::make()->label('Jauns uzdevums'),

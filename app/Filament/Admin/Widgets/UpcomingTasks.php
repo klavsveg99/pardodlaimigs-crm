@@ -30,9 +30,13 @@ class UpcomingTasks extends BaseWidget
                 Tables\Columns\TextColumn::make('assignedTo.name')->label('Kam')->sortable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('client.name')->label('Klients')->sortable()->placeholder('—'),
                 Tables\Columns\IconColumn::make('is_overdue')
-                    ->label('Nokavēts')->boolean()
+                    ->label('')
+                    ->boolean()
                     ->getStateUsing(fn ($record) => $record->isOverdue())
-                    ->trueColor('danger')->falseColor('gray'),
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon(false)
+                    ->trueColor('warning')
+                    ->tooltip(fn ($record) => $record->isOverdue() ? 'Nokavēts' : null),
             ])
             ->headerActions([
                 Action::make('scope')

@@ -2,12 +2,14 @@
     --pdc-primary: #285854;
     --pdc-primary-darker: #1e4843;
     --pdc-secondary: #414042;
+    --pdc-warning: #f97316;
 }
 
 :root {
     --pdc-primary: #285854;
     --pdc-primary-darker: #1e4843;
     --pdc-secondary: #414042;
+    --pdc-warning: #f97316;
 }
 
 :root, :root.dark {
@@ -36,6 +38,34 @@
     --color-800: var(--pdc-primary-darker) !important;
     --color-900: var(--pdc-primary-darker) !important;
     --color-950: var(--pdc-primary-darker) !important;
+}
+
+.fi-color-warning {
+    --color-50: var(--pdc-warning) !important;
+    --color-100: var(--pdc-warning) !important;
+    --color-200: var(--pdc-warning) !important;
+    --color-300: var(--pdc-warning) !important;
+    --color-400: var(--pdc-warning) !important;
+    --color-500: var(--pdc-warning) !important;
+    --color-600: var(--pdc-warning) !important;
+    --color-700: var(--pdc-warning) !important;
+    --color-800: var(--pdc-warning) !important;
+    --color-900: var(--pdc-warning) !important;
+    --color-950: var(--pdc-warning) !important;
+}
+
+:root, :root.dark {
+    --warning-50: var(--pdc-warning) !important;
+    --warning-100: var(--pdc-warning) !important;
+    --warning-200: var(--pdc-warning) !important;
+    --warning-300: var(--pdc-warning) !important;
+    --warning-400: var(--pdc-warning) !important;
+    --warning-500: var(--pdc-warning) !important;
+    --warning-600: var(--pdc-warning) !important;
+    --warning-700: var(--pdc-warning) !important;
+    --warning-800: var(--pdc-warning) !important;
+    --warning-900: var(--pdc-warning) !important;
+    --warning-950: var(--pdc-warning) !important;
 }
 
 .fi-sidebar {
