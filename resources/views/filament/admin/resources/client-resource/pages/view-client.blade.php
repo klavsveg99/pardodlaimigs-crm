@@ -21,14 +21,14 @@
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Avots</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->source_label ?: '—' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->source ?: '—' }}</dd>
             </div>
         </div>
     </x-filament::section>
 
     <x-filament::section heading="Piezīmes">
         <div class="prose max-w-none text-sm text-gray-700 dark:text-gray-300">
-            {!! $record->notes_md ?: '<span class="text-gray-400">Nav piezīEx.</span>' !!}
+            {!! $record->notes_md ?: '<span class="text-gray-400">Nav piezīmju.</span>' !!}
         </div>
     </x-filament::section>
 
@@ -67,15 +67,15 @@
         <div class="grid gap-3 grid-cols-1 md:grid-cols-3">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Izveidots</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->created_at->format('d.m.Y H:i') }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->created_at?->format('d.m.Y H:i') ?? '—' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atjaunināts</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->updated_at->format('d.m.Y H:i') }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->updated_at?->format('d.m.Y H:i') ?? '—' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Publicēts</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->published_at?->format('d.m.Y H:i') ?? '—' }}</dd>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">GDPR piekrišana</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->gdpr_consent_at?->format('d.m.Y H:i') ?? '—' }}</dd>
             </div>
         </div>
     </x-filament::section>
