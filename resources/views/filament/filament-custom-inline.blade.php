@@ -577,26 +577,24 @@ input[type="checkbox"][checked] {
 }
 
 /* Global dark mode overrides for view page data cards */
-.dark .fi-section {
-    background: #0b0f14 !important;
-    border-color: #27303a !important;
-}
-.dark .rounded-xl {
+html.dark .fi-section,
+html.dark .fi-section .fi-section-content,
+html.dark .rounded-xl,
+html.dark [class*="rounded-xl"] {
     background-color: #0b0f14 !important;
     border-color: #27303a !important;
-    color: #f3f4f6 !important;
 }
-.dark .rounded-xl dt,
-.dark .rounded-xl .text-gray-500,
-.dark .rounded-xl .text-emerald-700 {
+html.dark .rounded-xl dt,
+html.dark .rounded-xl .text-gray-500,
+html.dark .rounded-xl .text-emerald-700 {
     color: #9ca3af !important;
 }
-.dark .rounded-xl dd,
-.dark .rounded-xl .text-gray-900,
-.dark .rounded-xl .font-semibold {
+html.dark .rounded-xl dd,
+html.dark .rounded-xl .text-gray-900,
+html.dark .rounded-xl .font-semibold {
     color: #ffffff !important;
 }
-.dark .rounded-xl .text-emerald-900 {
+html.dark .rounded-xl .text-emerald-900 {
     color: #ffffff !important;
 }
 
