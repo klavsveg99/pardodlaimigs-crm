@@ -69,6 +69,14 @@ class CrmPropertyResource extends Resource
                         ->required()
                         ->live(),
 
+                    Forms\Components\TextInput::make('lead_owner')
+                        ->label('Līda īpašnieks')
+                        ->placeholder('Norādi līda īpašnieku')
+                        ->maxLength(255)
+                        ->required(fn (Get $get): bool => $get('lead_source') === 'external')
+                        ->visible(fn (Get $get): bool => $get('lead_source') === 'external')
+                        ->columnSpanFull(),
+
                     Grid::make(3)
                         ->columnSpanFull()
                         ->visible(fn (Get $get): bool => $get('status') === 'sold')
@@ -109,11 +117,6 @@ class CrmPropertyResource extends Resource
                         ->relationship('owner', 'name')
                         ->searchable()
                         ->preload(),
-
-                    Forms\Components\TextInput::make('slug')
-                        ->label('Slug')
-                        ->maxLength(255)
-                        ->columnSpanFull(),
                 ])->columnSpan(1),
 
                 Section::make('Īpašuma dati')->columns(2)->schema([
@@ -122,11 +125,11 @@ class CrmPropertyResource extends Resource
                     Forms\Components\TextInput::make('size_m2')->label('Platība (m²)')->numeric(),
                     Forms\Components\TextInput::make('land_m2')->label('Zemes platība (m²)')->numeric(),
 Forms\Components\TextInput::make('kadastra_nr')
-                         ->label('Kadastra nr.')
-                         ->required(fn (Get $get): bool => !filled($get('id')))
+                         ->label('Kadastra nr.*')
+                         ->required()
                          ->maxLength(32)
                          ->columnSpanFull()
-                         ->helperText(fn (Get $get): ?string => !filled($get('kadastra_nr')) ? 'Lauku aizpildīšana ir obligāta' : null),
+                         ->validationMessages(['required' => 'Kadastra nr. ir obligāts lauks.']),
                 ])->columnSpan(1),
             ])->columnSpanFull(),
 
@@ -162,57 +165,91 @@ Forms\Components\TextInput::make('kadastra_nr')
                         ->color('primary')
                         ->requiresConfirmation()
                         ->modalHeading('Ģenerēt aprakstu ar AI')
-                        ->modalDescription('Tiks izveidots īpašuma apraksts latviešu un angļu valodā, ņemot vērā ievadītos datus.')
+                        ->modalDescription('Tiks izveidots īpašuma apraksts latviešu un angļu valodā, ņemot vērā ievadītos datus. Angļu tulkojums tiks veidots ar bezmaksas MyMemory API.')
                         ->modalSubmitActionLabel('Ģenerēt')
                         ->action(function (Get $get, Set $set): void {
                             $category = (string) ($get('category') ?? 'īpašums');
                             $city = (string) ($get('city') ?? '');
+                            $address = (string) ($get('address') ?? '');
                             $price = (float) ($get('price_eur') ?? 0);
                             $beds = (int) ($get('beds') ?? 0);
+                            $baths = (int) ($get('baths') ?? 0);
                             $size = (int) ($get('size_m2') ?? 0);
+                            $land = (int) ($get('land_m2') ?? 0);
+                            $kadastra = (string) ($get('kadastra_nr') ?? '');
                             $status = (string) ($get('status') ?? '');
+                            $title = (string) ($get('title') ?? $category);
 
                             $type = strtolower($category);
-                            $location = $city ? " $city" : '';
+                            $locParts = array_filter([$city, $address]);
+                            $locText = $locParts ? ' — ' . implode(', ', $locParts) : '';
 
-                            $features = array_values(array_filter([
-                                $beds > 0 ? $beds . ' istabas' : null,
-                                $size > 0 ? $size . ' m²' : null,
-                            ]));
-                            $featuresText = ! empty($features) ? implode(', ', $features) : '';
+                            $feat = [];
+                            if ($beds > 0) $feat[] = $beds . ' ist.';
+                            if ($baths > 0) $feat[] = $baths . ' vannas ist.';
+                            if ($size > 0) $feat[] = $size . ' m²';
+                            if ($land > 0) $feat[] = 'zeme ' . $land . ' m²';
+                            if ($kadastra) $feat[] = 'kadastra nr. ' . $kadastra;
+                            $featText = $feat ? implode(' · ', $feat) : '';
 
                             if ($status === 'sold') {
-                                $title = 'Pārdots';
-                            } elseif ($status === 'for_sale' || $status === 'published') {
-                                $title = 'Pārdošanā';
+                                $prefix = 'Pārdots';
+                            } elseif ($status === 'published') {
+                                $prefix = 'Pārdošanā';
                             } else {
-                                $title = 'Piedāvājam';
+                                $prefix = 'Piedāvājam';
                             }
 
-                            $lv = [];
-                            $lv[] = \Illuminate\Support\Str::ucfirst($title) . ' ' . strtolower($type) . ($location ? " $city" : '') . ($featuresText ? ". $featuresText" : '') . '.';
-                            $lv[] = '';
+                            // --- LV (bagātīgāks šablons) ---
+                            $lvLines = [];
+                            $lvLines[] = \Illuminate\Support\Str::ucfirst($prefix) . ' ' . strtolower($type) . $locText . ($featText ? '. ' . $featText . '.' : '.');
+                            $lvLines[] = '';
+                            $lvLines[] = $title ? '“' . $title . '” — mājīgs un pārdomāts piedāvājums, kas piemērots gan dzīvošanai, gan investīcijai.' : '';
                             if ($price > 0) {
-                                $lv[] = 'Cena: ' . number_format($price, 0, ',', ' ') . ' €.';
-                                $lv[] = '';
+                                $lvLines[] = 'Cena: ' . number_format($price, 0, ',', ' ') . ' €.';
+                                $lvLines[] = '';
                             }
-                            $lv[] = 'Interesē šis īpašums? Sazinies ar mums, lai pieteiktu apskati un uzzinātu vairāk!';
-                            $lv[] = '';
-                            $lv[] = 'Pārdod Laimīgs — nekustamo īpašumu aģentūra.';
+                            $lvLines[] = 'Īpašums izceļas ar labu atrašanās vietu, sakārtotu dokumentāciju un iespēju pielāgot telpas savām vajadzībām. Plašāks apraksts un foto — pielikumos.';
+                            $lvLines[] = '';
+                            $lvLines[] = 'Interesē šis īpašums? Sazinies ar mums, lai pieteiktu apskati un uzzinātu vairāk!';
+                            $lvLines[] = '';
+                            $lvLines[] = 'Pārdod Laimīgs — nekustamo īpašumu aģentūra.';
+                            $lvText = implode("\n", array_filter($lvLines, fn($l) => $l !== null));
 
-                            $en = [];
-                            $en[] = ucfirst($title) . ' ' . $type . ($location ? " in $city" : '') . ($featuresText ? ". $featuresText" : '') . '.';
-                            $en[] = '';
-                            if ($price > 0) {
-                                $en[] = 'Price: ' . number_format($price, 0, ',', ' ') . ' EUR.';
-                                $en[] = '';
+                            // --- EN via MyMemory free API (lv -> en) ---
+                            $enText = null;
+                            try {
+                                $resp = \Illuminate\Support\Facades\Http::timeout(8)->get('https://api.mymemory.translated.net/get', [
+                                    'q' => $lvText,
+                                    'langpair' => 'lv|en',
+                                ]);
+                                if ($resp->successful()) {
+                                    $data = $resp->json();
+                                    $translated = $data['responseData']['translatedText'] ?? null;
+                                    if ($translated && $translated !== $lvText) {
+                                        $enText = $translated;
+                                    }
+                                }
+                            } catch (\Throwable $e) {
+                                // fallback to template
                             }
-                            $en[] = 'Interested in this property? Contact us to schedule a viewing!';
-                            $en[] = '';
-                            $en[] = 'Pārdod Laimīgs — real estate agency.';
+                            if (!$enText) {
+                                // template fallback EN
+                                $enLines = [];
+                                $enLines[] = ucfirst($prefix) . ' ' . $type . ($city ? ' in ' . $city : '') . ($featText ? '. ' . $featText . '.' : '.');
+                                $enLines[] = '';
+                                if ($title) $enLines[] = '"' . $title . '" — a cozy, well-planned property suitable for living or investment.';
+                                if ($price > 0) { $enLines[] = 'Price: ' . number_format($price, 0, ',', ' ') . ' EUR.'; $enLines[] = ''; }
+                                $enLines[] = 'The property benefits from a good location, tidy documentation and flexible layout options. See more in the attachments.';
+                                $enLines[] = '';
+                                $enLines[] = 'Interested? Contact us to schedule a viewing!';
+                                $enLines[] = '';
+                                $enLines[] = 'Pārdod Laimīgs — real estate agency.';
+                                $enText = implode("\n", array_filter($enLines, fn($l) => $l !== null));
+                            }
 
-                            $html = '<p><strong>[LV]</strong><br>' . nl2br(e(implode("\n", $lv))) . '</p>'
-                                . '<p><strong>[EN]</strong><br>' . nl2br(e(implode("\n", $en))) . '</p>';
+                            $html = '<p><strong>[LV]</strong><br>' . nl2br(e($lvText)) . '</p>'
+                                . '<p><strong>[EN]</strong><br>' . nl2br(e($enText)) . '</p>';
 
                             $set('description', $html);
                         }),

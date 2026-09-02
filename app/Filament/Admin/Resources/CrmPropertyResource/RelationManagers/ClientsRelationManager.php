@@ -88,6 +88,13 @@ class ClientsRelationManager extends RelationManager
                                 'data.recordId' => 'Lai piesaistītu pircēju pārdotam īpašumam, klientam jābūt mārketinga piekrišanai.',
                             ]);
                         }
+                    })
+                    ->after(function (array $data): void {
+                        $clientId = $data['recordId'] ?? null;
+                        if ($clientId && $c = Client::find($clientId)) {
+                            if (empty($c->client_type)) $c->update(['client_type' => 'buyer']);
+                            elseif ($c->client_type === 'seller') $c->update(['client_type' => 'buyer']);
+                        }
                     }),
                 Actions\AttachAction::make()
                     ->label('Piesaistīt klientu')
@@ -134,6 +141,15 @@ class ClientsRelationManager extends RelationManager
                             throw ValidationException::withMessages([
                                 'data.relation' => 'Lai piesaistītu pircēju pārdotam īpašumam, klientam jābūt mārketinga piekrišanai.',
                             ]);
+                        }
+                    })
+                    ->after(function (array $data): void {
+                        $clientId = $data['recordId'] ?? null;
+                        $relation = $data['relation'] ?? null;
+                        if ($clientId && $relation && $c = Client::find($clientId)) {
+                            if (empty($c->client_type) && in_array($relation, ['buyer','seller'])) {
+                                $c->update(['client_type' => $relation === 'buyer' ? 'buyer' : 'seller']);
+                            }
                         }
                     }),
             ])

@@ -35,7 +35,7 @@ class CrmProperty extends Model
 
     protected $fillable = [
         'wp_post_id', 'title', 'slug', 'description', 'image_urls', 'price_cents', 'price_eur',
-        'currency', 'category', 'status', 'lead_source', 'beds', 'baths',
+        'currency', 'category', 'status', 'lead_source', 'lead_owner', 'beds', 'baths',
         'size_m2', 'land_m2', 'kadastra_nr', 'city', 'address',
         'lat', 'lng', 'owner_user_id', 'sort_order',
         'final_price_eur', 'commission_eur', 'sold_at',

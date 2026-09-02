@@ -23,6 +23,14 @@
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Avots</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->source ?: '—' }}</dd>
             </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tips</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->client_type === 'buyer' ? 'Pircējs' : ($record->client_type === 'seller' ? 'Pārdevējs' : '—') }}</dd>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atbildīgais aģents</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->owner?->name ?: '—' }}</dd>
+            </div>
         </div>
     </x-filament::section>
 
