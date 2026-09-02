@@ -26,7 +26,6 @@
 .fi-fo-field:has(#form\.marketing_consent) .fi-fo-field-label-ctn {
     display: flex !important;
     align-items: end !important;
-    height: 100% !important;
 }
 /* GDPR checkbox bg – force primary, kill teal #008078 even when disabled/checked */
 #form\.marketing_consent:checked,
