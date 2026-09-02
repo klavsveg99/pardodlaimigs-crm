@@ -28,9 +28,14 @@ class CrmProperty extends Model
         'Garāža' => 'Garāža',
     ];
 
+    public const LEAD_SOURCES = [
+        'internal' => 'Iekšējais (pardodlaimigs.lv)',
+        'external' => 'Ārējais',
+    ];
+
     protected $fillable = [
         'wp_post_id', 'title', 'slug', 'description', 'image_urls', 'price_cents', 'price_eur',
-        'currency', 'category', 'status', 'beds', 'baths',
+        'currency', 'category', 'status', 'lead_source', 'beds', 'baths',
         'size_m2', 'land_m2', 'kadastra_nr', 'city', 'address',
         'lat', 'lng', 'owner_user_id', 'sort_order',
         'final_price_eur', 'commission_eur', 'sold_at',
@@ -95,6 +100,11 @@ class CrmProperty extends Model
     public function getStatusLabelAttribute(): string
     {
         return self::STATUSES[$this->status] ?? $this->status;
+    }
+
+    public function getLeadSourceLabelAttribute(): string
+    {
+        return self::LEAD_SOURCES[$this->lead_source] ?? ($this->lead_source ?? '—');
     }
 
     public function getSelectionLabelAttribute(): string
