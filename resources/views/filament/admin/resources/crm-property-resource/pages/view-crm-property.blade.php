@@ -154,8 +154,7 @@
                 </div>
 
                 <!-- Lightbox Gallery -->
-                <template x-teleport="body">
-                    <template x-if="open">
+                <template x-if="open">
                     <div x-transition.opacity
                         style="position:fixed; inset:0; z-index:2147483647; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.92); padding:1rem;"
                         x-on:click.self="close()"
@@ -178,7 +177,6 @@
                         </div>
                     </div>
                     </div>
-                    </template>
                 </template>
             </div>
         @else
