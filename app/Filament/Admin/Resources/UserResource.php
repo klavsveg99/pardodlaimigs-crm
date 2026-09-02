@@ -91,7 +91,7 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('avatar_path')->label('Foto')->disk('public')->circular()->defaultImageUrl(asset('images/default-avatar.png')),
+                Tables\Columns\ImageColumn::make('avatar_path')->label('Foto')->disk('public')->circular()->defaultImageUrl(asset('images/no-photo.svg')),
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->toggleable(),

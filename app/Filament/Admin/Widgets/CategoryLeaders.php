@@ -46,7 +46,7 @@ class CategoryLeaders extends BaseWidget
                 Tables\Columns\ImageColumn::make('leader_avatar')
                     ->label('Foto')
                     ->circular()
-                    ->defaultImageUrl(asset('images/default-avatar.png'))
+                    ->defaultImageUrl(asset('images/no-photo.svg'))
                     ->getStateUsing(fn ($record) => $record['leader_avatar'] ? \Illuminate\Support\Facades\Storage::disk('public')->url($record['leader_avatar']) : null)
                     ->height(36)
                     ->width(36),

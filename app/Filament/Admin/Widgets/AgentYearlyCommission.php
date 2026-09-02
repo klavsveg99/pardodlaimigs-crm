@@ -39,7 +39,7 @@ class AgentYearlyCommission extends BaseWidget
                 Tables\Columns\ImageColumn::make('avatar')
                     ->label('')
                     ->circular()
-                    ->defaultImageUrl(asset('images/default-avatar.png'))
+                    ->defaultImageUrl(asset('images/no-photo.svg'))
                     ->getStateUsing(fn ($record) => $record['avatar'] ? \Illuminate\Support\Facades\Storage::disk('public')->url($record['avatar']) : null)
                     ->height(36)
                     ->width(36),
