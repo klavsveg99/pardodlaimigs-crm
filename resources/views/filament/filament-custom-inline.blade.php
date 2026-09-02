@@ -2,6 +2,19 @@
 :root {
     --pdc-primary: #285854;
     --pdc-primary-darker: #1e4843;
+    --pdc-warning: #f97316;
+    /* Kill lighter teal #008078 everywhere – remap Tailwind teal palette to primary */
+    --teal-50: var(--pdc-primary) !important;
+    --teal-100: var(--pdc-primary) !important;
+    --teal-200: var(--pdc-primary) !important;
+    --teal-300: var(--pdc-primary) !important;
+    --teal-400: var(--pdc-primary) !important;
+    --teal-500: var(--pdc-primary) !important;
+    --teal-600: var(--pdc-primary) !important;
+    --teal-700: var(--pdc-primary-darker) !important;
+    --teal-800: var(--pdc-primary-darker) !important;
+    --teal-900: var(--pdc-primary-darker) !important;
+    --teal-950: var(--pdc-primary-darker) !important;
 }
 
 /* Brand/sidebar treatment. Filament owns the page, form, table and modal colors. */
@@ -390,7 +403,24 @@ input[type="checkbox"][checked] {
     color: #f3f4f6 !important;
 }
 
-/* Tabs */
+/* Tabs – light + dark always use primary, kill teal #008078 */
+.fi-tabs-nav {
+    border-color: #e5e7eb !important;
+}
+.fi-tabs-tab {
+    color: #6b7280 !important;
+}
+.fi-tabs-tab.fi-active,
+.fi-tabs-tab[aria-selected="true"],
+[role="tablist"] button[aria-selected="true"],
+[role="tab"].fi-active {
+    color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+}
+.fi-tabs-tab.fi-active::after,
+.fi-tabs-tab[aria-selected="true"]::after {
+    background-color: var(--pdc-primary) !important;
+}
 .dark .fi-tabs-nav {
     border-color: #374151 !important;
 }
@@ -399,8 +429,26 @@ input[type="checkbox"][checked] {
     color: #9ca3af !important;
 }
 
-.dark .fi-tabs-tab.fi-active {
+.dark .fi-tabs-tab.fi-active,
+.dark .fi-tabs-tab[aria-selected="true"],
+.dark [role="tablist"] button[aria-selected="true"] {
     color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+}
+
+/* Remap any teal usage to primary */
+.fi-color-teal {
+    --color-50: var(--pdc-primary) !important;
+    --color-100: var(--pdc-primary) !important;
+    --color-200: var(--pdc-primary) !important;
+    --color-300: var(--pdc-primary) !important;
+    --color-400: var(--pdc-primary) !important;
+    --color-500: var(--pdc-primary) !important;
+    --color-600: var(--pdc-primary-darker) !important;
+    --color-700: var(--pdc-primary-darker) !important;
+    --color-800: var(--pdc-primary-darker) !important;
+    --color-900: var(--pdc-primary-darker) !important;
+    --color-950: var(--pdc-primary-darker) !important;
 }
 
 /* Cards in dark mode */
