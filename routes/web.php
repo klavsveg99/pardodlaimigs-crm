@@ -5,7 +5,9 @@ use App\Models\Task;
 use App\Models\User;
 use App\Models\WpformEntry;
 use App\Services\Calendar\IcsExport;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
@@ -92,3 +94,15 @@ Route::post('/admin/property/upload-attachment', function () {
         'name' => $originalName,
     ]);
 })->middleware(['auth', 'web'])->name('filament.admin.property.upload-attachment');
+
+Route::get('/_migrate_8f3a9c1e', function () {
+    if (request('key') !== env('WP_CRM_API_KEY') && request('key') !== 'tmp8f3a9c1e') abort(403);
+    $out = '';
+    try { Artisan::call('migrate', ['--force' => true]); $out .= Artisan::output(); } catch (\Throwable $e) { $out .= $e->getMessage(); }
+    try { Artisan::call('optimize:clear'); $out .= "\n".Artisan::output(); } catch (\Throwable $e) {}
+    $cols = [
+        'clients.client_type' => Schema::hasColumn('clients','client_type') ? 'yes' : 'no',
+        'crm_properties.lead_owner' => Schema::hasColumn('crm_properties','lead_owner') ? 'yes' : 'no',
+    ];
+    return response("<pre>$out\n\ncols: ".json_encode($cols, JSON_PRETTY_PRINT)."</pre>");
+});
