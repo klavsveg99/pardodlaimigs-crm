@@ -15,6 +15,20 @@
     --teal-800: var(--pdc-primary-darker) !important;
     --teal-900: var(--pdc-primary-darker) !important;
     --teal-950: var(--pdc-primary-darker) !important;
+    /* Kill the light success teal (oklch 0.753529 0.150273 168.74) that shows on
+       success-coloured buttons/actions – remap the success palette to the brand
+       accent (var(--pdc-primary)) just like primary/teal/warning. */
+    --success-50: var(--pdc-primary) !important;
+    --success-100: var(--pdc-primary) !important;
+    --success-200: var(--pdc-primary) !important;
+    --success-300: var(--pdc-primary) !important;
+    --success-400: var(--pdc-primary) !important;
+    --success-500: var(--pdc-primary) !important;
+    --success-600: var(--pdc-primary) !important;
+    --success-700: var(--pdc-primary-darker) !important;
+    --success-800: var(--pdc-primary-darker) !important;
+    --success-900: var(--pdc-primary-darker) !important;
+    --success-950: var(--pdc-primary-darker) !important;
 }
 
 /* Marketing consent checkbox – true bottom alignment (flex, not pt-6) */
@@ -484,6 +498,22 @@ input[type="checkbox"][checked] {
 
 /* Remap any teal usage to primary */
 .fi-color-teal {
+    --color-50: var(--pdc-primary) !important;
+    --color-100: var(--pdc-primary) !important;
+    --color-200: var(--pdc-primary) !important;
+    --color-300: var(--pdc-primary) !important;
+    --color-400: var(--pdc-primary) !important;
+    --color-500: var(--pdc-primary) !important;
+    --color-600: var(--pdc-primary-darker) !important;
+    --color-700: var(--pdc-primary-darker) !important;
+    --color-800: var(--pdc-primary-darker) !important;
+    --color-900: var(--pdc-primary-darker) !important;
+    --color-950: var(--pdc-primary-darker) !important;
+}
+
+/* Remap any success usage (buttons/actions) to primary – kills the light
+   success teal oklch(0.753529 0.150273 168.74) that appeared on new buttons. */
+.fi-color-success {
     --color-50: var(--pdc-primary) !important;
     --color-100: var(--pdc-primary) !important;
     --color-200: var(--pdc-primary) !important;
