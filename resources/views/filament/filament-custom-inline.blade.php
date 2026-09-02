@@ -12,13 +12,11 @@
     display: flex !important;
     align-items: end !important;
     align-self: end !important;
-    height: 100% !important;
 }
 .fi-sc-component:has(#form\.marketing_consent) .fi-fo-field,
 .fi-fo-field:has(#form\.marketing_consent) {
     display: flex !important;
     align-items: end !important;
-    height: 100% !important;
     margin-top: 0 !important;
     padding-top: 0 !important;
 }

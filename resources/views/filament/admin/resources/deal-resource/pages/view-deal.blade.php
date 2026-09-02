@@ -1,11 +1,11 @@
 <x-filament-panels::page>
     <x-filament::section>
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nosaukums</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->title ?: '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Klients</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                     @if ($record->client)
@@ -20,7 +20,7 @@
                     @endif
                 </dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Vērtība</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->value_eur ? number_format((float) $record->value_eur, 2, ',', ' ') . ' €' : '—' }}</dd>
             </div>
@@ -34,7 +34,7 @@
     <x-filament::section heading="Posmu vēsture">
         <div class="relative space-y-3 ps-3">
             @forelse ($record->stageChanges as $change)
-                <div class="relative rounded-xl border border-gray-200 bg-gray-50 p-4 ps-5 dark:border-white/10 dark:bg-white/5">
+                <div class="relative rounded-xl border border-gray-200 bg-gray-50 p-4 ps-5 dark:border-[#27303a] dark:bg-[#0b0f14]">
                     <span class="absolute -start-[0.45rem] top-5 h-3 w-3 rounded-full bg-[var(--pdc-primary)] ring-4 ring-white dark:ring-gray-900"></span>
                     <div class="text-sm font-semibold text-gray-900 dark:text-white">
                         @if ($change->payload['initial'] ?? false)
