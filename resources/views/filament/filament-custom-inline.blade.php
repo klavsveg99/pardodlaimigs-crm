@@ -578,7 +578,7 @@ input[type="checkbox"][checked] {
 
 /* Global dark mode overrides for view page data cards */
 .dark .rounded-xl {
-    background: #0b0f14 !important;
+    background-color: #0b0f14 !important;
     border-color: #27303a !important;
     color: #f3f4f6 !important;
 }
