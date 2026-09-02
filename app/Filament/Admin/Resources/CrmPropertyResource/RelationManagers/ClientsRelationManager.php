@@ -5,7 +5,7 @@ namespace App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers;
 use App\Models\Client;
 use App\Models\ClientCrmProperty;
 use Filament\Actions;
-use Filament\Forms;
+use Filament\Schemas;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -79,7 +79,7 @@ class ClientsRelationManager extends RelationManager
                         Forms\Components\Hidden::make('relation')->default('buyer'),
                         Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
                     ])
-                    ->validateRecordUsing(function (array $data): void {
+                    ->before(function (array $data): void {
                         $clientId = $data['recordId'] ?? null;
                         $property = $this->getOwnerRecord();
 
@@ -104,7 +104,7 @@ class ClientsRelationManager extends RelationManager
                             Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
                         ];
                     })
-                    ->validateRecordUsing(function (array $data): void {
+                    ->before(function (array $data): void {
                         $clientId = $data['recordId'] ?? null;
                         $relation = $data['relation'] ?? null;
                         $property = $this->getOwnerRecord();
