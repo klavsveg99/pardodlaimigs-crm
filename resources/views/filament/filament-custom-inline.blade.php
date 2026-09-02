@@ -576,6 +576,26 @@ input[type="checkbox"][checked] {
     border-color: #27303a !important;
 }
 
+/* Global dark mode overrides for view page data cards */
+.dark .rounded-xl {
+    background: #0b0f14 !important;
+    border-color: #27303a !important;
+    color: #f3f4f6 !important;
+}
+.dark .rounded-xl dt,
+.dark .rounded-xl .text-gray-500,
+.dark .rounded-xl .text-emerald-700 {
+    color: #9ca3af !important;
+}
+.dark .rounded-xl dd,
+.dark .rounded-xl .text-gray-900,
+.dark .rounded-xl .font-semibold {
+    color: #ffffff !important;
+}
+.dark .rounded-xl .text-emerald-900 {
+    color: #ffffff !important;
+}
+
 /* Table search/filter inputs - comprehensive override */
 .dark .fi-ta-search-input,
 .dark .fi-ta-filter-form .fi-input,
