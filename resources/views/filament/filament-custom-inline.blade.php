@@ -131,8 +131,18 @@ h1.fi-header-heading {
     color: var(--pdc-primary-darker) !important;
 }
 
+/* Chart widget (main dashboard "Komisijas tendence") heading must match the
+   neutral style of the other dashboard table-widget section titles. */
+.fi-wi-chart .fi-section-header-heading {
+    color: var(--gray-950) !important;
+}
+
 .dark .fi-section-header-heading,
 .dark h1.fi-header-heading {
+    color: #f9fafb !important;
+}
+
+.dark .fi-wi-chart .fi-section-header-heading {
     color: #f9fafb !important;
 }
 
