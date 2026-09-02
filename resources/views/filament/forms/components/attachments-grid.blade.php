@@ -172,6 +172,8 @@
         editorFile: null,
         cropper: null,
         editorAspectRatio: null,
+        scaleX: 1,
+        scaleY: 1,
         init() {
             try { this.files = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || []; } catch(e){ this.files=[]; }
             this.uploadUrl = this.$el.dataset.uploadUrl;
@@ -333,6 +335,8 @@
                 try { this.cropper.destroy(); } catch(e) {}
                 this.cropper = null;
             }
+            this.scaleX = 1;
+            this.scaleY = 1;
         },
         setAspectRatio(ratio) {
             this.editorAspectRatio = ratio;
@@ -343,9 +347,23 @@
             if (!this.cropper) return;
             this.cropper.rotate(deg);
         },
+        flipHorizontal() {
+            if (!this.cropper) return;
+            this.scaleX *= -1;
+            this.cropper.scaleX(this.scaleX);
+        },
+        flipVertical() {
+            if (!this.cropper) return;
+            this.scaleY *= -1;
+            this.cropper.scaleY(this.scaleY);
+        },
         resetCropper() {
             if (!this.cropper) return;
             this.cropper.reset();
+            this.scaleX = 1;
+            this.scaleY = 1;
+            this.cropper.scaleX(this.scaleX);
+            this.cropper.scaleY(this.scaleY);
         },
         async saveEditor() {
             if (!this.cropper || this.editorIndex === null) return;
@@ -594,6 +612,12 @@
                         </button>
                         <button type="button" x-on:click="rotate(90)" class="pdc-editor-btn pdc-editor-btn-ghost" title="Pagriezt pa labi">
                             <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 15l6-6m0 0l-6-6M21 9H9a6 6 0 00-6 6v3"/></svg>
+                        </button>
+                        <button type="button" x-on:click="flipHorizontal()" class="pdc-editor-btn pdc-editor-btn-ghost" title="Apvērst horizontāli">
+                            <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="10" rx="1"/><path d="M12 7v10" stroke-dasharray="2 2"/><path d="M7 9l-2 3 2 3M17 15l2-3-2-3"/></svg>
+                        </button>
+                        <button type="button" x-on:click="flipVertical()" class="pdc-editor-btn pdc-editor-btn-ghost" title="Apvērst vertikāli">
+                            <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="3" width="10" height="18" rx="1"/><path d="M7 12h10" stroke-dasharray="2 2"/><path d="M9 7l3-2 3 2M15 17l-3 2-3-2"/></svg>
                         </button>
                         <button type="button" x-on:click="resetCropper()" class="pdc-editor-btn pdc-editor-btn-ghost">Atiestatīt</button>
                     </div>
