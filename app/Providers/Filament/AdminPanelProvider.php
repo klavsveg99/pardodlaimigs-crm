@@ -7,9 +7,7 @@ use App\Filament\Admin\Widgets\CalendarViewings;
 use App\Filament\Admin\Widgets\CategoryLeaders;
 use App\Filament\Admin\Widgets\CommissionTrend;
 use App\Filament\Admin\Widgets\CrmStatsOverview;
-use App\Filament\Admin\Widgets\TodayViewings;
 use App\Filament\Admin\Widgets\TopAgents;
-use App\Filament\Admin\Widgets\UpcomingTasks;
 use App\Http\Middleware\TrustCrmHost;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -59,8 +57,6 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 CrmStatsOverview::class,
                 TopAgents::class,
-                UpcomingTasks::class,
-                TodayViewings::class,
                 CategoryLeaders::class,
                 CommissionTrend::class,
                 CalendarViewings::class,
