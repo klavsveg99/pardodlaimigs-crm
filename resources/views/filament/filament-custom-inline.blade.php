@@ -591,8 +591,9 @@ html.dark .rounded-xl .text-emerald-700 {
 }
 html.dark .rounded-xl dd,
 html.dark .rounded-xl .text-gray-900,
-html.dark .rounded-xl .font-semibold {
-    color: #ffffff !important;
+html.dark .rounded-xl .font-semibold,
+html.dark .fi-section-content dd {
+    color: #f3f4f6 !important;
 }
 html.dark .rounded-xl .text-emerald-900 {
     color: #ffffff !important;
@@ -845,10 +846,6 @@ html.dark .rounded-xl .text-emerald-900 {
     font-weight: 400 !important;
     margin: 0 0 1rem 0 !important;
     line-height: 1.5 !important;
-}
-
-html.dark .fi-section-content dd {
-    color: #f3f4f6 !important;
 }
 
 /* Description/prose spacing */
