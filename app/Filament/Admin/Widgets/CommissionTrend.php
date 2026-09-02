@@ -59,7 +59,7 @@ class CommissionTrend extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Komisija (EUR)',
+                    'label' => '',
                     'data' => $data,
                     'borderColor' => '#285854',
                     'backgroundColor' => 'rgba(40,88,84,0.1)',
