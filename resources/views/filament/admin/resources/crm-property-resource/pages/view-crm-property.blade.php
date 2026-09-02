@@ -154,10 +154,10 @@
                 </div>
 
                 <!-- Lightbox Gallery -->
-                <template x-if="open">
-                    <div
+                <template x-teleport="body">
+                    <div x-show="open"
                         x-transition.opacity
-                        style="position:fixed; inset:0; z-index:999999; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.92); padding:1rem;"
+                        style="position:fixed; inset:0; z-index:2147483647; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.92); padding:1rem;"
                         x-on:click.self="close()"
                     >
                     <button type="button" x-on:click="close()" style="position:absolute; top:1rem; right:1rem; z-index:10; width:2.5rem; height:2.5rem; border-radius:9999px; background:rgba(255,255,255,0.12); color:white; border:1px solid rgba(255,255,255,0.2); display:inline-flex; align-items:center; justify-content:center; place-items:center; padding:0; line-height:0; cursor:pointer; backdrop-filter:blur(4px); box-sizing:border-box;">

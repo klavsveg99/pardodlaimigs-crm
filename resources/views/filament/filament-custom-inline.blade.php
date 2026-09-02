@@ -196,23 +196,25 @@ h1.fi-header-heading {
 .cropper-modal,
 .fi-file-upload-image-editor,
 .fi-file-upload-image-editor .fi-modal {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important;
 }
 
 .fi-modal .fi-modal-overlay,
 .fi-modal .fi-modal-window,
 .pdc-editor-modal .fi-modal-overlay {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important;
 }
-/* Lightbox must be absolute top – fix gallery lightbox showing under form actions / Piesaistītie klienti */
+/* Lightbox must be absolute top – fix gallery lightbox showing under form actions / Piesaistītie klienti / Datumi */
 #content.form-actions, .fi-sc-actions, .fi-form-actions, .fi-page-footer,
-.fi-section, .fi-resource-relation-managers, .fi-ta-header, .fi-ta-header-toolbar {
+.fi-ta-header, .fi-ta-header-toolbar {
     z-index: 1 !important;
     position: relative;
 }
-/* Any inline lightbox with old 100000 z-index – force to top */
-div[style*="z-index:100000"], div[style*="z-index: 100000"] {
-    z-index: 999999 !important;
+.fi-section, .fi-resource-relation-managers { z-index: auto !important; position: relative; }
+.fi-section { transform: none !important; will-change: auto !important; }
+/* Any inline lightbox – force to max */
+div[style*="z-index:999999"], div[style*="z-index: 999999"], div[style*="z-index:2147483647"] {
+    z-index: 2147483647 !important;
 }
 
 .fi-file-upload .fi-btn.fi-color-primary,
