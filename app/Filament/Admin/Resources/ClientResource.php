@@ -38,7 +38,7 @@ class ClientResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Section::make('Klienta dati')->columnSpanFull()->columns(2)->schema([
+            Section::make('Klienta dati')->columnSpanFull()->columns(['default' => 1, 'md' => 2])->schema([
                 Forms\Components\TextInput::make('name')->label('Vārds, uzvārds')->required()->maxLength(255),
                 Forms\Components\TextInput::make('phone')->label('Tālrunis')->tel()->maxLength(40),
                 Forms\Components\TextInput::make('email')->label('E-pasts')->email()->maxLength(255),
