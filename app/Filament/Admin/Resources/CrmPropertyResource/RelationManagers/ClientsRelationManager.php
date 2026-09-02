@@ -5,7 +5,7 @@ namespace App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers;
 use App\Models\Client;
 use App\Models\ClientCrmProperty;
 use Filament\Actions;
-use Filament\Schemas;
+use Filament\Forms;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
