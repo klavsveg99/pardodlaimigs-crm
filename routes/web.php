@@ -35,6 +35,35 @@ Route::get('/calendar/feed/{user}/{token}.ics', function (User $user, string $to
     ]);
 })->name('calendar.feed');
 
+// ── Avatar upload endpoint (single file, avatars) ────────────────
+Route::post('/admin/avatar/upload', function () {
+    $file = request()->file('file');
+
+    if (! $file) {
+        return response()->json(['error' => 'No file provided'], 422);
+    }
+
+    $maxSize = 5120; // 5MB
+
+    if ($file->getSize() > $maxSize * 1024) {
+        return response()->json(['error' => 'File too large'], 422);
+    }
+
+    $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (! in_array($file->getMimeType(), $allowed, true)) {
+        return response()->json(['error' => 'File type not accepted'], 422);
+    }
+
+    $path = $file->store('avatars', 'public');
+    $originalName = $file->getClientOriginalName();
+
+    return response()->json([
+        'path' => $path,
+        'url' => Storage::disk('public')->url($path),
+        'name' => $originalName,
+    ]);
+})->middleware(['auth', 'web'])->name('filament.admin.avatar.upload');
+
 // ── Attachment upload endpoint ────────────────────────────────
 Route::post('/admin/property/upload-attachment', function () {
     $file = request()->file('file');

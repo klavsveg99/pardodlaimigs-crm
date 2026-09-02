@@ -71,22 +71,9 @@ class UserResource extends Resource
             ])->columns(2),
 
             Section::make('Aģenta publiskais profils')->schema([
-                Forms\Components\FileUpload::make('avatar_path')
+                \App\Filament\Forms\Components\AvatarEditor::make('avatar_path')
                     ->label('Foto')
-                    ->image()
-                    ->imageEditor()
-                    ->imageEditorAspectRatios(['1:1'])
-                    ->imageEditorViewportWidth(1000)
-                    ->imageEditorViewportHeight(1000)
-                    ->imageResizeMode('cover')
-                    ->imageCropAspectRatio('1:1')
-                    ->imageResizeTargetWidth('1000')
-                    ->imageResizeTargetHeight('1000')
-                    ->disk('public')
-                    ->directory('avatars')
-                    ->maxSize(5120)
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-                    ->helperText('Kvadrātveida foto — automātiski apgriezts 1:1, saglabāts 1000×1000px, max 5MB')
+                    ->helperText('Kvadrātveida foto — 1:1, 1000×1000px, max 5MB. Izmanto redaktoru, lai apgrieztu un apvērstu.')
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('phone')->label('Tālrunis')->tel()->maxLength(32)->placeholder('+371 ...'),
                 Forms\Components\TextInput::make('position')->label('Amats')->maxLength(255)->placeholder('Aģents'),
