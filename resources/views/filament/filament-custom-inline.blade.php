@@ -17,6 +17,42 @@
     --teal-950: var(--pdc-primary-darker) !important;
 }
 
+/* Marketing consent checkbox – true bottom alignment (flex, not pt-6) */
+.fi-sc-component:has(#form\.marketing_consent) {
+    display: flex !important;
+    align-items: end !important;
+    align-self: end !important;
+    height: 100% !important;
+}
+.fi-sc-component:has(#form\.marketing_consent) .fi-fo-field,
+.fi-fo-field:has(#form\.marketing_consent) {
+    display: flex !important;
+    align-items: end !important;
+    height: 100% !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+.fi-fo-field:has(#form\.marketing_consent) .fi-fo-field-label-col,
+.fi-fo-field:has(#form\.marketing_consent) .fi-fo-field-label-ctn {
+    display: flex !important;
+    align-items: end !important;
+    height: 100% !important;
+}
+/* GDPR checkbox bg – force primary, kill teal #008078 even when disabled/checked */
+#form\.marketing_consent:checked,
+.fi-fo-field:has(#form\.marketing_consent) .fi-checkbox-input:checked,
+.fi-fo-field:has(#form\.marketing_consent) input[type="checkbox"]:checked {
+    background-color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+    accent-color: var(--pdc-primary) !important;
+}
+#form\.marketing_consent:checked:disabled,
+.fi-fo-field:has(#form\.marketing_consent) .fi-checkbox-input:checked:disabled {
+    background-color: var(--pdc-primary) !important;
+    border-color: var(--pdc-primary) !important;
+    opacity: 1 !important;
+}
+
 /* Brand/sidebar treatment. Filament owns the page, form, table and modal colors. */
 .fi-sidebar {
     background: linear-gradient(180deg, #1e4843 0%, #285854 100%) !important;
