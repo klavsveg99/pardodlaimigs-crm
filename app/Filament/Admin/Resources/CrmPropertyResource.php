@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -144,12 +145,76 @@ Forms\Components\TextInput::make('kadastra_nr')
                     ]),
             ])->columnSpanFull(),
 
-            Section::make('Apraksts')->columnSpanFull()->schema([
-                Forms\Components\RichEditor::make('description')
-                    ->hiddenLabel()
-                    ->extraInputAttributes(['style' => 'min-height: 280px'])
-                    ->columnSpanFull(),
-            ])->columnSpanFull(),
+            Section::make('Apraksts')
+                ->columnSpanFull()
+                ->headerActions([
+                    Actions\Action::make('ai_generate_description')
+                        ->label('AI ģenerēt aprakstu')
+                        ->icon('heroicon-o-sparkles')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        ->modalHeading('Ģenerēt aprakstu ar AI')
+                        ->modalDescription('Tiks izveidots īpašuma apraksts latviešu un angļu valodā, ņemot vērā ievadītos datus.')
+                        ->modalSubmitActionLabel('Ģenerēt')
+                        ->action(function (Get $get, Set $set): void {
+                            $category = (string) ($get('category') ?? 'īpašums');
+                            $city = (string) ($get('city') ?? '');
+                            $price = (float) ($get('price_eur') ?? 0);
+                            $beds = (int) ($get('beds') ?? 0);
+                            $size = (int) ($get('size_m2') ?? 0);
+                            $status = (string) ($get('status') ?? '');
+
+                            $type = strtolower($category);
+                            $location = $city ? " $city" : '';
+
+                            $features = array_values(array_filter([
+                                $beds > 0 ? $beds . ' istabas' : null,
+                                $size > 0 ? $size . ' m²' : null,
+                            ]));
+                            $featuresText = ! empty($features) ? implode(', ', $features) : '';
+
+                            if ($status === 'sold') {
+                                $title = 'Pārdots';
+                            } elseif ($status === 'for_sale' || $status === 'published') {
+                                $title = 'Pārdošanā';
+                            } else {
+                                $title = 'Piedāvājam';
+                            }
+
+                            $lv = [];
+                            $lv[] = \Illuminate\Support\Str::ucfirst($title) . ' ' . strtolower($type) . ($location ? " $city" : '') . ($featuresText ? ". $featuresText" : '') . '.';
+                            $lv[] = '';
+                            if ($price > 0) {
+                                $lv[] = 'Cena: ' . number_format($price, 0, ',', ' ') . ' €.';
+                                $lv[] = '';
+                            }
+                            $lv[] = 'Interesē šis īpašums? Sazinies ar mums, lai pieteiktu apskati un uzzinātu vairāk!';
+                            $lv[] = '';
+                            $lv[] = 'Pārdod Laimīgs — nekustamo īpašumu aģentūra.';
+
+                            $en = [];
+                            $en[] = ucfirst($title) . ' ' . $type . ($location ? " in $city" : '') . ($featuresText ? ". $featuresText" : '') . '.';
+                            $en[] = '';
+                            if ($price > 0) {
+                                $en[] = 'Price: ' . number_format($price, 0, ',', ' ') . ' EUR.';
+                                $en[] = '';
+                            }
+                            $en[] = 'Interested in this property? Contact us to schedule a viewing!';
+                            $en[] = '';
+                            $en[] = 'Pārdod Laimīgs — real estate agency.';
+
+                            $html = '<p><strong>[LV]</strong><br>' . nl2br(e(implode("\n", $lv))) . '</p>'
+                                . '<p><strong>[EN]</strong><br>' . nl2br(e(implode("\n", $en))) . '</p>';
+
+                            $set('description', $html);
+                        }),
+                ])
+                ->schema([
+                    Forms\Components\RichEditor::make('description')
+                        ->hiddenLabel()
+                        ->extraInputAttributes(['style' => 'min-height: 280px'])
+                        ->columnSpanFull(),
+                ])->columnSpanFull(),
 
             Section::make('Pielikumi')->columnSpanFull()->schema([
                 \App\Filament\Forms\Components\AttachmentsGrid::make('attachments')

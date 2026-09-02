@@ -4,6 +4,8 @@ namespace App\Providers\Filament;
 
 use App\Filament\Admin\Auth\Login;
 use App\Filament\Admin\Widgets\CalendarViewings;
+use App\Filament\Admin\Widgets\CategoryLeaders;
+use App\Filament\Admin\Widgets\CommissionTrend;
 use App\Filament\Admin\Widgets\CrmStatsOverview;
 use App\Filament\Admin\Widgets\TodayViewings;
 use App\Filament\Admin\Widgets\TopAgents;
@@ -59,6 +61,8 @@ class AdminPanelProvider extends PanelProvider
                 TopAgents::class,
                 UpcomingTasks::class,
                 TodayViewings::class,
+                CategoryLeaders::class,
+                CommissionTrend::class,
                 CalendarViewings::class,
             ])
             ->middleware([
