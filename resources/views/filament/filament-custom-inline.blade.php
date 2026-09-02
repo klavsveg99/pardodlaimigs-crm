@@ -847,7 +847,7 @@ html.dark .rounded-xl .text-emerald-900 {
     line-height: 1.5 !important;
 }
 
-.dark .fi-section-content dd {
+html.dark .fi-section-content dd {
     color: #f3f4f6 !important;
 }
 
