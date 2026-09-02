@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ActivityFeed extends BaseWidget
 {
-    protected static ?int $sort = 9;
+    protected static ?int $sort = 4;
 
     protected int|string|array $columnSpan = 'full';
 
