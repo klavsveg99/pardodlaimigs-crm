@@ -61,6 +61,14 @@ class CrmPropertyResource extends Resource
                         ->required()
                         ->live(),
 
+                    Forms\Components\Select::make('lead_source')
+                        ->label('Līda avots')
+                        ->options(CrmProperty::LEAD_SOURCES)
+                        ->default('internal')
+                        ->helperText('Ārējais līds — pienākas 10-20% no komisijas. Iekšējais (pardodlaimigs.lv) — bez maksas.')
+                        ->required()
+                        ->live(),
+
                     Grid::make(3)
                         ->columnSpanFull()
                         ->visible(fn (Get $get): bool => $get('status') === 'sold')
@@ -257,6 +265,14 @@ Forms\Components\TextInput::make('kadastra_nr')
                         ->wherePivot('relation', 'seller')
                         ->first()?->name),
                 Tables\Columns\TextColumn::make('category')->label('Kategorija')->badge()->sortable(),
+                Tables\Columns\TextColumn::make('lead_source')->label('Līda avots')
+                    ->badge()
+                    ->sortable()
+                    ->colors([
+                        'success' => 'internal',
+                        'warning' => 'external',
+                    ])
+                    ->formatStateUsing(fn ($state) => CrmProperty::LEAD_SOURCES[$state] ?? $state),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
                     ->sortable()
