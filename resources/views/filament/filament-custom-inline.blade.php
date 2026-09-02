@@ -3,13 +3,8 @@
     --pdc-primary: #285854;
     --pdc-primary-darker: #1e4843;
     --pdc-warning: #f97316;
-    /* Remap ALL Filament semantic palettes to brand accents – kill oklch teal/success/danger/warning/info */
+    /* Teal is legacy brand teal – remap to primary */
     --teal-50: var(--pdc-primary) !important; --teal-100: var(--pdc-primary) !important; --teal-200: var(--pdc-primary) !important; --teal-300: var(--pdc-primary) !important; --teal-400: var(--pdc-primary) !important; --teal-500: var(--pdc-primary) !important; --teal-600: var(--pdc-primary-darker) !important; --teal-700: var(--pdc-primary-darker) !important; --teal-800: var(--pdc-primary-darker) !important; --teal-900: var(--pdc-primary-darker) !important; --teal-950: var(--pdc-primary-darker) !important;
-    --primary-50: var(--pdc-primary) !important; --primary-100: var(--pdc-primary) !important; --primary-200: var(--pdc-primary) !important; --primary-300: var(--pdc-primary) !important; --primary-400: var(--pdc-primary) !important; --primary-500: var(--pdc-primary) !important; --primary-600: var(--pdc-primary-darker) !important; --primary-700: var(--pdc-primary-darker) !important; --primary-800: var(--pdc-primary-darker) !important; --primary-900: var(--pdc-primary-darker) !important; --primary-950: var(--pdc-primary-darker) !important;
-    --success-50: var(--pdc-primary) !important; --success-100: var(--pdc-primary) !important; --success-200: var(--pdc-primary) !important; --success-300: var(--pdc-primary) !important; --success-400: var(--pdc-primary) !important; --success-500: var(--pdc-primary) !important; --success-600: var(--pdc-primary-darker) !important; --success-700: var(--pdc-primary-darker) !important; --success-800: var(--pdc-primary-darker) !important; --success-900: var(--pdc-primary-darker) !important; --success-950: var(--pdc-primary-darker) !important;
-    --danger-50: var(--pdc-primary) !important; --danger-100: var(--pdc-primary) !important; --danger-200: var(--pdc-primary) !important; --danger-300: var(--pdc-primary) !important; --danger-400: var(--pdc-primary) !important; --danger-500: var(--pdc-primary) !important; --danger-600: var(--pdc-primary-darker) !important; --danger-700: var(--pdc-primary-darker) !important; --danger-800: var(--pdc-primary-darker) !important; --danger-900: var(--pdc-primary-darker) !important; --danger-950: var(--pdc-primary-darker) !important;
-    --warning-50: var(--pdc-primary) !important; --warning-100: var(--pdc-primary) !important; --warning-200: var(--pdc-primary) !important; --warning-300: var(--pdc-primary) !important; --warning-400: var(--pdc-primary) !important; --warning-500: var(--pdc-primary) !important; --warning-600: var(--pdc-primary-darker) !important; --warning-700: var(--pdc-primary-darker) !important; --warning-800: var(--pdc-primary-darker) !important; --warning-900: var(--pdc-primary-darker) !important; --warning-950: var(--pdc-primary-darker) !important;
-    --info-50: var(--pdc-primary) !important; --info-100: var(--pdc-primary) !important; --info-200: var(--pdc-primary) !important; --info-300: var(--pdc-primary) !important; --info-400: var(--pdc-primary) !important; --info-500: var(--pdc-primary) !important; --info-600: var(--pdc-primary-darker) !important; --info-700: var(--pdc-primary-darker) !important; --info-800: var(--pdc-primary-darker) !important; --info-900: var(--pdc-primary-darker) !important; --info-950: var(--pdc-primary-darker) !important;
 }
 
 /* Marketing consent checkbox – true bottom alignment (flex, not pt-6) */
@@ -487,31 +482,22 @@ input[type="checkbox"][checked] {
     border-color: var(--pdc-primary) !important;
 }
 
-/* Remap ALL semantic color palettes to brand – kill oklch danger/success/warning/info/teal/primary */
-.fi-color-teal, .fi-color-primary, .fi-color-success, .fi-color-danger, .fi-color-warning, .fi-color-info,
+/* Teal palette → brand (legacy) */
+.fi-color-teal, .dark .fi-color-teal { --color-50: var(--pdc-primary) !important; --color-100: var(--pdc-primary) !important; --color-200: var(--pdc-primary) !important; --color-300: var(--pdc-primary) !important; --color-400: var(--pdc-primary) !important; --color-500: var(--pdc-primary) !important; --color-600: var(--pdc-primary-darker) !important; --color-700: var(--pdc-primary-darker) !important; --color-800: var(--pdc-primary-darker) !important; --color-900: var(--pdc-primary-darker) !important; --color-950: var(--pdc-primary-darker) !important; }
+/* Buttons: ALL semantic colors render as brand (only 2 button styles: primary solid / gray). Badges/count bubbles keep their real semantic colors */
 .fi-btn.fi-color-teal, .fi-btn.fi-color-primary, .fi-btn.fi-color-success, .fi-btn.fi-color-danger, .fi-btn.fi-color-warning, .fi-btn.fi-color-info,
-.dark .fi-color-teal, .dark .fi-color-primary, .dark .fi-color-success, .dark .fi-color-danger, .dark .fi-color-warning, .dark .fi-color-info,
 .dark .fi-btn.fi-color-teal, .dark .fi-btn.fi-color-primary, .dark .fi-btn.fi-color-success, .dark .fi-btn.fi-color-danger, .dark .fi-btn.fi-color-warning, .dark .fi-btn.fi-color-info {
     --color-50: var(--pdc-primary) !important; --color-100: var(--pdc-primary) !important; --color-200: var(--pdc-primary) !important; --color-300: var(--pdc-primary) !important; --color-400: var(--pdc-primary) !important; --color-500: var(--pdc-primary) !important; --color-600: var(--pdc-primary-darker) !important; --color-700: var(--pdc-primary-darker) !important; --color-800: var(--pdc-primary-darker) !important; --color-900: var(--pdc-primary-darker) !important; --color-950: var(--pdc-primary-darker) !important;
-}
-/* Ensure solid buttons for ALL semantic colors render as brand (only 2 button styles: primary solid / gray) */
-.fi-btn.fi-color-success, .fi-btn.fi-color-danger, .fi-btn.fi-color-warning, .fi-btn.fi-color-info, .fi-btn.fi-color-teal {
     background-color: var(--pdc-primary) !important; border-color: var(--pdc-primary) !important; color: #ffffff !important;
 }
-.fi-btn.fi-color-success:hover, .fi-btn.fi-color-danger:hover, .fi-btn.fi-color-warning:hover, .fi-btn.fi-color-info:hover, .fi-btn.fi-color-teal:hover {
+.fi-btn.fi-color-teal:hover, .fi-btn.fi-color-primary:hover, .fi-btn.fi-color-success:hover, .fi-btn.fi-color-danger:hover, .fi-btn.fi-color-warning:hover, .fi-btn.fi-color-info:hover {
     background-color: var(--pdc-primary-darker) !important; border-color: var(--pdc-primary-darker) !important;
 }
-/* Outlined variants of those colors also become brand outline */
-.fi-btn.fi-color-success.fi-btn-type-outlined, .fi-btn.fi-color-danger.fi-btn-type-outlined, .fi-btn.fi-color-warning.fi-btn-type-outlined, .fi-btn.fi-color-info.fi-btn-type-outlined, .fi-btn.fi-color-teal.fi-btn-type-outlined {
+.fi-btn.fi-color-teal.fi-btn-type-outlined, .fi-btn.fi-color-primary.fi-btn-type-outlined, .fi-btn.fi-color-success.fi-btn-type-outlined, .fi-btn.fi-color-danger.fi-btn-type-outlined, .fi-btn.fi-color-warning.fi-btn-type-outlined, .fi-btn.fi-color-info.fi-btn-type-outlined {
     background-color: transparent !important; border-color: var(--pdc-primary) !important; color: var(--pdc-primary) !important;
 }
-.fi-btn.fi-color-success.fi-btn-type-outlined *, .fi-btn.fi-color-danger.fi-btn-type-outlined *, .fi-btn.fi-color-warning.fi-btn-type-outlined *, .fi-btn.fi-color-info.fi-btn-type-outlined *, .fi-btn.fi-color-teal.fi-btn-type-outlined * {
+.fi-btn.fi-color-teal.fi-btn-type-outlined *, .fi-btn.fi-color-primary.fi-btn-type-outlined *, .fi-btn.fi-color-success.fi-btn-type-outlined *, .fi-btn.fi-color-danger.fi-btn-type-outlined *, .fi-btn.fi-color-warning.fi-btn-type-outlined *, .fi-btn.fi-color-info.fi-btn-type-outlined * {
     color: var(--pdc-primary) !important;
-}
-/* Badges/any non-button usage of those colors also become brand (kill oklch everywhere) */
-.fi-badge.fi-color-success, .fi-badge.fi-color-danger, .fi-badge.fi-color-warning, .fi-badge.fi-color-info, .fi-badge.fi-color-teal,
-.fi-badge.fi-color-success *, .fi-badge.fi-color-danger *, .fi-badge.fi-color-warning *, .fi-badge.fi-color-info * {
-    --color-50: var(--pdc-primary) !important; --color-100: var(--pdc-primary) !important; --color-200: var(--pdc-primary) !important; --color-300: var(--pdc-primary) !important; --color-400: var(--pdc-primary) !important; --color-500: var(--pdc-primary) !important; --color-600: var(--pdc-primary-darker) !important; --color-700: var(--pdc-primary-darker) !important; --color-800: var(--pdc-primary-darker) !important; --color-900: var(--pdc-primary-darker) !important; --color-950: var(--pdc-primary-darker) !important;
 }
 
 /* Cards in dark mode */
@@ -948,12 +934,19 @@ input[type="checkbox"][checked] {
 @media (min-width: 768px) { .fi-section-content .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } .fi-section-content .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } .fi-section-content .md\:h-36 { height: 9rem !important; } }
 @media (min-width: 1024px) { .fi-section-content .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; } .fi-section-content .lg\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; } }
 
+/* Forms: label above input for proper width at all sizes (keep checkbox inline) */
+.fi-fo-field:not(:has(.fi-checkbox-input)) { display: flex !important; flex-direction: column !important; gap: 0.35rem !important; align-items: stretch !important; }
+.fi-fo-field:not(:has(.fi-checkbox-input)) .fi-fo-field-label-col,
+.fi-fo-field:not(:has(.fi-checkbox-input)) .fi-fo-field-content-col { width: 100% !important; max-width: 100% !important; }
+.fi-fo-field:not(:has(.fi-checkbox-input)) .fi-fo-field-label-ctn { margin-bottom: 0 !important; }
+.fi-fo-field:not(:has(.fi-checkbox-input)) .fi-input-wrp,
+.fi-fo-field:not(:has(.fi-checkbox-input)) .fi-fo-text-input,
+.fi-fo-field:not(:has(.fi-checkbox-input)) .fi-select,
+.fi-fo-field:not(:has(.fi-checkbox-input)) .fi-textarea,
+.fi-fo-field:not(:has(.fi-checkbox-input)) .fi-fo-field-content-col > div { width: 100% !important; }
+
 /* ── Mobile fixes ─────────────────────────────────────────────── */
 @media (max-width: 767px) {
-    /* Forms: stack label above input (Filament fields are 2-col label+input on desktop) */
-    .fi-fo-field { display: flex !important; flex-direction: column !important; gap: 0.35rem !important; align-items: stretch !important; }
-    .fi-fo-field-label-col, .fi-fo-field-content-col { width: 100% !important; max-width: 100% !important; }
-    .fi-fo-field-label-ctn { margin-bottom: 0 !important; }
     .fi-input-wrp, .fi-fo-text-input, .fi-select, .fi-textarea { width: 100% !important; }
     /* Page header & actions wrap, not overflow */
     .fi-header, .fi-page-header, .fi-header-heading-ctn { flex-wrap: wrap !important; gap: 0.75rem !important; }
