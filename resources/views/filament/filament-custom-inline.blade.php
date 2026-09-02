@@ -663,7 +663,13 @@ input[type="checkbox"][checked] {
     table-layout: auto !important;
     box-sizing: border-box !important;
     width: 100% !important;
-    min-width: 720px !important;
+}
+@media (min-width: 768px) {
+    .fi-ta-table { min-width: 720px !important; }
+}
+@media (max-width: 767px) {
+    .fi-ta-table { min-width: 0 !important; table-layout: fixed !important; }
+    .fi-ta-content-ctn, .fi-ta-ctn { overflow-x: visible !important; }
 }
 
 .fi-ta-table td {
@@ -941,4 +947,44 @@ input[type="checkbox"][checked] {
 .fi-section-content .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 @media (min-width: 768px) { .fi-section-content .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } .fi-section-content .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } .fi-section-content .md\:h-36 { height: 9rem !important; } }
 @media (min-width: 1024px) { .fi-section-content .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; } .fi-section-content .lg\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; } }
+
+/* ── Mobile fixes ─────────────────────────────────────────────── */
+@media (max-width: 767px) {
+    /* Forms: stack label above input (Filament fields are 2-col label+input on desktop) */
+    .fi-fo-field { display: flex !important; flex-direction: column !important; gap: 0.35rem !important; align-items: stretch !important; }
+    .fi-fo-field-label-col, .fi-fo-field-content-col { width: 100% !important; max-width: 100% !important; }
+    .fi-fo-field-label-ctn { margin-bottom: 0 !important; }
+    .fi-input-wrp, .fi-fo-text-input, .fi-select, .fi-textarea { width: 100% !important; }
+    /* Page header & actions wrap, not overflow */
+    .fi-header, .fi-page-header, .fi-header-heading-ctn { flex-wrap: wrap !important; gap: 0.75rem !important; }
+    .fi-header-actions, .fi-page-header-actions, .fi-ac { flex-wrap: wrap !important; gap: 0.5rem !important; }
+    .fi-header-actions .fi-btn, .fi-page-header .fi-btn { flex: 1 1 auto !important; min-width: 0 !important; justify-content: center !important; }
+    .fi-btn { white-space: normal !important; text-align: center !important; }
+    /* Tabs scroll horizontally instead of wrapping off-screen */
+    .fi-tabs, [role="tablist"], .fi-resource-tabs { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: none !important; flex-wrap: nowrap !important; }
+    .fi-tabs::-webkit-scrollbar, [role="tablist"]::-webkit-scrollbar { display: none !important; }
+    /* Filters (AboveContent) – stack 3 cols to 1 */
+    .fi-filters, .fi-ta-filters, .fi-table-filters, .fi-ta-filters-form, .fi-filters-form { grid-template-columns: 1fr !important; }
+    .fi-filters .grid, .fi-ta-filters .grid { grid-template-columns: 1fr !important; }
+    /* Table toolbar: search + sort wrap */
+    .fi-ta-header-ctn, .fi-ta-toolbar, .fi-ta-header-toolbar { flex-wrap: wrap !important; gap: 0.5rem !important; }
+    .fi-ta-search-field, .fi-ta-search-input-ctn { flex: 1 1 100% !important; min-width: 0 !important; width: 100% !important; }
+    .fi-ta-search-input { width: 100% !important; }
+    /* Pagination wraps */
+    .fi-pagination, .fi-ta-pagination { flex-wrap: wrap !important; gap: 0.5rem !important; }
+    /* Sections: reduce padding, ensure full width */
+    .fi-section, .fi-card { margin-left: 0 !important; margin-right: 0 !important; }
+    .fi-section-content { padding: 1rem !important; }
+    .fi-section-header { padding: 1rem 1rem 0 !important; }
+    .fi-main-ctn { padding-left: 1rem !important; padding-right: 1rem !important; }
+    /* Forms: force single column, label above input */
+    .fi-fo-component-ctn, .fi-fo-field-wrp { grid-template-columns: 1fr !important; }
+    .fi-fo-field { grid-column: span 1 / span 1 !important; }
+    .fi-fo-field-label-col { margin-bottom: 0.35rem !important; }
+    /* View page cards: no forced 2-col on mobile – let Tailwind responsive (1 col) work; just tighten gap */
+    .fi-section-content .grid { gap: 0.75rem !important; }
+    .fi-section-content .rounded-xl { word-break: break-word !important; }
+    /* Topbar user menu stays */
+    .fi-topbar { padding-left: 1rem !important; padding-right: 1rem !important; }
+}
 </style>

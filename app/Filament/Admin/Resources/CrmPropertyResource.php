@@ -41,8 +41,8 @@ class CrmPropertyResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Grid::make(2)->schema([
-                Section::make('Pamatdati')->columns(2)->schema([
+            Grid::make(['default' => 1, 'lg' => 2])->schema([
+                Section::make('Pamatdati')->columns(['default' => 1, 'md' => 2])->schema([
                     Forms\Components\TextInput::make('title')
                         ->label('Nosaukums')
                         ->required()
@@ -77,7 +77,7 @@ class CrmPropertyResource extends Resource
                         ->visible(fn (Get $get): bool => $get('lead_source') === 'external')
                         ->columnSpanFull(),
 
-                    Grid::make(3)
+                    Grid::make(['default' => 1, 'md' => 3])
                         ->columnSpanFull()
                         ->visible(fn (Get $get): bool => $get('status') === 'sold')
                         ->schema([
@@ -119,7 +119,7 @@ class CrmPropertyResource extends Resource
                         ->preload(),
                 ])->columnSpan(1),
 
-                Section::make('Īpašuma dati')->columns(2)->schema([
+                Section::make('Īpašuma dati')->columns(['default' => 1, 'md' => 2])->schema([
                     Forms\Components\TextInput::make('beds')->label('Istabas')->numeric(),
                     Forms\Components\TextInput::make('baths')->label('Vannas istabas')->numeric(),
                     Forms\Components\TextInput::make('size_m2')->label('Platība (m²)')->numeric(),
@@ -133,7 +133,7 @@ Forms\Components\TextInput::make('kadastra_nr')
                 ])->columnSpan(1),
             ])->columnSpanFull(),
 
-            Section::make('Atrašanās vieta')->columns(2)->schema([
+            Section::make('Atrašanās vieta')->columns(['default' => 1, 'md' => 2])->schema([
                 Forms\Components\TextInput::make('city')
                     ->label('Pilsēta')
                     ->maxLength(128)
