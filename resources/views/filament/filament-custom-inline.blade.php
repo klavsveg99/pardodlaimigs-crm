@@ -577,6 +577,10 @@ input[type="checkbox"][checked] {
 }
 
 /* Global dark mode overrides for view page data cards */
+.dark .fi-section {
+    background: #0b0f14 !important;
+    border-color: #27303a !important;
+}
 .dark .rounded-xl {
     background-color: #0b0f14 !important;
     border-color: #27303a !important;
