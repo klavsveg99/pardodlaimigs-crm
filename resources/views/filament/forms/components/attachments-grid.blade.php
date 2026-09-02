@@ -588,9 +588,8 @@
     </div>
 
     <!-- Editor Modal -->
-    <template x-teleport="body">
-        <template x-if="editorOpen">
-        <div x-transition.opacity style="position: fixed; inset: 0; z-index: 2147483647; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.88); padding: 1rem;" x-on:click.self="closeEditor()">
+    <template x-if="editorOpen">
+        <div style="position: fixed; inset: 0; z-index: 2147483647; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.88); padding: 1rem;" x-transition.opacity x-on:click.self="closeEditor()">
             <div class="pdc-editor-panel" x-on:click.stop>
                 <div class="pdc-editor-header">
                     <span class="pdc-editor-title" x-text="editorFile ? editorFile.name : 'Rediģēt attēlu'"></span>
@@ -629,12 +628,10 @@
                 </div>
             </div>
         </div>
-        </template>
-        </template>
+    </template>
 
     <!-- Lightbox Gallery -->
-    <template x-teleport="body">
-        <template x-if="lightboxOpen">
+    <template x-if="lightboxOpen">
         <div x-transition.opacity
             style="position: fixed; inset: 0; z-index: 2147483647; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.92); padding: 1rem;"
             x-on:click.self="closeLightbox()"
@@ -656,6 +653,6 @@
                 <span x-show="lightboxIndex===0" style="background: var(--pdc-primary); color:white; font-size:0.7rem; font-weight:700; padding:0.3rem 0.6rem; border-radius:0.4rem; letter-spacing:0.04em;">GALVENĀ</span>
             </div>
         </div>
-        </template>
-        </template>
+        </div>
+    </template>
 </div>
