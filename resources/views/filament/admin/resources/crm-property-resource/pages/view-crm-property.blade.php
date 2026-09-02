@@ -12,19 +12,19 @@
 
     <x-filament::section heading="Pamatdati">
         <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kategorija</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->category ?: '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Cena</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->price_display ?: '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atbildīgais</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->owner?->name ?: '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Slug</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all">{{ $record->slug ?: '—' }}</dd>
             </div>
@@ -56,23 +56,23 @@
 
     <x-filament::section heading="Īpašuma dati">
         <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Istabas</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->beds ?: '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Vannas istabas</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->baths ?: '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Platība (m²)</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->size_m2 ?: '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Zemes platība (m²)</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->land_m2 ?: '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5 md:col-span-2 lg:col-span-2">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14] md:col-span-2 lg:col-span-2">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kadastra nr.</dt>
                 <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">{{ $record->kadastra_nr ?: '—' }}</dd>
             </div>
@@ -81,15 +81,15 @@
 
     <x-filament::section heading="Atrašanās vieta">
         <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pilsēta</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->city ?: '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5 lg:col-span-2">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14] lg:col-span-2">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Adrese</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->address ?: '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Koordinātes</dt>
                 <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">
                     {{ $record->lat && $record->lng ? "{$record->lat}, {$record->lng}" : '—' }}
@@ -97,7 +97,7 @@
             </div>
         </div>
         @if($record->lat && $record->lng)
-            <div class="mt-6 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm" style="height: 220px;">
+            <div class="mt-6 rounded-xl overflow-hidden border border-gray-200 dark:border-[#27303a] shadow-sm" style="height: 220px;">
                 <iframe width="100%" height="100%" frameborder="0" style="border:0" src="https://maps.google.com/maps?q={{ $record->lat }},{{ $record->lng }}&z=15&output=embed" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
         @endif
@@ -137,7 +137,7 @@
                         <button
                             type="button"
                             x-on:click="show({{ $idx }})"
-                            class="group relative block overflow-hidden rounded-xl border bg-gray-50 dark:bg-white/5 text-left transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-zoom-in {{ $idx === 0 ? 'border-[var(--pdc-primary)] ring-2 ring-[var(--pdc-primary)]/20' : 'border-gray-200 dark:border-white/10' }}"
+                            class="group relative block overflow-hidden rounded-xl border bg-gray-50 dark:bg-[#0b0f14] text-left transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-zoom-in {{ $idx === 0 ? 'border-[var(--pdc-primary)] ring-2 ring-[var(--pdc-primary)]/20' : 'border-gray-200 dark:border-[#27303a]' }}"
                             title="Atvērt galerijā • {{ $attachment->original_name }}"
                         >
                             <img src="{{ $attachment->url }}"
@@ -180,7 +180,7 @@
                 </template>
             </div>
         @else
-            <div class="text-center rounded-xl border-2 border-dashed border-gray-200 p-8 dark:border-white/10">
+            <div class="text-center rounded-xl border-2 border-dashed border-gray-200 p-8 dark:border-[#27303a]">
                 <svg class="mx-auto h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -204,7 +204,7 @@
                         ];
                         $relationColor = $relationColors[$client->pivot->relation] ?? 'gray';
                     ?>
-                    <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+                    <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                         <div class="mb-2 flex items-center gap-3">
                             <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--pdc-primary)] text-sm font-semibold text-white">
                                 {{ strtoupper(substr($client->name, 0, 1)) }}
@@ -234,15 +234,15 @@
 
     <x-filament::section heading="Datumi">
         <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Izveidots</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->created_at->format('d.m.Y H:i') }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atjaunināts</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->updated_at->format('d.m.Y H:i') }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Publicēts</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->published_at?->format('d.m.Y H:i') ?? '—' }}</dd>
             </div>

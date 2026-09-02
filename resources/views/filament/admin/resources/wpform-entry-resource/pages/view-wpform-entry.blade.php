@@ -1,11 +1,11 @@
 <x-filament-panels::page>
     <x-filament::section>
         <dl class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Iesniegts</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->created_at?->format('d.m.Y H:i') ?? '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Klients</dt>
                 <dd class="mt-1 text-sm">
                     @if ($record->client)
@@ -18,11 +18,11 @@
                     @endif
                 </dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Forma</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->form_name }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Statuss</dt>
                 <dd class="mt-1">
                     <x-filament::badge :color="\App\Filament\Admin\Resources\WpformEntryResource::STATUS_COLORS[$record->status] ?? 'gray'">
@@ -36,7 +36,7 @@
     <x-filament::section heading="Iesniegtā informācija">
         <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         @forelse ($record->fields ?? [] as $field)
-            <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
+            <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     {{ $field['name'] ?? '' }}
                 </dt>
