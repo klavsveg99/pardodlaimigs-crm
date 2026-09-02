@@ -3,32 +3,13 @@
     --pdc-primary: #285854;
     --pdc-primary-darker: #1e4843;
     --pdc-warning: #f97316;
-    /* Kill lighter teal #008078 everywhere – remap Tailwind teal palette to primary */
-    --teal-50: var(--pdc-primary) !important;
-    --teal-100: var(--pdc-primary) !important;
-    --teal-200: var(--pdc-primary) !important;
-    --teal-300: var(--pdc-primary) !important;
-    --teal-400: var(--pdc-primary) !important;
-    --teal-500: var(--pdc-primary) !important;
-    --teal-600: var(--pdc-primary) !important;
-    --teal-700: var(--pdc-primary-darker) !important;
-    --teal-800: var(--pdc-primary-darker) !important;
-    --teal-900: var(--pdc-primary-darker) !important;
-    --teal-950: var(--pdc-primary-darker) !important;
-    /* Kill the light success teal (oklch 0.753529 0.150273 168.74) that shows on
-       success-coloured buttons/actions – remap the success palette to the brand
-       accent (var(--pdc-primary)) just like primary/teal/warning. */
-    --success-50: var(--pdc-primary) !important;
-    --success-100: var(--pdc-primary) !important;
-    --success-200: var(--pdc-primary) !important;
-    --success-300: var(--pdc-primary) !important;
-    --success-400: var(--pdc-primary) !important;
-    --success-500: var(--pdc-primary) !important;
-    --success-600: var(--pdc-primary) !important;
-    --success-700: var(--pdc-primary-darker) !important;
-    --success-800: var(--pdc-primary-darker) !important;
-    --success-900: var(--pdc-primary-darker) !important;
-    --success-950: var(--pdc-primary-darker) !important;
+    /* Remap ALL Filament semantic palettes to brand accents – kill oklch teal/success/danger/warning/info */
+    --teal-50: var(--pdc-primary) !important; --teal-100: var(--pdc-primary) !important; --teal-200: var(--pdc-primary) !important; --teal-300: var(--pdc-primary) !important; --teal-400: var(--pdc-primary) !important; --teal-500: var(--pdc-primary) !important; --teal-600: var(--pdc-primary-darker) !important; --teal-700: var(--pdc-primary-darker) !important; --teal-800: var(--pdc-primary-darker) !important; --teal-900: var(--pdc-primary-darker) !important; --teal-950: var(--pdc-primary-darker) !important;
+    --primary-50: var(--pdc-primary) !important; --primary-100: var(--pdc-primary) !important; --primary-200: var(--pdc-primary) !important; --primary-300: var(--pdc-primary) !important; --primary-400: var(--pdc-primary) !important; --primary-500: var(--pdc-primary) !important; --primary-600: var(--pdc-primary-darker) !important; --primary-700: var(--pdc-primary-darker) !important; --primary-800: var(--pdc-primary-darker) !important; --primary-900: var(--pdc-primary-darker) !important; --primary-950: var(--pdc-primary-darker) !important;
+    --success-50: var(--pdc-primary) !important; --success-100: var(--pdc-primary) !important; --success-200: var(--pdc-primary) !important; --success-300: var(--pdc-primary) !important; --success-400: var(--pdc-primary) !important; --success-500: var(--pdc-primary) !important; --success-600: var(--pdc-primary-darker) !important; --success-700: var(--pdc-primary-darker) !important; --success-800: var(--pdc-primary-darker) !important; --success-900: var(--pdc-primary-darker) !important; --success-950: var(--pdc-primary-darker) !important;
+    --danger-50: var(--pdc-primary) !important; --danger-100: var(--pdc-primary) !important; --danger-200: var(--pdc-primary) !important; --danger-300: var(--pdc-primary) !important; --danger-400: var(--pdc-primary) !important; --danger-500: var(--pdc-primary) !important; --danger-600: var(--pdc-primary-darker) !important; --danger-700: var(--pdc-primary-darker) !important; --danger-800: var(--pdc-primary-darker) !important; --danger-900: var(--pdc-primary-darker) !important; --danger-950: var(--pdc-primary-darker) !important;
+    --warning-50: var(--pdc-primary) !important; --warning-100: var(--pdc-primary) !important; --warning-200: var(--pdc-primary) !important; --warning-300: var(--pdc-primary) !important; --warning-400: var(--pdc-primary) !important; --warning-500: var(--pdc-primary) !important; --warning-600: var(--pdc-primary-darker) !important; --warning-700: var(--pdc-primary-darker) !important; --warning-800: var(--pdc-primary-darker) !important; --warning-900: var(--pdc-primary-darker) !important; --warning-950: var(--pdc-primary-darker) !important;
+    --info-50: var(--pdc-primary) !important; --info-100: var(--pdc-primary) !important; --info-200: var(--pdc-primary) !important; --info-300: var(--pdc-primary) !important; --info-400: var(--pdc-primary) !important; --info-500: var(--pdc-primary) !important; --info-600: var(--pdc-primary-darker) !important; --info-700: var(--pdc-primary-darker) !important; --info-800: var(--pdc-primary-darker) !important; --info-900: var(--pdc-primary-darker) !important; --info-950: var(--pdc-primary-darker) !important;
 }
 
 /* Marketing consent checkbox – true bottom alignment (flex, not pt-6) */
@@ -220,13 +201,23 @@ h1.fi-header-heading {
 .cropper-modal,
 .fi-file-upload-image-editor,
 .fi-file-upload-image-editor .fi-modal {
-    z-index: 100000 !important;
+    z-index: 999999 !important;
 }
 
 .fi-modal .fi-modal-overlay,
 .fi-modal .fi-modal-window,
 .pdc-editor-modal .fi-modal-overlay {
-    z-index: 100000 !important;
+    z-index: 999999 !important;
+}
+/* Lightbox must be absolute top – fix gallery lightbox showing under form actions / Piesaistītie klienti */
+#content.form-actions, .fi-sc-actions, .fi-form-actions, .fi-page-footer,
+.fi-section, .fi-resource-relation-managers, .fi-ta-header, .fi-ta-header-toolbar {
+    z-index: 1 !important;
+    position: relative;
+}
+/* Any inline lightbox with old 100000 z-index – force to top */
+div[style*="z-index:100000"], div[style*="z-index: 100000"] {
+    z-index: 999999 !important;
 }
 
 .fi-file-upload .fi-btn.fi-color-primary,
@@ -496,35 +487,31 @@ input[type="checkbox"][checked] {
     border-color: var(--pdc-primary) !important;
 }
 
-/* Remap any teal usage to primary */
-.fi-color-teal {
-    --color-50: var(--pdc-primary) !important;
-    --color-100: var(--pdc-primary) !important;
-    --color-200: var(--pdc-primary) !important;
-    --color-300: var(--pdc-primary) !important;
-    --color-400: var(--pdc-primary) !important;
-    --color-500: var(--pdc-primary) !important;
-    --color-600: var(--pdc-primary-darker) !important;
-    --color-700: var(--pdc-primary-darker) !important;
-    --color-800: var(--pdc-primary-darker) !important;
-    --color-900: var(--pdc-primary-darker) !important;
-    --color-950: var(--pdc-primary-darker) !important;
+/* Remap ALL semantic color palettes to brand – kill oklch danger/success/warning/info/teal/primary */
+.fi-color-teal, .fi-color-primary, .fi-color-success, .fi-color-danger, .fi-color-warning, .fi-color-info,
+.fi-btn.fi-color-teal, .fi-btn.fi-color-primary, .fi-btn.fi-color-success, .fi-btn.fi-color-danger, .fi-btn.fi-color-warning, .fi-btn.fi-color-info,
+.dark .fi-color-teal, .dark .fi-color-primary, .dark .fi-color-success, .dark .fi-color-danger, .dark .fi-color-warning, .dark .fi-color-info,
+.dark .fi-btn.fi-color-teal, .dark .fi-btn.fi-color-primary, .dark .fi-btn.fi-color-success, .dark .fi-btn.fi-color-danger, .dark .fi-btn.fi-color-warning, .dark .fi-btn.fi-color-info {
+    --color-50: var(--pdc-primary) !important; --color-100: var(--pdc-primary) !important; --color-200: var(--pdc-primary) !important; --color-300: var(--pdc-primary) !important; --color-400: var(--pdc-primary) !important; --color-500: var(--pdc-primary) !important; --color-600: var(--pdc-primary-darker) !important; --color-700: var(--pdc-primary-darker) !important; --color-800: var(--pdc-primary-darker) !important; --color-900: var(--pdc-primary-darker) !important; --color-950: var(--pdc-primary-darker) !important;
 }
-
-/* Remap any success usage (buttons/actions) to primary – kills the light
-   success teal oklch(0.753529 0.150273 168.74) that appeared on new buttons. */
-.fi-color-success {
-    --color-50: var(--pdc-primary) !important;
-    --color-100: var(--pdc-primary) !important;
-    --color-200: var(--pdc-primary) !important;
-    --color-300: var(--pdc-primary) !important;
-    --color-400: var(--pdc-primary) !important;
-    --color-500: var(--pdc-primary) !important;
-    --color-600: var(--pdc-primary-darker) !important;
-    --color-700: var(--pdc-primary-darker) !important;
-    --color-800: var(--pdc-primary-darker) !important;
-    --color-900: var(--pdc-primary-darker) !important;
-    --color-950: var(--pdc-primary-darker) !important;
+/* Ensure solid buttons for ALL semantic colors render as brand (only 2 button styles: primary solid / gray) */
+.fi-btn.fi-color-success, .fi-btn.fi-color-danger, .fi-btn.fi-color-warning, .fi-btn.fi-color-info, .fi-btn.fi-color-teal {
+    background-color: var(--pdc-primary) !important; border-color: var(--pdc-primary) !important; color: #ffffff !important;
+}
+.fi-btn.fi-color-success:hover, .fi-btn.fi-color-danger:hover, .fi-btn.fi-color-warning:hover, .fi-btn.fi-color-info:hover, .fi-btn.fi-color-teal:hover {
+    background-color: var(--pdc-primary-darker) !important; border-color: var(--pdc-primary-darker) !important;
+}
+/* Outlined variants of those colors also become brand outline */
+.fi-btn.fi-color-success.fi-btn-type-outlined, .fi-btn.fi-color-danger.fi-btn-type-outlined, .fi-btn.fi-color-warning.fi-btn-type-outlined, .fi-btn.fi-color-info.fi-btn-type-outlined, .fi-btn.fi-color-teal.fi-btn-type-outlined {
+    background-color: transparent !important; border-color: var(--pdc-primary) !important; color: var(--pdc-primary) !important;
+}
+.fi-btn.fi-color-success.fi-btn-type-outlined *, .fi-btn.fi-color-danger.fi-btn-type-outlined *, .fi-btn.fi-color-warning.fi-btn-type-outlined *, .fi-btn.fi-color-info.fi-btn-type-outlined *, .fi-btn.fi-color-teal.fi-btn-type-outlined * {
+    color: var(--pdc-primary) !important;
+}
+/* Badges/any non-button usage of those colors also become brand (kill oklch everywhere) */
+.fi-badge.fi-color-success, .fi-badge.fi-color-danger, .fi-badge.fi-color-warning, .fi-badge.fi-color-info, .fi-badge.fi-color-teal,
+.fi-badge.fi-color-success *, .fi-badge.fi-color-danger *, .fi-badge.fi-color-warning *, .fi-badge.fi-color-info * {
+    --color-50: var(--pdc-primary) !important; --color-100: var(--pdc-primary) !important; --color-200: var(--pdc-primary) !important; --color-300: var(--pdc-primary) !important; --color-400: var(--pdc-primary) !important; --color-500: var(--pdc-primary) !important; --color-600: var(--pdc-primary-darker) !important; --color-700: var(--pdc-primary-darker) !important; --color-800: var(--pdc-primary-darker) !important; --color-900: var(--pdc-primary-darker) !important; --color-950: var(--pdc-primary-darker) !important;
 }
 
 /* Cards in dark mode */

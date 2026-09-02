@@ -64,7 +64,7 @@ class CrmPropertiesAsBuyerRelationManager extends RelationManager
             ->headerActions([
                 Actions\AttachAction::make()
                     ->label('Pievienot CRM īpašumu')
-                    ->color('success')
+                    ->color('primary')
                     ->recordSelectSearchColumns(['title', 'city', 'kadastra_nr', 'id'])
                     ->schema(function (Actions\AttachAction $action): array {
                         $recordSelect = $action->getRecordSelect();
@@ -117,6 +117,10 @@ class CrmPropertiesAsBuyerRelationManager extends RelationManager
                                 ]);
                             }
                         }
+                    })
+                    ->after(function (array $data, $livewire): void {
+                        $c = $livewire->getOwnerRecord();
+                        if (empty($c->client_type)) $c->update(['client_type' => 'buyer']);
                     }),
             ])
             ->actions([

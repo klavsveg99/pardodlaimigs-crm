@@ -63,7 +63,7 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
             ->headerActions([
                 Actions\AttachAction::make()
                     ->label('Pievienot CRM īpašumu')
-                    ->color('danger')
+                    ->color('primary')
                     ->recordSelectSearchColumns(['title', 'city', 'kadastra_nr', 'id'])
                     ->schema(function (Actions\AttachAction $action): array {
                         $recordSelect = $action->getRecordSelect();
@@ -98,6 +98,10 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
                         if ($relation === 'buyer') {
                             // We are not allowing buyer in this relation manager, but we keep the check for safety.
                         }
+                    })
+                    ->after(function (array $data, $livewire): void {
+                        $c = $livewire->getOwnerRecord();
+                        if (empty($c->client_type)) $c->update(['client_type' => 'seller']);
                     }),
             ])
             ->actions([

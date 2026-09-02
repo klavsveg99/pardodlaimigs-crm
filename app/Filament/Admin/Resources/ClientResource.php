@@ -38,59 +38,63 @@ class ClientResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Section::make()->columnSpanFull()->columns(['lg' => 2])->schema([
-                Grid::make(2)->columnSpan(1)->schema([
-                    Forms\Components\TextInput::make('name')->label('Vārds, uzvārds')->required()->maxLength(255),
-                    Forms\Components\TextInput::make('phone')->label('Tālrunis')->tel()->maxLength(40),
-                    Forms\Components\TextInput::make('email')->label('E-pasts')->email()->maxLength(255),
-                    \App\Filament\Forms\Components\PersonasKodsInput::make('personas_kods')
-                        ->label('Personas kods')
-                        ->maxLength(12)
-                        ->helperText('Formāts: XXXXXX-XXXXX'),
-                    Forms\Components\Select::make('source')
-                        ->label('Avots (kā uzzināja)')
-                        ->searchable()
-                        ->options([
-                            'Tīmekļa vietne' => 'Tīmekļa vietne',
-                            'Sociālie tīkli' => 'Sociālie tīkli',
-                            'Facebook' => 'Facebook',
-                            'Instagram' => 'Instagram',
-                            'Google' => 'Google',
-                            'Draugu ieteikums' => 'Draugu ieteikums',
-                            'Sludinājums' => 'Sludinājums (ss.lv u.c.)',
-                            'Atgriešanās' => 'Atgriešanās (esošs klients)',
-                            'Cits' => 'Cits',
-                        ])
-                        ->placeholder('Izvēlieties avotu'),
-                    Forms\Components\Checkbox::make('marketing_consent')
-                        ->label('Klients atļauj izmantot datus mārketingam')
-                        ->inline()
-                        ->extraAttributes(['class' => 'self-end'])
-                        ->extraFieldWrapperAttributes(['class' => 'flex items-end h-full pb-1']),
-                    Forms\Components\Select::make('owner_user_id')
-                        ->label('Atbildīgais aģents')
-                        ->relationship('owner', 'name')
-                        ->searchable()
-                        ->preload()
-                        ->columnSpanFull(),
-                ]),
-                Grid::make(1)->columnSpan(1)->schema([
-                    Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(8),
-                    Forms\Components\FileUpload::make('attachments')
-                        ->label('Pielikumi')
-                        ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
-                            .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
-                        ->multiple()
-                        ->reorderable()
-                        ->deletable()
-                        ->previewable()
-                        ->openable()
-                        ->storeFileNamesIn('attachment_original_names')
-                        ->acceptedFileTypes(config('attachments.accepted_file_types'))
-                        ->maxSize((int) config('attachments.max_size_kb'))
-                        ->disk('public')
-                        ->directory('attachments'),
-                ]),
+            Section::make('Klienta dati')->columnSpanFull()->columns(2)->schema([
+                Forms\Components\TextInput::make('name')->label('Vārds, uzvārds')->required()->maxLength(255),
+                Forms\Components\TextInput::make('phone')->label('Tālrunis')->tel()->maxLength(40),
+                Forms\Components\TextInput::make('email')->label('E-pasts')->email()->maxLength(255),
+                \App\Filament\Forms\Components\PersonasKodsInput::make('personas_kods')
+                    ->label('Personas kods')
+                    ->maxLength(12)
+                    ->helperText('Formāts: XXXXXX-XXXXX'),
+                Forms\Components\Select::make('source')
+                    ->label('Avots (kā uzzināja)')
+                    ->searchable()
+                    ->options([
+                        'Tīmekļa vietne' => 'Tīmekļa vietne',
+                        'Sociālie tīkli' => 'Sociālie tīkli',
+                        'Facebook' => 'Facebook',
+                        'Instagram' => 'Instagram',
+                        'Google' => 'Google',
+                        'Draugu ieteikums' => 'Draugu ieteikums',
+                        'Sludinājums' => 'Sludinājums (ss.lv u.c.)',
+                        'Atgriešanās' => 'Atgriešanās (esošs klients)',
+                        'Cits' => 'Cits',
+                    ])
+                    ->placeholder('Izvēlieties avotu'),
+                Forms\Components\Select::make('client_type')
+                    ->label('Klienta tips')
+                    ->options([
+                        'buyer' => 'Pircējs',
+                        'seller' => 'Pārdevējs',
+                    ])
+                    ->placeholder('Izvēlieties tipu')
+                    ->native(false),
+                Forms\Components\Select::make('owner_user_id')
+                    ->label('Atbildīgais aģents')
+                    ->relationship('owner', 'name')
+                    ->searchable()
+                    ->preload(),
+                Forms\Components\Checkbox::make('marketing_consent')
+                    ->label('Klients atļauj izmantot datus mārketingam')
+                    ->columnSpanFull(),
+            ]),
+            Section::make('Piezīmes un pielikumi')->columnSpanFull()->columns(1)->schema([
+                Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(6)->columnSpanFull(),
+                Forms\Components\FileUpload::make('attachments')
+                    ->label('Pielikumi')
+                    ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
+                        .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
+                    ->multiple()
+                    ->reorderable()
+                    ->deletable()
+                    ->previewable()
+                    ->openable()
+                    ->storeFileNamesIn('attachment_original_names')
+                    ->acceptedFileTypes(config('attachments.accepted_file_types'))
+                    ->maxSize((int) config('attachments.max_size_kb'))
+                    ->disk('public')
+                    ->directory('attachments')
+                    ->columnSpanFull(),
             ]),
         ]);
     }
@@ -103,6 +107,9 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable()->sortable(),
                 Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->sortable()->placeholder('—'),
+                Tables\Columns\TextColumn::make('client_type')->label('Tips')->badge()->sortable()
+                    ->colors(['success' => 'buyer', 'danger' => 'seller'])
+                    ->formatStateUsing(fn ($state) => match($state){'buyer'=>'Pircējs','seller'=>'Pārdevējs',default=>'—'}),
                 Tables\Columns\TextColumn::make('source')->label('Avots')->sortable(),
                 Tables\Columns\TextColumn::make('deals_count')
                     ->counts('deals')
@@ -119,6 +126,7 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->sortable(),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('client_type')->label('Tips')->options(['buyer'=>'Pircējs','seller'=>'Pārdevējs']),
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\Filter::make('gdpr_pending')->label('Bez GDPR piekrišanas')->query(
                     fn ($query) => $query->whereNull('gdpr_consent_at')->whereNull('gdpr_erased_at')
