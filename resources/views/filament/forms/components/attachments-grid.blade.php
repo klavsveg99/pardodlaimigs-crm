@@ -598,7 +598,7 @@
                     </button>
                 </div>
                 <div class="pdc-editor-body">
-                    <img x-ref="editorImage" style="max-width: 100%; max-height: 100%; display: block;" alt="Editor preview" />
+                    <img x-ref="editorImage" style="max-width: 100%; max-height: 100%; display: block;" alt="Redaktora priekšējā pārskats" />
                 </div>
                 <div class="pdc-editor-footer">
                     <div class="pdc-editor-controls">

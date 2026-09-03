@@ -23,7 +23,7 @@ class WpformEntriesRelationManager extends RelationManager
             ->heading('Pieteikumi')
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')->label('Iesniegts')->dateTime('d.m.Y H:i')->sortable(),
-                Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->color('info')->sortable(),
+                Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')
                     ->getStateUsing(fn ($record) => $record->fieldValue('E-pasts'))
                     ->placeholder('—'),
@@ -37,32 +37,26 @@ class WpformEntriesRelationManager extends RelationManager
                     ->badge()
                     ->sortable()
                     ->formatStateUsing(fn ($state) => WpformEntryResource::STATUSES[$state] ?? $state ?? '—')
-                    ->color(fn ($state) => match ($state) {
-                        'new' => 'info',
-                        'review' => 'warning',
-                        'replied' => 'success',
-                        'spam' => 'danger',
-                        'archived' => 'gray',
-                        'klients_pievienots' => 'success',
-                        default => 'gray',
-                    })
                     ->placeholder('—'),
             ])
             ->actions([
-                Actions\ViewAction::make()->label('Skatīt')
-                    ->url(fn ($record) => WpformEntryResource::getUrl('view', ['record' => $record])),
-                Actions\Action::make('unlink')
-                    ->label('Atsaistīt')
-                    ->icon('heroicon-o-link-slash')
-                    ->color('gray')
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update(['client_id' => null]);
-                        Notification::make()
-                            ->title('Pieteikums atsaistīts no klienta')
-                            ->success()
-                            ->send();
-                    }),
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make()->label('Skatīt')
+                        ->url(fn ($record) => WpformEntryResource::getUrl('view', ['record' => $record]))
+                        ->color('primary'),
+                    Actions\Action::make('unlink')
+                        ->label('Atsaistīt')
+                        ->icon('heroicon-o-link-slash')
+                        ->color('gray')
+                        ->requiresConfirmation()
+                        ->action(function ($record) {
+                            $record->update(['client_id' => null]);
+                            Notification::make()
+                                ->title('Pieteikums atsaistīts no klienta')
+                                ->success()
+                                ->send();
+                        }),
+                ]),
             ])
             ->paginated([10, 25, 50]);
     }

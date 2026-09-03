@@ -42,12 +42,7 @@ class TodayPriorities extends BaseWidget
                 Tables\Columns\TextColumn::make('type')
                     ->label('Veids')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => $state)
-                    ->colors([
-                        'warning' => 'Uzdevums',
-                        'info' => 'Apskate',
-                        'primary' => 'Darījums',
-                    ]),
+                    ->formatStateUsing(fn ($state) => $state),
 
                 Tables\Columns\TextColumn::make('title')
                     ->label('Kas')

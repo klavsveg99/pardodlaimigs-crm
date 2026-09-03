@@ -339,8 +339,8 @@ Forms\Components\TextInput::make('kadastra_nr')
             ->filtersFormColumns(3)
             ->actions([
                 Actions\ActionGroup::make([
-                    Actions\ViewAction::make()->label('Skatīt'),
-                    Actions\EditAction::make()->label('Rediģēt'),
+                    Actions\ViewAction::make()->label('Skatīt')->color('primary'),
+                    Actions\EditAction::make()->label('Rediģēt')->color('primary'),
                 ]),
             ]);
     }

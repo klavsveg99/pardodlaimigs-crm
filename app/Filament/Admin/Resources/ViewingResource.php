@@ -117,12 +117,6 @@ class ViewingResource extends Resource
                     ->label('Statuss')
                     ->badge()
                     ->sortable()
-                    ->colors([
-                        'info' => 'scheduled',
-                        'success' => 'done',
-                        'danger' => 'cancelled',
-                        'warning' => 'no_show',
-                    ])
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'scheduled' => 'Ieplānota',
                         'done' => 'Notikusi',
@@ -143,7 +137,7 @@ class ViewingResource extends Resource
             ])
             ->actions([
                 Actions\ActionGroup::make([
-                    Actions\EditAction::make()->label('Rediģēt'),
+                    Actions\EditAction::make()->label('Rediģēt')->color('primary'),
                 ]),
             ])
             ->defaultSort('scheduled_at');

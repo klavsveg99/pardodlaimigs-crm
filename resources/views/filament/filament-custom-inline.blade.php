@@ -203,8 +203,15 @@ h1.fi-header-heading {
 }
 /* Lightbox must be absolute top – fix gallery lightbox showing under form actions / Piesaistītie klienti / Datumi */
 #content.form-actions, .fi-sc-actions, .fi-form-actions, .fi-page-footer,
-.fi-ta-header, .fi-ta-header-toolbar {
+.fi-ta-header {
     z-index: 1 !important;
+    position: relative;
+}
+/* Table header toolbar must form a stacking context high enough that its floating
+   dropdown panels (column manager, filters, sort) are never painted over by a
+   following widget's header or the fixed positioning overlay (z = 50). */
+.fi-ta-header-toolbar {
+    z-index: 60 !important;
     position: relative;
 }
 .fi-section, .fi-resource-relation-managers { z-index: auto !important; position: relative; }

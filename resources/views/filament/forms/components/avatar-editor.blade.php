@@ -193,16 +193,16 @@
                 });
                 const result = await resp.json();
                 if (result.path) {
-                    this.path = result.path;
-                    this.url = result.url;
-                    this.sync();
-                    // Auto open editor for cropping
-                    this.$nextTick(() => this.openEditor());
-                } else {
-                    alert('Augšupielāde neizdevās.');
-                }
+                        this.path = result.path;
+                        this.url = result.url;
+                        this.sync();
+                        // Auto open editor for cropping
+                        this.$nextTick(() => this.openEditor());
+                    } else {
+                        alert('Augšupielāde neizdevās.');
+                    }
             } catch (err) {
-                console.error('Upload failed:', err);
+                console.error('Augšupielādēt neizdevās:', err);
                 alert('Kļūda augšupielādējot.');
             }
             input.value = '';
@@ -225,6 +225,7 @@
             this.destroyCropper();
             const img = this.$refs.editorImage;
             if (!img) return;
+            // Wait for Cropper to be available
             const tryInit = () => {
                 if (!window.Cropper) {
                     setTimeout(tryInit, 200);
@@ -246,6 +247,7 @@
                         toggleDragModeOnDblclick: false,
                     });
                 };
+                // If already cached
                 if (img.complete) {
                     setTimeout(() => {
                         if (!this.cropper) {
@@ -335,10 +337,10 @@
                     } else {
                         alert('Augšupielāde neizdevās.');
                     }
-                } catch (err) {
-                    console.error('Crop upload failed:', err);
-                    alert('Kļūda saglabājot.');
-                }
+                    } catch (err) {
+                        console.error('Rediģēt augšupielādi neizdevās:', err);
+                        alert('Kļūda saglabājot.');
+                    }
             }, 'image/jpeg', 0.92);
         },
         removeAvatar() {
@@ -355,7 +357,7 @@
     <div style="display: flex; flex-direction: column; gap: 1rem; align-items: flex-start;">
         <div class="avatar-editor-preview">
             <template x-if="url">
-                <img :src="url" alt="Avatar" />
+                <img :src="url" alt="Avatars" />
             </template>
             <template x-if="!url">
                 <div class="avatar-editor-placeholder">
@@ -400,7 +402,7 @@
                     </button>
                 </div>
                 <div class="pdc-editor-body">
-                    <img x-ref="editorImage" style="max-width: 100%; max-height: 100%; display: block;" alt="Editor preview" />
+                    <img x-ref="editorImage" style="max-width: 100%; max-height: 100%; display: block;" alt="Redaktora priekšējā pārskats" />
                 </div>
                 <div class="pdc-editor-footer">
                     <div class="pdc-editor-controls">
