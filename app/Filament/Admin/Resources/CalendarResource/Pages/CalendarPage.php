@@ -18,7 +18,7 @@ class CalendarPage extends Page
 
     public ?int $agentFilter = null;
 
-    protected function getBreadcrumbs(): array
+    public function getBreadcrumbs(): array
     {
         return [];
     }
