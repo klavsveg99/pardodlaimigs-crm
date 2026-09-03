@@ -113,7 +113,7 @@ class CrmPropertyResource extends Resource
                         ->prefix('€'),
 
                     Forms\Components\Select::make('owner_user_id')
-                        ->label('Atbildīgais')
+                        ->label('Aģents')
                         ->relationship('owner', 'name')
                         ->searchable()
                         ->preload(),
@@ -327,7 +327,7 @@ Forms\Components\TextInput::make('kadastra_nr')
                     ->icon(fn ($state) => $state ? null : 'heroicon-o-exclamation-triangle')
                     ->iconColor('warning'),
                 Tables\Columns\TextColumn::make('price_eur')->label('Cena')->money('EUR')->extraCellAttributes(['class' => 'pdc-nowrap']),
-                Tables\Columns\TextColumn::make('owner.name')->label('Atbildīgais')->sortable(),
+                Tables\Columns\TextColumn::make('owner.name')->label('Aģents')->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->sortable(),
             ])
             ->filters([
