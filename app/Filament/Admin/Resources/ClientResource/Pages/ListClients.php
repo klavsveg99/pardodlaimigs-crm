@@ -12,6 +12,14 @@ class ListClients extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [Actions\CreateAction::make()->label('Jauns klients')];
+        return [
+            Actions\Action::make('resetFilters')
+                ->label('Atiestatīt filtrus')
+                ->icon('heroicon-o-x-mark')
+                ->color('danger')
+                ->visible(fn () => $this->table->isFiltered())
+                ->action(fn () => $this->resetTableFiltersForm()),
+            Actions\CreateAction::make()->label('Jauns klients'),
+        ];
     }
 }
