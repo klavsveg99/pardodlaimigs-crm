@@ -16,6 +16,11 @@ class CalendarPage extends Page
 
     protected static ?string $title = 'Kalendārs';
 
+    public function getBreadcrumbs(): array
+    {
+        return [];
+    }
+
     public ?int $agentFilter = null;
 
     public function mount(): void
