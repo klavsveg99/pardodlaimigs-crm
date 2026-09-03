@@ -121,14 +121,60 @@
     }
 
     /* ── Day grid ──────────────────────────────────────────────── */
-    /* Calendar page "Aģents" filter select — native chevron for both modes */
+    /* Calendar page "Aģents" filter select — explicit styling for light + dark */
+    .pdc-agent-filter,
     #agent-filter {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+        display: inline-block;
+        width: 12rem;
+        max-width: 100%;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        background-repeat: no-repeat;
         background-position: right 0.6rem center;
         background-size: 1.1rem;
+        background-color: #ffffff;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: #111827;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
     }
+    .pdc-agent-filter:focus,
+    #agent-filter:focus {
+        outline: none;
+        border-color: var(--pdc-primary);
+        box-shadow: 0 0 0 2px rgba(40, 88, 84, 0.2);
+    }
+    .pdc-agent-filter > option,
+    #agent-filter > option {
+        background-color: #ffffff;
+        color: #111827;
+    }
+    .dark .pdc-agent-filter,
     .dark #agent-filter {
+        background-color: #18181b;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20' stroke='%23a1a1aa'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+        border-color: #3f3f46;
+        color: #e5e7eb;
+    }
+    .dark .pdc-agent-filter:hover,
+    .dark #agent-filter:hover {
+        border-color: #6b7280;
+    }
+    .dark .pdc-agent-filter:focus,
+    .dark #agent-filter:focus {
+        border-color: var(--pdc-primary);
+        box-shadow: 0 0 0 2px rgba(40, 88, 84, 0.35);
+    }
+    .dark .pdc-agent-filter > option,
+    .dark #agent-filter > option {
+        background-color: #18181b;
+        color: #e5e7eb;
     }
 
     .fc .fc-scrollgrid {
