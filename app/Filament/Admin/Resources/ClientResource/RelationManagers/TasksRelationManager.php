@@ -48,11 +48,13 @@ class TasksRelationManager extends RelationManager
                 Actions\CreateAction::make()->label('Jauns uzdevums'),
             ])
             ->actions([
-                Actions\Action::make('complete')
-                    ->label('Pabeigt')
-                    ->icon('heroicon-o-check')
-                    ->visible(fn ($record) => ! $record->completed_at)
-                    ->action(fn ($record) => $record->update(['completed_at' => now()])),
+                Actions\ActionGroup::make([
+                    Actions\Action::make('complete')
+                        ->label('Pabeigt')
+                        ->icon('heroicon-o-check')
+                        ->visible(fn ($record) => ! $record->completed_at)
+                        ->action(fn ($record) => $record->update(['completed_at' => now()])),
+                ]),
             ]);
     }
 }

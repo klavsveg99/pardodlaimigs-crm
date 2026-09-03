@@ -117,8 +117,10 @@ class UserResource extends Resource
                     ]),
             ])
             ->actions([
-                Actions\EditAction::make()->label('Rediģēt'),
-                Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
+                Actions\ActionGroup::make([
+                    Actions\EditAction::make()->label('Rediģēt'),
+                    Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
+                ]),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([

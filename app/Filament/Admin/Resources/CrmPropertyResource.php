@@ -300,7 +300,14 @@ Forms\Components\TextInput::make('kadastra_nr')
                     ->description(fn (CrmProperty $record): ?string => $record->clients()
                         ->wherePivot('relation', 'seller')
                         ->first()?->name),
-                Tables\Columns\TextColumn::make('category')->label('Kategorija')->badge()->sortable(),
+                Tables\Columns\TextColumn::make('category')->label('Kategorija')->sortable()
+                    ->badge()
+                    ->colors([
+                        'success' => 'Zeme',
+                        'warning' => 'Lauku īpašums',
+                        'info' => 'Lauksaimniecības zeme',
+                        'danger' => 'Komercīpašums',
+                    ]),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
                     ->sortable()
@@ -331,8 +338,10 @@ Forms\Components\TextInput::make('kadastra_nr')
             ])
             ->filtersFormColumns(3)
             ->actions([
-                Actions\ViewAction::make()->label('Skatīt'),
-                Actions\EditAction::make()->label('Rediģēt'),
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make()->label('Skatīt'),
+                    Actions\EditAction::make()->label('Rediģēt'),
+                ]),
             ]);
     }
 
