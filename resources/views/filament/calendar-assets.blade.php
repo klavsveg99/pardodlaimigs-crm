@@ -199,6 +199,12 @@
             min-height: 0;
         }
 
+        /* Remove horizontal padding from the section that wraps the calendar on mobile */
+        .fi-section-content,
+        .fi-wi-calendar-viewings .fi-section > .fi-section-content {
+            padding: 0 !important;
+        }
+
         .fc-calendar-wrapper .fc {
             min-height: 0;
         }
@@ -453,6 +459,15 @@
                             list: 'Saraksts',
                         },
                         locale: 'lv',
+                        // On mobile show only 2-letter day names in both month and week/timegrid headers
+                        dayHeaderFormat: (date) => {
+                            if (window.innerWidth >= 640) {
+                                // desktop: default short format (Svētd., Pirmd., ...)
+                                return date.toLocaleDateString('lv', { weekday: 'short' });
+                            }
+                            const name = date.toLocaleDateString('lv', { weekday: 'short' });
+                            return name.slice(0, 2);
+                        },
                         // Never let a single month day overflow vertically; collapse extra events into "+n more"
                         dayMaxEvents: window.innerWidth < 640 ? 2 : 3,
                         nowIndicator: true,
