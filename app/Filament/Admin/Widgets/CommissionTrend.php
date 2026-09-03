@@ -11,7 +11,7 @@ class CommissionTrend extends ChartWidget
 {
     protected ?string $heading = 'Komisijas tendence';
 
-    protected static ?int $sort = 8;
+    protected static ?int $sort = 9;
 
     protected int|string|array $columnSpan = 'full';
 

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 class AgentYearlyCommission extends BaseWidget
 {
-    protected static ?int $sort = 10;
+    protected static ?int $sort = 8;
 
     protected int|string|array $columnSpan = 'full';
 
