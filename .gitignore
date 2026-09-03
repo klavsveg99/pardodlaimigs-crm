@@ -29,6 +29,9 @@ Thumbs.db
 # Private credentials (NEVER commit)
 /private/config.php
 /private/crm-config.php
+/private/crm-credentials.txt
+/private/*credentials*.txt
+/private/*.credentials
 
 # Local SQLite database
 /database/database.sqlite
