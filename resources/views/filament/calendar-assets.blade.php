@@ -121,6 +121,16 @@
     }
 
     /* ── Day grid ──────────────────────────────────────────────── */
+    /* Calendar page "Aģents" filter select — native chevron for both modes */
+    #agent-filter {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+        background-position: right 0.6rem center;
+        background-size: 1.1rem;
+    }
+    .dark #agent-filter {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20' stroke='%23a1a1aa'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+    }
+
     .fc .fc-scrollgrid {
         border-color: #e5e7eb !important;
     }
@@ -459,14 +469,13 @@
                             list: 'Saraksts',
                         },
                         locale: 'lv',
-                        // On mobile show only 2-letter day names in both month and week/timegrid headers
-                        dayHeaderFormat: (date) => {
-                            if (window.innerWidth >= 640) {
-                                // desktop: default short format (Svētd., Pirmd., ...)
-                                return date.toLocaleDateString('lv', { weekday: 'short' });
-                            }
-                            const name = date.toLocaleDateString('lv', { weekday: 'short' });
-                            return name.slice(0, 2);
+                        // On mobile show only 2-letter day names in both month and week/timegrid headers.
+                        // (v6 passes a DateEnv marker object here — not a real Date — so build the date from its fields.)
+                        dayHeaderFormat: (info) => {
+                            const d = info.date;
+                            const dt = new Date(Date.UTC(d.year, d.month, d.day));
+                            const name = dt.toLocaleDateString('lv', { weekday: 'short' });
+                            return window.innerWidth < 640 ? name.slice(0, 2) : name;
                         },
                         // Never let a single month day overflow vertically; collapse extra events into "+n more"
                         dayMaxEvents: window.innerWidth < 640 ? 2 : 3,

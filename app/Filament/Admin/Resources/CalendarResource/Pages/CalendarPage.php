@@ -18,6 +18,11 @@ class CalendarPage extends Page
 
     public ?int $agentFilter = null;
 
+    protected function getBreadcrumbs(): array
+    {
+        return [];
+    }
+
     public function mount(): void
     {
         $this->agentFilter = request()->integer('agentFilter') ?: null;
