@@ -22,8 +22,16 @@ class CrmPropertyFeedController extends Controller
         $properties = CrmProperty::query()
             ->with('owner')
             ->orderBy('updated_at', 'desc')
-            ->get()
-            ->map(fn (CrmProperty $p) => $p->toWpPayload());
+            ->get();
+
+        $maxSort = $properties->max(fn (CrmProperty $p) => $p->sort_order ?? $p->id) ?? 0;
+
+        $properties = $properties->map(function (CrmProperty $p) use ($maxSort) {
+            $payload = $p->toWpPayload();
+            $payload['sort_order'] = $maxSort - ($p->sort_order ?? $p->id) + 1;
+
+            return $payload;
+        });
 
         return response()->json([
             'properties' => $properties,
