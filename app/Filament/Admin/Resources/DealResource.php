@@ -113,8 +113,7 @@ class DealResource extends Resource
                         'info' => ['jauns', 'tirgosana'],
                         'warning' => 'pirma_tiksanas',
                         'primary' => 'noslegta_sadarbiba',
-                        'gray' => 'foto_video',
-                        'danger' => 'dokumentu_saskanosana',
+                        'gray' => ['foto_video', 'dokumentu_saskanosana'],
                         'success' => 'pardots',
                     ])
                     ->formatStateUsing(fn ($state) => Deal::STAGES[$state] ?? $state),

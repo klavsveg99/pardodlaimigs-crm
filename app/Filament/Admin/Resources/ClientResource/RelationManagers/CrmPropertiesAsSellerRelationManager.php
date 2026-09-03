@@ -56,7 +56,7 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
                     ->label('Saistība')
                     ->badge()
                     ->colors([
-                        'danger' => 'seller',
+                        'gray' => 'seller',
                     ])
                     ->formatStateUsing(fn ($state) => ClientCrmProperty::RELATIONS[$state] ?? $state),
             ])

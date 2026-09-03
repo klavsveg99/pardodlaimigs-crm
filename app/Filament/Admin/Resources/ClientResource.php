@@ -112,7 +112,7 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable()->sortable(),
                 Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->sortable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('client_type')->label('Tips')->badge()->sortable()
-                    ->colors(['success' => 'buyer', 'danger' => 'seller'])
+                    ->colors(['success' => 'buyer', 'gray' => 'seller'])
                     ->formatStateUsing(fn ($state) => match($state){'buyer'=>'Pircējs','seller'=>'Pārdevējs',default=>'—'}),
                 Tables\Columns\TextColumn::make('source')->label('Avots')->sortable(),
                 Tables\Columns\TextColumn::make('deals_count')
