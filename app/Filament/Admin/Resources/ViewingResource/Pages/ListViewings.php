@@ -14,12 +14,6 @@ class ListViewings extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('resetFilters')
-                ->label('Atiestatīt filtrus')
-                ->icon('heroicon-o-x-mark')
-                ->color('danger')
-                ->visible(fn () => $this->table->isFiltered())
-                ->action(fn () => $this->resetTableFiltersForm()),
             Actions\Action::make('calendar')
                 ->label('Kalendārs')
                 ->icon('heroicon-o-calendar-days')
