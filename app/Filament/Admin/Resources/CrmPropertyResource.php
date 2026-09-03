@@ -306,7 +306,7 @@ Forms\Components\TextInput::make('kadastra_nr')
                         'success' => 'Zeme',
                         'warning' => 'Lauku īpašums',
                         'info' => 'Lauksaimniecības zeme',
-                        'danger' => 'Komercīpašums',
+                        'gray' => 'Komercīpašums',
                     ]),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
