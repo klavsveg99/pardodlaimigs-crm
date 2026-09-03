@@ -77,7 +77,7 @@ class DealResource extends Resource
             Forms\Components\Select::make('stage')->label('Posms')
                 ->options(Deal::STAGES)->default('jauns')->required(),
             Forms\Components\TextInput::make('value_eur')->label('Vērtība (€)')->numeric()->prefix('€'),
-            Forms\Components\Select::make('owner_user_id')->label('Atbildīgais')
+            Forms\Components\Select::make('owner_user_id')->label('Aģents')
                 ->relationship('owner', 'name')->searchable()->preload()->optionsLimit(20),
             Forms\Components\FileUpload::make('attachments')
                 ->label('Pielikumi')
@@ -122,7 +122,7 @@ class DealResource extends Resource
                     ->label('Vērtība')
                     ->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->money('EUR')->sortable(),
-                Tables\Columns\TextColumn::make('owner.name')->label('Atbildīgais')->sortable()->wrap(),
+                Tables\Columns\TextColumn::make('owner.name')->label('Aģents')->sortable()->wrap(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->extraCellAttributes(['class' => 'pdc-nowrap']),
             ])
             ->filters([
