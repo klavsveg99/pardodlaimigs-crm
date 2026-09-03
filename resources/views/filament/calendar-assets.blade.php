@@ -183,10 +183,24 @@
     }
 
     /* ── Responsive ────────────────────────────────────────────── */
+    /* Make the calendar height fluid so it never overflows the viewport */
+    .fc-calendar-wrapper {
+        height: auto !important;
+        min-height: 480px;
+    }
+
+    .fc-calendar-wrapper .fc {
+        min-height: 440px;
+    }
+
     @media (max-width: 768px) {
         .fc-calendar-wrapper {
-            overflow: hidden;
-            padding: 0.5rem;
+            padding: 0.4rem;
+            min-height: 0;
+        }
+
+        .fc-calendar-wrapper .fc {
+            min-height: 0;
         }
 
         .fc-calendar-wrapper .fc,
@@ -199,112 +213,162 @@
 
         .fc .fc-toolbar {
             flex-direction: column !important;
-            align-items: flex-start !important;
-            gap: 0.35rem;
+            align-items: stretch !important;
+            gap: 0.4rem;
         }
 
         .fc .fc-toolbar-chunk {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.25rem;
+            align-items: center;
+            gap: 0.3rem;
             max-width: 100%;
+        }
+
+        /* Center the title on its own row */
+        .fc .fc-toolbar .fc-toolbar-chunk:nth-child(2) {
+            justify-content: center;
+            order: -1;
+            width: 100%;
         }
 
         .fc .fc-toolbar-title {
             font-size: 1rem !important;
         }
 
+        /* Buttons stretch and become easier to tap on touch screens */
         .fc .fc-button {
-            padding: 0.3rem 0.45rem !important;
-            font-size: 0.7rem !important;
+            flex: 1 1 auto;
+            padding: 0.55rem 0.4rem !important;
+            font-size: 0.75rem !important;
+            min-height: 2.4rem;
+            touch-action: manipulation;
+        }
+
+        /* Increase day-cell tap targets */
+        .fc .fc-daygrid-day {
+            min-height: 3.4rem;
+        }
+
+        .fc .fc-daygrid-day-number {
+            padding: 0.4rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        .fc .fc-event {
+            padding: 0.2rem 0.3rem !important;
+            font-size: 0.6875rem !important;
+        }
+
+        /* List view: roomier rows on small screens */
+        .fc .fc-list-event {
+            padding: 0.6rem 0.5rem !important;
+        }
+
+        .fc .fc-list-event-title {
+            line-height: 1.5 !important;
+        }
+
+        .fc .fc-timegrid-slot {
+            height: 2.6rem !important;
         }
     }
 
-    /* ── Dark mode ─────────────────────────────────────────────── */
+    /* ── Dark mode — match the gray tones of the rest of the panel ── */
     .dark .fc {
-        --fc-border-color: #374151;
-        --fc-page-bg-color: #0b0f14;
-        --fc-neutral-bg-color: #0b0f14;
-        --fc-today-bg-color: #1a2e2d;
-        --fc-today-border-color: #2d5a56;
+        --fc-border-color: #3f3f46;
+        --fc-page-bg-color: #18181b;
+        --fc-neutral-bg-color: #18181b;
+        --fc-today-bg-color: #27272a;
+        --fc-today-border-color: #3f3f46;
         --fc-event-text-color: #fff;
-        --fc-more-link-text-color: #5eead4;
-        --fc-more-link-bg-color: #1a2e2d;
+        --fc-more-link-text-color: #a1a1aa;
+        --fc-more-link-bg-color: #27272a;
     }
 
     .dark .fc-calendar-wrapper {
-        border-color: #374151;
-        background: #0b0f14;
+        border-color: #3f3f46;
+        background: #18181b;
     }
 
     .dark .fc .fc-toolbar {
-        border-bottom-color: #374151;
+        border-bottom-color: #3f3f46;
     }
 
     .dark .fc .fc-toolbar-title {
-        color: #f3f4f6 !important;
+        color: #f4f4f5 !important;
     }
 
     .dark .fc .fc-button {
-        background-color: #2d5a56 !important;
-        border-color: #2d5a56 !important;
-        color: #fff !important;
+        background-color: #3f3f46 !important;
+        border-color: #3f3f46 !important;
+        color: #f4f4f5 !important;
     }
 
     .dark .fc .fc-button:hover:not(:disabled) {
-        background-color: #3a7d78 !important;
-        border-color: #3a7d78 !important;
+        background-color: #52525b !important;
+        border-color: #52525b !important;
     }
 
     .dark .fc .fc-button:not(:disabled):active,
     .dark .fc .fc-button:not(:disabled).fc-button-active {
-        background-color: #1e4843 !important;
-        border-color: #1e4843 !important;
+        background-color: #71717a !important;
+        border-color: #71717a !important;
     }
 
     .dark .fc .fc-today-button {
-        background-color: #4b5563 !important;
-        border-color: #4b5563 !important;
+        background-color: #3f3f46 !important;
+        border-color: #3f3f46 !important;
+        color: #f4f4f5 !important;
     }
 
     .dark .fc .fc-scrollgrid {
-        border-color: #374151 !important;
+        border-color: #3f3f46 !important;
     }
 
     .dark .fc .fc-scrollgrid td,
     .dark .fc .fc-scrollgrid th {
-        border-color: #374151 !important;
+        border-color: #3f3f46 !important;
     }
 
     .dark .fc .fc-col-header-cell {
-        background: #0b0f14 !important;
-        color: #9ca3af !important;
-        border-color: #374151 !important;
+        background: #18181b !important;
+        color: #a1a1aa !important;
+        border-color: #3f3f46 !important;
     }
 
     .dark .fc .fc-daygrid-day-number {
-        color: #d1d5db !important;
+        color: #d4d4d8 !important;
     }
 
     .dark .fc .fc-daygrid-day.fc-day-today {
-        background-color: #1a2e2d !important;
+        background-color: #27272a !important;
     }
 
     .dark .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-        color: #5eead4 !important;
+        color: #e4e4e7 !important;
+        font-weight: 700;
     }
 
     .dark .fc .fc-daygrid-day:hover {
-        background: #0b0f14 !important;
+        background: #27272a !important;
     }
 
     .dark .fc .fc-more-link {
-        color: #5eead4 !important;
+        color: #a1a1aa !important;
+    }
+
+    .dark .fc .fc-list-event:hover td {
+        background-color: #1f1f23 !important;
+    }
+
+    .dark .fc .fc-list-day-cushion {
+        background: #18181b !important;
     }
 
     .dark .fi-wi-calendar-viewings .fi-section-header-heading,
     .dark .fi-wi-calendar-viewings .fi-section .fi-section-heading {
-        color: #f3f4f6 !important;
+        color: #f4f4f5 !important;
     }
 </style>
 
@@ -389,13 +453,17 @@
                             list: 'Saraksts',
                         },
                         locale: 'lv',
+                        // Never let a single month day overflow vertically; collapse extra events into "+n more"
+                        dayMaxEvents: window.innerWidth < 640 ? 2 : 3,
+                        nowIndicator: true,
                         events: this.toFcEvents(),
                         eventClick: (info) => {
                             if (info.event.url) {
                                 window.location.href = info.event.url;
                             }
                         },
-                        height: parseInt(this.$el.dataset.height || '700', 10),
+                        height: 'auto',
+                        expandRows: false,
                     });
                     this.calendar.render();
                 },
