@@ -17,7 +17,6 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 use Illuminate\Database\Query\Builder;
 use UnitEnum;
@@ -330,7 +329,6 @@ Forms\Components\TextInput::make('kadastra_nr')
                     ->searchable()
                     ->preload(),
             ])
-            ->filtersLayout(FiltersLayout::AboveContent)
             ->filtersFormColumns(3)
             ->actions([
                 Actions\ViewAction::make()->label('Skatīt'),

@@ -11,3 +11,7 @@
 .fi-dropdown {
     z-index: 40 !important;
 }
+
+.fi-ta-filters-actions-ctn {
+    margin-top: 1rem;
+}
