@@ -127,7 +127,7 @@ class TaskResource extends Resource
                     ->sortable(query: fn ($query, $direction) => $query->orderBy('due_at', $direction)),
                 Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable()->weight('bold')->wrap(),
                 Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
-                Tables\Columns\TextColumn::make('assignedTo.name')->label('Kam')->sortable(),
+                Tables\Columns\TextColumn::make('assignedTo.name')->label('Aģents')->sortable(),
                 Tables\Columns\TextColumn::make('client.name')->label('Klients')->sortable(),
             ])
             ->filters([

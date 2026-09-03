@@ -23,7 +23,7 @@ class TasksRelationManager extends RelationManager
             Forms\Components\TextInput::make('title')->label('Uzdevums')->required(),
             Forms\Components\Textarea::make('body')->label('Apraksts')->rows(3),
             Forms\Components\DateTimePicker::make('due_at')->label('Līdz')->native(false),
-            Forms\Components\Select::make('assigned_user_id')->label('Kam')
+            Forms\Components\Select::make('assigned_user_id')->label('Aģents')
                 ->relationship('assignedTo', 'name')->searchable(),
         ]);
     }

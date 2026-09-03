@@ -55,7 +55,7 @@ class TodayPriorities extends BaseWidget
                     ->wrap(),
 
                 Tables\Columns\TextColumn::make('assigned')
-                    ->label('Kam')
+                    ->label('Aģents')
                     ->placeholder('—'),
 
                 Tables\Columns\TextColumn::make('client')
