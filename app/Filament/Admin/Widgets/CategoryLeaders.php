@@ -75,8 +75,9 @@ class CategoryLeaders extends BaseWidget
 
     protected function computeLeaders($start, $end): array
     {
-        $leaders = [];
+        $empty = fn () => ['leader_name' => '—', 'leader_value' => '—', 'leader_avatar' => null];
 
+        // Jauni klienti
         $newClients = Client::whereBetween('created_at', [$start, $end])
             ->whereNotNull('owner_user_id')
             ->get(['owner_user_id'])
@@ -89,12 +90,15 @@ class CategoryLeaders extends BaseWidget
             $user = \App\Models\User::find($userId);
             $leaders[] = [
                 'category' => 'Jauni klienti (šomēnes)',
-                'leader_name' => $user?->name ?? 'Nav dati',
+                'leader_name' => $user?->name ?? '—',
                 'leader_value' => $newClients->first(),
                 'leader_avatar' => $user?->avatar_path,
             ];
+        } else {
+            $leaders[] = array_merge(['category' => 'Jauni klienti (šomēnes)'], $empty());
         }
 
+        // Organizētie apskati
         $viewingLeader = Viewing::whereBetween('scheduled_at', [$start, $end])
             ->whereNotNull('agent_user_id')
             ->get(['agent_user_id'])
@@ -107,12 +111,15 @@ class CategoryLeaders extends BaseWidget
             $user = \App\Models\User::find($userId);
             $leaders[] = [
                 'category' => 'Organizētie apskati (šomēnes)',
-                'leader_name' => $user?->name ?? 'Nav dati',
+                'leader_name' => $user?->name ?? '—',
                 'leader_value' => $viewingLeader->first(),
                 'leader_avatar' => $user?->avatar_path,
             ];
+        } else {
+            $leaders[] = array_merge(['category' => 'Organizētie apskati (šomēnes)'], $empty());
         }
 
+        // Noslēgtie darījumi
         $dealLeader = Deal::whereNotNull('closed_at')
             ->whereBetween('closed_at', [$start, $end])
             ->whereNotNull('owner_user_id')
@@ -126,12 +133,15 @@ class CategoryLeaders extends BaseWidget
             $user = \App\Models\User::find($userId);
             $leaders[] = [
                 'category' => 'Noslēgtie darījumi (šomēnes)',
-                'leader_name' => $user?->name ?? 'Nav dati',
+                'leader_name' => $user?->name ?? '—',
                 'leader_value' => $dealLeader->first(),
                 'leader_avatar' => $user?->avatar_path,
             ];
+        } else {
+            $leaders[] = array_merge(['category' => 'Noslēgtie darījumi (šomēnes)'], $empty());
         }
 
+        // Ātrākais darījums
         $fastestDeals = Deal::whereNotNull('closed_at')
             ->whereNotNull('created_at')
             ->whereBetween('closed_at', [$start, $end])
@@ -150,19 +160,12 @@ class CategoryLeaders extends BaseWidget
             $user = \App\Models\User::find($fastest['user_id']);
             $leaders[] = [
                 'category' => 'Ātrākais darījums (dienas, šomēnes)',
-                'leader_name' => $user?->name ?? 'Nav dati',
+                'leader_name' => $user?->name ?? '—',
                 'leader_value' => $fastest['days'],
                 'leader_avatar' => $user?->avatar_path,
             ];
-        }
-
-        if (empty($leaders)) {
-            $leaders[] = [
-                'category' => 'Nav dati šomēnes',
-                'leader_name' => '',
-                'leader_value' => '',
-                'leader_avatar' => null,
-            ];
+        } else {
+            $leaders[] = array_merge(['category' => 'Ātrākais darījums (dienas, šomēnes)'], $empty());
         }
 
         return $leaders;
