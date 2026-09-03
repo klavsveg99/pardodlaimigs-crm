@@ -89,13 +89,13 @@ class CategoryLeaders extends BaseWidget
             $userId = $newClients->keys()->first();
             $user = \App\Models\User::find($userId);
             $leaders[] = [
-                'category' => 'Jauni klienti (šomēnes)',
+                'category' => 'Jauni klienti',
                 'leader_name' => $user?->name ?? '—',
                 'leader_value' => $newClients->first(),
                 'leader_avatar' => $user?->avatar_path,
             ];
         } else {
-            $leaders[] = array_merge(['category' => 'Jauni klienti (šomēnes)'], $empty());
+            $leaders[] = array_merge(['category' => 'Jauni klienti'], $empty());
         }
 
         // Organizētie apskati
@@ -110,13 +110,13 @@ class CategoryLeaders extends BaseWidget
             $userId = $viewingLeader->keys()->first();
             $user = \App\Models\User::find($userId);
             $leaders[] = [
-                'category' => 'Organizētie apskati (šomēnes)',
+                'category' => 'Organizētas apskates',
                 'leader_name' => $user?->name ?? '—',
                 'leader_value' => $viewingLeader->first(),
                 'leader_avatar' => $user?->avatar_path,
             ];
         } else {
-            $leaders[] = array_merge(['category' => 'Organizētie apskati (šomēnes)'], $empty());
+            $leaders[] = array_merge(['category' => 'Organizētas apskates'], $empty());
         }
 
         // Noslēgtie darījumi
@@ -132,13 +132,13 @@ class CategoryLeaders extends BaseWidget
             $userId = $dealLeader->keys()->first();
             $user = \App\Models\User::find($userId);
             $leaders[] = [
-                'category' => 'Noslēgtie darījumi (šomēnes)',
+                'category' => 'Noslēgtie darījumi',
                 'leader_name' => $user?->name ?? '—',
                 'leader_value' => $dealLeader->first(),
                 'leader_avatar' => $user?->avatar_path,
             ];
         } else {
-            $leaders[] = array_merge(['category' => 'Noslēgtie darījumi (šomēnes)'], $empty());
+            $leaders[] = array_merge(['category' => 'Noslēgtie darījumi'], $empty());
         }
 
         // Ātrākais darījums
@@ -159,13 +159,13 @@ class CategoryLeaders extends BaseWidget
         if ($fastest) {
             $user = \App\Models\User::find($fastest['user_id']);
             $leaders[] = [
-                'category' => 'Ātrākais darījums (dienas, šomēnes)',
+                'category' => 'Ātrākais darījums',
                 'leader_name' => $user?->name ?? '—',
                 'leader_value' => $fastest['days'],
                 'leader_avatar' => $user?->avatar_path,
             ];
         } else {
-            $leaders[] = array_merge(['category' => 'Ātrākais darījums (dienas, šomēnes)'], $empty());
+            $leaders[] = array_merge(['category' => 'Ātrākais darījums'], $empty());
         }
 
         return $leaders;
