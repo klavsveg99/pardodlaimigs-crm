@@ -131,8 +131,10 @@ class DealResource extends Resource
                     ->options(Deal::STAGES),
             ])
             ->actions([
-                Actions\EditAction::make()->label('Rediģēt'),
-                Actions\ViewAction::make()->label('Skatīt')->color('primary'),
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make()->label('Skatīt'),
+                    Actions\EditAction::make()->label('Rediģēt'),
+                ]),
             ])
             ->defaultSort('updated_at', 'desc');
     }

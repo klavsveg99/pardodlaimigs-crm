@@ -142,7 +142,9 @@ class ViewingResource extends Resource
                 ),
             ])
             ->actions([
-                Actions\EditAction::make()->label('Rediģēt'),
+                Actions\ActionGroup::make([
+                    Actions\EditAction::make()->label('Rediģēt'),
+                ]),
             ])
             ->defaultSort('scheduled_at');
     }

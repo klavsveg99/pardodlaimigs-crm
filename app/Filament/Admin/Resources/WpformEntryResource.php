@@ -6,6 +6,7 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\WpformEntryResource\Pages;
 use App\Models\WpformEntry;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -79,8 +80,10 @@ class WpformEntryResource extends Resource
                     ->query(fn ($q) => $q->whereNull('client_id')),
             ])
             ->actions([
-                ViewAction::make()->label('Skatīt'),
-                DeleteAction::make()->label('Dzēst')->color('gray'),
+                ActionGroup::make([
+                    ViewAction::make()->label('Skatīt'),
+                    DeleteAction::make()->label('Dzēst')->color('gray'),
+                ]),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

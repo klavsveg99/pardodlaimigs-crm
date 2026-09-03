@@ -140,12 +140,14 @@ class TaskResource extends Resource
                 ),
             ])
             ->actions([
-                Actions\Action::make('complete')
-                    ->label('Pabeigt')
-                    ->icon('heroicon-o-check')
-                    ->visible(fn ($record) => ! $record->completed_at)
-                    ->action(fn ($record) => $record->update(['completed_at' => now()])),
-                Actions\EditAction::make(),
+                Actions\ActionGroup::make([
+                    Actions\Action::make('complete')
+                        ->label('Pabeigt')
+                        ->icon('heroicon-o-check')
+                        ->visible(fn ($record) => ! $record->completed_at)
+                        ->action(fn ($record) => $record->update(['completed_at' => now()])),
+                    Actions\EditAction::make(),
+                ]),
             ])
             ->defaultSort('due_at')
             ->poll('60s');

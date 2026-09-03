@@ -154,8 +154,10 @@ class ClientsRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                Actions\EditAction::make(),
-                Actions\DetachAction::make()->label('Noņemt'),
+                Actions\ActionGroup::make([
+                    Actions\EditAction::make(),
+                    Actions\DetachAction::make()->label('Noņemt'),
+                ]),
             ]);
     }
 }

@@ -124,7 +124,9 @@ class CrmPropertiesAsBuyerRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                Actions\DetachAction::make()->label('Noņemt'),
+                Actions\ActionGroup::make([
+                    Actions\DetachAction::make()->label('Noņemt'),
+                ]),
             ]);
     }
 }
