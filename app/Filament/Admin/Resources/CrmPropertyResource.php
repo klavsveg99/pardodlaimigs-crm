@@ -302,14 +302,6 @@ Forms\Components\TextInput::make('kadastra_nr')
                         ->wherePivot('relation', 'seller')
                         ->first()?->name),
                 Tables\Columns\TextColumn::make('category')->label('Kategorija')->badge()->sortable(),
-                Tables\Columns\TextColumn::make('lead_source')->label('Līda avots')
-                    ->badge()
-                    ->sortable()
-                    ->colors([
-                        'success' => 'internal',
-                        'warning' => 'external',
-                    ])
-                    ->formatStateUsing(fn ($state) => CrmProperty::LEAD_SOURCES[$state] ?? $state),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
                     ->sortable()

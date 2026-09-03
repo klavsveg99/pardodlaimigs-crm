@@ -677,7 +677,7 @@ html.dark .rounded-xl .text-emerald-900 {
 }
 @media (max-width: 767px) {
     .fi-ta-table { min-width: 0 !important; table-layout: fixed !important; }
-    .fi-ta-content-ctn, .fi-ta-ctn { overflow-x: visible !important; }
+    .fi-ta-content-ctn, .fi-ta-ctn { overflow-x: auto !important; }
 }
 
 .fi-ta-table td {
