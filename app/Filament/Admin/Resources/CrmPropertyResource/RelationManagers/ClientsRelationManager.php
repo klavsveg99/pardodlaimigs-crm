@@ -155,8 +155,8 @@ class ClientsRelationManager extends RelationManager
             ])
             ->actions([
                 Actions\ActionGroup::make([
-                    Actions\EditAction::make(),
-                    Actions\DetachAction::make()->label('Noņemt'),
+                    Actions\EditAction::make()->label('Rediģēt')->color('primary'),
+                    Actions\DetachAction::make()->label('Noņemt')->color('gray'),
                 ]),
             ]);
     }

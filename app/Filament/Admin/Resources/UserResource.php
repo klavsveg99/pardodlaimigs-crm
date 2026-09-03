@@ -101,11 +101,6 @@ class UserResource extends Resource
                         'aģents', 'agent' => 'Aģents',
                         'admin' => 'Admin',
                         default => $state ?: '—',
-                    })
-                    ->color(fn ($state) => match ($state) {
-                        'aģents', 'agent' => 'gray',
-                        'admin' => 'success',
-                        default => 'gray',
                     }),
             ])
             ->filters([
@@ -118,7 +113,7 @@ class UserResource extends Resource
             ])
             ->actions([
                 Actions\ActionGroup::make([
-                    Actions\EditAction::make()->label('Rediģēt'),
+                    Actions\EditAction::make()->label('Rediģēt')->color('primary'),
                     Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
                 ]),
             ])

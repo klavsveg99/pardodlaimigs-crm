@@ -38,7 +38,6 @@ class ActivityFeed extends BaseWidget
                 Tables\Columns\TextColumn::make('type')
                     ->label('Darbība')
                     ->badge()
-                    ->color('info')
                     ->formatStateUsing(fn ($state) => self::TYPE_LABELS[$state] ?? $state),
 
                 Tables\Columns\TextColumn::make('actor.name')

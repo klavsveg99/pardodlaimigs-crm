@@ -166,6 +166,48 @@ class SeedTestData extends Command
         }
         $this->info("Properties seeded: {$properties->count()}");
 
+        // Add sold properties for Top 5 agents widget (septembris 2026)
+        $this->info("Seeding sold properties for Top 5 widget...");
+        $soldAgents = $agents->isNotEmpty() ? $agents : collect([$owner]);
+        $soldCount = min(8, $soldAgents->count() * 2);
+        $soldProperties = collect();
+        for ($i = 0; $i < $soldCount; $i++) {
+            $agent = $faker->randomElement($soldAgents);
+            $priceEur = $faker->numberBetween(45000, 550000);
+            $commissionEur = round($priceEur * ($faker->randomFloat(2, 0.01, 0.08)), 2);
+            $soldProp = CrmProperty::create([
+                'title' => '[TEST] Pārdots īpašums ' . ($i + 1) . ' — ' . $faker->streetAddress(),
+                'slug' => 'test-sold-' . Str::slug($faker->words(3, true)) . '-' . Str::random(6),
+                'description' => '[TEST] Pārdots īpašums ' . $faker->paragraph(2),
+                'price_eur' => $priceEur,
+                'price_cents' => 0,
+                'currency' => 'EUR',
+                'category' => $faker->randomElement($categories),
+                'status' => 'sold',
+                'beds' => $faker->numberBetween(1, 5),
+                'baths' => $faker->numberBetween(1, 3),
+                'size_m2' => $faker->numberBetween(35, 220),
+                'city' => $faker->randomElement($cities),
+                'address' => $faker->streetAddress() . ', ' . $faker->randomElement($cities),
+                'lat' => $faker->latitude(56.8, 57.3),
+                'lng' => $faker->longitude(21.5, 24.5),
+                'owner_user_id' => $agent->id,
+                'sold_at' => now()->startOfMonth()->addDays($faker->numberBetween(1, 10))->setHour(10),
+                'final_price_eur' => $priceEur,
+                'commission_eur' => $commissionEur,
+                'sort_order' => 1000 + $i,
+            ]);
+            $soldProperties->push($soldProp);
+            // Link clients as buyers
+            if ($clients->isNotEmpty() && $faker->boolean(70)) {
+                $buyer = $clients->random();
+                try {
+                    $soldProp->clients()->attach($buyer->id, ['relation' => 'buyer', 'notes_md' => '[TEST] buyer link']);
+                } catch (\Exception $e) {}
+            }
+        }
+        $this->info("Sold properties seeded: {$soldProperties->count()}");
+
         // Tasks
         $tasksCount = (int) $this->option('tasks');
         $this->info("Seeding {$tasksCount} test tasks...");

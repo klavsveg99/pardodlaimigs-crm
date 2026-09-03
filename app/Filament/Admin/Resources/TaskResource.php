@@ -146,7 +146,7 @@ class TaskResource extends Resource
                         ->icon('heroicon-o-check')
                         ->visible(fn ($record) => ! $record->completed_at)
                         ->action(fn ($record) => $record->update(['completed_at' => now()])),
-                    Actions\EditAction::make(),
+                    Actions\EditAction::make()->label('Rediģēt')->color('primary'),
                 ]),
             ])
             ->defaultSort('due_at')

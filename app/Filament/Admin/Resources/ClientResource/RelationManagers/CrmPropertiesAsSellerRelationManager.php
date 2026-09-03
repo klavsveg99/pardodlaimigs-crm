@@ -55,9 +55,6 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('pivot.relation')
                     ->label('Saistība')
                     ->badge()
-                    ->colors([
-                        'gray' => 'seller',
-                    ])
                     ->formatStateUsing(fn ($state) => ClientCrmProperty::RELATIONS[$state] ?? $state),
             ])
             ->headerActions([
@@ -106,7 +103,7 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
             ])
             ->actions([
                 Actions\ActionGroup::make([
-                    Actions\DetachAction::make()->label('Noņemt'),
+                    Actions\DetachAction::make()->label('Noņemt')->color('gray'),
                 ]),
             ]);
     }

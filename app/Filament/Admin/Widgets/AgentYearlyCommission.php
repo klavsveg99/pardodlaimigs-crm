@@ -53,7 +53,6 @@ class AgentYearlyCommission extends BaseWidget
                     ->label('Pārdoti (gads)')
                     ->alignCenter()
                     ->badge()
-                    ->color('success')
                     ->formatStateUsing(fn ($state, $record) => $record['sold_count'].' īpaš.'),
 
                 Tables\Columns\TextColumn::make('year_commission')
@@ -68,7 +67,6 @@ class AgentYearlyCommission extends BaseWidget
                     ->label('Vid. %')
                     ->alignCenter()
                     ->badge()
-                    ->color('info')
                     ->formatStateUsing(fn ($state, $record) => $record['avg_percent'] !== null
                         ? number_format((float) $record['avg_percent'], 2, ',', ' ').' %'
                         : '—'),

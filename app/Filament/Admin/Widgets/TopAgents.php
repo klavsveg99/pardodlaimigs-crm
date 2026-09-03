@@ -115,7 +115,6 @@ class TopAgents extends BaseWidget
                     ->width('60px')
                     ->formatStateUsing(fn ($state, $record) => $record['medal'] ?? $record['rank'])
                     ->badge()
-                    ->color(fn ($record) => $record['medalColor'] ?? 'gray')
                     ->extraAttributes(['style' => 'font-size: 1.1rem;']),
 
                 Tables\Columns\ImageColumn::make('avatar')
@@ -136,7 +135,6 @@ class TopAgents extends BaseWidget
                     ->label('Pārdoti')
                     ->alignCenter()
                     ->badge()
-                    ->color('success')
                     ->formatStateUsing(fn ($state, $record) => $record['sold_count'] . ' īpaš.')
 
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
@@ -154,7 +152,6 @@ class TopAgents extends BaseWidget
                     ->label('Vid. %')
                     ->alignCenter()
                     ->badge()
-                    ->color('info')
                     ->formatStateUsing(fn ($state, $record) => number_format((float) $record['avg_percent'], 2, ',', ' ') . ' %')
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
 
