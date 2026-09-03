@@ -13,12 +13,11 @@
         </select>
     </div>
 
-    <div class="fc-calendar-wrapper" style="height: 760px;">
+    <div class="fc-calendar-wrapper">
         <div
             x-data="calendarCombined"
             data-calendar-viewings
             data-events="{{ $eventsJson }}"
-            data-height="700"
         >
             <div x-ref="calendar"></div>
         </div>
