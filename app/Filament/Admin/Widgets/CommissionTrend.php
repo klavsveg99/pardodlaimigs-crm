@@ -83,7 +83,7 @@ class CommissionTrend extends ChartWidget
             'responsive' => true,
             'plugins' => [
                 'legend' => [
-                    'display' => true,
+                    'display' => false,
                     'position' => 'top',
                 ],
                 'tooltip' => [
