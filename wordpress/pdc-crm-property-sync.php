@@ -67,6 +67,35 @@ function pdc_find_existing_media($filename) {
     return 0;
 }
 
+/**
+ * Match an existing attachment by its exact uploads-relative path (e.g. "2025/09/foo.jpg").
+ * This avoids the cross-property contamination caused by matching on basename alone,
+ * since different properties legitimately share generic filenames like "1.jpg".
+ */
+function pdc_relative_upload_path($url) {
+    $url = esc_url_raw($url);
+    if ($url === '') { return ''; }
+    $path = parse_url($url, PHP_URL_PATH);
+    if ($path === null) { return ''; }
+    $path = ltrim($path, '/');
+    if (strpos($path, 'wp-content/uploads/') === 0) {
+        $path = substr($path, strlen('wp-content/uploads/'));
+    }
+    return $path;
+}
+
+function pdc_find_existing_media_by_path($path) {
+    global $wpdb;
+    if ($path === '') { return 0; }
+    $meta_id = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND meta_value = %s LIMIT 1",
+            $path
+        )
+    );
+    return $meta_id && (int) $meta_id > 0 ? (int) $meta_id : 0;
+}
+
 function pdc_sync_attachments($post_id, $attachments) {
     require_once ABSPATH . 'wp-admin/includes/file.php';
     require_once ABSPATH . 'wp-admin/includes/media.php';
@@ -83,11 +112,13 @@ function pdc_sync_attachments($post_id, $attachments) {
     foreach ($attachments as $attachment) {
         $url = isset($attachment['url']) ? esc_url_raw($attachment['url']) : '';
         if ($url === '') { continue; }
-        $filename = basename($url);
-        if (isset($seen[$filename])) { continue; }
-        $seen[$filename] = true;
+        $path = pdc_relative_upload_path($url);
+        if ($path === '') { continue; }
+        if (isset($seen[$path])) { continue; }
+        $seen[$path] = true;
         $attachment['url'] = $url;
-        $attachment['name'] = $filename;
+        $attachment['path'] = $path;
+        $attachment['name'] = basename($url);
         $unique[] = $attachment;
     }
 
@@ -96,12 +127,13 @@ function pdc_sync_attachments($post_id, $attachments) {
 
     foreach ($unique as $attachment) {
         $url  = $attachment['url'];
+        $path = $attachment['path'];
         $name = $attachment['name'];
         $mime = isset($attachment['mime_type']) ? $attachment['mime_type'] : '';
 
         $is_image = (strpos($mime, 'image/') === 0 || preg_match('/\.(jpe?g|png|gif|webp|bmp)$/i', $name));
 
-        $media_id = pdc_find_existing_media($name);
+        $media_id = pdc_find_existing_media_by_path($path);
 
         if ($media_id > 0) {
             update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
