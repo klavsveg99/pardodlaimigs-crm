@@ -16,9 +16,10 @@ Schedule::job(new ReconcileAllProperties)
     ->name('wp-reconcile')
     ->withoutOverlapping();
 
-// WPForms contact form submissions every 5 minutes
+// WPForms contact form submissions every 5 minutes (runs only when triggered;
+// runs every minute so the mu-plugin's ~5-min ping always hits a "due" window)
 Schedule::job(new SyncWpForms)
-    ->everyFiveMinutes()
+    ->everyMinute()
     ->name('wpforms-sync')
     ->withoutOverlapping();
 
