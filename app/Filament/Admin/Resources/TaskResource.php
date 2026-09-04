@@ -126,7 +126,10 @@ class TaskResource extends Resource
                     ->tooltip(fn ($record) => $record->isOverdue() ? 'Nokavēts' : null)
                     ->sortable(query: fn ($query, $direction) => $query->orderBy('due_at', $direction)),
                 Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable()->weight('bold')->wrap(),
-                Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
+                Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap'])
+                    ->color(fn ($record) => $record->isOverdue() ? 'danger' : null)
+                    ->icon(fn ($record) => $record->isOverdue() ? 'heroicon-o-exclamation-triangle' : null)
+                    ->iconColor('danger'),
                 Tables\Columns\TextColumn::make('assignedTo.name')->label('Aģents')->sortable(),
                 Tables\Columns\TextColumn::make('client.name')->label('Klients')->sortable(),
             ])
@@ -137,6 +140,9 @@ class TaskResource extends Resource
                 ),
                 Tables\Filters\Filter::make('today')->label('Šodien')->query(
                     fn ($query) => $query->whereNull('completed_at')->whereBetween('due_at', [now()->startOfDay(), now()->endOfDay()])
+                ),
+                Tables\Filters\Filter::make('assigned')->label('Mani uzdevumi')->query(
+                    fn ($query) => $query->where('assigned_user_id', auth()->id())
                 ),
             ])
             ->actions([

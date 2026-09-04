@@ -27,9 +27,16 @@ class TodayPriorities extends BaseWidget
     {
         $records = $this->collectToday();
 
+        $currentUserId = auth()->id();
+        $buttonLink = '/admin/tasks?tableFilters[assigned]=' . $currentUserId;
+
         return $table
             ->heading('Šodien jāizdara')
-            ->description(now()->locale('lv')->translatedFormat('l, d.m.Y'))
+            ->description(new \Illuminate\Support\HtmlString(
+                '<span class="text-xs text-gray-500 dark:text-gray-400">'
+                . now()->locale('lv')->translatedFormat('l, d.m.Y')
+                . '</span><a href="' . $buttonLink . '" class="float-right inline-flex items-center rounded-md bg-[var(--pdc-primary)] px-3 py-1 text-sm font-medium text-white shadow-sm hover:bg-[var(--pdc-primary-dark)] transition-colors">Mani uzdevumi</a>'
+            ))
             ->query(Deal::query()->whereRaw('1 = 0'))
             ->records(fn () => $records)
             ->columns([

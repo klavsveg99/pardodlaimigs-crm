@@ -573,14 +573,14 @@
         x-show="files.length === 0"
         style="text-align: center; padding: 2rem; border: 2px dashed #e5e7eb; border-radius: 0.75rem;"
     >
-        <svg style="margin: 0 auto; height: 3rem; width: 3rem; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg style="margin: 0 auto; height: 1.5rem; width: 1.5rem; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
         <p style="margin-top: 0.75rem; font-size: 0.875rem; color: #6b7280;">Nav pielikumu.</p>
         <label
             for="{{ $uid }}-upload"
             style="margin-top: 0.75rem; display: inline-flex; cursor: pointer; color: white;"
-            class="fi-btn fi-btn-size-sm fi-btn-type-outlined"
+            class="fi-btn fi-btn-size-sm fi-color-primary fi-btn-type-solid"
         >
             <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
             <span>Pievienot failus</span>
