@@ -109,7 +109,9 @@ class ViewingResource extends Resource
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->extraCellAttributes(['class' => 'pdc-nowrap'])
-                    ->color(fn ($record) => $record->status === 'scheduled' && $record->scheduled_at->isPast() ? 'danger' : null),
+                    ->color(fn ($record) => $record->status === 'scheduled' && $record->scheduled_at->isPast() ? 'danger' : null)
+                    ->icon(fn ($record) => $record->status === 'scheduled' && $record->scheduled_at->isPast() ? 'heroicon-o-exclamation-triangle' : null)
+                    ->iconColor('danger'),
                 Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40)->sortable(),
                 Tables\Columns\TextColumn::make('client.name')->label('Klients')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('agent.name')->label('Aģents')->sortable(),
