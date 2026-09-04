@@ -12,7 +12,7 @@ class CrmPropertySeeder extends Seeder
 {
     public function run(): void
     {
-        $agent = User::where('email', 'info@pardodlaimigs.lv')->first();
+        $agent = User::where('email', 'roberts@pardodlaimigs.lv')->first();
 
         $properties = [
             [
@@ -205,6 +205,15 @@ class CrmPropertySeeder extends Seeder
         ];
 
         foreach ($properties as $data) {
+            $existing = CrmProperty::where('slug', $data['slug'])->first();
+            if ($existing) {
+                $existing->update([
+                    'owner_user_id' => $agent?->id,
+                    'lead_owner' => $data['lead_owner'],
+                ]);
+                continue;
+            }
+
             $data['price_cents'] = (int) ($data['price_eur'] * 100);
             $data['owner_user_id'] = $agent?->id;
             CrmProperty::create($data);
