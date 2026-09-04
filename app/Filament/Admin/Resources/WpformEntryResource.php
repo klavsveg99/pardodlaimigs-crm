@@ -81,9 +81,9 @@ class WpformEntryResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
-                    ViewAction::make()->label('Skatīt')->color('primary'),
+                    ViewAction::make()->label('Skatīt')->color('gray'),
                     DeleteAction::make()->label('Dzēst')->color('gray'),
-                ]),
+                ])->color('gray'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

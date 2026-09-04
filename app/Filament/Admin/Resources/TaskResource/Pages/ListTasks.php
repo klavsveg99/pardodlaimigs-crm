@@ -18,7 +18,7 @@ class ListTasks extends ListRecords
                 ->label('Kalendārs')
                 ->icon('heroicon-o-calendar-days')
                 ->url(CombinedCalendarPage::getUrl()),
-            Actions\CreateAction::make()->label('Jauns uzdevums'),
+            Actions\CreateAction::make()->label('Jauns uzdevums')->color('gray'),
         ];
     }
 }

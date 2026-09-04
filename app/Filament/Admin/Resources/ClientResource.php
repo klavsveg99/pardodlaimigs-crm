@@ -139,7 +139,7 @@ class ClientResource extends Resource
             ])
             ->actions([
                     Actions\ActionGroup::make([
-                        Actions\ViewAction::make()->label('Skatīt')->color('primary'),
+                        Actions\ViewAction::make()->label('Skatīt')->color('gray'),
                         Actions\Action::make('export_personal_data')
                             ->label('Eksportēt personas datus')
                             ->icon('heroicon-o-arrow-down-tray')
@@ -181,7 +181,7 @@ class ClientResource extends Resource
                             ->modalDescription('Klients un visi ar to saistītie CRM dati tiks neatgriezeniski dzēsti.')
                             ->color('gray')
                             ->using(fn (Client $record): ?bool => $record->forceDelete()),
-                    ]),
+                    ])->color('gray'),
             ])
             ->defaultSort('updated_at', 'desc');
     }

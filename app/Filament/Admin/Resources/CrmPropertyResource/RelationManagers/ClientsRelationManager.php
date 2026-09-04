@@ -70,7 +70,7 @@ class ClientsRelationManager extends RelationManager
             ->headerActions([
                 Actions\AttachAction::make('attachBuyer')
                     ->label('Piesaistīt pircēju')
-                    ->color('primary')
+                    ->color('gray')
                     ->icon('heroicon-o-user-plus')
                     ->visible(fn () => $this->getOwnerRecord()->status === 'sold')
                     ->recordSelectSearchColumns(['name', 'email', 'phone', 'id'])
@@ -98,6 +98,7 @@ class ClientsRelationManager extends RelationManager
                     }),
                 Actions\AttachAction::make()
                     ->label('Piesaistīt klientu')
+                    ->color('gray')
                     ->recordSelectSearchColumns(['name', 'email', 'phone', 'id'])
                     ->schema(function (Actions\AttachAction $action): array {
                         return [
@@ -155,9 +156,9 @@ class ClientsRelationManager extends RelationManager
             ])
             ->actions([
                 Actions\ActionGroup::make([
-                    Actions\EditAction::make()->label('Rediģēt')->color('primary'),
+                    Actions\EditAction::make()->label('Rediģēt')->color('gray'),
                     Actions\DetachAction::make()->label('Noņemt')->color('gray'),
-                ]),
+                ])->color('gray'),
             ]);
     }
 }

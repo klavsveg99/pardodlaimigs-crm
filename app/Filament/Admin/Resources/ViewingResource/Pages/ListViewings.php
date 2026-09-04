@@ -18,7 +18,7 @@ class ListViewings extends ListRecords
                 ->label('Kalendārs')
                 ->icon('heroicon-o-calendar-days')
                 ->url(CalendarPage::getUrl()),
-            Actions\CreateAction::make()->label('Jauna apskate'),
+            Actions\CreateAction::make()->label('Jauna apskate')->color('gray'),
         ];
     }
 }

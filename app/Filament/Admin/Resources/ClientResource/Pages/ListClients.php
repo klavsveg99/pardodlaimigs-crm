@@ -12,6 +12,6 @@ class ListClients extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [Actions\CreateAction::make()->label('Jauns klients')];
+        return [Actions\CreateAction::make()->label('Jauns klients')->color('gray')];
     }
 }

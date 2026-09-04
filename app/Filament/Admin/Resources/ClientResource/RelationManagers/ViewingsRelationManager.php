@@ -44,7 +44,7 @@ class ViewingsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('agent.name')->label('Aģents')->sortable(),
             ])
             ->headerActions([
-                Actions\CreateAction::make()->label('Jauna apskate'),
+                Actions\CreateAction::make()->label('Jauna apskate')->color('gray'),
             ])
             ->defaultSort('scheduled_at', 'desc');
     }

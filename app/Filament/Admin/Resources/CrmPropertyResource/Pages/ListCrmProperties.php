@@ -15,7 +15,7 @@ class ListCrmProperties extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Jauns īpašums'),
+            Actions\CreateAction::make()->label('Jauns īpašums')->color('gray'),
         ];
     }
 }

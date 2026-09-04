@@ -137,8 +137,8 @@ class ViewingResource extends Resource
             ])
             ->actions([
                 Actions\ActionGroup::make([
-                    Actions\EditAction::make()->label('Rediģēt')->color('primary'),
-                ]),
+                    Actions\EditAction::make()->label('Rediģēt')->color('gray'),
+                ])->color('gray'),
             ])
             ->defaultSort('scheduled_at');
     }
