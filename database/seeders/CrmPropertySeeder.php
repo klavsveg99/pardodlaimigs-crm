@@ -12,7 +12,7 @@ class CrmPropertySeeder extends Seeder
 {
     public function run(): void
     {
-        $agent = User::where('email', 'roberts@pardodlaimigs.lv')->first();
+        $agent = User::where('email', 'info@pardodlaimigs.lv')->first();
 
         $properties = [
             [
@@ -204,21 +204,44 @@ class CrmPropertySeeder extends Seeder
             ],
         ];
 
+        $galleries = $this->loadGalleries();
+
         foreach ($properties as $data) {
             $existing = CrmProperty::where('slug', $data['slug'])->first();
             if ($existing) {
                 $existing->update([
                     'owner_user_id' => $agent?->id,
                     'lead_owner' => $data['lead_owner'],
+                    'image_urls' => $galleries[$data['slug']] ?? $existing->image_urls,
                 ]);
                 continue;
             }
 
             $data['price_cents'] = (int) ($data['price_eur'] * 100);
             $data['owner_user_id'] = $agent?->id;
+            $data['image_urls'] = $galleries[$data['slug']] ?? ($data['image_urls'] ?? []);
             CrmProperty::create($data);
         }
 
         $this->command->info("Seeded " . count($properties) . " CRM properties.");
+    }
+
+    private function loadGalleries(): array
+    {
+        $path = database_path('seeders/data/property-galleries.json');
+        if (! file_exists($path)) {
+            return [];
+        }
+
+        $data = json_decode(file_get_contents($path), true);
+        $galleries = [];
+
+        foreach ($data['properties'] ?? [] as $property) {
+            if (isset($property['slug'], $property['images'])) {
+                $galleries[$property['slug']] = $property['images'];
+            }
+        }
+
+        return $galleries;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\CrmProperty;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -26,19 +27,13 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        User::firstOrCreate(
-            ['email' => 'roberts@pardodlaimigs.lv'],
-            [
-                'name' => 'Roberts Evarsons',
-                'email_verified_at' => now(),
-                'role' => 'aģents',
-                'phone' => '+371 24 922 942',
-                'password' => bcrypt('Admin123!'),
-                'position' => 'Nekustamā īpašuma aģents',
-                'description' => 'Vairāk kā desmit gadu pieredze pārdošanas jomā mani ir novedusi pie nekustamo īpašumu tirdzniecības Latvijā. Pārdošana ir joma, kurā strādājot es jūtos savā vietā. Es zinu, cik reizēm pārdošanas process var likties sarežģīts, tomēr gadiem ejot esmu radis uz sarežģītām situācijām skatīties viegli un prasmīgi tās atrisināt.',
-                'linkedin_url' => 'https://www.linkedin.com/in/roberts-evarsons-861151106/',
-            ]
-        );
+        $admin = User::where('email', 'info@pardodlaimigs.lv')->first();
+
+        $agent = User::where('email', 'roberts@pardodlaimigs.lv')->first();
+        if ($agent) {
+            CrmProperty::where('owner_user_id', $agent->id)->update(['owner_user_id' => $admin->id]);
+            $agent->delete();
+        }
 
         $this->call(CrmPropertySeeder::class);
     }
