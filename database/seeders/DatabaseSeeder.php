@@ -10,16 +10,19 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        User::create([
+            'name' => 'Roberts Evarsons',
+            'email' => 'info@pardodlaimigs.lv',
+            'email_verified_at' => now(),
+            'role' => 'admin',
+            'phone' => '+371 24 922 942',
+            'description' => 'Nodrošinu profesionālu atbalstu nekustamā īpašuma realizācijā. Sadarbība ar mani ir pilnībā caurskatāma un saprotama. Jums būs skaidrs kā rodas īpašuma vērtība.',
+            'password' => '$2y$12$1PDtjn/kk5bTkGSFFelkf.K9gtI0PdxnKXDSUDGA6QX21EFLlD2Bm',
+            'calendar_token' => 'hhEaJESI6euav6L7DWtoFH7kuqhtjJZFl871dRSYNgn933RHPVK6s60HhUe1',
         ]);
+
+        $this->call(CrmPropertySeeder::class);
     }
 }
