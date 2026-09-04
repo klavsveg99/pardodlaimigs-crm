@@ -436,6 +436,14 @@ function pdc_full_sync() {
     $start = time();
     pdc_log('Sync started');
 
+    // No system cron on the CRM host: trigger the Laravel scheduler remotely
+    // so SyncWpForms (contact form sync) and other scheduled jobs run.
+    wp_remote_get('https://crm.pardodlaimigs.lv/cron-schedule', [
+        'timeout' => 60,
+        'blocking' => false,
+        'headers' => ['X-CRM-API-Key' => PDC_CRM_API_KEY],
+    ]);
+
     $agent_map = pdc_sync_agents();
 
     $data = pdc_fetch_json(PDC_CRM_API_URL);
