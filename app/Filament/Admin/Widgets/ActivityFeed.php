@@ -59,6 +59,11 @@ class ActivityFeed extends BaseWidget
     {
         return Activity::query()
             ->with(['actor', 'deal', 'client'])
+            // Drop activities whose related records were deleted — they would
+            // render as broken/stale rows (e.g. test viewings removed from CRM).
+            ->where(fn ($q) => $q->whereNull('client_id')->orWhereHas('client'))
+            ->where(fn ($q) => $q->whereNull('deal_id')->orWhereHas('deal'))
+            ->where(fn ($q) => $q->whereNull('actor_user_id')->orWhereHas('actor'))
             ->orderByDesc('created_at')
             ->limit(50);
     }
