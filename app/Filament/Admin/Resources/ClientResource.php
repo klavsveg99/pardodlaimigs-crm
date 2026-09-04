@@ -46,7 +46,9 @@ class ClientResource extends Resource
                     \App\Filament\Forms\Components\PersonasKodsInput::make('personas_kods')
                         ->label('Personas kods')
                         ->maxLength(12)
-                        ->helperText('Formāts: XXXXXX-XXXXX'),
+                        ->helperText('Formāts: XXXXXX-XXXXX')
+                        ->disabled(fn (string $operation) => $operation === 'view')
+                        ->readonly(fn (\App\Models\Client $record) => \Illuminate\Support\Str::filled($record->personas_kods)),
                     Forms\Components\Select::make('source')
                         ->label('Avots (kā uzzināja)')
                         ->searchable()
