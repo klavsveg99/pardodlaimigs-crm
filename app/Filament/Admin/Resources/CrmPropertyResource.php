@@ -123,12 +123,20 @@ class CrmPropertyResource extends Resource
                     Forms\Components\TextInput::make('baths')->label('Vannas istabas')->numeric(),
                     Forms\Components\TextInput::make('size_m2')->label('Platība (m²)')->numeric(),
                     Forms\Components\TextInput::make('land_m2')->label('Zemes platība (m²)')->numeric(),
-Forms\Components\TextInput::make('kadastra_nr')
+                    Forms\Components\TextInput::make('kadastra_nr')
                          ->label('Kadastra nr.*')
                          ->required()
-                         ->maxLength(32)
-                         ->columnSpanFull()
-                         ->validationMessages(['required' => 'Kadastra nr. ir obligāts lauks.']),
+                         ->numeric()
+                         ->minLength(8)
+                         ->maxLength(11)
+                         ->rules('regex:/^\d{8,11}$/')
+                         ->validationMessages([
+                             'required' => 'Kadastra nr. ir obligāts lauks.',
+                             'regex' => 'Kadastra nr. jābūt 8-11 cipariem.',
+                             'min' => 'Kadastra nr. jābūt vismaz 8 cipariem.',
+                             'max' => 'Kadastra nr. nedrīkst pārsniegt 11 ciparus.',
+                         ])
+                         ->columnSpanFull(),
                 ])->columnSpan(1),
             ])->columnSpanFull(),
 

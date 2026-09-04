@@ -91,12 +91,7 @@ class CrmStatsOverview extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-o-check-badge')
                 ->color('primary'),
 
-            Stat::make('Potenciālā komisija', $potentialCommission !== null
-                    ? number_format($potentialCommission, 0, ',', ' ').' €'
-                    : '—')
-                ->description('No aktīvajiem darījumiem (pēc vid. proc.)')
-                ->descriptionIcon('heroicon-o-arrow-trending-up')
-                ->color('warning'),
+
         ];
 
         if ($avgDealValue !== null) {
@@ -106,12 +101,7 @@ class CrmStatsOverview extends StatsOverviewWidget
                 ->color('secondary');
         }
 
-        if ($avgSellDays !== null) {
-            $stats[] = Stat::make('Vid. pārdošanas laiks', $avgSellDays.' dienas')
-                ->description('No izveides līdz pārdošanai (gads)')
-                ->descriptionIcon('heroicon-o-clock')
-                ->color('gray');
-        }
+
 
         $stats[] = Stat::make('Atvērtas apskates šodien', Viewing::whereBetween('scheduled_at', [$todayStart, $todayEnd])->count())
             ->description($lateViewings > 0 ? 'Nokavētas: '.$lateViewings : null)
