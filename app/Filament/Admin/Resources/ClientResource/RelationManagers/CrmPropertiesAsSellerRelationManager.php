@@ -96,10 +96,6 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
                             // We are not allowing buyer in this relation manager, but we keep the check for safety.
                         }
                     })
-                    ->after(function (array $data, $livewire): void {
-                        $c = $livewire->getOwnerRecord();
-                        if (empty($c->client_type)) $c->update(['client_type' => 'seller']);
-                    }),
             ])
             ->actions([
                 Actions\ActionGroup::make([
