@@ -56,9 +56,11 @@ class CrmStatsOverview extends StatsOverviewWidget
         // Yearly sold for avg metrics
         $soldThisYear = $this->soldInRange($yearStart, $yearEnd);
         $yearCommission = round($soldThisYear['commission'], 2);
+        $yearCount = (int) $soldThisYear['count'];
+        $yearFinalValue = round($soldThisYear['final_price'], 2);
 
-        $avgDealValue = $soldThisYear['count'] > 0
-            ? round($soldThisYear['final_price'] / $soldThisYear['count'], 2)
+        $avgDealValue = $yearCount > 0
+            ? round($soldThisYear['final_price'] / $yearCount, 2)
             : null;
 
         // Average commission percent across sold properties (per-property, weighted)
@@ -99,7 +101,7 @@ class CrmStatsOverview extends StatsOverviewWidget
 
         if ($avgDealValue !== null) {
             $stats[] = Stat::make('Vid. darījuma vērtība (gads)', number_format($avgDealValue, 0, ',', ' ').' €')
-                ->description('Kopā šogad: '.number_format($yearCommission, 0, ',', ' ').' €')
+                ->description('Kopā šogad: '.number_format($yearFinalValue, 0, ',', ' ').' € ('.$yearCount.' pārdoti)')
                 ->descriptionIcon('heroicon-o-banknotes')
                 ->color('secondary');
         }
