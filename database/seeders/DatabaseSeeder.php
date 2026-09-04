@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
                 'role' => 'aģents',
                 'phone' => '+371 24 922 942',
+                'password' => bcrypt('Admin123!'),
                 'position' => 'Nekustamā īpašuma aģents',
                 'description' => 'Vairāk kā desmit gadu pieredze pārdošanas jomā mani ir novedusi pie nekustamo īpašumu tirdzniecības Latvijā. Pārdošana ir joma, kurā strādājot es jūtos savā vietā. Es zinu, cik reizēm pārdošanas process var likties sarežģīts, tomēr gadiem ejot esmu radis uz sarežģītām situācijām skatīties viegli un prasmīgi tās atrisināt.',
                 'linkedin_url' => 'https://www.linkedin.com/in/roberts-evarsons-861151106/',
