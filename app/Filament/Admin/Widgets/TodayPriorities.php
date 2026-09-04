@@ -39,12 +39,11 @@ class TodayPriorities extends BaseWidget
             ->heading('Šodien jāizdara')
             ->description(now()->locale('lv')->translatedFormat('l, d.m.Y'))
             ->headerActions([
-                Tables\Actions\Action::make('mani_uzdevumi')
+                \Filament\Actions\Action::make('mani_uzdevumi')
                     ->label('Mani uzdevumi')
                     ->icon('heroicon-o-user')
                     ->color(fn (): string => $this->showOnlyMine ? 'primary' : 'gray')
                     ->outlined(fn (): bool => ! $this->showOnlyMine)
-                    ->badge(fn (): ?int => $this->showOnlyMine ? count($this->myTasksToday()) : null)
                     ->action(fn () => $this->toggleOnlyMine()),
             ])
             ->query(Deal::query()->whereRaw('1 = 0'))
