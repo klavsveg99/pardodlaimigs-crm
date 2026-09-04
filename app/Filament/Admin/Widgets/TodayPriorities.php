@@ -18,25 +18,35 @@ class TodayPriorities extends BaseWidget
 
     protected int|string|array $columnSpan = 'full';
 
+    /** When true, the table shows only the current user's tasks (aria). */
+    public bool $showOnlyMine = false;
+
     public function getTableRecordKey(EloquentModel|array $record): string
     {
         return (string) ($record['type'].'-'.$record['id']);
+    }
+
+    public function toggleOnlyMine(): void
+    {
+        $this->showOnlyMine = ! $this->showOnlyMine;
     }
 
     public function table(Table $table): Table
     {
         $records = $this->collectToday();
 
-        $currentUserId = auth()->id();
-        $buttonLink = '/admin/tasks?tableFilters[assigned]=' . $currentUserId;
-
         return $table
             ->heading('Šodien jāizdara')
-            ->description(new \Illuminate\Support\HtmlString(
-                '<span class="text-xs text-gray-500 dark:text-gray-400">'
-                . now()->locale('lv')->translatedFormat('l, d.m.Y')
-                . '</span><a href="' . $buttonLink . '" class="float-right inline-flex items-center rounded-md bg-[var(--pdc-primary)] px-3 py-1 text-sm font-medium text-white shadow-sm hover:bg-[var(--pdc-primary-dark)] transition-colors">Mani uzdevumi</a>'
-            ))
+            ->description(now()->locale('lv')->translatedFormat('l, d.m.Y'))
+            ->headerActions([
+                Tables\Actions\Action::make('mani_uzdevumi')
+                    ->label('Mani uzdevumi')
+                    ->icon('heroicon-o-user')
+                    ->color(fn (): string => $this->showOnlyMine ? 'primary' : 'gray')
+                    ->outlined(fn (): bool => ! $this->showOnlyMine)
+                    ->badge(fn (): ?int => $this->showOnlyMine ? count($this->myTasksToday()) : null)
+                    ->action(fn () => $this->toggleOnlyMine()),
+            ])
             ->query(Deal::query()->whereRaw('1 = 0'))
             ->records(fn () => $records)
             ->columns([
@@ -79,14 +89,89 @@ class TodayPriorities extends BaseWidget
         $records = [];
         $today = now()->toDateString();
 
-        // Tasks due today (not completed)
+        if ($this->showOnlyMine) {
+            foreach ($this->myTasksToday() as $record) {
+                $records[] = $record;
+            }
+        } else {
+            // Tasks due today (not completed)
+            Task::query()
+                ->whereNull('completed_at')
+                ->whereDate('due_at', $today)
+                ->with(['assignedTo', 'client'])
+                ->get()
+                ->each(function (Task $task) use (&$records) {
+                    $records[] = [
+                        'id' => $task->id,
+                        'time' => $task->due_at,
+                        'type' => 'Uzdevums',
+                        'title' => $task->title,
+                        'assigned' => $task->assignedTo?->name,
+                        'client' => $task->client?->name,
+                        'status' => $task->isOverdue() ? 'Nokavēts' : 'Plānots',
+                    ];
+                });
+
+            // Viewings today
+            Viewing::query()
+                ->whereDate('scheduled_at', $today)
+                ->with(['agent', 'client', 'property'])
+                ->get()
+                ->each(function (Viewing $viewing) use (&$records) {
+                    $records[] = [
+                        'id' => $viewing->id,
+                        'time' => $viewing->scheduled_at,
+                        'type' => 'Apskate',
+                        'title' => $viewing->property?->title ?? 'Īpašums',
+                        'assigned' => $viewing->agent?->name,
+                        'client' => $viewing->client?->name,
+                        'status' => $viewing->status,
+                    ];
+                });
+
+            // Deals expected to close today
+            Deal::query()
+                ->whereDate('expected_close_date', $today)
+                ->where('stage', '!=', 'pardots')
+                ->whereNull('closed_at')
+                ->with(['owner', 'client'])
+                ->get()
+                ->each(function (Deal $deal) use (&$records) {
+                    $records[] = [
+                        'id' => $deal->id,
+                        'time' => $deal->expected_close_date,
+                        'type' => 'Darījums',
+                        'title' => $deal->title,
+                        'assigned' => $deal->owner?->name,
+                        'client' => $deal->client?->name,
+                        'status' => $deal->getStageLabelAttribute(),
+                    ];
+                });
+        }
+
+        usort($records, fn ($a, $b) => ($a['time']?->getTimestamp() ?? 0) <=> ($b['time']?->getTimestamp() ?? 0));
+
+        return array_values($records);
+    }
+
+    /**
+     * Current user's open tasks due today, formatted as table rows.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function myTasksToday(): array
+    {
+        $today = now()->toDateString();
+        $rows = [];
+
         Task::query()
             ->whereNull('completed_at')
             ->whereDate('due_at', $today)
+            ->where('assigned_user_id', auth()->id())
             ->with(['assignedTo', 'client'])
             ->get()
-            ->each(function (Task $task) use (&$records) {
-                $records[] = [
+            ->each(function (Task $task) use (&$rows) {
+                $rows[] = [
                     'id' => $task->id,
                     'time' => $task->due_at,
                     'type' => 'Uzdevums',
@@ -97,44 +182,6 @@ class TodayPriorities extends BaseWidget
                 ];
             });
 
-        // Viewings today
-        Viewing::query()
-            ->whereDate('scheduled_at', $today)
-            ->with(['agent', 'client', 'property'])
-            ->get()
-            ->each(function (Viewing $viewing) use (&$records) {
-                $records[] = [
-                    'id' => $viewing->id,
-                    'time' => $viewing->scheduled_at,
-                    'type' => 'Apskate',
-                    'title' => $viewing->property?->title ?? 'Īpašums',
-                    'assigned' => $viewing->agent?->name,
-                    'client' => $viewing->client?->name,
-                    'status' => $viewing->status,
-                ];
-            });
-
-        // Deals expected to close today
-        Deal::query()
-            ->whereDate('expected_close_date', $today)
-            ->where('stage', '!=', 'pardots')
-            ->whereNull('closed_at')
-            ->with(['owner', 'client'])
-            ->get()
-            ->each(function (Deal $deal) use (&$records) {
-                $records[] = [
-                    'id' => $deal->id,
-                    'time' => $deal->expected_close_date,
-                    'type' => 'Darījums',
-                    'title' => $deal->title,
-                    'assigned' => $deal->owner?->name,
-                    'client' => $deal->client?->name,
-                    'status' => $deal->getStageLabelAttribute(),
-                ];
-            });
-
-        usort($records, fn ($a, $b) => ($a['time']?->getTimestamp() ?? 0) <=> ($b['time']?->getTimestamp() ?? 0));
-
-        return array_values($records);
+        return $rows;
     }
 }
