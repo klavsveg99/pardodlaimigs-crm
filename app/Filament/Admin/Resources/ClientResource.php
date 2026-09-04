@@ -62,14 +62,6 @@ class ClientResource extends Resource
                             'Cits' => 'Cits',
                         ])
                         ->placeholder('Izvēlieties avotu'),
-                    Forms\Components\Select::make('client_type')
-                        ->label('Klienta tips')
-                        ->options([
-                            'buyer' => 'Pircējs',
-                            'seller' => 'Pārdevējs',
-                        ])
-                        ->placeholder('Izvēlieties tipu')
-                        ->native(false),
                     Forms\Components\Select::make('owner_user_id')
                         ->label('Atbildīgais aģents')
                         ->relationship('owner', 'name')
@@ -111,10 +103,6 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable()->sortable(),
                 Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->sortable()->placeholder('—'),
-                Tables\Columns\TextColumn::make('client_type')->label('Tips')->badge()->sortable()
-                    ->color('gray')
-                    ->formatStateUsing(fn ($state) => match($state){'buyer'=>'Pircējs','seller'=>'Pārdevējs',default=>'—'}),
-                Tables\Columns\TextColumn::make('source')->label('Avots')->sortable(),
                 Tables\Columns\TextColumn::make('deals_count')
                     ->counts('deals')
                     ->label('Darījumi')

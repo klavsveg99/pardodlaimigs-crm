@@ -115,10 +115,6 @@ class CrmPropertiesAsBuyerRelationManager extends RelationManager
                             }
                         }
                     })
-                    ->after(function (array $data, $livewire): void {
-                        $c = $livewire->getOwnerRecord();
-                        if (empty($c->client_type)) $c->update(['client_type' => 'buyer']);
-                    }),
             ])
             ->actions([
                 Actions\ActionGroup::make([
