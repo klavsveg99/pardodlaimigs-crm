@@ -94,12 +94,10 @@ class CrmStatsOverview extends StatsOverviewWidget
 
         ];
 
-        if ($avgDealValue !== null) {
-            $stats[] = Stat::make('Vid. darījuma vērtība (gads)', number_format($avgDealValue, 0, ',', ' ').' €')
-                ->description('Kopā šogad: '.number_format($yearFinalValue, 0, ',', ' ').' € ('.$yearCount.' pārdoti)')
-                ->descriptionIcon('heroicon-o-banknotes')
-                ->color('secondary');
-        }
+        $stats[] = Stat::make('Vid. darījuma vērtība (gads)', $avgDealValue !== null ? number_format($avgDealValue, 0, ',', ' ').' €' : '—')
+            ->description($avgDealValue !== null ? 'Kopā šogad: '.number_format($yearFinalValue, 0, ',', ' ').' € ('.$yearCount.' pārdoti)' : 'Nav pārdoto īpašumu šogad')
+            ->descriptionIcon('heroicon-o-banknotes')
+            ->color('secondary');
 
 
 
