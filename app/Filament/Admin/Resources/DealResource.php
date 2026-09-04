@@ -109,13 +109,7 @@ class DealResource extends Resource
                     ->label('Posms')
                     ->badge()
                     ->sortable()
-                    ->colors([
-                        'info' => ['jauns', 'tirgosana'],
-                        'warning' => 'pirma_tiksanas',
-                        'primary' => 'noslegta_sadarbiba',
-                        'gray' => ['foto_video', 'dokumentu_saskanosana'],
-                        'success' => 'pardots',
-                    ])
+                    ->color('gray')
                     ->formatStateUsing(fn ($state) => Deal::STAGES[$state] ?? $state),
                 Tables\Columns\TextColumn::make('value_eur')
                     ->label('Vērtība')

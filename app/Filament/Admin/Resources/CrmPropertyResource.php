@@ -302,22 +302,11 @@ Forms\Components\TextInput::make('kadastra_nr')
                         ->first()?->name),
                 Tables\Columns\TextColumn::make('category')->label('Kategorija')->sortable()
                     ->badge()
-                    ->colors([
-                        'success' => 'Zeme',
-                        'warning' => 'Lauku īpašums',
-                        'info' => 'Lauksaimniecības zeme',
-                        'gray' => 'Komercīpašums',
-                    ]),
+                    ->color('gray'),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
                     ->sortable()
-                    ->colors([
-                        'gray' => 'draft',
-                        'success' => 'published',
-                        'warning' => 'expired',
-                        'danger' => 'hidden',
-                        'info' => 'sold',
-                    ])
+                    ->color('gray')
                     ->formatStateUsing(fn ($state) => CrmProperty::STATUSES[$state] ?? $state),
                 Tables\Columns\TextColumn::make('city')->label('Pilsēta')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->sortable()
