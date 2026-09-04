@@ -60,7 +60,7 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
             ->headerActions([
                 Actions\AttachAction::make()
                     ->label('Pievienot CRM īpašumu')
-                    ->color('primary')
+                    ->color('gray')
                     ->recordSelectSearchColumns(['title', 'city', 'kadastra_nr', 'id'])
                     ->schema(function (Actions\AttachAction $action): array {
                         $recordSelect = $action->getRecordSelect();
@@ -104,7 +104,7 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
             ->actions([
                 Actions\ActionGroup::make([
                     Actions\DetachAction::make()->label('Noņemt')->color('gray'),
-                ]),
+                ])->color('gray'),
             ]);
     }
 }

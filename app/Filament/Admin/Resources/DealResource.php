@@ -125,9 +125,9 @@ class DealResource extends Resource
             ])
             ->actions([
                 Actions\ActionGroup::make([
-                    Actions\ViewAction::make()->label('Skatīt')->color('primary'),
-                    Actions\EditAction::make()->label('Rediģēt')->color('primary'),
-                ]),
+                    Actions\ViewAction::make()->label('Skatīt')->color('gray'),
+                    Actions\EditAction::make()->label('Rediģēt')->color('gray'),
+                ])->color('gray'),
             ])
             ->defaultSort('updated_at', 'desc');
     }

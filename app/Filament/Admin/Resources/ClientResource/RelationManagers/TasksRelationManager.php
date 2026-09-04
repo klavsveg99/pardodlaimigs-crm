@@ -45,7 +45,7 @@ class TasksRelationManager extends RelationManager
                     ->sortable(query: fn ($query, $direction) => $query->orderBy('due_at', $direction)),
             ])
             ->headerActions([
-                Actions\CreateAction::make()->label('Jauns uzdevums'),
+                Actions\CreateAction::make()->label('Jauns uzdevums')->color('gray'),
             ])
             ->actions([
                 Actions\ActionGroup::make([
@@ -54,7 +54,7 @@ class TasksRelationManager extends RelationManager
                         ->icon('heroicon-o-check')
                         ->visible(fn ($record) => ! $record->completed_at)
                         ->action(fn ($record) => $record->update(['completed_at' => now()])),
-                ]),
+                ])->color('gray'),
             ]);
     }
 }

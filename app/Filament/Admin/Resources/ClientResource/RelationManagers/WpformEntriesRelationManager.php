@@ -43,7 +43,7 @@ class WpformEntriesRelationManager extends RelationManager
                 Actions\ActionGroup::make([
                     Actions\ViewAction::make()->label('Skatīt')
                         ->url(fn ($record) => WpformEntryResource::getUrl('view', ['record' => $record]))
-                        ->color('primary'),
+                        ->color('gray'),
                     Actions\Action::make('unlink')
                         ->label('Atsaistīt')
                         ->icon('heroicon-o-link-slash')
@@ -56,7 +56,7 @@ class WpformEntriesRelationManager extends RelationManager
                                 ->success()
                                 ->send();
                         }),
-                ]),
+                ])->color('gray'),
             ])
             ->paginated([10, 25, 50]);
     }

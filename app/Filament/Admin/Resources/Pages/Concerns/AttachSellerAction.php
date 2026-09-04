@@ -17,7 +17,7 @@ trait AttachSellerAction
         return Actions\Action::make('attach_seller')
             ->label('Piesaistīt pārdevēju')
             ->icon('heroicon-o-user-plus')
-            ->color('primary')
+            ->color('gray')
             ->form([
                 Forms\Components\Select::make('client_id')
                     ->label('Pārdevējs')
@@ -53,7 +53,7 @@ trait AttachSellerAction
         return Actions\Action::make('attach_buyer')
             ->label('Piesaistīt pircēju')
             ->icon('heroicon-o-user-plus')
-            ->color('success')
+            ->color('gray')
             ->visible(fn () => ($this->record->status ?? null) === 'sold')
             ->form([
                 Forms\Components\Select::make('client_id')
