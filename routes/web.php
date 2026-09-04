@@ -8,6 +8,17 @@ use App\Services\Calendar\IcsExport;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
+// Trigger the Laravel scheduler over HTTP (no system cron on shared hosting).
+// Called by the WordPress mu-plugin on every 5-minute sync tick.
+Route::get('/cron-schedule', function () {
+    if (request()->header('X-CRM-API-Key') !== config('wp-bridge.wordpress.api_key')) {
+        abort(403);
+    }
+    \Illuminate\Support\Facades\Artisan::call('schedule:run');
+
+    return response()->json(['ok' => true, 'ran_at' => now()->toIso8601String()]);
+})->name('cron-schedule');
+
 Route::get('/', function () {
     return redirect('/admin');
 });
