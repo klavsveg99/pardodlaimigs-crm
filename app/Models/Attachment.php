@@ -27,6 +27,10 @@ class Attachment extends Model
 
     public function getUrlAttribute(): string
     {
+        if (str_starts_with($this->path, 'http://') || str_starts_with($this->path, 'https://')) {
+            return $this->path;
+        }
+
         return Storage::disk($this->disk)->url($this->path);
     }
 
