@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Models\Attachment;
 use App\Models\Client;
 use App\Models\CrmProperty;
+use App\Models\Deal;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\Viewing;
@@ -32,6 +33,7 @@ class CleanupTestData extends Command
             'WpformEntry' => 0,
             'Client' => 0,
             'CrmProperty' => 0,
+            'Deal' => 0,
             'Task' => 0,
             'Viewing' => 0,
             'User (test.agent)' => 0,
@@ -42,13 +44,13 @@ class CleanupTestData extends Command
             $this->warn('DRY RUN MODE - No data will be modified');
         }
 
-        if (!$isDryRun) {
+        if (! $isDryRun) {
             // Delete in FK order
 
             // WpformEntry with [TEST] in form_name OR test- prefix in external_id
             $wpformCount = WpformEntry::where('form_name', 'like', '[TEST]%')->orWhere('external_id', 'like', 'test-%')->count();
             $stats['WpformEntry'] = $wpformCount;
-            if (!$isDryRun) {
+            if (! $isDryRun) {
                 WpformEntry::where('form_name', 'like', '[TEST]%')->orWhere('external_id', 'like', 'test-%')->delete();
                 $this->info("Deleted {$wpformCount} WpformEntry records");
             }
@@ -56,7 +58,7 @@ class CleanupTestData extends Command
             // Viewing with [TEST] notes
             $viewingCount = Viewing::where('notes_md', 'like', '[TEST]%')->orWhere('notes_md', 'like', '%[TEST]%')->count();
             $stats['Viewing'] = $viewingCount;
-            if (!$isDryRun) {
+            if (! $isDryRun) {
                 Viewing::where('notes_md', 'like', '[TEST]%')->orWhere('notes_md', 'like', '%[TEST]%')->delete();
                 $this->info("Deleted {$viewingCount} Viewing records");
             }
@@ -64,19 +66,32 @@ class CleanupTestData extends Command
             // Task with [TEST] in title
             $taskCount = Task::where('title', 'like', '[TEST]%')->count();
             $stats['Task'] = $taskCount;
-            if (!$isDryRun) {
+            if (! $isDryRun) {
                 Task::where('title', 'like', '[TEST]%')->delete();
                 $this->info("Deleted {$taskCount} Task records");
+            }
+
+            // Deal with [TEST] in title OR attached to a [TEST] client
+            $dealCount = Deal::where('title', 'like', '[TEST]%')
+                ->orWhereIn('client_id', Client::withTrashed()->where('name', 'like', '[TEST]%')->pluck('id'))
+                ->count();
+            $stats['Deal'] = $dealCount;
+            if (! $isDryRun) {
+                $dealIds = Deal::where('title', 'like', '[TEST]%')
+                    ->orWhereIn('client_id', Client::withTrashed()->where('name', 'like', '[TEST]%')->pluck('id'))
+                    ->pluck('id');
+                Deal::whereIn('id', $dealIds)->delete();
+                $this->info("Deleted {$dealCount} Deal records");
             }
 
             // CrmProperty with [TEST] title (delete attachments first)
             $propsWithAttachments = CrmProperty::where('title', 'like', '[TEST]%')->with('attachments')->get();
             $propertyCount = $propsWithAttachments->count();
             $stats['CrmProperty'] = $propertyCount;
-            if (!$isDryRun) {
+            if (! $isDryRun) {
                 foreach ($propsWithAttachments as $prop) {
                     foreach ($prop->attachments as $attachment) {
-                        if (!$keepAttachments) {
+                        if (! $keepAttachments) {
                             \Storage::disk($attachment->disk)->delete($attachment->path);
                         }
                         $attachment->delete();
@@ -90,10 +105,10 @@ class CleanupTestData extends Command
             $clientsWithAttachments = Client::where('name', 'like', '[TEST]%')->with('attachments')->get();
             $clientCount = $clientsWithAttachments->count();
             $stats['Client'] = $clientCount;
-            if (!$isDryRun) {
+            if (! $isDryRun) {
                 foreach ($clientsWithAttachments as $client) {
                     foreach ($client->attachments as $attachment) {
-                        if (!$keepAttachments) {
+                        if (! $keepAttachments) {
                             \Storage::disk($attachment->disk)->delete($attachment->path);
                         }
                         $attachment->delete();
@@ -107,13 +122,13 @@ class CleanupTestData extends Command
             // Users with test.agent email pattern
             $userCount = User::where('email', 'like', 'test.agent%')->count();
             $stats['User (test.agent)'] = $userCount;
-            if (!$isDryRun) {
+            if (! $isDryRun) {
                 User::where('email', 'like', 'test.agent%')->delete();
                 $this->info("Deleted {$userCount} test.agent users");
             }
 
             // Cleanup test attachment files
-            if (!$keepAttachments) {
+            if (! $keepAttachments) {
                 $attachmentCount = Attachment::where('path', 'like', 'attachments/test/%')->count();
                 $stats['Attachment (test/*)'] = $attachmentCount;
                 if ($attachmentCount > 0) {
@@ -126,8 +141,11 @@ class CleanupTestData extends Command
             $stats['WpformEntry'] = WpformEntry::where('form_name', 'like', '[TEST]%')->orWhere('external_id', 'like', 'test-%')->count();
             $stats['Viewing'] = Viewing::where('notes_md', 'like', '[TEST]%')->orWhere('notes_md', 'like', '%[TEST]%')->count();
             $stats['Task'] = Task::where('title', 'like', '[TEST]%')->count();
+            $stats['Deal'] = Deal::where('title', 'like', '[TEST]%')
+                ->orWhereIn('client_id', Client::withTrashed()->where('name', 'like', '[TEST]%')->pluck('id'))
+                ->count();
             $stats['CrmProperty'] = CrmProperty::where('title', 'like', '[TEST]%')->count();
-            $stats['Client'] = Client::where('name', 'like', '[TEST]%')->count();
+            $stats['Client'] = Client::withTrashed()->where('name', 'like', '[TEST]%')->count();
             $stats['User (test.agent)'] = User::where('email', 'like', 'test.agent%')->count();
             $stats['Attachment (test/*)'] = Attachment::where('path', 'like', 'attachments/test/%')->count();
         }

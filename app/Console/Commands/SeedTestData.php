@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Models\Activity;
+use App\Models\Attachment;
 use App\Models\Client;
 use App\Models\CrmProperty;
+use App\Models\Deal;
+use App\Models\PropertyCache;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\Viewing;
 use App\Models\WpformEntry;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -36,10 +41,17 @@ class SeedTestData extends Command
             // Must delete in FK order
             Task::where('title', 'like', '[TEST]%')->delete();
             Viewing::where('notes_md', 'like', '[TEST]%')->orWhere('notes_md', 'like', '%[TEST]%')->delete();
+            // Deals with [TEST] title or attached to a [TEST] client
+            $dealIds = Deal::where('title', 'like', '[TEST]%')
+                ->orWhereIn('client_id', Client::withTrashed()->where('name', 'like', '[TEST]%')->pluck('id'))
+                ->pluck('id');
+            if ($dealIds->isNotEmpty()) {
+                Deal::whereIn('id', $dealIds)->delete();
+            }
             // WpformEntry with [TEST] in form_name
             WpformEntry::where('form_name', 'like', '[TEST]%')->delete();
             // PropertyCache fallback with [TEST]
-            \App\Models\PropertyCache::where('title', 'like', '[TEST]%')->delete();
+            PropertyCache::where('title', 'like', '[TEST]%')->delete();
             // CrmProperty with [TEST] title
             $props = CrmProperty::where('title', 'like', '[TEST]%')->get();
             foreach ($props as $p) {
@@ -47,8 +59,9 @@ class SeedTestData extends Command
                 // also delete stored files for those attachments already deleted above, but keep storage cleanup
                 $p->delete();
             }
-            // Clients with [TEST]
-            $clients = Client::where('name', 'like', '[TEST]%')->get();
+            // Clients with [TEST] — including already-soft-deleted (trashed) ones, so reruns
+            // after a CleanupTestData don't leave hidden junk rows behind.
+            $clients = Client::withTrashed()->where('name', 'like', '[TEST]%')->get();
             foreach ($clients as $c) {
                 $c->attachments()->delete();
                 $c->forceDelete();
@@ -56,8 +69,16 @@ class SeedTestData extends Command
             // Users with test.agent
             User::where('email', 'like', 'test.agent%')->delete();
             User::where('email', 'like', 'headless_%')->delete();
+            // Orphan activities left behind by previous runs: the [TEST] clients they reference were
+            // force-deleted above (e.g. viewing_booked events from viewings that no longer exist).
+            // A dangling client_id is unambiguous — never touch real activities that reference a live client.
+            $liveClientIds = Client::withTrashed()->pluck('id');
+            Activity::where(function ($q) use ($liveClientIds) {
+                $q->whereNotNull('client_id')
+                    ->whereNotIn('client_id', $liveClientIds);
+            })->delete();
             // Clean test attachments files left
-            \App\Models\Attachment::where('path', 'like', 'attachments/test/%')->delete();
+            Attachment::where('path', 'like', 'attachments/test/%')->delete();
             $this->info('Existing TEST data deleted.');
         }
 
@@ -74,15 +95,15 @@ class SeedTestData extends Command
         $usersCount = (int) $this->option('users');
         $this->info("Seeding {$usersCount} test agents...");
         for ($i = 1; $i <= $usersCount; $i++) {
-            $email = "test.agent{$i}." . Str::random(4) . "@example.com";
+            $email = "test.agent{$i}.".Str::random(4).'@example.com';
             $user = User::create([
-                'name' => "[TEST] Aģents {$i} " . $faker->firstName() . ' ' . $faker->lastName(),
+                'name' => "[TEST] Aģents {$i} ".$faker->firstName().' '.$faker->lastName(),
                 'email' => $email,
                 'password' => Hash::make('password'),
                 'role' => $i === 1 ? 'admin' : 'aģents',
-                'phone' => '+371 2' . $faker->numerify('#######'),
+                'phone' => '+371 2'.$faker->numerify('#######'),
                 'position' => $faker->randomElement(['Aģents', 'Vecākais aģents', 'Mārketings']),
-                'description' => '[TEST] ' . $faker->sentence(12),
+                'description' => '[TEST] '.$faker->sentence(12),
             ]);
             $agents->push($user);
         }
@@ -96,13 +117,13 @@ class SeedTestData extends Command
         $sources = ['Tīmekļa vietne', 'Facebook', 'Instagram', 'Google', 'Draugu ieteikums', 'Cits'];
         for ($i = 0; $i < $clientsCount; $i++) {
             $c = Client::create([
-                'name' => '[TEST] ' . $faker->firstName() . ' ' . $faker->lastName(),
-                'phone' => '+371 2' . $faker->numerify('#######'),
+                'name' => '[TEST] '.$faker->firstName().' '.$faker->lastName(),
+                'phone' => '+371 2'.$faker->numerify('#######'),
                 'email' => $faker->unique()->safeEmail(),
                 'personas_kods' => $faker->numerify('######-#####'),
                 'source' => $faker->randomElement($sources),
                 'marketing_consent' => $faker->boolean(70),
-                'notes_md' => "[TEST] Klients izveidots testam\n\n" . $faker->paragraph(3),
+                'notes_md' => "[TEST] Klients izveidots testam\n\n".$faker->paragraph(3),
                 'owner_user_id' => $faker->randomElement($allUsers)->id,
             ]);
             // Attach 0-2 dummy files
@@ -124,9 +145,9 @@ class SeedTestData extends Command
             $cat = $faker->randomElement($categories);
             $city = $faker->randomElement($cities);
             $p = CrmProperty::create([
-                'title' => '[TEST] ' . $cat . ' ' . $city . ' - ' . $faker->streetAddress(),
-                'slug' => 'test-' . Str::slug($faker->words(3, true)) . '-' . Str::random(6),
-                'description' => '[TEST] ' . $faker->paragraphs(2, true),
+                'title' => '[TEST] '.$cat.' '.$city.' - '.$faker->streetAddress(),
+                'slug' => 'test-'.Str::slug($faker->words(3, true)).'-'.Str::random(6),
+                'description' => '[TEST] '.$faker->paragraphs(2, true),
                 'price_eur' => $faker->numberBetween(45, 550) * 1000 + $faker->numberBetween(0, 900),
                 'price_cents' => 0, // will be set via price_eur
                 'currency' => 'EUR',
@@ -138,7 +159,7 @@ class SeedTestData extends Command
                 'land_m2' => in_array($cat, ['Zeme', 'Māja']) ? $faker->numberBetween(500, 5000) : null,
                 'kadastra_nr' => $faker->numerify('####-###-####'),
                 'city' => $city,
-                'address' => $faker->streetAddress() . ', ' . $city,
+                'address' => $faker->streetAddress().', '.$city,
                 'lat' => $faker->latitude(56.8, 57.3),
                 'lng' => $faker->longitude(21.5, 24.5),
                 'owner_user_id' => $faker->randomElement($allUsers)->id,
@@ -167,7 +188,7 @@ class SeedTestData extends Command
         $this->info("Properties seeded: {$properties->count()}");
 
         // Add sold properties for Top 5 agents widget (septembris 2026)
-        $this->info("Seeding sold properties for Top 5 widget...");
+        $this->info('Seeding sold properties for Top 5 widget...');
         $soldAgents = $agents->isNotEmpty() ? $agents : collect([$owner]);
         $soldCount = min(8, $soldAgents->count() * 2);
         $soldProperties = collect();
@@ -176,9 +197,9 @@ class SeedTestData extends Command
             $priceEur = $faker->numberBetween(45000, 550000);
             $commissionEur = round($priceEur * ($faker->randomFloat(2, 0.01, 0.08)), 2);
             $soldProp = CrmProperty::create([
-                'title' => '[TEST] Pārdots īpašums ' . ($i + 1) . ' — ' . $faker->streetAddress(),
-                'slug' => 'test-sold-' . Str::slug($faker->words(3, true)) . '-' . Str::random(6),
-                'description' => '[TEST] Pārdots īpašums ' . $faker->paragraph(2),
+                'title' => '[TEST] Pārdots īpašums '.($i + 1).' — '.$faker->streetAddress(),
+                'slug' => 'test-sold-'.Str::slug($faker->words(3, true)).'-'.Str::random(6),
+                'description' => '[TEST] Pārdots īpašums '.$faker->paragraph(2),
                 'price_eur' => $priceEur,
                 'price_cents' => 0,
                 'currency' => 'EUR',
@@ -188,7 +209,7 @@ class SeedTestData extends Command
                 'baths' => $faker->numberBetween(1, 3),
                 'size_m2' => $faker->numberBetween(35, 220),
                 'city' => $faker->randomElement($cities),
-                'address' => $faker->streetAddress() . ', ' . $faker->randomElement($cities),
+                'address' => $faker->streetAddress().', '.$faker->randomElement($cities),
                 'lat' => $faker->latitude(56.8, 57.3),
                 'lng' => $faker->longitude(21.5, 24.5),
                 'owner_user_id' => $agent->id,
@@ -203,10 +224,57 @@ class SeedTestData extends Command
                 $buyer = $clients->random();
                 try {
                     $soldProp->clients()->attach($buyer->id, ['relation' => 'buyer', 'notes_md' => '[TEST] buyer link']);
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                }
             }
         }
         $this->info("Sold properties seeded: {$soldProperties->count()}");
+
+        // Deals
+        $this->info('Seeding test deals...');
+        $dealStages = array_keys(Deal::STAGES);
+        $dealTitles = ['Pārdošana', 'Iegāde', 'Atsavināšana', 'Izmaiņa', 'Ceļa segums', 'Sastāva maiņa'];
+        // Ensure every stage is represented at least once so the pipeline looks full,
+        // then pad with random stages up to a demo count.
+        $stagesPool = $dealStages;
+        for ($i = 0; $i < 18; $i++) {
+            if ($stagesPool === []) {
+                $stagesPool = $dealStages;
+            }
+            $stage = array_shift($stagesPool);
+            $client = $clients->random();
+            $value = $faker->numberBetween(45000, 550000);
+            $deal = Deal::create([
+                'title' => '[TEST] '.$faker->randomElement($dealTitles).' — '.$faker->streetAddress(),
+                'client_id' => $client->id,
+                'owner_user_id' => $faker->randomElement($allUsers)->id,
+                'stage' => $stage,
+                'value_eur' => $value,
+                'currency' => 'EUR',
+                'lead_source' => $faker->randomElement(['internal', 'external']),
+            ]);
+
+            if ($stage === 'pardots') {
+                // Closed deals this month (feed CategoryLeaders + deal activity feed)
+                $closedAt = now()->startOfMonth()->addDays($faker->numberBetween(0, now()->day - 1))->setHour($faker->numberBetween(9, 17));
+                $deal->update([
+                    'closed_at' => $closedAt,
+                    'expected_close_date' => $closedAt->startOfDay(),
+                ]);
+            } elseif ($i < 3) {
+                // A few deals due to close today (feed TodayPriorities 'Darījums' section)
+                $deal->update([
+                    'expected_close_date' => now()->startOfDay(),
+                    'closed_at' => null,
+                ]);
+            } else {
+                $deal->update([
+                    'expected_close_date' => Carbon::instance($faker->dateTimeBetween('-7 days', '+21 days'))->startOfDay(),
+                    'closed_at' => null,
+                ]);
+            }
+        }
+        $this->info('Test deals seeded: '.Deal::where('title', 'like', '[TEST]%')->count());
 
         // Tasks
         $tasksCount = (int) $this->option('tasks');
@@ -221,7 +289,7 @@ class SeedTestData extends Command
             };
             $completed = $faker->boolean(20) ? now()->subHours($faker->numberBetween(1, 48)) : null;
             Task::create([
-                'title' => '[TEST] ' . $faker->randomElement($taskTitles) . ' #' . ($i + 1),
+                'title' => '[TEST] '.$faker->randomElement($taskTitles).' #'.($i + 1),
                 'body' => $faker->paragraph(2),
                 'due_at' => $due,
                 'completed_at' => $completed,
@@ -232,17 +300,17 @@ class SeedTestData extends Command
                 'property_id' => null,
             ]);
         }
-        $this->info("Tasks seeded.");
+        $this->info('Tasks seeded.');
 
         // Viewings
         $viewingsCount = (int) $this->option('viewings');
         $this->info("Seeding {$viewingsCount} test viewings...");
         // Ensure at least one PropertyCache exists for FK
-        $fallbackPropertyCacheId = \App\Models\PropertyCache::first()?->id;
+        $fallbackPropertyCacheId = PropertyCache::first()?->id;
         if (! $fallbackPropertyCacheId) {
-            $fallbackPropertyCacheId = \App\Models\PropertyCache::create([
+            $fallbackPropertyCacheId = PropertyCache::create([
                 'title' => '[TEST] Fallback Property',
-                'slug' => 'test-fallback-' . Str::random(6),
+                'slug' => 'test-fallback-'.Str::random(6),
                 'status' => 'publish',
                 'price_cents' => 10000000,
                 'currency' => 'EUR',
@@ -261,14 +329,14 @@ class SeedTestData extends Command
             $prop = $faker->boolean(70) && $properties->isNotEmpty() ? $faker->randomElement($properties) : null;
             $propCacheId = $fallbackPropertyCacheId;
             if ($prop) {
-                $pc = \App\Models\PropertyCache::where('title', $prop->title)->first();
+                $pc = PropertyCache::where('title', $prop->title)->first();
                 if ($pc) {
                     $propCacheId = $pc->id;
                 }
             }
             // Fallback to random PropertyCache if still null
             if (! $propCacheId) {
-                $propCacheId = \App\Models\PropertyCache::inRandomOrder()->first()?->id ?? $fallbackPropertyCacheId;
+                $propCacheId = PropertyCache::inRandomOrder()->first()?->id ?? $fallbackPropertyCacheId;
             }
             Viewing::create([
                 'property_id' => $propCacheId,
@@ -277,26 +345,26 @@ class SeedTestData extends Command
                 'scheduled_at' => $sched,
                 'duration_min' => $faker->randomElement([30, 45, 60]),
                 'status' => $faker->randomElement($statusesV),
-                'notes_md' => '[TEST] Apskate ' . $faker->sentence(6),
+                'notes_md' => '[TEST] Apskate '.$faker->sentence(6),
             ]);
         }
-        $this->info("Viewings seeded.");
+        $this->info('Viewings seeded.');
 
         // WpformEntries (optional, 5)
-        $this->info("Seeding 5 test WPForm entries...");
+        $this->info('Seeding 5 test WPForm entries...');
         for ($i = 0; $i < 5; $i++) {
             WpformEntry::create([
-                'external_id' => 'test-' . Str::random(8),
+                'external_id' => 'test-'.Str::random(8),
                 'entry_id' => 90000 + $i,
                 'form_id' => $faker->numberBetween(1, 3),
-                'form_name' => '[TEST] Forma ' . $faker->word(),
+                'form_name' => '[TEST] Forma '.$faker->word(),
                 'status' => $faker->randomElement(['new', 'viewed', 'review']),
                 'viewed' => $faker->boolean(),
                 'starred' => false,
                 'ip_address' => $faker->ipv4(),
                 'fields' => [
                     ['name' => 'Vārds', 'value' => $faker->firstName()],
-                    ['name' => 'Tālrunis', 'value' => '+371 2' . $faker->numerify('#######')],
+                    ['name' => 'Tālrunis', 'value' => '+371 2'.$faker->numerify('#######')],
                     ['name' => 'E-pasts', 'value' => $faker->safeEmail()],
                     ['name' => 'Ziņa', 'value' => $faker->sentence(8)],
                 ],
@@ -311,9 +379,10 @@ class SeedTestData extends Command
             ['Users (agents)', User::where('email', 'like', 'test.agent%')->count()],
             ['Clients [TEST]', Client::where('name', 'like', '[TEST]%')->count()],
             ['Properties [TEST]', CrmProperty::where('title', 'like', '[TEST]%')->count()],
+            ['Deals [TEST]', Deal::where('title', 'like', '[TEST]%')->count()],
             ['Tasks [TEST]', Task::where('title', 'like', '[TEST]%')->count()],
             ['Viewings [TEST]', Viewing::where('notes_md', 'like', '[TEST]%')->count()],
-            ['Attachments (test/*)', \App\Models\Attachment::where('path', 'like', 'attachments/test/%')->count()],
+            ['Attachments (test/*)', Attachment::where('path', 'like', 'attachments/test/%')->count()],
         ]);
 
         return self::SUCCESS;
@@ -326,7 +395,7 @@ class SeedTestData extends Command
         $height = 600;
         $seed = Str::random(8);
         $url = "https://picsum.photos/seed/{$seed}/{$width}/{$height}";
-        $path = "attachments/test/{$model->getTable()}/{$model->id}/" . Str::random(12) . ".jpg";
+        $path = "attachments/test/{$model->getTable()}/{$model->id}/".Str::random(12).'.jpg';
 
         try {
             $tmp = @file_get_contents($url);
@@ -343,7 +412,7 @@ class SeedTestData extends Command
         $model->attachments()->create([
             'disk' => 'public',
             'path' => $path,
-            'original_name' => 'TEST-' . $faker->word() . "-{$index}.jpg",
+            'original_name' => 'TEST-'.$faker->word()."-{$index}.jpg",
             'mime_type' => 'image/jpeg',
             'size' => Storage::disk('public')->size($path) ?: 0,
             'sort_order' => $index,

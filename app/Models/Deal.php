@@ -25,7 +25,7 @@ class Deal extends Model
     protected $fillable = [
         'title', 'client_id', 'property_id', 'stage',
         'value_eur', 'value_cents', 'currency', 'expected_close_date',
-        'closed_at', 'owner_user_id',
+        'closed_at', 'owner_user_id', 'lead_source',
     ];
 
     protected $with = ['attachments'];
