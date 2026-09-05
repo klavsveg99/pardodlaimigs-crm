@@ -66,7 +66,8 @@ class CrmPropertyResource extends Resource
                         ->default('internal')
                         ->helperText('Ārējais līds — pienākas 10-20% no komisijas. Iekšējais (pardodlaimigs.lv) — bez maksas.')
                         ->required()
-                        ->live(),
+                        ->live()
+                        ->columnSpanFull(),
 
                     Forms\Components\TextInput::make('lead_owner')
                         ->label('Līda īpašnieks')
