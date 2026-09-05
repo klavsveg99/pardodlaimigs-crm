@@ -17,7 +17,6 @@ use App\Models\WpformEntry;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class SeedTestData extends Command
@@ -25,12 +24,11 @@ class SeedTestData extends Command
     protected $signature = 'pdc:seed-test-data
         {--fresh : Delete existing TEST data before seeding}
         {--clients=12 : Number of test clients}
-        {--properties=12 : Number of test properties}
         {--tasks=15 : Number of test tasks}
         {--viewings=12 : Number of test viewings}
         {--users=3 : Number of test agents}';
 
-    protected $description = 'Seed bunch of TEST data for all CRM types (local + prod) – prefixed with [TEST] for easy cleanup';
+    protected $description = 'Seed TEST agents, clients, deals, tasks and viewings – prefixed with [TEST] for easy cleanup. Never creates fake properties or contact form submissions; viewings relate to existing (real) properties.';
 
     public function handle(): int
     {
@@ -126,109 +124,9 @@ class SeedTestData extends Command
                 'notes_md' => "[TEST] Klients izveidots testam\n\n".$faker->paragraph(3),
                 'owner_user_id' => $faker->randomElement($allUsers)->id,
             ]);
-            // Attach 0-2 dummy files
-            if ($faker->boolean(30)) {
-                $this->createPlaceholderAttachment($c, $faker);
-            }
             $clients->push($c);
         }
         $this->info("Clients seeded: {$clients->count()}");
-
-        // CrmProperties
-        $propsCount = (int) $this->option('properties');
-        $this->info("Seeding {$propsCount} test properties...");
-        $categories = array_keys(CrmProperty::CATEGORIES);
-        $statuses = ['draft', 'published', 'published', 'published']; // bias to published
-        $cities = ['Rīga', 'Jūrmala', 'Saldus', 'Liepāja', 'Ventspils', 'Jelgava'];
-        $properties = collect();
-        for ($i = 0; $i < $propsCount; $i++) {
-            $cat = $faker->randomElement($categories);
-            $city = $faker->randomElement($cities);
-            $p = CrmProperty::create([
-                'title' => '[TEST] '.$cat.' '.$city.' - '.$faker->streetAddress(),
-                'slug' => 'test-'.Str::slug($faker->words(3, true)).'-'.Str::random(6),
-                'description' => '[TEST] '.$faker->paragraphs(2, true),
-                'price_eur' => $faker->numberBetween(45, 550) * 1000 + $faker->numberBetween(0, 900),
-                'price_cents' => 0, // will be set via price_eur
-                'currency' => 'EUR',
-                'category' => $cat,
-                'status' => $faker->randomElement($statuses),
-                'beds' => $faker->numberBetween(1, 5),
-                'baths' => $faker->numberBetween(1, 3),
-                'size_m2' => $faker->numberBetween(35, 220),
-                'land_m2' => in_array($cat, ['Zeme', 'Māja']) ? $faker->numberBetween(500, 5000) : null,
-                'kadastra_nr' => $faker->numerify('####-###-####'),
-                'city' => $city,
-                'address' => $faker->streetAddress().', '.$city,
-                'lat' => $faker->latitude(56.8, 57.3),
-                'lng' => $faker->longitude(21.5, 24.5),
-                'owner_user_id' => $faker->randomElement($allUsers)->id,
-                'sort_order' => $i,
-            ]);
-            // Attach 2-5 placeholder images
-            $imgCount = $faker->numberBetween(2, 5);
-            for ($j = 0; $j < $imgCount; $j++) {
-                $this->createPlaceholderAttachment($p, $faker, $j);
-            }
-            // Randomly link 1-2 clients as sellers
-            if ($clients->isNotEmpty() && $faker->boolean(60)) {
-                $linked = $clients->random(min(2, $clients->count()));
-                if (! is_iterable($linked) || $linked instanceof Client) {
-                    $linked = collect([$linked]);
-                }
-                foreach ($linked as $lc) {
-                    try {
-                        $p->clients()->attach($lc->id, ['relation' => 'seller', 'notes_md' => '[TEST] seller link']);
-                    } catch (\Exception $e) {
-                    }
-                }
-            }
-            $properties->push($p);
-        }
-        $this->info("Properties seeded: {$properties->count()}");
-
-        // Add sold properties for Top 5 agents widget (septembris 2026)
-        $this->info('Seeding sold properties for Top 5 widget...');
-        $soldAgents = $agents->isNotEmpty() ? $agents : collect([$owner]);
-        $soldCount = min(8, $soldAgents->count() * 2);
-        $soldProperties = collect();
-        for ($i = 0; $i < $soldCount; $i++) {
-            $agent = $faker->randomElement($soldAgents);
-            $priceEur = $faker->numberBetween(45000, 550000);
-            $commissionEur = round($priceEur * ($faker->randomFloat(2, 0.01, 0.08)), 2);
-            $soldProp = CrmProperty::create([
-                'title' => '[TEST] Pārdots īpašums '.($i + 1).' — '.$faker->streetAddress(),
-                'slug' => 'test-sold-'.Str::slug($faker->words(3, true)).'-'.Str::random(6),
-                'description' => '[TEST] Pārdots īpašums '.$faker->paragraph(2),
-                'price_eur' => $priceEur,
-                'price_cents' => 0,
-                'currency' => 'EUR',
-                'category' => $faker->randomElement($categories),
-                'status' => 'sold',
-                'beds' => $faker->numberBetween(1, 5),
-                'baths' => $faker->numberBetween(1, 3),
-                'size_m2' => $faker->numberBetween(35, 220),
-                'city' => $faker->randomElement($cities),
-                'address' => $faker->streetAddress().', '.$faker->randomElement($cities),
-                'lat' => $faker->latitude(56.8, 57.3),
-                'lng' => $faker->longitude(21.5, 24.5),
-                'owner_user_id' => $agent->id,
-                'sold_at' => now()->startOfMonth()->addDays($faker->numberBetween(1, 10))->setHour(10),
-                'final_price_eur' => $priceEur,
-                'commission_eur' => $commissionEur,
-                'sort_order' => 1000 + $i,
-            ]);
-            $soldProperties->push($soldProp);
-            // Link clients as buyers
-            if ($clients->isNotEmpty() && $faker->boolean(70)) {
-                $buyer = $clients->random();
-                try {
-                    $soldProp->clients()->attach($buyer->id, ['relation' => 'buyer', 'notes_md' => '[TEST] buyer link']);
-                } catch (\Exception $e) {
-                }
-            }
-        }
-        $this->info("Sold properties seeded: {$soldProperties->count()}");
 
         // Deals
         $this->info('Seeding test deals...');
@@ -335,23 +233,9 @@ class SeedTestData extends Command
         // Viewings
         $viewingsCount = (int) $this->option('viewings');
         $this->info("Seeding {$viewingsCount} test viewings...");
-        // Ensure at least one PropertyCache exists for FK. PropertyCache is a
-        // non-incrementing model, so Eloquent does not backfill ->id after create();
-        // re-read the rowid from the DB to get a usable id for the viewings FK.
-        $fallbackPropertyCacheId = PropertyCache::first()?->id;
-        if (! $fallbackPropertyCacheId) {
-            PropertyCache::create([
-                'title' => '[TEST] Fallback Property',
-                'slug' => 'test-fallback-'.Str::random(6),
-                'status' => 'publish',
-                'price_cents' => 10000000,
-                'currency' => 'EUR',
-                'city' => 'Rīga',
-            ]);
-            // Re-read the auto-assigned rowid (non-incrementing model -> no backfill).
-            $fallbackPropertyCacheId = PropertyCache::where('slug', 'like', 'test-fallback-%')->latest('id')->value('id');
-            $this->info("Created fallback PropertyCache id {$fallbackPropertyCacheId} for viewings FK");
-        }
+        // Relate viewings to existing (real) cached properties; leave property_id
+        // null when none exist rather than fabricating a fallback.
+        $propertyCacheIds = PropertyCache::pluck('id');
         $statusesV = ['scheduled', 'done', 'cancelled', 'no_show'];
         for ($i = 0; $i < $viewingsCount; $i++) {
             $sched = match ($faker->numberBetween(0, 3)) {
@@ -360,18 +244,7 @@ class SeedTestData extends Command
                 2 => $faker->dateTimeBetween('-7 days', '+7 days'),
                 default => now()->addDay()->setHour(14),
             };
-            $prop = $faker->boolean(70) && $properties->isNotEmpty() ? $faker->randomElement($properties) : null;
-            $propCacheId = $fallbackPropertyCacheId;
-            if ($prop) {
-                $pc = PropertyCache::where('title', $prop->title)->first();
-                if ($pc) {
-                    $propCacheId = $pc->id;
-                }
-            }
-            // Fallback to random PropertyCache if still null
-            if (! $propCacheId) {
-                $propCacheId = PropertyCache::inRandomOrder()->first()?->id ?? $fallbackPropertyCacheId;
-            }
+            $propCacheId = $propertyCacheIds->isNotEmpty() ? $propertyCacheIds->random() : null;
             Viewing::create([
                 'property_id' => $propCacheId,
                 'client_id' => $faker->randomElement($clients)->id,
@@ -386,9 +259,10 @@ class SeedTestData extends Command
 
         // Force two viewings today so "Atvērtas apskates šodien" and TodayPriorities
         // always have rows, matching whereDate/whereBetween("today") at any run hour.
+        $todayPropCacheId = $propertyCacheIds->isNotEmpty() ? $propertyCacheIds->first() : null;
         foreach ([10, 15] as $hour) {
             Viewing::create([
-                'property_id' => $fallbackPropertyCacheId,
+                'property_id' => $todayPropCacheId,
                 'client_id' => $faker->randomElement($clients)->id,
                 'agent_user_id' => $faker->randomElement($allUsers)->id,
                 'scheduled_at' => $todayAnchor->setHour($hour)->setMinute(0),
@@ -398,35 +272,12 @@ class SeedTestData extends Command
             ]);
         }
 
-        // WpformEntries (optional, 5)
-        $this->info('Seeding 5 test WPForm entries...');
-        for ($i = 0; $i < 5; $i++) {
-            WpformEntry::create([
-                'external_id' => 'test-'.Str::random(8),
-                'entry_id' => 90000 + $i,
-                'form_id' => $faker->numberBetween(1, 3),
-                'form_name' => '[TEST] Forma '.$faker->word(),
-                'status' => $faker->randomElement(['new', 'viewed', 'review']),
-                'viewed' => $faker->boolean(),
-                'starred' => false,
-                'ip_address' => $faker->ipv4(),
-                'fields' => [
-                    ['name' => 'Vārds', 'value' => $faker->firstName()],
-                    ['name' => 'Tālrunis', 'value' => '+371 2'.$faker->numerify('#######')],
-                    ['name' => 'E-pasts', 'value' => $faker->safeEmail()],
-                    ['name' => 'Ziņa', 'value' => $faker->sentence(8)],
-                ],
-                'client_id' => $faker->boolean(50) ? $faker->randomElement($clients)->id : null,
-                'created_at' => $faker->dateTimeBetween('-7 days', 'now'),
-                'updated_at' => now(),
-            ]);
-        }
+        // WpformEntries are never seeded – they come from the live site's contact forms.
 
         $this->info('Done! Test data summary:');
         $this->table(['Type', 'Count'], [
             ['Users (agents)', User::where('email', 'like', 'test.agent%')->count()],
             ['Clients [TEST]', Client::where('name', 'like', '[TEST]%')->count()],
-            ['Properties [TEST]', CrmProperty::where('title', 'like', '[TEST]%')->count()],
             ['Deals [TEST]', Deal::where('title', 'like', '[TEST]%')->count()],
             ['Tasks [TEST]', Task::where('title', 'like', '[TEST]%')->count()],
             ['Viewings [TEST]', Viewing::where('notes_md', 'like', '[TEST]%')->count()],
@@ -434,36 +285,5 @@ class SeedTestData extends Command
         ]);
 
         return self::SUCCESS;
-    }
-
-    private function createPlaceholderAttachment($model, $faker, int $index = 0): void
-    {
-        // Use picsum placeholder, store locally to have real file
-        $width = 800;
-        $height = 600;
-        $seed = Str::random(8);
-        $url = "https://picsum.photos/seed/{$seed}/{$width}/{$height}";
-        $path = "attachments/test/{$model->getTable()}/{$model->id}/".Str::random(12).'.jpg';
-
-        try {
-            $tmp = @file_get_contents($url);
-            if ($tmp !== false) {
-                Storage::disk('public')->put($path, $tmp);
-            } else {
-                // fallback: create empty file if fetch fails (offline)
-                Storage::disk('public')->put($path, '');
-            }
-        } catch (\Exception $e) {
-            Storage::disk('public')->put($path, '');
-        }
-
-        $model->attachments()->create([
-            'disk' => 'public',
-            'path' => $path,
-            'original_name' => 'TEST-'.$faker->word()."-{$index}.jpg",
-            'mime_type' => 'image/jpeg',
-            'size' => Storage::disk('public')->size($path) ?: 0,
-            'sort_order' => $index,
-        ]);
     }
 }
