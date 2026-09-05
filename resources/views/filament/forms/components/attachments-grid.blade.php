@@ -463,7 +463,7 @@
         id="{{ $uid }}-upload"
         multiple
         accept="{{ implode(',', config('attachments.accepted_file_types', ['image/*'])) }}"
-        class="hidden"
+        style="display: none;"
         x-on:change="handleUpload($event)"
     />
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
