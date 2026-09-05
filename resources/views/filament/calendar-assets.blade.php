@@ -256,7 +256,7 @@
         }
 
         /* Remove horizontal padding from the section that wraps the calendar on mobile */
-        .fi-section-content,
+        .fi-wi-calendar-viewings .fi-section .fi-section-content,
         .fi-wi-calendar-viewings .fi-section > .fi-section-content {
             padding: 0 !important;
         }
@@ -505,7 +505,7 @@
                         headerToolbar: {
                             left: 'prev,next today',
                             center: 'title',
-                            right: window.innerWidth < 640 ? 'listWeek,dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+                            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
                         },
                         buttonText: {
                             today: 'Šodien',
