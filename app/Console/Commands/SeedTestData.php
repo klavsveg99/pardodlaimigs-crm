@@ -302,20 +302,54 @@ class SeedTestData extends Command
         }
         $this->info('Tasks seeded.');
 
+        // Force tasks so the "Šodien jāizdara" table and stat boxes never render empty:
+        // two open tasks due today, one overdue (shows the "Nokavētas" warning).
+        // Times are pinned to today's date so they match whereDate/whereBetween("today")
+        // no matter what time of day the seed runs.
+        $todayAnchor = now()->startOfDay();
+        foreach ([11, 14] as $hour) {
+            Task::create([
+                'title' => '[TEST] '.$faker->randomElement($taskTitles).' (šodien)',
+                'body' => $faker->paragraph(2),
+                'due_at' => $todayAnchor->setHour($hour)->setMinute(30),
+                'completed_at' => null,
+                'assigned_user_id' => $faker->randomElement($allUsers)->id,
+                'created_by_user_id' => $owner->id,
+                'client_id' => $faker->randomElement($clients)->id,
+                'deal_id' => null,
+                'property_id' => null,
+            ]);
+        }
+        Task::create([
+            'title' => '[TEST] Pārbaudīt dokumentus (nokavēts)',
+            'body' => $faker->paragraph(2),
+            'due_at' => now()->subHours(3),
+            'completed_at' => null,
+            'assigned_user_id' => $faker->randomElement($allUsers)->id,
+            'created_by_user_id' => $owner->id,
+            'client_id' => $faker->randomElement($clients)->id,
+            'deal_id' => null,
+            'property_id' => null,
+        ]);
+
         // Viewings
         $viewingsCount = (int) $this->option('viewings');
         $this->info("Seeding {$viewingsCount} test viewings...");
-        // Ensure at least one PropertyCache exists for FK
+        // Ensure at least one PropertyCache exists for FK. PropertyCache is a
+        // non-incrementing model, so Eloquent does not backfill ->id after create();
+        // re-read the rowid from the DB to get a usable id for the viewings FK.
         $fallbackPropertyCacheId = PropertyCache::first()?->id;
         if (! $fallbackPropertyCacheId) {
-            $fallbackPropertyCacheId = PropertyCache::create([
+            PropertyCache::create([
                 'title' => '[TEST] Fallback Property',
                 'slug' => 'test-fallback-'.Str::random(6),
                 'status' => 'publish',
                 'price_cents' => 10000000,
                 'currency' => 'EUR',
                 'city' => 'Rīga',
-            ])->id;
+            ]);
+            // Re-read the auto-assigned rowid (non-incrementing model -> no backfill).
+            $fallbackPropertyCacheId = PropertyCache::where('slug', 'like', 'test-fallback-%')->latest('id')->value('id');
             $this->info("Created fallback PropertyCache id {$fallbackPropertyCacheId} for viewings FK");
         }
         $statusesV = ['scheduled', 'done', 'cancelled', 'no_show'];
@@ -349,6 +383,20 @@ class SeedTestData extends Command
             ]);
         }
         $this->info('Viewings seeded.');
+
+        // Force two viewings today so "Atvērtas apskates šodien" and TodayPriorities
+        // always have rows, matching whereDate/whereBetween("today") at any run hour.
+        foreach ([10, 15] as $hour) {
+            Viewing::create([
+                'property_id' => $fallbackPropertyCacheId,
+                'client_id' => $faker->randomElement($clients)->id,
+                'agent_user_id' => $faker->randomElement($allUsers)->id,
+                'scheduled_at' => $todayAnchor->setHour($hour)->setMinute(0),
+                'duration_min' => 45,
+                'status' => 'scheduled',
+                'notes_md' => '[TEST] Apskate šodien (obligāta)',
+            ]);
+        }
 
         // WpformEntries (optional, 5)
         $this->info('Seeding 5 test WPForm entries...');
