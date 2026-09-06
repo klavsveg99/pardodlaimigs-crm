@@ -99,7 +99,28 @@ function pdc_find_existing_media_by_path($path) {
             $path
         )
     );
-    return $meta_id && (int) $meta_id > 0 ? (int) $meta_id : 0;
+    if ($meta_id && (int) $meta_id > 0) {
+        return (int) $meta_id;
+    }
+
+    $basename = basename($path);
+    if ($basename === '' || $basename === '.' || $basename === '/') {
+        return 0;
+    }
+
+    $like = $wpdb->esc_like($basename);
+    $fallback = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->postmeta}
+             WHERE meta_key = '_wp_attached_file'
+               AND meta_value LIKE %s
+             ORDER BY post_id DESC
+             LIMIT 1",
+            '%/' . $like
+        )
+    );
+
+    return $fallback && (int) $fallback > 0 ? (int) $fallback : 0;
 }
 
 function pdc_sync_attachments($post_id, $attachments) {
