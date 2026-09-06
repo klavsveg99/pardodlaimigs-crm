@@ -139,45 +139,11 @@ Route::post('/admin/property/upload-attachment', function () {
 
     try {
         $abs = Storage::disk('public')->path($path);
-        if (is_file($abs)) {
-            $info = @getimagesize($abs);
-            if ($info && ($info[0] > 1920 || $info[1] > 1920)) {
-                [$width, $height, $type] = $info;
-                $ratio = min(1920 / $width, 1920 / $height);
-                $newW = (int) max(1, round($width * $ratio));
-                $newH = (int) max(1, round($height * $ratio));
-                $src = match ($type) {
-                    IMAGETYPE_JPEG => @imagecreatefromjpeg($abs),
-                    IMAGETYPE_PNG  => @imagecreatefrompng($abs),
-                    IMAGETYPE_WEBP => @imagecreatefromwebp($abs),
-                    IMAGETYPE_GIF  => @imagecreatefromgif($abs),
-                    default        => null,
-                };
-                if ($src) {
-                    $dst = imagecreatetruecolor($newW, $newH);
-                    if (in_array($type, [IMAGETYPE_PNG, IMAGETYPE_WEBP], true)) {
-                        imagealphablending($dst, false);
-                        imagesavealpha($dst, true);
-                        $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
-                        imagefilledrectangle($dst, 0, 0, $newW, $newH, $transparent);
-                    }
-                    imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $width, $height);
-                    match ($type) {
-                        IMAGETYPE_JPEG => imagejpeg($dst, $abs, 88),
-                        IMAGETYPE_PNG  => imagepng($dst, $abs, 6),
-                        IMAGETYPE_WEBP => imagewebp($dst, $abs, 88),
-                        IMAGETYPE_GIF  => imagegif($dst, $abs),
-                        default        => null,
-                    };
-                    imagedestroy($src);
-                    imagedestroy($dst);
-                }
-            }
+        if (is_file($abs) && str_starts_with((string) $file->getMimeType(), 'image/')) {
+            app(\App\Services\ImageOptimizer::class)->optimize($abs);
         }
     } catch (\Throwable $e) {
     }
-
-    $originalName = $file->getClientOriginalName();
 
     return response()->json([
         'path' => $path,

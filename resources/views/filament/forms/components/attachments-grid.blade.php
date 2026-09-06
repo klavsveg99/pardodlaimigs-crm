@@ -194,6 +194,7 @@
         thumbUrl(file) {
             if (!file || !file.url) return '';
             const u = file.url;
+            // WP uploads: serve the WP thumbnail if it exists (matches existing WP pattern)
             const wpMatch = u.match(/\/wp-content\/uploads\/(\d{4})\/(\d{2})\/(.+?)(?:\?|$)/);
             if (wpMatch) {
                 const [, y, m, base] = wpMatch;
@@ -203,6 +204,13 @@
                     const ext = base.slice(dot);
                     return `https://pardodlaimigs.lv/wp-content/uploads/${y}/${m}/${stem}-400x300${ext}`;
                 }
+            }
+            // Laravel /storage/ attachments: use the thumbnail file (thumb-*) if present
+            const storageMatch = u.match(/\/storage\/attachments\/(.+?)(?:\?|$)/);
+            if (storageMatch) {
+                const base = storageMatch[1];
+                const thumbPath = base.replace(/(^|\/)([^\/]+?)(\.\w+)?$/i, (m, p1, p2, p3) => p1 + 'thumb-' + p2 + (p3 ? p3 : ''));
+                return window.location.origin + '/storage/attachments/' + thumbPath;
             }
             return u;
         },

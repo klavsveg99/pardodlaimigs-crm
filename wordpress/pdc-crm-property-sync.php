@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 2.0.0
+ * Version: 2.1.0
  * Author: Pārdod Laimīgs
  */
 
@@ -98,6 +98,104 @@ function pdc_relative_upload_path($url) {
 
 function pdc_proxy_url($path) {
     return 'https://crm.pardodlaimigs.lv/api/crm/attachment-proxy?path=' . rawurlencode($path) . '&_k=' . substr(hash_hmac('sha256', $path, PDC_CRM_API_KEY), 0, 16);
+}
+
+/**
+ * Build the download URL for a CRM attachment. CRM-hosted files go through the
+ * HMAC-signed proxy so a signed URL stays valid regardless of route names.
+ */
+function pdc_attachment_download_url($attachment) {
+    $url = isset($attachment['url']) ? esc_url_raw($attachment['url']) : '';
+    if ($url === '' || strpos($url, 'https://crm.pardodlaimigs.lv') !== 0) {
+        return $url;
+    }
+    $path = isset($attachment['raw_path']) && $attachment['raw_path'] !== ''
+        ? $attachment['raw_path']
+        : (string) parse_url($url, PHP_URL_PATH);
+    $path = ltrim($path, '/');
+    return $path === '' ? '' : pdc_proxy_url($path);
+}
+
+/**
+ * Decide whether an existing WP attachment must be re-downloaded because the
+ * CRM copy changed size (e.g. after the CRM re-optimised its images).
+ * Rate-limited to one HEAD request per attachment per hour.
+ */
+function pdc_attachment_needs_refresh($media_id, $url) {
+    $local = get_attached_file($media_id);
+    if ($url === '' || $local === false || $local === '') {
+        return false;
+    }
+    if (! is_file($local)) {
+        return true;
+    }
+
+    $checked = (int) get_post_meta($media_id, '_pdc_crm_attachment_checked_at', true);
+    if ($checked > 0 && (time() - $checked) < HOUR_IN_SECONDS) {
+        return false;
+    }
+
+    $response = wp_remote_head($url, ['timeout' => 15, 'redirection' => 5]);
+    $remote_size = is_wp_error($response) ? 0 : (int) wp_remote_retrieve_header($response, 'content-length');
+
+    update_post_meta($media_id, '_pdc_crm_attachment_checked_at', time());
+
+    if ($remote_size <= 0) {
+        return false;
+    }
+
+    $stored = (int) get_post_meta($media_id, '_pdc_crm_attachment_size', true);
+    if ($stored > 0 && $stored === $remote_size) {
+        return false;
+    }
+
+    $local_size = (int) @filesize($local);
+    if ($local_size > 0 && $local_size === $remote_size) {
+        update_post_meta($media_id, '_pdc_crm_attachment_size', $remote_size);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Re-download the file behind an existing attachment, overwrite it in place and
+ * regenerate its metadata + thumbnail sizes. Keeps the same media ID and URL so
+ * galleries and references stay intact.
+ */
+function pdc_refresh_attachment_file($media_id, $url, $name) {
+    $local = get_attached_file($media_id);
+    if ($url === '' || $local === false || $local === '' || ! is_dir(dirname($local))) {
+        return false;
+    }
+
+    $tmp = @download_url($url, 30);
+    if (is_wp_error($tmp)) {
+        pdc_log('refresh download failed: ' . $name . ': ' . $tmp->get_error_message());
+        return false;
+    }
+
+    $ok = @rename($tmp, $local);
+    if (! $ok) {
+        $ok = @copy($tmp, $local);
+        @unlink($tmp);
+    }
+    if (! $ok) {
+        @unlink($tmp);
+        return false;
+    }
+
+    $size = (int) @filesize($local);
+    update_post_meta($media_id, '_pdc_crm_attachment_size', $size);
+    update_post_meta($media_id, '_pdc_crm_attachment_checked_at', time());
+
+    $meta = wp_generate_attachment_metadata($media_id, $local);
+    if ($meta && ! is_wp_error($meta)) {
+        wp_update_attachment_metadata($media_id, $meta);
+    }
+
+    pdc_log('Refreshed attachment #' . $media_id . ' (' . $name . ')');
+    return true;
 }
 
 function pdc_upload_to_subdir($subdir) {
@@ -250,6 +348,12 @@ function pdc_sync_attachments($post_id, $attachments) {
 
         if ($media_id > 0) {
             update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
+            if ($is_image) {
+                $download_url = pdc_attachment_download_url($attachment);
+                if (pdc_attachment_needs_refresh($media_id, $download_url)) {
+                    pdc_refresh_attachment_file($media_id, $download_url, $name);
+                }
+            }
         } else {
             $need_download[] = $attachment;
         }
@@ -294,6 +398,11 @@ function pdc_sync_attachments($post_id, $attachments) {
         }
 
         update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
+
+        $sideloaded_size = (int) @filesize(get_attached_file($media_id));
+        if ($sideloaded_size > 0) {
+            update_post_meta($media_id, '_pdc_crm_attachment_size', $sideloaded_size);
+        }
 
         $is_image = (strpos($mime, 'image/') === 0 || preg_match('/\.(jpe?g|png|gif|webp|bmp)$/i', $name));
         if ($is_image) {
