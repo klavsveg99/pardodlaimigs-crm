@@ -38,8 +38,20 @@ Route::get('/api/crm/attachment-proxy', function (\Illuminate\Http\Request $requ
     if ($key === '' || $path === '') abort(400);
     $expected = substr(hash_hmac('sha256', $path, (string) config('wp-bridge.wordpress.api_key')), 0, 16);
     if (! hash_equals($expected, $key)) abort(403);
-    $abs = \Illuminate\Support\Facades\Storage::disk('public')->path($path);
+
+    $disk = \Illuminate\Support\Facades\Storage::disk('public');
+    $abs = $disk->path($path);
+    if (! is_file($abs)) {
+        $basename = basename($path);
+        if ($basename !== '' && $basename !== '.' && $basename !== '/') {
+            foreach (['attachments', 'avatars'] as $dir) {
+                $candidate = $disk->path($dir . '/' . $basename);
+                if (is_file($candidate)) { $abs = $candidate; break; }
+            }
+        }
+    }
     if (! is_file($abs)) abort(404);
+
     $mime = \Illuminate\Support\Facades\File::mimeType($abs) ?: 'application/octet-stream';
     return response()->file($abs, [
         'Content-Type' => $mime,

@@ -149,12 +149,17 @@ function pdc_sync_attachments($post_id, $attachments) {
     foreach ($attachments as $attachment) {
         $url = isset($attachment['url']) ? esc_url_raw($attachment['url']) : '';
         if ($url === '') { continue; }
-        $path = pdc_relative_upload_path($url);
-        if ($path === '') { continue; }
-        if (isset($seen[$path])) { continue; }
-        $seen[$path] = true;
+        $raw_path = parse_url($url, PHP_URL_PATH);
+        $raw_path = $raw_path ? ltrim($raw_path, '/') : '';
+        if ($raw_path === '') { continue; }
+        $raw_path = preg_replace('#^storage/#', '', $raw_path, 1);
+        $wp_path = pdc_relative_upload_path($url);
+        if ($wp_path === '') { continue; }
+        if (isset($seen[$wp_path])) { continue; }
+        $seen[$wp_path] = true;
         $attachment['url'] = $url;
-        $attachment['path'] = $path;
+        $attachment['path'] = $wp_path;
+        $attachment['raw_path'] = $raw_path;
         if (empty($attachment['name']) || $attachment['name'] === basename($url)) {
             $provided = isset($attachment['name']) ? (string) $attachment['name'] : '';
             $attachment['name'] = $provided !== '' ? $provided : basename($url);
@@ -197,7 +202,8 @@ function pdc_sync_attachments($post_id, $attachments) {
                 pdc_log('Skip CRM URL (no path): ' . $name);
                 continue;
             }
-            $download_url = pdc_proxy_url($path);
+            $proxy_path = $attachment['raw_path'] ?? $path;
+            $download_url = pdc_proxy_url($proxy_path);
         } else {
             $download_url = $url;
         }
