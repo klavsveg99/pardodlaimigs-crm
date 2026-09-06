@@ -6,6 +6,7 @@ use App\Models\ClientCrmProperty;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -16,7 +17,7 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
 {
     protected static string $relationship = 'crmProperties';
 
-    protected static ?string $title = 'Pārdevēja īpašumi';
+    protected static ?string $title = 'Īpašumi pārdošanā';
 
     protected static string|\BackedEnum|null $icon = 'heroicon-o-building-office-2';
 
@@ -59,9 +60,13 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
             ])
             ->headerActions([
                 Actions\AttachAction::make()
-                    ->label('Pievienot CRM īpašumu')
+                    ->label('Pievienot esošu īpašumu')
+                    ->icon('heroicon-o-magnifying-glass-plus')
                     ->color('gray')
                     ->recordSelectSearchColumns(['title', 'city', 'kadastra_nr', 'id'])
+                    ->recordSelectOptionsQuery(function ($query) {
+                        return $query->where('status', '!=', 'sold')->limit(20);
+                    })
                     ->schema(function (Actions\AttachAction $action): array {
                         $recordSelect = $action->getRecordSelect();
 
@@ -87,15 +92,56 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
                             ->value('relation');
 
                         if ($existingRelation && $existingRelation !== $relation) {
-                            // This should not happen because we are only allowing seller
-                            // but we keep the check for safety.
                         }
 
                         $property = CrmProperty::find($propertyId);
                         if ($relation === 'buyer') {
-                            // We are not allowing buyer in this relation manager, but we keep the check for safety.
                         }
-                    })
+                    }),
+                Actions\Action::make('create_property')
+                    ->label('Jauns īpašums')
+                    ->icon('heroicon-o-plus')
+                    ->color('gray')
+                    ->modalHeading('Jauns īpašums')
+                    ->modalSubmitActionLabel('Izveidot')
+                    ->form([
+                        Forms\Components\TextInput::make('title')
+                            ->label('Nosaukums')
+                            ->required()
+                            ->maxLength(200),
+                        Forms\Components\Select::make('category')
+                            ->label('Kategorija')
+                            ->options(CrmProperty::CATEGORIES)
+                            ->required(),
+                        Forms\Components\TextInput::make('kadastra_nr')
+                            ->label('Kadastra nr.')
+                            ->maxLength(11)
+                            ->rules(['regex:/^\d{8,11}$/'])
+                            ->validationMessages([
+                                'regex' => 'Kadastra nr. jābūt 8–11 cipariem.',
+                            ])
+                            ->helperText('8–11 cipari (piem. 01000250003).'),
+                        Forms\Components\TextInput::make('city')
+                            ->label('Pilsēta')
+                            ->maxLength(128),
+                    ])
+                    ->action(function (array $data): void {
+                        $property = CrmProperty::create([
+                            'title' => $data['title'],
+                            'category' => $data['category'] ?? null,
+                            'kadastra_nr' => $data['kadastra_nr'] ?? null,
+                            'city' => $data['city'] ?? null,
+                            'status' => 'draft',
+                            'owner_user_id' => auth()->id(),
+                        ]);
+
+                        $this->getOwnerRecord()->crmProperties()->attach($property->id, ['relation' => 'seller']);
+
+                        Notification::make()
+                            ->title('Īpašums izveidots un pievienots')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->actions([
                 Actions\ActionGroup::make([

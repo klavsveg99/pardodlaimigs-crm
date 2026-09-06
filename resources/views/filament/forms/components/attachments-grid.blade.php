@@ -156,6 +156,7 @@
     .cropper-modal {
         background: rgba(0,0,0,0.5) !important;
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 
 <div
@@ -167,6 +168,9 @@
         draggedIndex: null,
         lightboxOpen: false,
         lightboxIndex: 0,
+        uploading: [],
+        savingCrop: false,
+        cropProgress: 0,
         editorOpen: false,
         editorIndex: null,
         editorFile: null,
@@ -366,7 +370,7 @@
             this.cropper.scaleY(this.scaleY);
         },
         async saveEditor() {
-            if (!this.cropper || this.editorIndex === null) return;
+            if (!this.cropper || this.editorIndex === null || this.savingCrop) return;
             const canvas = this.cropper.getCroppedCanvas({
                 maxWidth: 2400,
                 maxHeight: 2400,
@@ -378,76 +382,109 @@
                 alert('Neizdevās apgriezt attēlu.');
                 return;
             }
-            canvas.toBlob(async (blob) => {
+            this.savingCrop = true;
+            this.cropProgress = 0;
+            const mime = this.editorFile.name.match(/\.png$/i) ? 'image/png' : 'image/jpeg';
+            canvas.toBlob((blob) => {
                 if (!blob) {
+                    this.savingCrop = false;
                     alert('Neizdevās saglabāt attēlu.');
                     return;
                 }
                 const ext = (this.editorFile.name.split('.').pop() || 'jpg').toLowerCase();
                 const fileName = this.editorFile.name.replace(/\.[^/.]+$/, '') + '-crop.' + ext;
-                const file = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+                const file = new File([blob], fileName, { type: blob.type || mime });
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', this.uploadUrl, true);
+                xhr.setRequestHeader('X-CSRF-TOKEN', this.csrfToken);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                xhr.upload.addEventListener('progress', (ev) => {
+                    if (ev.lengthComputable) {
+                        this.cropProgress = Math.round(ev.loaded / ev.total * 100);
+                    }
+                });
+                xhr.addEventListener('load', () => {
+                    try {
+                        const r = JSON.parse(xhr.responseText);
+                        if (r.path) {
+                            this.files[this.editorIndex] = {
+                                id: this.editorFile.id,
+                                path: r.path,
+                                url: r.url,
+                                name: r.name || fileName,
+                            };
+                            this.sync();
+                            this.closeEditor();
+                        } else {
+                            window.alert('Augšupielāde neizdevās: ' + fileName);
+                        }
+                    } catch (err) {
+                        window.alert('Augšupielāde neizdevās: ' + fileName + '\n' + err.message);
+                    }
+                });
+                xhr.addEventListener('error', () => {
+                    window.alert('Augšupielāde neizdevās: ' + fileName);
+                });
+                xhr.addEventListener('loadend', () => {
+                    this.savingCrop = false;
+                    this.cropProgress = 0;
+                });
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('_token', this.csrfToken);
-                try {
-                    const resp = await fetch(this.uploadUrl, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': this.csrfToken,
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    });
-                    const result = await resp.json();
-                    if (result.path) {
-                        // Replace old file with new cropped one, keep same position
-                        this.files[this.editorIndex] = {
-                            id: this.editorFile.id,
-                            path: result.path,
-                            url: result.url,
-                            name: result.name || fileName,
-                        };
-                        this.sync();
-                        this.closeEditor();
-                    } else {
-                        alert('Augšupielāde neizdevās.');
-                    }
-                } catch (err) {
-                    console.error('Crop upload failed:', err);
-                    alert('Kļūda saglabājot.');
-                }
-            }, this.editorFile.name.match(/\.png$/i) ? 'image/png' : 'image/jpeg', 0.92);
+                xhr.send(formData);
+            }, mime, 0.92);
         },
         async handleUpload(e) {
             const input = e.target || e;
             const newFiles = Array.from(input.files || []);
             if (!newFiles.length) return;
             for (const file of newFiles) {
+                const trackObj = {
+                    id: 'up-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+                    name: file.name,
+                    progress: 0,
+                    size: file.size,
+                };
+                this.uploading.push(trackObj);
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', this.uploadUrl, true);
+                xhr.setRequestHeader('X-CSRF-TOKEN', this.csrfToken);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                xhr.upload.addEventListener('progress', (ev) => {
+                    if (ev.lengthComputable) {
+                        const idx = this.uploading.findIndex(u => u.id === trackObj.id);
+                        if (idx !== -1) this.uploading[idx].progress = Math.round(ev.loaded / ev.total * 100);
+                    }
+                });
+                xhr.addEventListener('load', () => {
+                    try {
+                        const r = JSON.parse(xhr.responseText);
+                        if (r.path) {
+                            this.files.push({
+                                id: 'new-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+                                path: r.path,
+                                url: r.url,
+                                name: r.name || file.name,
+                            });
+                            this.sync();
+                        } else {
+                            window.alert('Augšupielāde neizdevās: ' + file.name);
+                        }
+                    } catch (err) {
+                        window.alert('Augšupielāde neizdevās: ' + file.name + '\n' + err.message);
+                    }
+                });
+                xhr.addEventListener('error', () => {
+                    window.alert('Augšupielāde neizdevās: ' + file.name);
+                });
+                xhr.addEventListener('loadend', () => {
+                    this.uploading = this.uploading.filter(u => u.id !== trackObj.id);
+                });
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('_token', this.csrfToken);
-                try {
-                    const resp = await fetch(this.uploadUrl, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': this.csrfToken,
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    });
-                    const result = await resp.json();
-                    if (result.path) {
-                        this.files.push({
-                            id: 'new-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
-                            path: result.path,
-                            url: result.url,
-                            name: result.name || file.name,
-                        });
-                        this.sync();
-                    }
-                } catch (err) {
-                    console.error('Upload failed:', err);
-                }
+                xhr.send(formData);
             }
             input.value = '';
         }
@@ -587,6 +624,26 @@
         </template>
     </div>
 
+    <template x-if="uploading.length > 0">
+        <div style="margin-top: 1rem; padding: 1rem 1.25rem; border: 1px solid #bfdbfe; background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); border-radius: 0.65rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.65rem;">
+                <svg style="width: 1.4rem; height: 1.4rem; color: #2563eb; animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                <span style="font-size: 0.95rem; font-weight: 700; color: #1e40af;" x-text="'Augšupielādē ' + uploading.length + ' ' + (uploading.length === 1 ? 'failu' : 'failus') + '...'"></span>
+            </div>
+            <template x-for="u in uploading" :key="u.id">
+                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.45rem 0; border-top: 1px solid rgba(37,99,235,0.12);">
+                    <span style="flex: 0 0 auto; max-width: 38%; font-size: 0.8rem; color: #1e3a8a; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="u.name"></span>
+                    <div style="flex: 1; height: 0.55rem; background: #dbeafe; border-radius: 9999px; overflow: hidden;">
+                        <div :style="{ width: u.progress + '%', height: '100%', background: 'linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)', transition: 'width 0.15s ease' }"></div>
+                    </div>
+                    <span style="flex: 0 0 auto; font-size: 0.78rem; font-weight: 700; color: #2563eb; min-width: 3rem; text-align: right;" x-text="u.progress + '%'"></span>
+                </div>
+            </template>
+        </div>
+    </template>
+
     <div
         x-show="files.length === 0"
         style="text-align: center; padding: 2rem; border: 2px dashed #e5e7eb; border-radius: 0.75rem;"
@@ -639,9 +696,15 @@
                         </button>
                         <button type="button" x-on:click="resetCropper()" class="pdc-editor-btn pdc-editor-btn-ghost">Atiestatīt</button>
                     </div>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button type="button" x-on:click="closeEditor()" class="pdc-editor-btn pdc-editor-btn-secondary">Atcelt</button>
-                        <button type="button" x-on:click="saveEditor()" class="pdc-editor-btn pdc-editor-btn-primary">Saglabāt</button>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button type="button" x-on:click="closeEditor()" class="pdc-editor-btn pdc-editor-btn-secondary" :disabled="savingCrop">Atcelt</button>
+                        <button type="button" x-on:click="saveEditor()" class="pdc-editor-btn pdc-editor-btn-primary" :disabled="savingCrop">Saglabāt</button>
+                        <div x-show="savingCrop" style="display: flex; align-items: center; gap: 0.4rem; color: white; font-size: 0.82rem; font-weight: 600; padding-left: 0.25rem;">
+                            <svg style="width: 1.1rem; height: 1.1rem; animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                            </svg>
+                            <span x-text="cropProgress + '%'"></span>
+                        </div>
                     </div>
                 </div>
             </div>

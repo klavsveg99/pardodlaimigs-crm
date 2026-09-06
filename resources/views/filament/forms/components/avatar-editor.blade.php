@@ -147,6 +147,7 @@
         border-color: var(--pdc-primary);
         color: white;
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 
 <div
@@ -160,6 +161,10 @@
         editorAspectRatio: 1,
         scaleX: 1,
         scaleY: 1,
+        uploading: false,
+        uploadProgress: 0,
+        saving: false,
+        saveProgress: 0,
         init() {
             try {
                 const data = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || {};
@@ -182,29 +187,43 @@
             const input = e.target;
             const file = input.files?.[0];
             if (!file) return;
+            this.uploading = true;
+            this.uploadProgress = 0;
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', this.uploadUrl, true);
+            xhr.setRequestHeader('X-CSRF-TOKEN', this.csrfToken);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.upload.addEventListener('progress', (ev) => {
+                if (ev.lengthComputable) {
+                    this.uploadProgress = Math.round(ev.loaded / ev.total * 95);
+                }
+            });
+            xhr.addEventListener('load', () => {
+                try {
+                    const r = JSON.parse(xhr.responseText);
+                    if (r.path) {
+                        this.path = r.path;
+                        this.url = r.url;
+                        this.sync();
+                        this.$nextTick(() => this.openEditor());
+                    } else {
+                        window.alert('Augšupielāde neizdevās: ' + file.name);
+                    }
+                } catch (err) {
+                    window.alert('Augšupielāde neizdevās: ' + file.name + '\n' + err.message);
+                }
+            });
+            xhr.addEventListener('error', () => {
+                window.alert('Augšupielāde neizdevās: ' + file.name);
+            });
+            xhr.addEventListener('loadend', () => {
+                this.uploading = false;
+                this.uploadProgress = 0;
+            });
             const formData = new FormData();
             formData.append('file', file);
             formData.append('_token', this.csrfToken);
-            try {
-                const resp = await fetch(this.uploadUrl, {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'X-CSRF-TOKEN': this.csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                });
-                const result = await resp.json();
-                if (result.path) {
-                        this.path = result.path;
-                        this.url = result.url;
-                        this.sync();
-                        // Auto open editor for cropping
-                        this.$nextTick(() => this.openEditor());
-                    } else {
-                        alert('Augšupielāde neizdevās.');
-                    }
-            } catch (err) {
-                console.error('Augšupielādēt neizdevās:', err);
-                alert('Kļūda augšupielādējot.');
-            }
+            xhr.send(formData);
             input.value = '';
         },
         openEditor() {
@@ -300,7 +319,7 @@
             this.cropper.scaleY(this.scaleY);
         },
         async saveEditor() {
-            if (!this.cropper) return;
+            if (!this.cropper || this.saving) return;
             const canvas = this.cropper.getCroppedCanvas({
                 maxWidth: 1000,
                 maxHeight: 1000,
@@ -312,35 +331,51 @@
                 alert('Neizdevās apgriezt attēlu.');
                 return;
             }
-            canvas.toBlob(async (blob) => {
+            this.saving = true;
+            this.saveProgress = 0;
+            canvas.toBlob((blob) => {
                 if (!blob) {
+                    this.saving = false;
                     alert('Neizdevās saglabāt attēlu.');
                     return;
                 }
                 const fileName = 'avatar-' + Date.now() + '.jpg';
                 const file = new File([blob], fileName, { type: 'image/jpeg' });
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', this.uploadUrl, true);
+                xhr.setRequestHeader('X-CSRF-TOKEN', this.csrfToken);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                xhr.upload.addEventListener('progress', (ev) => {
+                    if (ev.lengthComputable) {
+                        this.saveProgress = Math.round(ev.loaded / ev.total * 95);
+                    }
+                });
+                xhr.addEventListener('load', () => {
+                    try {
+                        const r = JSON.parse(xhr.responseText);
+                        if (r.path) {
+                            this.path = r.path;
+                            this.url = r.url;
+                            this.sync();
+                            this.closeEditor();
+                        } else {
+                            window.alert('Augšupielāde neizdevās: ' + fileName);
+                        }
+                    } catch (err) {
+                        window.alert('Augšupielāde neizdevās: ' + fileName + '\n' + err.message);
+                    }
+                });
+                xhr.addEventListener('error', () => {
+                    window.alert('Augšupielāde neizdevās: ' + fileName);
+                });
+                xhr.addEventListener('loadend', () => {
+                    this.saving = false;
+                    this.saveProgress = 0;
+                });
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('_token', this.csrfToken);
-                try {
-                    const resp = await fetch(this.uploadUrl, {
-                        method: 'POST',
-                        body: formData,
-                        headers: { 'X-CSRF-TOKEN': this.csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                    });
-                    const result = await resp.json();
-                    if (result.path) {
-                        this.path = result.path;
-                        this.url = result.url;
-                        this.sync();
-                        this.closeEditor();
-                    } else {
-                        alert('Augšupielāde neizdevās.');
-                    }
-                    } catch (err) {
-                        console.error('Rediģēt augšupielādi neizdevās:', err);
-                        alert('Kļūda saglabājot.');
-                    }
+                xhr.send(formData);
             }, 'image/jpeg', 0.92);
         },
         removeAvatar() {
@@ -389,6 +424,20 @@
             </template>
         </div>
         <p style="font-size: 0.75rem; color: #6b7280;">Kvadrātveida foto — 1:1, 1000×1000px, max 5MB. Izmanto redaktoru, lai apgrieztu un apvērstu.</p>
+        <template x-if="uploading">
+            <div style="width: 100%; padding: 0.7rem 0.9rem; border: 1px solid #bfdbfe; background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); border-radius: 0.55rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.45rem;">
+                    <svg style="width: 1.05rem; height: 1.05rem; color: #2563eb; animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                    </svg>
+                    <span style="font-size: 0.82rem; font-weight: 700; color: #1e40af;">Augšupielādē foto...</span>
+                    <span style="margin-left: auto; font-size: 0.82rem; font-weight: 700; color: #2563eb;" x-text="uploadProgress + '%'"></span>
+                </div>
+                <div style="height: 0.5rem; background: #dbeafe; border-radius: 9999px; overflow: hidden;">
+                    <div :style="{ width: uploadProgress + '%', height: '100%', background: 'linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)', transition: 'width 0.15s ease' }"></div>
+                </div>
+            </div>
+        </template>
     </div>
 
     <!-- Editor Modal -->
@@ -425,9 +474,17 @@
                         </button>
                         <button type="button" x-on:click="resetCropper()" class="pdc-editor-btn pdc-editor-btn-ghost">Atiestatīt</button>
                     </div>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button type="button" x-on:click="closeEditor()" class="pdc-editor-btn pdc-editor-btn-secondary">Atcelt</button>
-                        <button type="button" x-on:click="saveEditor()" class="pdc-editor-btn pdc-editor-btn-primary">Saglabāt</button>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button type="button" x-on:click="closeEditor()" class="pdc-editor-btn pdc-editor-btn-secondary" :disabled="saving">Atcelt</button>
+                        <button type="button" x-on:click="saveEditor()" class="pdc-editor-btn pdc-editor-btn-primary" :disabled="saving">Saglabāt</button>
+                        <template x-if="saving">
+                            <div style="display: flex; align-items: center; gap: 0.4rem; color: white; font-size: 0.82rem; font-weight: 600; padding-left: 0.25rem;">
+                                <svg style="width: 1.1rem; height: 1.1rem; animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                                </svg>
+                                <span x-text="saveProgress + '%'"></span>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>

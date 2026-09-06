@@ -31,9 +31,6 @@
             if (hasCoords) {
                 this.placeMarker(new google.maps.LatLng(parseFloat(this.lat), parseFloat(this.lng)), false);
             }
-            this.map.addListener('click', (e) => {
-                this.placeMarker(e.latLng, true);
-            });
             const input = $refs.searchBox;
             const autocomplete = new google.maps.places.Autocomplete(input);
             autocomplete.bindTo('bounds', this.map);
@@ -117,7 +114,7 @@
             }
         },
         placeMarker(latLng, doGeocode = true) {
-            if (this.marker) this.marker.setMap(null);
+            if (this.marker) { this.marker.setMap(null); this.marker = null; }
             this.lat = Math.round(latLng.lat() * 10000000) / 10000000;
             this.lng = Math.round(latLng.lng() * 10000000) / 10000000;
             this.marker = new google.maps.Marker({

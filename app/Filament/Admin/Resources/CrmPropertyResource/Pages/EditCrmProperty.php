@@ -6,6 +6,7 @@ namespace App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 
 use App\Filament\Admin\Resources\CrmPropertyResource;
 use App\Filament\Admin\Resources\Pages\Concerns\AttachSellerAction;
+use App\Filament\Admin\Resources\Pages\Concerns\AutosavesForm;
 use App\Filament\Admin\Resources\Pages\Concerns\SyncsAttachments;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -13,6 +14,7 @@ use Filament\Resources\Pages\EditRecord;
 class EditCrmProperty extends EditRecord
 {
     use AttachSellerAction;
+    use AutosavesForm;
     use SyncsAttachments;
 
     protected static string $resource = CrmPropertyResource::class;
@@ -33,6 +35,17 @@ class EditCrmProperty extends EditRecord
                 ->action(function () {
                     $this->save();
                 }),
+            Actions\Action::make('autosave_indicator')
+                ->label(function (): ?string {
+                    if ($this->autosaveState === 'saved' && $this->autosaveAt) {
+                        return 'Saglabāts '.$this->autosaveAt;
+                    }
+                    return null;
+                })
+                ->icon('heroicon-o-cloud-arrow-up')
+                ->color(fn (): string => $this->autosaveState === 'saved' ? 'success' : 'gray')
+                ->visible(fn () => $this->autosaveState === 'saved')
+                ->disabled(),
             $this->getAttachSellerAction(),
             $this->getAttachBuyerAction(),
             Actions\Action::make('open_site')

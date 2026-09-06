@@ -17,7 +17,7 @@ class CrmPropertiesAsBuyerRelationManager extends RelationManager
 {
     protected static string $relationship = 'crmProperties';
 
-    protected static ?string $title = 'Pircēja īpašumi';
+    protected static ?string $title = 'Nopirkti īpašumi';
 
     protected static string|\BackedEnum|null $icon = 'heroicon-o-shopping-cart';
 
@@ -60,9 +60,13 @@ class CrmPropertiesAsBuyerRelationManager extends RelationManager
             ])
             ->headerActions([
                 Actions\AttachAction::make()
-                    ->label('Pievienot CRM īpašumu')
+                    ->label('Pievienot esošu īpašumu')
+                    ->icon('heroicon-o-magnifying-glass-plus')
                     ->color('gray')
                     ->recordSelectSearchColumns(['title', 'city', 'kadastra_nr', 'id'])
+                    ->recordSelectOptionsQuery(function ($query) {
+                        return $query->where('status', 'sold')->whereNotNull('owner_user_id')->limit(20);
+                    })
                     ->schema(function (Actions\AttachAction $action): array {
                         $recordSelect = $action->getRecordSelect();
 

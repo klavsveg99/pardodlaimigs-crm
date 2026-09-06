@@ -52,18 +52,25 @@ class ClientResource extends Resource
                     Forms\Components\Select::make('source')
                         ->label('Avots (kā uzzināja)')
                         ->searchable()
+                        ->live()
                         ->options([
                             'Tīmekļa vietne' => 'Tīmekļa vietne',
                             'Sociālie tīkli' => 'Sociālie tīkli',
                             'Facebook' => 'Facebook',
                             'Instagram' => 'Instagram',
                             'Google' => 'Google',
-                            'Draugu ieteikums' => 'Draugu ieteikums',
+                            'Ieteikums' => 'Ieteikums',
                             'Sludinājums' => 'Sludinājums (ss.lv u.c.)',
                             'Atgriešanās' => 'Atgriešanās (esošs klients)',
                             'Cits' => 'Cits',
                         ])
                         ->placeholder('Izvēlieties avotu'),
+                    Forms\Components\TextInput::make('source_other')
+                        ->label('Avots — precizējums')
+                        ->helperText('Precizējiet, kā uzzinājāt par mums')
+                        ->maxLength(200)
+                        ->visible(fn (callable $get): bool => $get('source') === 'Cits')
+                        ->columnSpanFull(),
                     Forms\Components\Select::make('owner_user_id')
                         ->label('Atbildīgais aģents')
                         ->relationship('owner', 'name')

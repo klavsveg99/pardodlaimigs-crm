@@ -131,6 +131,8 @@ class CrmPropertyResource extends Resource
                          ->minLength(8)
                          ->maxLength(11)
                          ->rules('regex:/^\d{8,11}$/')
+                         ->helperText('8–11 cipari (piem. 01000250003).')
+                         ->placeholder('01000250003')
                          ->validationMessages([
                              'required' => 'Kadastra nr. ir obligāts lauks.',
                              'regex' => 'Kadastra nr. jābūt 8-11 cipariem.',
@@ -173,7 +175,7 @@ class CrmPropertyResource extends Resource
                         ->color('primary')
                         ->requiresConfirmation()
                         ->modalHeading('Ģenerēt aprakstu ar AI')
-                        ->modalDescription('Tiks izveidots īpašuma apraksts latviešu un angļu valodā, ņemot vērā ievadītos datus. Angļu tulkojums tiks veidots ar bezmaksas MyMemory API.')
+                        ->modalDescription('Tiks izveidots īpašuma apraksts latviešu un angļu valodā, ņemot vērā ievadītos datus. Angļu versija tiek veidota no šablona (bez ārējiem API, lai izvairītos no rate-limit).')
                         ->modalSubmitActionLabel('Ģenerēt')
                         ->action(function (Get $get, Set $set): void {
                             $category = (string) ($get('category') ?? 'īpašums');
@@ -224,37 +226,36 @@ class CrmPropertyResource extends Resource
                             $lvLines[] = 'Pārdod Laimīgs — nekustamo īpašumu aģentūra.';
                             $lvText = implode("\n", array_filter($lvLines, fn($l) => $l !== null));
 
-                            // --- EN via MyMemory free API (lv -> en) ---
-                            $enText = null;
-                            try {
-                                $resp = \Illuminate\Support\Facades\Http::timeout(8)->get('https://api.mymemory.translated.net/get', [
-                                    'q' => $lvText,
-                                    'langpair' => 'lv|en',
-                                ]);
-                                if ($resp->successful()) {
-                                    $data = $resp->json();
-                                    $translated = $data['responseData']['translatedText'] ?? null;
-                                    if ($translated && $translated !== $lvText) {
-                                        $enText = $translated;
-                                    }
-                                }
-                            } catch (\Throwable $e) {
-                                // fallback to template
+                            // --- EN: pure template (no MyMemory call — was rate-limited) ---
+                            $typeEn = match (strtolower($category)) {
+                                'dzīvoklis' => 'apartment',
+                                'māja' => 'house',
+                                'zeme' => 'land plot',
+                                'mežs' => 'forest',
+                                'lauksaimniecības zeme' => 'agricultural land',
+                                'komerciāls' => 'commercial property',
+                                default => 'property',
+                            };
+                            $prefixEn = match ($status) {
+                                'sold' => 'Sold',
+                                'published' => 'For sale',
+                                'deleted' => 'Withdrawn',
+                                default => 'Offered',
+                            };
+                            $enLines = [];
+                            $enLines[] = $prefixEn . ': ' . $typeEn . ($city ? ' in ' . $city : '') . ($featText ? '. ' . $featText . '.' : '.');
+                            $enLines[] = '';
+                            if ($title) $enLines[] = '"' . $title . '" — a well-planned property suitable for living or investment.';
+                            if ($price > 0) {
+                                $enLines[] = 'Price: EUR ' . number_format($price, 0, ',', ' ') . '.';
+                                $enLines[] = '';
                             }
-                            if (!$enText) {
-                                // template fallback EN
-                                $enLines = [];
-                                $enLines[] = ucfirst($prefix) . ' ' . $type . ($city ? ' in ' . $city : '') . ($featText ? '. ' . $featText . '.' : '.');
-                                $enLines[] = '';
-                                if ($title) $enLines[] = '"' . $title . '" — a cozy, well-planned property suitable for living or investment.';
-                                if ($price > 0) { $enLines[] = 'Price: ' . number_format($price, 0, ',', ' ') . ' EUR.'; $enLines[] = ''; }
-                                $enLines[] = 'The property benefits from a good location, tidy documentation and flexible layout options. See more in the attachments.';
-                                $enLines[] = '';
-                                $enLines[] = 'Interested? Contact us to schedule a viewing!';
-                                $enLines[] = '';
-                                $enLines[] = 'Pārdod Laimīgs — real estate agency.';
-                                $enText = implode("\n", array_filter($enLines, fn($l) => $l !== null));
-                            }
+                            $enLines[] = 'The property benefits from a good location, tidy documentation and a flexible layout. See more details and photos in the attachments.';
+                            $enLines[] = '';
+                            $enLines[] = 'Interested? Get in touch to schedule a viewing!';
+                            $enLines[] = '';
+                            $enLines[] = 'Pārdod Laimīgs — real estate agency.';
+                            $enText = implode("\n", array_filter($enLines, fn($l) => $l !== null));
 
                             $html = '<p><strong>[LV]</strong><br>' . nl2br(e($lvText)) . '</p>'
                                 . '<p><strong>[EN]</strong><br>' . nl2br(e($enText)) . '</p>';

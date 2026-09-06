@@ -46,7 +46,7 @@ trait SyncsAttachments
         $this->syncAttachments($this->record);
     }
 
-    private function captureAttachments(array &$data): void
+    protected function captureAttachments(array &$data): void
     {
         $names = $data['attachment_original_names'] ?? [];
 

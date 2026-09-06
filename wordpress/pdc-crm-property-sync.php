@@ -80,8 +80,14 @@ function pdc_relative_upload_path($url) {
     $path = ltrim($path, '/');
     if (strpos($path, 'wp-content/uploads/') === 0) {
         $path = substr($path, strlen('wp-content/uploads/'));
+    } elseif (strpos($path, 'storage/') === 0) {
+        $path = substr($path, strlen('storage/'));
     }
     return $path;
+}
+
+function pdc_proxy_url($path) {
+    return 'https://crm.pardodlaimigs.lv/api/crm/attachment-proxy?path=' . rawurlencode($path) . '&_k=' . substr(hash_hmac('sha256', $path, PDC_CRM_API_KEY), 0, 16);
 }
 
 function pdc_find_existing_media_by_path($path) {
@@ -150,13 +156,19 @@ function pdc_sync_attachments($post_id, $attachments) {
         $url  = $attachment['url'];
         $name = $attachment['name'];
         $mime = isset($attachment['mime_type']) ? $attachment['mime_type'] : '';
+        $path = $attachment['path'];
 
-        if (strpos($url, 'crm.pardodlaimigs.lv') !== false) {
-            pdc_log('Skip CRM URL (not accessible): ' . $name);
-            continue;
+        if (str_starts_with($url, 'https://crm.pardodlaimigs.lv')) {
+            if ($path === '') {
+                pdc_log('Skip CRM URL (no path): ' . $name);
+                continue;
+            }
+            $download_url = pdc_proxy_url($path);
+        } else {
+            $download_url = $url;
         }
 
-        $tmp = @download_url($url, 15);
+        $tmp = @download_url($download_url, 15);
         if (is_wp_error($tmp)) {
             pdc_log('download failed: ' . $name . ': ' . $tmp->get_error_message());
             continue;

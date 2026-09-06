@@ -13,10 +13,9 @@ class CrmProperty extends Model
 {
     public const STATUSES = [
         'draft' => 'Melnraksts',
-        'published' => 'Publicēts',
-        'expired' => 'Beidzies',
-        'hidden' => 'Slēpts',
+        'published' => 'Pārdošanā',
         'sold' => 'Pārdots',
+        'deleted' => 'Dzēsts',
     ];
 
     public const CATEGORIES = [
@@ -24,6 +23,8 @@ class CrmProperty extends Model
         'Māja' => 'Māja',
         'Zeme' => 'Zeme',
         'Komerciāls' => 'Komerciāls',
+        'Mežs' => 'Mežs',
+        'Lauksaimniecības zeme' => 'Lauksaimniecības zeme',
     ];
 
     public const LEAD_SOURCES = [

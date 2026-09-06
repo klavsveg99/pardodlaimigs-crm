@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Widgets;
 
-use App\Models\Deal;
 use App\Models\Task;
 use App\Models\Viewing;
 use Filament\Tables;
@@ -46,7 +45,7 @@ class TodayPriorities extends BaseWidget
                     ->outlined(fn (): bool => ! $this->showOnlyMine)
                     ->action(fn () => $this->toggleOnlyMine()),
             ])
-            ->query(Deal::query()->whereRaw('1 = 0'))
+            ->query(Task::query()->whereRaw('1 = 0'))
             ->records(fn () => $records)
             ->columns([
                 Tables\Columns\TextColumn::make('time')
@@ -79,7 +78,7 @@ class TodayPriorities extends BaseWidget
             ])
             ->paginated(false)
             ->emptyStateHeading('Šodien nekas nav jāveic')
-            ->emptyStateDescription('Nav uzdevumu, apskatu vai izpildāmu darījumu uz šodienu.')
+            ->emptyStateDescription('Nav uzdevumu vai apskatu uz šodienu.')
             ->emptyStateIcon('heroicon-o-check-circle');
     }
 
@@ -93,10 +92,15 @@ class TodayPriorities extends BaseWidget
                 $records[] = $record;
             }
         } else {
-            // Tasks due today (not completed)
+            // Tasks due today or overdue (not completed)
             Task::query()
                 ->whereNull('completed_at')
-                ->whereDate('due_at', $today)
+                ->where(function ($q) use ($today) {
+                    $q->whereDate('due_at', $today)
+                      ->orWhere(function ($q2) {
+                          $q2->whereNotNull('due_at')->where('due_at', '<', now());
+                      });
+                })
                 ->with(['assignedTo', 'client'])
                 ->get()
                 ->each(function (Task $task) use (&$records) {
@@ -127,25 +131,6 @@ class TodayPriorities extends BaseWidget
                         'status' => $viewing->status,
                     ];
                 });
-
-            // Deals expected to close today
-            Deal::query()
-                ->whereDate('expected_close_date', $today)
-                ->where('stage', '!=', 'pardots')
-                ->whereNull('closed_at')
-                ->with(['owner', 'client'])
-                ->get()
-                ->each(function (Deal $deal) use (&$records) {
-                    $records[] = [
-                        'id' => $deal->id,
-                        'time' => $deal->expected_close_date,
-                        'type' => 'Darījums',
-                        'title' => $deal->title,
-                        'assigned' => $deal->owner?->name,
-                        'client' => $deal->client?->name,
-                        'status' => $deal->getStageLabelAttribute(),
-                    ];
-                });
         }
 
         usort($records, fn ($a, $b) => ($a['time']?->getTimestamp() ?? 0) <=> ($b['time']?->getTimestamp() ?? 0));
@@ -165,8 +150,13 @@ class TodayPriorities extends BaseWidget
 
         Task::query()
             ->whereNull('completed_at')
-            ->whereDate('due_at', $today)
             ->where('assigned_user_id', auth()->id())
+            ->where(function ($q) use ($today) {
+                $q->whereDate('due_at', $today)
+                  ->orWhere(function ($q2) {
+                      $q2->whereNotNull('due_at')->where('due_at', '<', now());
+                  });
+            })
             ->with(['assignedTo', 'client'])
             ->get()
             ->each(function (Task $task) use (&$rows) {

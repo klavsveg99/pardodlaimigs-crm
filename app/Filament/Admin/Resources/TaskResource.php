@@ -7,6 +7,7 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\TaskResource\Pages;
 use App\Models\Client;
 use App\Models\Deal;
+use App\Models\Izpilditajs;
 use App\Models\Task;
 use Filament\Actions;
 use Filament\Forms;
@@ -39,7 +40,14 @@ class TaskResource extends Resource
             Forms\Components\Textarea::make('body')->label('Apraksts')->rows(3)->columnSpanFull(),
             Forms\Components\DateTimePicker::make('due_at')->label('Līdz')->native(false)->required()->minDate(now()),
             Forms\Components\Select::make('assigned_user_id')->label('Aģents')
-                ->relationship('assignedTo', 'name')->searchable()->preload()->optionsLimit(20),
+                ->relationship('assignedTo', 'name')->required()->searchable()->preload()->optionsLimit(20),
+            Forms\Components\Select::make('izpilditajs_id')->label('Izpildītājs')
+                ->relationship('izpilditajs', 'name')
+                ->getOptionLabelUsing(fn ($value): ?string => Izpilditajs::find($value)?->display_label)
+                ->searchable()->preload()->optionsLimit(50)
+                ->helperText('Ja nepieciešams, izveido jaunu zem Sistēma > Izpildītāji')
+                ->columnSpanFull()
+                ->nullable(),
             Forms\Components\Select::make('client_id')->label('Klients')
                 ->searchable()
                 ->options(fn () => Client::query()->orderBy('name')->limit(20)->pluck('name', 'id')->all())
@@ -131,6 +139,7 @@ class TaskResource extends Resource
                     ->icon(fn ($record) => $record->isOverdue() ? 'heroicon-o-exclamation-triangle' : null)
                     ->iconColor('danger'),
                 Tables\Columns\TextColumn::make('assignedTo.name')->label('Aģents')->sortable(),
+                Tables\Columns\TextColumn::make('izpilditajs.name')->label('Izpildītājs')->sortable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('client.name')->label('Klients')->sortable(),
             ])
             ->filters([
