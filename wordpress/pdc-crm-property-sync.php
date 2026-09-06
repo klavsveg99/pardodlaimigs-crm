@@ -285,10 +285,22 @@ function pdc_sync_agent_avatar($post_id, $avatar_url) {
     $filename = basename(parse_url($url, PHP_URL_PATH) ?: 'avatar.jpg');
     if ($filename === '') { $filename = 'avatar.jpg'; }
 
+    global $wpdb;
+    $existing_id = (int) $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_pdc_crm_agent_avatar_url' AND meta_value = %s LIMIT 1",
+            $url
+        )
+    );
+    if ($existing_id > 0) {
+        set_post_thumbnail($post_id, $existing_id);
+        return;
+    }
+
     $existing = pdc_find_existing_media($filename);
     if ($existing > 0) {
-        set_post_thumbnail($post_id, $existing);
         update_post_meta($existing, '_pdc_crm_agent_avatar_url', $url);
+        set_post_thumbnail($post_id, $existing);
         return;
     }
 

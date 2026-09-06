@@ -59,7 +59,12 @@ class User extends Authenticatable implements FilamentUser
             return null;
         }
 
-        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->avatar_path);
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        if (! $disk->exists($this->avatar_path)) {
+            return null;
+        }
+
+        return $disk->url($this->avatar_path);
     }
 
     /**

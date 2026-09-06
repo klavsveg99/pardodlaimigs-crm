@@ -165,6 +165,7 @@
         uploadProgress: 0,
         saving: false,
         saveProgress: 0,
+        imageOk: false,
         init() {
             try {
                 const data = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || {};
@@ -392,7 +393,7 @@
     <div style="display: flex; flex-direction: column; gap: 1rem; align-items: flex-start;">
         <div class="avatar-editor-preview">
             <template x-if="url">
-                <img :src="url" alt="Avatars" />
+                <img :src="url" alt="Avatars" x-on:error="url = null; path = null" x-on:load="imageOk = true" />
             </template>
             <template x-if="!url">
                 <div class="avatar-editor-placeholder">
