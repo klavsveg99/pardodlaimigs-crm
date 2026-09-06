@@ -79,9 +79,19 @@ function pdc_relative_upload_path($url) {
     if ($path === null) { return ''; }
     $path = ltrim($path, '/');
     if (strpos($path, 'wp-content/uploads/') === 0) {
-        $path = substr($path, strlen('wp-content/uploads/'));
-    } elseif (strpos($path, 'storage/') === 0) {
-        $path = substr($path, strlen('storage/'));
+        return substr($path, strlen('wp-content/uploads/'));
+    }
+    if (strpos($path, 'storage/attachments/') === 0) {
+        $basename = substr($path, strlen('storage/attachments/'));
+        $year  = (int) gmdate('Y');
+        $month = gmdate('m');
+        return $year . '/' . $month . '/' . $basename;
+    }
+    if (strpos($path, 'storage/avatars/') === 0) {
+        return substr($path, strlen('storage/'));
+    }
+    if (strpos($path, 'storage/') === 0) {
+        return substr($path, strlen('storage/'));
     }
     return $path;
 }
@@ -145,7 +155,10 @@ function pdc_sync_attachments($post_id, $attachments) {
         $seen[$path] = true;
         $attachment['url'] = $url;
         $attachment['path'] = $path;
-        $attachment['name'] = basename($url);
+        if (empty($attachment['name']) || $attachment['name'] === basename($url)) {
+            $provided = isset($attachment['name']) ? (string) $attachment['name'] : '';
+            $attachment['name'] = $provided !== '' ? $provided : basename($url);
+        }
         $unique[] = $attachment;
     }
 

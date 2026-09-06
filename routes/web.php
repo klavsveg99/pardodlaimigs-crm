@@ -81,8 +81,8 @@ Route::post('/admin/avatar/upload', function () {
         return response()->json(['error' => 'File type not accepted'], 422);
     }
 
-    $path = $file->store('avatars', 'public');
     $originalName = $file->getClientOriginalName();
+    $path = $file->storeAs('avatars', $originalName, 'public');
 
     return response()->json([
         'path' => $path,
@@ -110,7 +110,20 @@ Route::post('/admin/property/upload-attachment', function () {
         return response()->json(['error' => 'File too large'], 422);
     }
 
-    $path = $file->store('attachments', 'public');
+    $originalName = $file->getClientOriginalName();
+    $disk = Storage::disk('public');
+    $base = pathinfo($originalName, PATHINFO_FILENAME);
+    $ext  = pathinfo($originalName, PATHINFO_EXTENSION);
+    $dir  = 'attachments';
+    $candidate = $dir . '/' . $originalName;
+    if ($disk->exists($candidate)) {
+        $i = 1;
+        do {
+            $candidate = $dir . '/' . $base . '-' . $i . ($ext ? '.' . $ext : '');
+            $i++;
+        } while ($disk->exists($candidate));
+    }
+    $path = $file->storeAs($dir, basename($candidate), 'public');
 
     try {
         $abs = Storage::disk('public')->path($path);
