@@ -73,6 +73,7 @@ class CrmPropertyFeedController extends Controller
                 'instagram_url' => $u->instagram_url,
                 'linkedin_url' => $u->linkedin_url,
                 'website_url' => $u->website_url,
+                'office_address' => $u->office_address,
             ]);
 
         return response()->json([

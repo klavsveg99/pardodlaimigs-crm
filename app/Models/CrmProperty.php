@@ -142,6 +142,7 @@ class CrmProperty extends Model
         $agent = null;
         if ($this->owner) {
             $agent = [
+                'id' => $this->owner->id,
                 'name' => $this->owner->name,
                 'email' => $this->owner->email,
             ];

@@ -64,7 +64,6 @@ class CrmPropertyResource extends Resource
                         ->label('Līda avots')
                         ->options(CrmProperty::LEAD_SOURCES)
                         ->default('internal')
-                        ->helperText('Ārējais līds — pienākas 10-20% no komisijas. Iekšējais (pardodlaimigs.lv) — bez maksas.')
                         ->required()
                         ->live()
                         ->columnSpanFull(),
@@ -125,18 +124,25 @@ class CrmPropertyResource extends Resource
                     Forms\Components\TextInput::make('size_m2')->label('Platība (m²)')->numeric(),
                     Forms\Components\TextInput::make('land_m2')->label('Zemes platība (m²)')->numeric(),
                     Forms\Components\TextInput::make('kadastra_nr')
-                         ->label('Kadastra nr.*')
+                         ->label('Kadastra nr.')
                          ->required()
                          ->numeric()
-                         ->minLength(8)
                          ->maxLength(11)
-                         ->rules('regex:/^\d{8,11}$/')
-                         ->helperText('8–11 cipari (piem. 01000250003).')
+                         ->minLength(11)
+                         ->rules(['regex:/^\d{11}$/'])
+                         ->extraInputAttributes([
+                             'maxlength' => 11,
+                             'inputmode' => 'numeric',
+                             'pattern' => '\d{11}',
+                             'autocomplete' => 'off',
+                             'x-on:input' => '$el.value = $el.value.replace(/\\D/g, \'\').slice(0, 11)',
+                             'x-on:paste' => '$el.value = ($event.clipboardData || window.clipboardData).getData(\'text\').replace(/\\D/g, \'\').slice(0, 11); $event.preventDefault();',
+                         ])
                          ->placeholder('01000250003')
                          ->validationMessages([
                              'required' => 'Kadastra nr. ir obligāts lauks.',
-                             'regex' => 'Kadastra nr. jābūt 8-11 cipariem.',
-                             'min' => 'Kadastra nr. jābūt vismaz 8 cipariem.',
+                             'regex' => 'Kadastra nr. jābūt tieši 11 cipariem.',
+                             'min' => 'Kadastra nr. jābūt tieši 11 cipariem.',
                              'max' => 'Kadastra nr. nedrīkst pārsniegt 11 ciparus.',
                          ])
                          ->columnSpanFull(),

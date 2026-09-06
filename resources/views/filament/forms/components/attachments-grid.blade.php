@@ -191,6 +191,26 @@
                 document.head.appendChild(s);
             }
         },
+        thumbUrl(file) {
+            if (!file || !file.url) return '';
+            const u = file.url;
+            const wpMatch = u.match(/\/wp-content\/uploads\/(\d{4})\/(\d{2})\/(.+?)(?:\?|$)/);
+            if (wpMatch) {
+                const [, y, m, base] = wpMatch;
+                const dot = base.lastIndexOf('.');
+                if (dot > 0) {
+                    const stem = base.slice(0, dot);
+                    const ext = base.slice(dot);
+                    return `https://pardodlaimigs.lv/wp-content/uploads/${y}/${m}/${stem}-400x300${ext}`;
+                }
+            }
+            return u;
+        },
+        onImgError(e, file) {
+            if (e.target.dataset.fallback) return;
+            e.target.dataset.fallback = '1';
+            e.target.src = file.url;
+        },
         get hasSelection() { return this.selected.length > 0 },
         get allSelected() { return this.files.length > 0 && this.selected.length === this.files.length },
         get paths() { return this.files.map(f => f.path) },
@@ -256,6 +276,46 @@
             e.currentTarget.classList.remove('pdc-dragging');
             this.draggedIndex = null;
             this.$el.querySelectorAll('[data-attach-card]').forEach(el => el.classList.remove('pdc-drag-over','pdc-dragging'));
+        },
+        touchDragId: null,
+        touchStartY: 0,
+        onTouchStart(e, index) {
+            if (e.touches.length !== 1) return;
+            this.touchDragId = index;
+            this.touchStartY = e.touches[0].clientY;
+            e.currentTarget.classList.add('pdc-dragging');
+        },
+        onTouchMove(e) {
+            if (this.touchDragId === null || e.touches.length !== 1) return;
+            e.preventDefault();
+            const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+            if (!el) return;
+            const card = el.closest('[data-attach-card]');
+            this.$el.querySelectorAll('[data-attach-card]').forEach(c => c.classList.remove('pdc-drag-over'));
+            if (card) card.classList.add('pdc-drag-over');
+        },
+        onTouchEnd(e, index) {
+            if (this.touchDragId === null) return;
+            const t = (e.changedTouches && e.changedTouches[0]) || null;
+            let targetIndex = index;
+            if (t) {
+                const el = document.elementFromPoint(t.clientX, t.clientY);
+                if (el) {
+                    const card = el.closest('[data-attach-card]');
+                    if (card) {
+                        const idxAttr = Array.from(this.$el.querySelectorAll('[data-attach-card]')).indexOf(card);
+                        if (idxAttr >= 0) targetIndex = idxAttr;
+                    }
+                }
+            }
+            const from = this.touchDragId;
+            this.touchDragId = null;
+            this.$el.querySelectorAll('[data-attach-card]').forEach(c => c.classList.remove('pdc-drag-over','pdc-dragging'));
+            if (from === targetIndex) return;
+            const item = this.files.splice(from, 1)[0];
+            const to = from < targetIndex ? targetIndex - 1 : targetIndex;
+            this.files.splice(to, 0, item);
+            this.sync();
         },
         openLightbox(index) {
             if (this.editorOpen) return;
@@ -564,14 +624,23 @@
                 x-on:dragleave="onDragLeave($event)"
                 x-on:drop="onDrop($event, index)"
                 x-on:dragend="onDragEnd($event)"
+                x-on:touchstart.passive="onTouchStart($event, index)"
+                x-on:touchmove="onTouchMove($event)"
+                x-on:touchend="onTouchEnd($event, index)"
                 @endif
                 x-on:click="if (! $event.target.closest('button')) openLightbox(index)"
                 title="Velc, lai pārkārtotu • Klikšķini, lai apskatītu"
+                style="touch-action: none;"
             >
                 <img
-                    :src="file.url"
+                    :src="thumbUrl(file)"
                     :alt="file.name"
-                    style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;"
+                    loading="lazy"
+                    decoding="async"
+                    width="400"
+                    height="300"
+                    x-on:error="onImgError($event, file)"
+                    style="width: 100%; height: 100%; object-fit: cover; pointer-events: none; background: #f3f4f6;"
                     draggable="false"
                 />
 
@@ -613,11 +682,6 @@
                 </div>
 
                 @if($isReorderable)
-                    <div class="opacity-60 group-hover:opacity-100 transition-opacity" style="position: absolute; top: 0.5rem; right: 4.6rem; z-index: 10; pointer-events: none;">
-                        <div style="height: 1.6rem; width: 1.6rem; border-radius: 0.35rem; background: rgba(0,0,0,0.6); color: white; display: flex; align-items: center; justify-content: center; cursor: grab; border: 1px solid rgba(255,255,255,0.2);">
-                            <svg style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg>
-                        </div>
-                    </div>
                     <div x-show="index === 0" style="position: absolute; bottom: 0.5rem; left: 0.5rem; z-index: 10; background: var(--pdc-primary); color: white; font-size: 0.68rem; font-weight: 700; padding: 0.28rem 0.55rem; border-radius: 0.4rem; letter-spacing: 0.04em; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.2); line-height: 1;">GALVENĀ</div>
                 @endif
             </div>

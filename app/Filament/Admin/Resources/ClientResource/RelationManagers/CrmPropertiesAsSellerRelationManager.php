@@ -116,11 +116,20 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
                         Forms\Components\TextInput::make('kadastra_nr')
                             ->label('Kadastra nr.')
                             ->maxLength(11)
-                            ->rules(['regex:/^\d{8,11}$/'])
-                            ->validationMessages([
-                                'regex' => 'Kadastra nr. jābūt 8–11 cipariem.',
+                            ->minLength(11)
+                            ->rules(['regex:/^\d{11}$/'])
+                            ->extraInputAttributes([
+                                'maxlength' => 11,
+                                'inputmode' => 'numeric',
+                                'pattern' => '\d{11}',
+                                'x-on:input' => '$el.value = $el.value.replace(/\\D/g, \'\').slice(0, 11)',
+                                'x-on:paste' => '$el.value = ($event.clipboardData || window.clipboardData).getData(\'text\').replace(/\\D/g, \'\').slice(0, 11); $event.preventDefault();',
                             ])
-                            ->helperText('8–11 cipari (piem. 01000250003).'),
+                            ->validationMessages([
+                                'regex' => 'Kadastra nr. jābūt tieši 11 cipariem.',
+                                'min' => 'Kadastra nr. jābūt tieši 11 cipariem.',
+                                'max' => 'Kadastra nr. nedrīkst pārsniegt 11 ciparus.',
+                            ]),
                         Forms\Components\TextInput::make('city')
                             ->label('Pilsēta')
                             ->maxLength(128),

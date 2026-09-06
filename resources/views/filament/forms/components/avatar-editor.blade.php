@@ -165,15 +165,17 @@
         uploadProgress: 0,
         saving: false,
         saveProgress: 0,
-        imageOk: false,
         init() {
             try {
-                const data = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || {};
-                this.path = data.path || null;
-                this.url = data.url || null;
+                const el = document.getElementById('{{ $uid }}-data');
+                const raw = el ? el.textContent : null;
+                let data = null;
+                if (raw) { try { data = JSON.parse(raw); } catch(e) { data = null; } }
+                this.path = (data && data.path) ? data.path : null;
+                this.url = (data && data.url) ? data.url : null;
             } catch(e) { this.path = null; this.url = null; }
             this.uploadUrl = '{{ $uploadUrl }}';
-            this.csrfToken = document.querySelector('meta[name=&quot;csrf-token&quot;]')?.content || document.querySelector('meta[name=csrf-token]')?.content;
+            this.csrfToken = document.querySelector('meta[name=\'csrf-token\']')?.content || '';
             if (!window.Cropper && !document.querySelector('script[data-cropper]')) {
                 const s = document.createElement('script');
                 s.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js';
@@ -181,9 +183,7 @@
                 document.head.appendChild(s);
             }
         },
-        sync() {
-            $wire.set('{{ $statePath }}', this.path, false);
-        },
+        sync() { $wire.set('{{ $statePath }}', this.path, false); },
         async handleUpload(e) {
             const input = e.target;
             const file = input.files?.[0];
@@ -204,7 +204,7 @@
                     const r = JSON.parse(xhr.responseText);
                     if (r.path) {
                         this.path = r.path;
-                        this.url = r.url;
+                        this.url = r.url + (r.url.includes('?') ? '&' : '?') + 'v=' + Date.now();
                         this.sync();
                         this.$nextTick(() => this.openEditor());
                     } else {
@@ -245,14 +245,13 @@
             this.destroyCropper();
             const img = this.$refs.editorImage;
             if (!img) return;
-            // Wait for Cropper to be available
             const tryInit = () => {
                 if (!window.Cropper) {
                     setTimeout(tryInit, 200);
                     return;
                 }
-                img.src = this.url;
-                img.onload = () => {
+                const build = () => {
+                    if (this.cropper) return;
                     this.cropper = new window.Cropper(img, {
                         viewMode: 1,
                         autoCropArea: 1,
@@ -267,19 +266,14 @@
                         toggleDragModeOnDblclick: false,
                     });
                 };
-                // If already cached
-                if (img.complete) {
-                    setTimeout(() => {
-                        if (!this.cropper) {
-                            this.cropper = new window.Cropper(img, {
-                                viewMode: 1,
-                                autoCropArea: 1,
-                                aspectRatio: this.editorAspectRatio,
-                                responsive: true,
-                                background: false,
-                            });
-                        }
-                    }, 100);
+                img.onload = build;
+                img.onerror = () => {
+                    console.error('Avatar editor: image failed to load', this.url);
+                    alert('Neizdevās ielādēt attēlu redaktorā.');
+                };
+                img.src = this.url;
+                if (img.complete && img.naturalWidth > 0) {
+                    build();
                 }
             };
             tryInit();
@@ -356,7 +350,7 @@
                         const r = JSON.parse(xhr.responseText);
                         if (r.path) {
                             this.path = r.path;
-                            this.url = r.url;
+                            this.url = r.url + (r.url.includes('?') ? '&' : '?') + 'v=' + Date.now();
                             this.sync();
                             this.closeEditor();
                         } else {
@@ -393,7 +387,7 @@
     <div style="display: flex; flex-direction: column; gap: 1rem; align-items: flex-start;">
         <div class="avatar-editor-preview">
             <template x-if="url">
-                <img :src="url" alt="Avatars" x-on:error="url = null; path = null" x-on:load="imageOk = true" />
+                <img :src="url" alt="Avatars" />
             </template>
             <template x-if="!url">
                 <div class="avatar-editor-placeholder">

@@ -82,16 +82,16 @@ function pdc_relative_upload_path($url) {
         return substr($path, strlen('wp-content/uploads/'));
     }
     if (strpos($path, 'storage/attachments/') === 0) {
-        $basename = substr($path, strlen('storage/attachments/'));
-        $year  = (int) gmdate('Y');
-        $month = gmdate('m');
-        return $year . '/' . $month . '/' . $basename;
+        // Use a deterministic, time-independent storage path so re-syncs match existing
+        // attachments instead of orphaning them when the calendar month rolls over.
+        // First sync: store under pdc-crm/attachments/<basename> — WP can serve it from there.
+        return 'pdc-crm/attachments/' . substr($path, strlen('storage/attachments/'));
     }
     if (strpos($path, 'storage/avatars/') === 0) {
-        return substr($path, strlen('storage/'));
+        return 'pdc-crm/avatars/' . substr($path, strlen('storage/avatars/'));
     }
     if (strpos($path, 'storage/') === 0) {
-        return substr($path, strlen('storage/'));
+        return 'pdc-crm/' . substr($path, strlen('storage/'));
     }
     return $path;
 }
@@ -100,9 +100,42 @@ function pdc_proxy_url($path) {
     return 'https://crm.pardodlaimigs.lv/api/crm/attachment-proxy?path=' . rawurlencode($path) . '&_k=' . substr(hash_hmac('sha256', $path, PDC_CRM_API_KEY), 0, 16);
 }
 
+function pdc_upload_to_subdir($subdir) {
+    add_filter('upload_dir', function ($upload) use ($subdir) {
+        $upload['subdir'] = $subdir;
+        $upload['path'] = rtrim($upload['basedir'], '/') . '/' . trim($subdir, '/');
+        $upload['url']  = rtrim($upload['baseurl'], '/') . '/' . trim($subdir, '/');
+        return $upload;
+    });
+}
+
+function pdc_clear_upload_dir_filter() {
+    remove_all_filters('upload_dir');
+}
+
+function pdc_create_attachment_from_sideload($tmp_file, $name, $post_id, $subdir) {
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+    require_once ABSPATH . 'wp-admin/includes/media.php';
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+
+    pdc_upload_to_subdir($subdir);
+    try {
+        $result = media_handle_sideload(
+            ['name' => $name, 'tmp_name' => $tmp_file],
+            $post_id,
+            $name
+        );
+    } finally {
+        pdc_clear_upload_dir_filter();
+    }
+    return $result;
+}
+
 function pdc_find_existing_media_by_path($path) {
     global $wpdb;
     if ($path === '') { return 0; }
+
+    // 1. Exact deterministic path match (new pdc-crm/ storage layout)
     $meta_id = $wpdb->get_var(
         $wpdb->prepare(
             "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND meta_value = %s LIMIT 1",
@@ -113,11 +146,40 @@ function pdc_find_existing_media_by_path($path) {
         return (int) $meta_id;
     }
 
+    // 2. Legacy path: previous version stored CRM attachments under the current
+    //    YYYY/MM/<basename>. Try every recent YYYY/MM with the same basename so
+    //    a re-sync doesn't generate orphan attachments when the calendar month rolls.
     $basename = basename($path);
     if ($basename === '' || $basename === '.' || $basename === '/') {
         return 0;
     }
 
+    // 2. Legacy path: previous version stored CRM attachments under the current
+    //    YYYY/MM/<basename>. Probe the current and previous month only — this is
+    //    enough to cover the rollover case without ballooning query count.
+    $current_year  = (int) gmdate('Y');
+    $current_month = (int) gmdate('m');
+    $month_probes = [$current_month];
+    if ($current_month > 1)  { $month_probes[] = $current_month - 1; }
+    if ($current_month === 1) { $month_probes[] = 12; $year_candidates = [$current_year, $current_year - 1]; }
+    else                       { $year_candidates = [$current_year]; }
+    foreach ($year_candidates as $year) {
+        foreach ($month_probes as $month) {
+            $legacy = sprintf('%04d/%02d/%s', $year, $month, $basename);
+            $legacy_id = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND meta_value = %s LIMIT 1",
+                    $legacy
+                )
+            );
+            if ($legacy_id && (int) $legacy_id > 0) {
+                update_post_meta((int) $legacy_id, '_wp_attached_file', $path);
+                return (int) $legacy_id;
+            }
+        }
+    }
+
+    // 3. Last-resort basename fallback (anywhere in the uploads tree)
     $base = preg_replace('/-\d+$/', '', preg_replace('/\.[^.]+$/', '', $basename));
     $ext  = pathinfo($basename, PATHINFO_EXTENSION);
     if ($base === '' || $ext === '') {
@@ -220,8 +282,11 @@ function pdc_sync_attachments($post_id, $attachments) {
             continue;
         }
 
-        $file_array = ['name' => $name, 'tmp_name' => $tmp];
-        $media_id = (int) media_handle_sideload($file_array, $post_id, $name);
+        // Compute the deterministic subdirectory from the path so re-syncs land in the
+        // same place even when the calendar month rolls over.
+        $subdir = trim(dirname($path), '/');
+        $media_id = pdc_create_attachment_from_sideload($tmp, $name, $post_id, $subdir);
+        @unlink($tmp);
         if (is_wp_error($media_id)) {
             @unlink($tmp);
             pdc_log('sideload failed: ' . $name . ': ' . $media_id->get_error_message());
@@ -277,9 +342,6 @@ function pdc_sync_agent_avatar($post_id, $avatar_url) {
         delete_post_thumbnail($post_id);
         return;
     }
-    require_once ABSPATH . 'wp-admin/includes/file.php';
-    require_once ABSPATH . 'wp-admin/includes/media.php';
-    require_once ABSPATH . 'wp-admin/includes/image.php';
 
     $url = esc_url_raw($avatar_url);
     $filename = basename(parse_url($url, PHP_URL_PATH) ?: 'avatar.jpg');
@@ -309,10 +371,12 @@ function pdc_sync_agent_avatar($post_id, $avatar_url) {
         pdc_log('agent avatar download failed: ' . $filename . ': ' . $tmp->get_error_message() . ' url=' . $url);
         return;
     }
-    $file_array = ['name' => $filename, 'tmp_name' => $tmp];
-    $media_id = (int) media_handle_sideload($file_array, $post_id, $filename);
+
+    // Place avatars in a stable subdirectory so re-syncs don't churn them monthly.
+    $subdir = trim(dirname(pdc_relative_upload_path($url)), '/');
+    $media_id = pdc_create_attachment_from_sideload($tmp, $filename, $post_id, $subdir ?: 'pdc-crm/avatars');
+    @unlink($tmp);
     if (is_wp_error($media_id)) {
-        @unlink($tmp);
         pdc_log('agent avatar sideload failed: ' . $filename . ': ' . $media_id->get_error_message());
         return;
     }
@@ -382,6 +446,7 @@ function pdc_sync_agents() {
         pdc_sync_agent_avatar($post_id, $avatar_url);
 
         $agent_map[$name] = $post_id;
+        $agent_map['id:' . $crm_id] = $post_id;
     }
 
     pdc_log('Synced ' . count($agent_map) . ' agents');
@@ -408,6 +473,7 @@ function pdc_upsert_property($data, $agent_map = []) {
     $lng      = isset($data['lng']) ? $data['lng'] : null;
     $sort_order = isset($data['sort_order']) ? (int) $data['sort_order'] : 0;
     $agent_name = isset($data['agent']['name']) ? $data['agent']['name'] : '';
+    $agent_crm_id = isset($data['agent']['id']) ? (int) $data['agent']['id'] : 0;
 
     $existing = get_posts([
         'post_type'   => 'property',
@@ -474,8 +540,14 @@ function pdc_upsert_property($data, $agent_map = []) {
 
     pdc_sync_attachments($post_id, isset($data['attachments']) ? $data['attachments'] : []);
 
-    if (! empty($agent_name) && isset($agent_map[$agent_name])) {
-        update_post_meta($post_id, 'real_estate_property_agent', $agent_map[$agent_name]);
+    $assigned_agent_id = 0;
+    if ($agent_crm_id > 0 && isset($agent_map['id:' . $agent_crm_id])) {
+        $assigned_agent_id = (int) $agent_map['id:' . $agent_crm_id];
+    } elseif (! empty($agent_name) && isset($agent_map[$agent_name])) {
+        $assigned_agent_id = (int) $agent_map[$agent_name];
+    }
+    if ($assigned_agent_id > 0) {
+        update_post_meta($post_id, 'real_estate_property_agent', $assigned_agent_id);
         update_post_meta($post_id, 'real_estate_agent_display_option', 'agent_info');
     }
 
@@ -559,42 +631,6 @@ add_action('init', function () {
     if (! wp_next_scheduled('pdc_crm_sync_hook')) {
         wp_schedule_event(time(), 'pdc_five_minute', 'pdc_crm_sync_hook');
     }
-});
-
-add_filter('cron_schedules', function ($schedules) {
-    $schedules['pdc_five_minute'] = [
-        'interval' => PDC_SYNC_INTERVAL,
-        'display'  => __('Every 5 Minutes (PDC CRM)'),
-    ];
-    return $schedules;
-});
-
-add_action('pdc_crm_sync_hook', 'pdc_full_sync');
-
-add_action('admin_menu', function () {
-    add_management_page(
-        'CRM Property Sync',
-        'CRM Property Sync',
-        'manage_options',
-        'pdc-crm-sync',
-        function () {
-            if (isset($_POST['pdc_sync_now']) && check_admin_referer('pdc_sync')) {
-                $count = pdc_full_sync();
-                echo '<div class="notice notice-success"><p>Synced ' . esc_html($count) . ' properties from CRM.</p></div>';
-            }
-            $last = get_option('pdc_last_sync', 'Never');
-            $count = get_option('pdc_synced_count', 0);
-            echo '<div class="wrap">';
-            echo '<h1>CRM Property Sync</h1>';
-            echo '<p>Last sync: <strong>' . esc_html($last) . '</strong> &middot; Properties synced: <strong>' . esc_html($count) . '</strong></p>';
-            echo '<form method="post">';
-            wp_nonce_field('pdc_sync');
-            echo '<button type="submit" name="pdc_sync_now" class="button button-primary">Sync Now</button>';
-            echo '</form>';
-            echo '<p>Automatic sync runs every 5 minutes via WP-Cron.</p>';
-            echo '</div>';
-        }
-    );
 });
 
 add_filter('cron_schedules', function ($schedules) {
