@@ -118,13 +118,19 @@ function pdc_find_existing_media_by_path($path) {
         return 0;
     }
 
-    $like = $wpdb->esc_like($basename);
+    $base = preg_replace('/-\d+$/', '', preg_replace('/\.[^.]+$/', '', $basename));
+    $ext  = pathinfo($basename, PATHINFO_EXTENSION);
+    if ($base === '' || $ext === '') {
+        return 0;
+    }
+
+    $like = $wpdb->esc_like($base . '.') . '%';
     $fallback = $wpdb->get_var(
         $wpdb->prepare(
             "SELECT post_id FROM {$wpdb->postmeta}
              WHERE meta_key = '_wp_attached_file'
                AND meta_value LIKE %s
-             ORDER BY post_id DESC
+             ORDER BY post_id ASC
              LIMIT 1",
             '%/' . $like
         )
