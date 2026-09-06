@@ -34,7 +34,7 @@ class IzpilditajsResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('manage') ?? true;
+        return auth()->user()?->can('manage') ?? false;
     }
 
     public static function form(Schema $schema): Schema

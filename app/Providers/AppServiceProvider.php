@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('manage', fn ($user) => true);
+        Gate::define('manage', fn ($user) => ($user->role ?? null) === 'admin');
 
         Table::configureUsing(fn (Table $table) => $table->stackedOnMobile());
     }
