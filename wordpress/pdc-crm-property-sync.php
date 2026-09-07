@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 2.1.0
+ * Version: 2.2.0
  * Author: Pārdod Laimīgs
  */
 
@@ -113,21 +113,34 @@ function pdc_attachment_download_url($attachment) {
         ? $attachment['raw_path']
         : (string) parse_url($url, PHP_URL_PATH);
     $path = ltrim($path, '/');
-    return $path === '' ? '' : pdc_proxy_url($path);
+    if ($path === '') {
+        return '';
+    }
+    $proxy = pdc_proxy_url($path);
+    // Version the URL with the CRM file size so proxies/caches can never serve
+    // a stale copy after the CRM re-optimises an image in place.
+    $size = isset($attachment['size']) ? (int) $attachment['size'] : 0;
+    return $size > 0 ? $proxy . '&v=' . $size : $proxy;
 }
 
 /**
  * Decide whether an existing WP attachment must be re-downloaded because the
- * CRM copy changed size (e.g. after the CRM re-optimised its images).
- * Rate-limited to one HEAD request per attachment per hour.
+ * CRM copy changed (e.g. after the CRM re-optimised its images). When the CRM
+ * reports the file size this short-circuits without a network call; otherwise
+ * it falls back to a HEAD request rate-limited to once per hour.
  */
-function pdc_attachment_needs_refresh($media_id, $url) {
+function pdc_attachment_needs_refresh($media_id, $url, $declared_size) {
     $local = get_attached_file($media_id);
     if ($url === '' || $local === false || $local === '') {
         return false;
     }
     if (! is_file($local)) {
         return true;
+    }
+
+    $stored = (int) get_post_meta($media_id, '_pdc_crm_attachment_size', true);
+    if ($declared_size > 0 && $stored > 0 && $stored === $declared_size) {
+        return false;
     }
 
     $checked = (int) get_post_meta($media_id, '_pdc_crm_attachment_checked_at', true);
@@ -144,7 +157,6 @@ function pdc_attachment_needs_refresh($media_id, $url) {
         return false;
     }
 
-    $stored = (int) get_post_meta($media_id, '_pdc_crm_attachment_size', true);
     if ($stored > 0 && $stored === $remote_size) {
         return false;
     }
@@ -350,7 +362,8 @@ function pdc_sync_attachments($post_id, $attachments) {
             update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
             if ($is_image) {
                 $download_url = pdc_attachment_download_url($attachment);
-                if (pdc_attachment_needs_refresh($media_id, $download_url)) {
+                $declared_size = isset($attachment['size']) ? (int) $attachment['size'] : 0;
+                if (pdc_attachment_needs_refresh($media_id, $download_url, $declared_size)) {
                     pdc_refresh_attachment_file($media_id, $download_url, $name);
                 }
             }

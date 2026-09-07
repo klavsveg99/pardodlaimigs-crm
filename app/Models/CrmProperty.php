@@ -172,11 +172,13 @@ class CrmProperty extends Model
                 'url' => $attachment->url,
                 'name' => $attachment->original_name,
                 'mime_type' => $attachment->mime_type,
+                'size' => (int) $attachment->size,
                 'sort_order' => $attachment->sort_order,
             ])->concat(collect($this->image_urls ?? [])->values()->map(fn (string $url, int $index): array => [
                 'url' => $url,
                 'name' => basename(parse_url($url, PHP_URL_PATH) ?: "image-{$index}.jpg"),
                 'mime_type' => 'image/*',
+                'size' => 0,
                 'sort_order' => $index,
             ]))->values()->all(),
         ];

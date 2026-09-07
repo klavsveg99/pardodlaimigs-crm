@@ -55,7 +55,7 @@ Route::get('/api/crm/attachment-proxy', function (\Illuminate\Http\Request $requ
     $mime = \Illuminate\Support\Facades\File::mimeType($abs) ?: 'application/octet-stream';
     return response()->file($abs, [
         'Content-Type' => $mime,
-        'Cache-Control' => 'public, max-age=31536000',
+        'Cache-Control' => 'no-store',
     ]);
 })->name('crm.attachment.proxy');
 
