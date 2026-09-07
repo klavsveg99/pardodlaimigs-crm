@@ -112,7 +112,7 @@
     <x-filament::section heading="Pielikumi">
         @if ($record->attachments->isNotEmpty())
             @php
-                $galleryJson = $record->attachments->map(fn($a)=>["url"=>$a->url,"name"=>$a->original_name])->values()->toJson();
+                $galleryJson = $record->attachments->map(fn($a)=>["url"=>$a->cacheBustedUrl(),"name"=>$a->original_name])->values()->toJson();
                 $galleryUid = "view-gallery-".$record->id;
             @endphp
             <script type="application/json" id="{{ $galleryUid }}-data">{!! $galleryJson !!}</script>
@@ -140,7 +140,7 @@
                             class="group relative block overflow-hidden rounded-xl border bg-gray-50 dark:bg-[#0b0f14] text-left transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-zoom-in {{ $idx === 0 ? 'border-[var(--pdc-primary)] ring-2 ring-[var(--pdc-primary)]/20' : 'border-gray-200 dark:border-[#27303a]' }}"
                             title="Atvērt galerijā • {{ $attachment->original_name }}"
                         >
-                            <img src="{{ $attachment->url }}"
+                            <img src="{{ $attachment->cacheBustedUrl() }}"
                                  alt="{{ $attachment->original_name }}"
                                  class="h-32 w-full object-cover md:h-36 pointer-events-none">
                             @if($idx === 0)

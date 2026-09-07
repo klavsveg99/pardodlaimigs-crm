@@ -40,7 +40,7 @@
         @if ($record->attachments->isNotEmpty())
             <div class="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                 @foreach ($record->attachments as $attachment)
-                    <a href="{{ $attachment->url }}" target="_blank" class="block rounded-xl border border-gray-200 bg-gray-50 p-2 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                    <a href="{{ $attachment->cacheBustedUrl() }}" target="_blank" class="block rounded-xl border border-gray-200 bg-gray-50 p-2 dark:border-[#27303a] dark:bg-[#0b0f14]">
                         <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ $attachment->original_name }}</p>
                     </a>
                 @endforeach

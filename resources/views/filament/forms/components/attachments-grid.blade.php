@@ -9,7 +9,7 @@
     $attachmentsJson = $existingAttachments->map(fn ($a) => [
         'id' => $a->id,
         'path' => $a->path,
-        'url' => $a->url,
+        'url' => $a->cacheBustedUrl(),
         'name' => $a->original_name,
     ])->values()->toJson();
 

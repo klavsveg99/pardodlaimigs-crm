@@ -34,6 +34,27 @@ class Attachment extends Model
         return Storage::disk($this->disk)->url($this->path);
     }
 
+    public function cacheBustedUrl(): string
+    {
+        $url = $this->url;
+
+        if (str_starts_with($this->path, 'http://') || str_starts_with($this->path, 'https://')) {
+            return $url;
+        }
+
+        try {
+            $version = (int) Storage::disk($this->disk)->lastModified($this->path);
+        } catch (\Throwable $e) {
+            $version = 0;
+        }
+
+        if ($version <= 0) {
+            $version = (int) $this->size;
+        }
+
+        return $url . (str_contains($url, '?') ? '&' : '?') . 'v=' . $version;
+    }
+
     public function isImage(): bool
     {
         return str_starts_with((string) $this->mime_type, 'image/');

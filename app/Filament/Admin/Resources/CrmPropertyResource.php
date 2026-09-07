@@ -301,7 +301,7 @@ class CrmPropertyResource extends Resource
                     ->getStateUsing(function (CrmProperty $record) {
                         $first = $record->attachments()->orderBy('sort_order')->first();
                         if ($first) {
-                            return $first->url;
+                            return $first->cacheBustedUrl();
                         }
                         $urls = $record->image_urls ?? [];
                         return is_array($urls) && !empty($urls[0]) ? $urls[0] : null;
