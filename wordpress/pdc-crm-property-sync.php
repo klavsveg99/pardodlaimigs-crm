@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 2.2.0
+ * Version: 2.3.2
  * Author: Pārdod Laimīgs
  */
 
@@ -139,7 +139,8 @@ function pdc_attachment_needs_refresh($media_id, $url, $declared_size) {
     }
 
     $stored = (int) get_post_meta($media_id, '_pdc_crm_attachment_size', true);
-    if ($declared_size > 0 && $stored > 0 && $stored === $declared_size) {
+    $local_size = (int) @filesize($local);
+    if ($declared_size > 0 && $stored > 0 && $stored === $declared_size && $local_size > 0 && $local_size === $stored) {
         return false;
     }
 
@@ -161,7 +162,6 @@ function pdc_attachment_needs_refresh($media_id, $url, $declared_size) {
         return false;
     }
 
-    $local_size = (int) @filesize($local);
     if ($local_size > 0 && $local_size === $remote_size) {
         update_post_meta($media_id, '_pdc_crm_attachment_size', $remote_size);
         return false;
@@ -181,7 +181,7 @@ function pdc_refresh_attachment_file($media_id, $url, $name) {
         return false;
     }
 
-    $tmp = @download_url($url, 30);
+    $tmp = @download_url($url . '&_t=' . time(), 30);
     if (is_wp_error($tmp)) {
         pdc_log('refresh download failed: ' . $name . ': ' . $tmp->get_error_message());
         return false;
@@ -241,9 +241,34 @@ function pdc_create_attachment_from_sideload($tmp_file, $name, $post_id, $subdir
     return $result;
 }
 
-function pdc_find_existing_media_by_path($path) {
+function pdc_find_existing_media_by_path($path, $url = '') {
     global $wpdb;
-    if ($path === '') { return 0; }
+    if ($path === '' && $url === '') {
+        return 0;
+    }
+
+    // 0. Match on the CRM source URL first — unambiguous across syncs even when
+    //    WP had to rename the stored file (e.g. "<name>-10.jpg" collision). Only
+    //    existing attachments qualify (orphaned postmeta of deleted posts is ignored)
+    //    and the newest match wins.
+    if ($url !== '') {
+        $by_url = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT pm.post_id
+                 FROM {$wpdb->postmeta} pm
+                 INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+                 WHERE pm.meta_key = '_pdc_crm_attachment_url'
+                   AND pm.meta_value = %s
+                   AND p.post_type = 'attachment'
+                 ORDER BY pm.post_id DESC
+                 LIMIT 1",
+                $url
+            )
+        );
+        if ($by_url && (int) $by_url > 0) {
+            return (int) $by_url;
+        }
+    }
 
     // 1. Exact deterministic path match (new pdc-crm/ storage layout)
     $meta_id = $wpdb->get_var(
@@ -356,7 +381,7 @@ function pdc_sync_attachments($post_id, $attachments) {
 
         $is_image = (strpos($mime, 'image/') === 0 || preg_match('/\.(jpe?g|png|gif|webp|bmp)$/i', $name));
 
-        $media_id = pdc_find_existing_media_by_path($path);
+        $media_id = pdc_find_existing_media_by_path($path, $url);
 
         if ($media_id > 0) {
             update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
@@ -388,7 +413,7 @@ function pdc_sync_attachments($post_id, $attachments) {
                 continue;
             }
             $proxy_path = $attachment['raw_path'] ?? $path;
-            $download_url = pdc_proxy_url($proxy_path);
+            $download_url = pdc_proxy_url($proxy_path) . '&_t=' . time();
         } else {
             $download_url = $url;
         }
