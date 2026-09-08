@@ -71,7 +71,7 @@ class DescriptionGenerator
 
     private function callGemini(string $prompt): array
     {
-        $model = (string) config('services.gemini.model', 'gemini-2.0-flash');
+        $model = (string) config('services.gemini.model', 'gemini-3.5-flash');
         $key = (string) config('services.gemini.key');
 
         $response = Http::timeout(90)
