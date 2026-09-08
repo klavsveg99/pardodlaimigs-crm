@@ -14,6 +14,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Pulls WPForms entries (wp-json/crm/v1/wpforms) into crm.wpform_entries.
@@ -22,6 +23,14 @@ use Illuminate\Support\Facades\Cache;
  * missing from a page are never deleted. The last-sync timestamp only
  * advances after the request and all processing complete successfully, so
  * a failed run re-fetches the same window on the next attempt.
+ *
+ * CRM changes persist across syncs:
+ *  - entries deleted in the CRM are skipped via `wpform_entry_deletions`
+ *    tombstones (see the WpformEntry model `deleted` hook) — an entry the
+ *    user removed is never re-created, even if WordPress re-sends it;
+ *  - CRM-owned columns (`status`, `viewed`, `starred`, `client_id`) are
+ *    only populated on CREATE — updates refresh the WP-owned payload
+ *    (fields, labels, timestamps) without resetting manual CRM edits.
  */
 class SyncWpForms implements ShouldQueue
 {
@@ -39,11 +48,14 @@ class SyncWpForms implements ShouldQueue
         $fetchedAt = now()->toIso8601String();
 
         $count = 0;
+        $seen = [];
         foreach ($source->eachEntry($since ?: null) as $entry) {
-            WpformEntry::updateOrCreate(
-                ['external_id' => (string) $entry->external_id],
-                $this->row($entry),
-            );
+            $externalId = (string) $entry->external_id;
+            $seen[] = $externalId;
+            if ($this->isTombstoned($externalId)) {
+                continue;
+            }
+            $this->upsert($entry);
             $count++;
         }
 
@@ -55,8 +67,36 @@ class SyncWpForms implements ShouldQueue
             'wpform_entry',
             null,
             null,
-            ['count' => $count, 'since' => $since],
+            ['count' => $count, 'since' => $since, 'skipped' => count($seen) - $count],
         );
+    }
+
+    private function isTombstoned(string $externalId): bool
+    {
+        return DB::table('wpform_entry_deletions')
+            ->where('external_id', $externalId)
+            ->exists();
+    }
+
+    private function upsert(object $entry): void
+    {
+        $externalId = (string) $entry->external_id;
+
+        $existing = WpformEntry::query()
+            ->where('external_id', $externalId)
+            ->first();
+
+        if ($existing === null) {
+            WpformEntry::create(
+                ['external_id' => $externalId] + $this->row($entry),
+            );
+
+            return;
+        }
+
+        // Existing record: refresh only WP-owned payload data, never the
+        // CRM-owned columns the user manages in the admin.
+        $existing->update($this->payload($entry));
     }
 
     /**
@@ -76,6 +116,19 @@ class SyncWpForms implements ShouldQueue
             'created_at' => $this->timestamp($entry->created_at),
             'updated_at' => $this->timestamp($entry->updated_at),
         ];
+    }
+
+    /**
+     * WP-owned payload subset — everything `row()` provides EXCEPT the
+     * CRM-managed columns (`status`, `viewed`, `starred`).
+     *
+     * @return array<string, mixed>
+     */
+    private function payload(object $entry): array
+    {
+        return collect($this->row($entry))
+            ->except(['status', 'viewed', 'starred'])
+            ->all();
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 class WpformEntry extends Model
 {
@@ -27,6 +28,23 @@ class WpformEntry extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        // Deletions made in the CRM are authoritative: record a tombstone so
+        // the periodic WordPress sync never re-creates this entry (or a
+        // resurrected version of it) later.
+        static::deleted(function (WpformEntry $entry): void {
+            if (filled($entry->external_id)) {
+                $now = now();
+
+                DB::table('wpform_entry_deletions')->updateOrInsert(
+                    ['external_id' => (string) $entry->external_id],
+                    ['deleted_at' => $now],
+                );
+            }
+        });
+    }
 
     public function client(): BelongsTo
     {
