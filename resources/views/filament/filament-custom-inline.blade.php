@@ -1111,9 +1111,11 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     /* Filters (AboveContent) – stack 3 cols to 1 */
     .fi-filters, .fi-ta-filters, .fi-table-filters, .fi-ta-filters-form, .fi-filters-form { grid-template-columns: 1fr !important; }
     .fi-filters .grid, .fi-ta-filters .grid { grid-template-columns: 1fr !important; }
-    /* Table toolbar: search + sort wrap */
-    .fi-ta-header-ctn, .fi-ta-toolbar, .fi-ta-header-toolbar { flex-wrap: wrap !important; gap: 0.5rem !important; }
-    .fi-ta-search-field, .fi-ta-search-input-ctn { flex: 1 1 100% !important; min-width: 0 !important; width: 100% !important; }
+    /* Table toolbar: search + sort stay on one row, search shrinks to fit */
+    .fi-ta-header-ctn, .fi-ta-toolbar { flex-wrap: wrap !important; gap: 0.5rem !important; }
+    .fi-ta-header-toolbar { flex-wrap: nowrap !important; gap: 0.5rem !important; }
+    .fi-ta-header-toolbar > div { min-width: 0 !important; }
+    .fi-ta-search-field, .fi-ta-search-input-ctn { flex: 1 1 auto !important; min-width: 0 !important; width: auto !important; }
     .fi-ta-search-input { width: 100% !important; }
     /* Pagination wraps */
     .fi-pagination, .fi-ta-pagination { flex-wrap: wrap !important; gap: 0.5rem !important; }
@@ -1121,7 +1123,11 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-section, .fi-card { margin-left: 0 !important; margin-right: 0 !important; }
     .fi-section-content { padding: 1rem !important; }
     .fi-section-header { padding: 1rem 1rem 0 !important; }
-    .fi-main-ctn { padding-left: 1rem !important; padding-right: 1rem !important; }
+    /* Content edges line up with the topbar icons: left = hamburger glyph
+       (button 16px + 6px internal padding), right = avatar edge. .fi-main
+       adds its own 16px inside .fi-main-ctn — zero it to avoid double padding */
+    .fi-main-ctn { padding-left: 22px !important; padding-right: 1rem !important; }
+    .fi-main-ctn .fi-main { padding-left: 0 !important; padding-right: 0 !important; }
     /* Forms: force single column, label above input */
     .fi-fo-component-ctn, .fi-fo-field-wrp { grid-template-columns: 1fr !important; }
     .fi-fo-field { grid-column: span 1 / span 1 !important; }
