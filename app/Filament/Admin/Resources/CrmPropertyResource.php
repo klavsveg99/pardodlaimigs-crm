@@ -197,19 +197,68 @@ class CrmPropertyResource extends Resource
             Section::make('Apraksts')
                 ->columnSpanFull()
                 ->headerActions([
+                    // Standarta Filament modāls ar 4 papildu ievadēm un
+                    // ģenerēšanu — zaļa poga WYSIWYG bloka galvenē.
+                    Actions\Action::make('ai_generator')
+                        ->visible(fn (): bool => DescriptionGenerator::provider() !== null)
+                        ->label('AI ģenerēt aprakstu')
+                        ->icon('heroicon-o-sparkles')
+                        ->color('primary')
+                        ->modalHeading('AI teksta ģenerators')
+                        ->modalDescription('Ievadi tikai to, kas vēl NAV aizpildīts formas laukos — pārējo AI ņem no īpašuma datiem.')
+                        ->modalSubmitActionLabel('Ģenerēt')
+                        ->form([
+                            Forms\Components\Textarea::make('advantages')
+                                ->label('Priekšrocības')
+                                ->rows(3)
+                                ->helperText('Atrašanās vieta, piekļuve, infrastruktūra, skats, ūdens, daba u.c.'),
+                            Forms\Components\Textarea::make('technical')
+                                ->label('Tehniskā informācija')
+                                ->rows(3)
+                                ->helperText('Apkure, ūdens, kanalizācija, elektrība, ēkas stāvoklis, būvniecības gads'),
+                            Forms\Components\Textarea::make('investment')
+                                ->label('Investīciju potenciāls')
+                                ->rows(3)
+                                ->helperText('Attīstības iespējas, zemes izmantošana, loģistika, komerciālais potenciāls'),
+                            Forms\Components\Textarea::make('extra')
+                                ->label('Papildu informācija')
+                                ->rows(3)
+                                ->helperText('Brīvs teksts — viss svarīgais, ko AI vēl jāņem vērā'),
+                        ])
+                        ->fillForm(fn (?CrmProperty $record): array => [
+                            'advantages' => $record?->ai_notes['advantages'] ?? null,
+                            'technical' => $record?->ai_notes['technical'] ?? null,
+                            'investment' => $record?->ai_notes['investment'] ?? null,
+                            'extra' => $record?->ai_notes['extra'] ?? null,
+                        ])
+                        ->action(fn (array $data, $livewire) => $livewire->runAiGenerator($data)),
                     // Rezerves šablona ģenerators — redzams tikai, ja nav
                     // konfigurēta neviena AI atslēga (GEMINI/OPENAI).
                     Actions\Action::make('ai_generate_description')
                         ->visible(fn (): bool => blank(config('services.gemini.key')) && blank(config('services.openai.key')))
-                        ->label('AI ģenerēt aprakstu')
+                        ->label('Ģenerēt (šablonā)')
                         ->icon('heroicon-o-sparkles')
-                        ->color('primary')
+                        ->color('gray')
                         ->requiresConfirmation()
-                        ->modalHeading('Ģenerēt aprakstu ar AI')
-                        ->modalDescription('Tiks izveidots īpašuma apraksts latviešu un angļu valodā, ņemot vērā ievadītos datus. Angļu versija tiek veidota no šablona (bez ārējiem API, lai izvairītos no rate-limit).')
+                        ->modalHeading('Ģenerēt aprakstu ar šablonu (bez AI)')
+                        ->modalDescription('Tiks izveidots īpašuma apraksts latviešu un angļu valodā no šablona.')
                         ->modalSubmitActionLabel('Ģenerēt')
                         ->action(function (Get $get, Set $set): void {
                             $category = (string) ($get('data.category') ?? 'īpašums');
+                            $city = (string) ($get('data.city') ?? '');
+                            $address = (string) ($get('data.address') ?? '');
+                            $price = (float) ($get('data.price_eur') ?? 0);
+                            $beds = (int) ($get('data.beds') ?? 0);
+                            $baths = (int) ($get('data.baths') ?? 0);
+                            $size = (int) ($get('size_m2') ?? 0);
+                            $land = (int) ($get('land_m2') ?? 0);
+                            $kadastra = (string) ($get('data.kadastra_nr') ?? '');
+                            $status = (string) ($get('data.status') ?? '');
+                            $leadSource = (string) ($get('data.lead_source') ?? '');
+                            $leadOwner = (string) ($get('data.lead_owner') ?? '');
+                            $finalPrice = (float) ($get('data.final_price_eur') ?? 0);
+                            $commission = (float) ($get('data.commission_eur') ?? 0);
+                            $title = (string) ($get('data.title') ?? $category);
                             $city = (string) ($get('data.city') ?? '');
                             $address = (string) ($get('data.address') ?? '');
                             $price = (float) ($get('data.price_eur') ?? 0);
@@ -343,49 +392,9 @@ class CrmPropertyResource extends Resource
                                 ]),
                         ])
                         ->columnSpanFull(),
-                ])->columnSpanFull(),
 
-            Section::make('AI teksta ģenerators')
-                ->columnSpanFull()
-                ->description('Sludinājuma tekstu ģenerators — pilnais apraksts, ss.lv, virsraksts, Facebook un Instagram vienā soļā.')
-                ->headerActions([
-                    Actions\Action::make('ai_generator')
-                        ->label('AI ģenerēt aprakstu')
-                        ->icon('heroicon-o-sparkles')
-                        ->color('gray')
-                        ->visible(fn (): bool => DescriptionGenerator::provider() !== null)
-                        ->modalHeading('AI teksta ģenerators')
-                        ->modalDescription('Ievadi tikai to, kas vēl NAV aizpildīts formas laukos — pārējo AI ņem no īpašuma datiem.')
-                        ->modalSubmitActionLabel('Ģenerēt')
-                        ->form([
-                            Forms\Components\Textarea::make('advantages')
-                                ->label('Priekšrocības')
-                                ->rows(3)
-                                ->helperText('Atrašanās vieta, piekļuve, infrastruktūra, skats, ūdens, daba u.c.'),
-                            Forms\Components\Textarea::make('technical')
-                                ->label('Tehniskā informācija')
-                                ->rows(3)
-                                ->helperText('Apkure, ūdens, kanalizācija, elektrība, ēkas stāvoklis, būvniecības gads'),
-                            Forms\Components\Textarea::make('investment')
-                                ->label('Investīciju potenciāls')
-                                ->rows(3)
-                                ->helperText('Attīstības iespējas, zemes izmantošana, loģistika, komerciālais potenciāls'),
-                            Forms\Components\Textarea::make('extra')
-                                ->label('Papildu informācija')
-                                ->rows(3)
-                                ->helperText('Brīvs teksts — viss svarīgais, ko AI vēl jāņem vērā'),
-                        ])
-                        ->fillForm(fn (?CrmProperty $record): array => [
-                            'advantages' => $record?->ai_notes['advantages'] ?? null,
-                            'technical' => $record?->ai_notes['technical'] ?? null,
-                            'investment' => $record?->ai_notes['investment'] ?? null,
-                            'extra' => $record?->ai_notes['extra'] ?? null,
-                        ])
-                        ->action(fn (array $data, $livewire) => $livewire->runAiGenerator($data)),
-                ])
-                ->schema([
                     // Rezultātu popup (Kopēt / Ievietot / variantu pogas). Ievades
-                    // rāda standarta Filament Action modal augstāk.
+                    // modālā ir Apraksts sekcijas galvenes AI darbība.
                     View::make('filament.forms.components.ai-generator-panel')
                         ->columnSpanFull(),
                 ])->columnSpanFull(),
