@@ -39,7 +39,7 @@ class CrmProperty extends Model
         'currency', 'category', 'status', 'lead_source', 'lead_owner', 'beds', 'baths',
         'size_m2', 'land_m2', 'kadastra_nr', 'city', 'address',
         'lat', 'lng', 'owner_user_id', 'sort_order',
-        'final_price_eur', 'commission_eur', 'sold_at',
+        'final_price_eur', 'commission_eur', 'sold_at', 'ai_notes',
     ];
 
     protected $casts = [
@@ -56,6 +56,7 @@ class CrmProperty extends Model
         'lat' => 'decimal:7',
         'lng' => 'decimal:7',
         'sort_order' => 'integer',
+        'ai_notes' => 'array',
     ];
 
     protected static function booted(): void

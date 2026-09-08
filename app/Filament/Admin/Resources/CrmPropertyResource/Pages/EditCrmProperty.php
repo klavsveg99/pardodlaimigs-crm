@@ -7,6 +7,7 @@ namespace App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 use App\Filament\Admin\Resources\CrmPropertyResource;
 use App\Filament\Admin\Resources\Pages\Concerns\AttachSellerAction;
 use App\Filament\Admin\Resources\Pages\Concerns\AutosavesForm;
+use App\Filament\Admin\Resources\Pages\Concerns\GeneratesAiDescription;
 use App\Filament\Admin\Resources\Pages\Concerns\SyncsAttachments;
 use App\Models\CrmProperty;
 use Filament\Actions;
@@ -18,6 +19,7 @@ class EditCrmProperty extends EditRecord
 {
     use AttachSellerAction;
     use AutosavesForm;
+    use GeneratesAiDescription;
     use SyncsAttachments;
 
     protected static string $resource = CrmPropertyResource::class;

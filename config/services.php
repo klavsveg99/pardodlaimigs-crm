@@ -39,4 +39,17 @@ return [
         'key' => env('GOOGLE_MAPS_KEY'),
     ],
 
+    // AI teksta ģenerators. Pietiek VIENAS atslēgas — Gemini (Google AI Studio,
+    // bezmaksas līmenis) vai OpenAI. Bez atslēgas forma rāda paziņojumu un
+    // paliek vecais šablona ģenerators.
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
+    ],
+
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+    ],
+
 ];

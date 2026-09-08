@@ -8,6 +8,7 @@ use App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 use App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers\ClientsRelationManager;
 use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Models\CrmProperty;
+use App\Services\Ai\DescriptionGenerator;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
@@ -196,7 +197,10 @@ class CrmPropertyResource extends Resource
             Section::make('Apraksts')
                 ->columnSpanFull()
                 ->headerActions([
+                    // Rezerves šablona ģenerators — redzams tikai, ja nav
+                    // konfigurēta neviena AI atslēga (GEMINI/OPENAI).
                     Actions\Action::make('ai_generate_description')
+                        ->visible(fn (): bool => blank(config('services.gemini.key')) && blank(config('services.openai.key')))
                         ->label('AI ģenerēt aprakstu')
                         ->icon('heroicon-o-sparkles')
                         ->color('primary')
@@ -337,6 +341,43 @@ class CrmPropertyResource extends Resource
                                     View::make('filament.forms.components.description-revisions')
                                         ->columnSpanFull(),
                                 ]),
+                        ])
+                        ->columnSpanFull(),
+                ])->columnSpanFull(),
+
+            Section::make('AI teksta ģenerators')
+                ->columnSpanFull()
+                ->description('Papildu informācija, ko AI izmanto sludinājuma tekstu ģenerēšanai. Ievadi tikai to, kas vēl NAV aizpildīts formas laukos — AI pārējo ņem no īpašuma datiem.')
+                ->schema([
+                    Grid::make(['default' => 1, 'md' => 2])->schema([
+                        Forms\Components\Textarea::make('ai_notes.advantages')
+                            ->label('Priekšrocības')
+                            ->rows(3)
+                            ->maxLength(2000)
+                            ->placeholder('Piem.: 10 min līdz jūrai, klusa iela, jauna komunikācija, skats uz pļavu'),
+                        Forms\Components\Textarea::make('ai_notes.technical')
+                            ->label('Tehniskā informācija')
+                            ->rows(3)
+                            ->maxLength(2000)
+                            ->placeholder('Piem.: gāzes apkure, pilsētas ūdens/kanalizācija, ēka 2005. g., komunikācijas pie ielas'),
+                        Forms\Components\Textarea::make('ai_notes.investment')
+                            ->label('Investīciju potenciāls')
+                            ->rows(3)
+                            ->maxLength(2000)
+                            ->placeholder('Piem.: iespēja dalīt 3 zemes vienībās, loģistikas piekļuve, komercpotenciāls'),
+                        Forms\Components\Textarea::make('ai_notes.extra')
+                            ->label('Papildu informācija')
+                            ->rows(3)
+                            ->maxLength(4000)
+                            ->placeholder('Brīvs teksts — viss svarīgais, ko AI vēl jāņem vērā'),
+                    ]),
+                    View::make('filament.forms.components.ai-generator-panel')
+                        ->viewData([
+                            'providerLabel' => match (DescriptionGenerator::provider()) {
+                                'gemini' => 'Google Gemini',
+                                'openai' => 'OpenAI',
+                                default => '—',
+                            },
                         ])
                         ->columnSpanFull(),
                 ])->columnSpanFull(),
