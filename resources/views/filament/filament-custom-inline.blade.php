@@ -998,6 +998,76 @@ html.dark .rounded-xl .text-emerald-900 {
 .fi-fo-field:not(:has(.fi-checkbox-input)) .fi-textarea,
 .fi-fo-field:not(:has(.fi-checkbox-input)) .fi-fo-field-content-col > div { width: 100% !important; }
 
+/* ── Property view page "Saistītie klienti" cards ────────────────
+   Dedicated classes — Tailwind arbitrary utilities used previously are
+   not present in the compiled app.css and rendered the cards unstyled.
+   Look matches the view page info cards (rounded-xl, bg-gray-50). */
+.pdc-client-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    background: #f9fafb;
+    padding: 1rem;
+}
+.pdc-client-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+.pdc-client-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: var(--pdc-primary);
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+.pdc-client-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+.pdc-client-name {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+    word-break: break-word;
+}
+.pdc-client-contact {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+.pdc-client-badge {
+    font-size: 0.7rem !important;
+}
+.pdc-client-link {
+    flex: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--pdc-primary);
+    text-decoration: none;
+}
+.pdc-client-link:hover { text-decoration: underline; }
+html.dark .pdc-client-card {
+    background: #0b0f14 !important;
+    border-color: #27303a !important;
+}
+html.dark .pdc-client-name { color: #f3f4f6 !important; }
+html.dark .pdc-client-contact { color: #9ca3af !important; }
+
 /* ── Mobile fixes ─────────────────────────────────────────────── */
 @media (max-width: 767px) {
     .fi-input-wrp, .fi-fo-text-input, .fi-select, .fi-textarea { width: 100% !important; }

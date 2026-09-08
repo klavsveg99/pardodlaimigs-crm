@@ -213,32 +213,30 @@
                             'contacted' => 'gray',
                         ];
                         $relationColor = $relationColors[$client->pivot->relation] ?? 'gray';
+                        $contactParts = array_filter([$client->phone, $client->email]);
                     ?>
-                    <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
-                        <div class="mb-2 flex items-center gap-3">
-                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--pdc-primary)] text-sm font-semibold text-white">
-                                {{ strtoupper(substr($client->name, 0, 1)) }}
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-900 dark:text-white">{{ $client->name }}</p>
-                                <p class="text-sm text-gray-500">
-                                    <x-filament::badge :color="$relationColor" class="text-xs">
-                                        {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
-                                    </x-filament::badge>
-                                </p>
+                    <div class="pdc-client-card">
+                        <div class="pdc-client-main">
+                            <div class="pdc-client-avatar">{{ strtoupper(mb_substr($client->name, 0, 1)) }}</div>
+                            <div class="pdc-client-info">
+                                <p class="pdc-client-name">{{ $client->name }}</p>
+                                <p class="pdc-client-contact">{{ implode(' · ', $contactParts) ?: '—' }}</p>
+                                <x-filament::badge :color="$relationColor" class="pdc-client-badge">
+                                    {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
+                                </x-filament::badge>
                             </div>
                         </div>
-                        <div class="mt-2 flex justify-end">
-                            <a href="{{ \App\Filament\Admin\Resources\ClientResource::getUrl('view', ['record' => $client]) }}"
-                               class="text-sm font-medium text-[var(--pdc-primary)] hover:underline">
-                                Skatīt klientu
-                            </a>
-                        </div>
+                        <a href="{{ \App\Filament\Admin\Resources\ClientResource::getUrl('view', ['record' => $client]) }}"
+                           class="pdc-client-link">
+                            Skatīt klientu →
+                        </a>
                     </div>
                 @endforeach
             </div>
         @else
-            <p class="text-sm text-gray-500">Nav saistītu klientu.</p>
+            <div class="text-center rounded-xl border-2 border-dashed border-gray-200 p-8 dark:border-[#27303a]">
+                <p class="text-sm text-gray-500">Nav saistītu klientu.</p>
+            </div>
         @endif
     </x-filament::section>
 
