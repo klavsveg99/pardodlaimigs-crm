@@ -26,8 +26,11 @@ class ListCrmProperties extends ListRecords
     {
         return [
             'active' => Tab::make('Aktīvie')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', '!=', 'deleted'))
-                ->badge(CrmProperty::query()->where('status', '!=', 'deleted')->count()),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', '!=', 'deleted')->where('status', '!=', 'sold'))
+                ->badge(CrmProperty::query()->where('status', '!=', 'deleted')->where('status', '!=', 'sold')->count()),
+            'sold' => Tab::make('Pārdotie')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'sold'))
+                ->badge(CrmProperty::query()->where('status', 'sold')->count()),
             'deleted' => Tab::make('Dzēstie')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'deleted'))
                 ->badge(CrmProperty::query()->where('status', 'deleted')->count()),
