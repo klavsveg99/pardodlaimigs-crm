@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 2.3.6
+ * Version: 2.3.7
  * Author: Pārdod Laimīgs
  */
 
@@ -377,13 +377,18 @@ function pdc_same_upload_dir($a, $b) {
 }
 
 /**
- * Same basename, tolerating WP collision renames ("5.jpg" vs "5-2.jpg" → true).
+ * Same basename, tolerating WP collision renames ("5.jpg" vs "5-2.jpg") and
+ * WP's sanitize_file_name() stripping leading underscores/dashes
+ * ("_MG_8004-HDR.JPG" → "MG_8004-HDR-6.jpg"). Without the leading-char
+ * tolerance those files miss the URL-stamp match and get re-downloaded on
+ * every sync, churning duplicate attachments and slowing syncs to minutes.
  */
 function pdc_same_upload_basename($a, $b) {
     $strip = function ($f) {
         $name = basename((string) $f);
         $name = preg_replace('/\.[^.]+$/', '', $name);
-        return preg_replace('/-\d+$/', '', (string) $name);
+        $name = preg_replace('/-\d+$/', '', (string) $name);
+        return preg_replace('/^[_-]+/', '', (string) $name);
     };
     $ea = pathinfo((string) $a, PATHINFO_EXTENSION);
     $eb = pathinfo((string) $b, PATHINFO_EXTENSION);
