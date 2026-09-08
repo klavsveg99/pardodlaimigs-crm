@@ -1112,8 +1112,11 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     /* Page header wrapper keeps Filament's 32px paddings on mobile, which reads
        as a large blank band between the topbar/heading and the table below */
     .fi-page-header-main-ctn { padding-top: 1rem !important; padding-bottom: 0.75rem !important; }
-    /* When header actions wrap below the heading, park them on the right */
-    .fi-header-actions-ctn { margin-left: auto !important; }
+    /* When header actions wrap below the heading, park them on the right.
+       The container must be shrinkable (overrides the global flex 0 0 auto),
+       otherwise multiple buttons (e.g. view property) overflow the screen
+       instead of wrapping into new rows. */
+    .fi-header-actions-ctn { margin-left: auto !important; flex: 1 1 auto !important; min-width: 0 !important; max-width: 100% !important; }
     .fi-header-actions-ctn .fi-ac { justify-content: flex-end !important; }
     .fi-btn { white-space: normal !important; text-align: center !important; }
     /* Row action buttons (⋮ Darbības) align right at the end of each record card */
