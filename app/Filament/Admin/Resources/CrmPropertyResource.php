@@ -10,6 +10,7 @@ use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -133,7 +134,9 @@ class CrmPropertyResource extends Resource
                     Forms\Components\TextInput::make('land_m2')->label('Zemes platība (m²)')->numeric(),
                     Forms\Components\TextInput::make('kadastra_nr')
                         ->label('Kadastra nr.')
-                        ->required()
+                        // Kadastre nav prasīts dzēšanas plūsmai — statuss "Dzēsts"
+                        // jāvar saglabāt bez kadastra numura (CRM 2.1, #4).
+                        ->required(fn (Get $get): bool => ($get('status') ?? '') !== 'deleted')
                         ->string()
                         ->maxLength(11)
                         ->minLength(11)
@@ -407,6 +410,42 @@ class CrmPropertyResource extends Resource
                 Actions\ActionGroup::make([
                     Actions\ViewAction::make()->label('Skatīt')->color('gray'),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),
+                    // Mīkstā dzēšana (CRM 2.1, #1): statuss "Dzēsts" — dati,
+                    // bildes un vēsture paliek; WP sinhronizācija automātiski
+                    // noņem īpašumu no mājaslapas (deleted → draft).
+                    Actions\Action::make('delete_property')
+                        ->label('Dzēst')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->visible(fn (CrmProperty $record): bool => $record->status !== 'deleted')
+                        ->requiresConfirmation()
+                        ->modalHeading('Vai tiešām dzēst šo īpašumu?')
+                        ->modalDescription('Īpašums tiks pārvietots uz "Dzēstie" un noņemts no mājaslapas. Datus varēs atjaunot.')
+                        ->modalSubmitActionLabel('Dzēst')
+                        ->action(function (CrmProperty $record): void {
+                            $record->update(['status' => 'deleted']);
+                            Notification::make()
+                                ->title('Īpašums dzēsts')
+                                ->body('Pārvietots uz "Dzēstie".')
+                                ->success()
+                                ->send();
+                        }),
+                    Actions\Action::make('restore_property')
+                        ->label('Atjaunot')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('gray')
+                        ->visible(fn (CrmProperty $record): bool => $record->status === 'deleted')
+                        ->requiresConfirmation()
+                        ->modalHeading('Atjaunot īpašumu?')
+                        ->modalDescription('Īpašums atgriezīsies kā melnraksts un būs redzams aktīvo īpašumu sarakstā.')
+                        ->modalSubmitActionLabel('Atjaunot')
+                        ->action(function (CrmProperty $record): void {
+                            $record->update(['status' => 'draft']);
+                            Notification::make()
+                                ->title('Īpašums atjaunots')
+                                ->success()
+                                ->send();
+                        }),
                 ])->color('gray'),
             ]);
     }

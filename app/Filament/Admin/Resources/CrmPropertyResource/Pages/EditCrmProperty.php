@@ -127,6 +127,22 @@ class EditCrmProperty extends EditRecord
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->url(fn () => $this->record->public_url)
                 ->openUrlInNewTab(),
+            Actions\Action::make('restore_property')
+                ->label('Atjaunot')
+                ->icon('heroicon-o-arrow-path')
+                ->color('gray')
+                ->visible(fn (): bool => $this->record?->status === 'deleted')
+                ->requiresConfirmation()
+                ->modalHeading('Atjaunot īpašumu?')
+                ->modalDescription('Īpašums atgriezīsies kā melnraksts un būs redzams aktīvo īpašumu sarakstā.')
+                ->modalSubmitActionLabel('Atjaunot')
+                ->action(function (): void {
+                    $this->record->update(['status' => 'draft']);
+                    Notification::make()
+                        ->title('Īpašums atjaunots')
+                        ->success()
+                        ->send();
+                }),
         ];
     }
 }
