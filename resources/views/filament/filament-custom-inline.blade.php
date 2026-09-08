@@ -113,6 +113,23 @@
     color: inherit !important;
 }
 
+/* Page title and header action buttons ("Jauns īpašums" etc.) share one row:
+   heading block grows, actions stay compact on the right (all viewports —
+   Filament stacks them vertically by default). */
+.fi-header {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+}
+.fi-header > div:first-child {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+.fi-header-actions-ctn {
+    flex: 0 0 auto !important;
+}
+
 .fi-section-header-heading,
 h1.fi-header-heading {
     color: var(--pdc-primary-darker) !important;
@@ -1091,7 +1108,7 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     /* Page header & actions wrap, not overflow */
     .fi-header, .fi-page-header, .fi-header-heading-ctn { flex-wrap: wrap !important; gap: 0.75rem !important; }
     .fi-header-actions, .fi-page-header-actions, .fi-ac { flex-wrap: wrap !important; gap: 0.5rem !important; }
-    .fi-header-actions .fi-btn, .fi-page-header .fi-btn { flex: 1 1 auto !important; min-width: 0 !important; justify-content: center !important; }
+    .fi-header-actions .fi-btn, .fi-page-header .fi-btn { flex: 0 0 auto !important; min-width: 0 !important; justify-content: center !important; }
     /* Page header wrapper keeps Filament's 32px paddings on mobile, which reads
        as a large blank band between the topbar/heading and the table below */
     .fi-page-header-main-ctn { padding-top: 1rem !important; padding-bottom: 0.75rem !important; }
