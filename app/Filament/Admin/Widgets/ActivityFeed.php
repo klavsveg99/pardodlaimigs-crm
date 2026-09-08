@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Widgets;
 
-use App\Models\Activity;
+use App\Models\AuditLog;
+use App\Models\Client;
+use App\Models\CrmProperty;
+use App\Models\Task;
+use App\Models\Viewing;
+use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -16,17 +21,70 @@ class ActivityFeed extends BaseWidget
 
     protected int|string|array $columnSpan = 'full';
 
-    public const TYPE_LABELS = [
-        'created' => 'Izveidots darījums',
-        'stage_changed' => 'Mainīta darījuma stadija',
-        'viewing_booked' => 'Pieteikta apskate',
+    public const ACTION_LABELS = [
+        'create' => 'Izveidots',
+        'update' => 'Atjaunināts',
+        'delete' => 'Dzēsts',
+        'export' => 'Eksportēts',
+        'erase' => 'Dzēsti dati',
+        'export_request' => 'Eksporta pieprasījums',
+        'erase_request' => 'Dzēšanas pieprasījums',
+        'wpform_sync' => 'WP formu sinhronizācija',
+        'login' => 'Pieteicies',
+    ];
+
+    public const ENTITY_LABELS = [
+        'task' => 'Uzdevums',
+        'viewing' => 'Apskate',
+        'client' => 'Klients',
+        'crm_property' => 'Īpašums',
+        'property' => 'Īpašums',
+        'wpform_entry' => 'WP forma',
+        'user' => 'Aģents',
+    ];
+
+    public const FIELD_LABELS = [
+        'title' => 'Nosaukums',
+        'body' => 'Apraksts',
+        'notes_md' => 'Piezīmes',
+        'name' => 'Nosaukums',
+        'phone' => 'Tālrunis',
+        'email' => 'E-pasts',
+        'source' => 'Avots',
+        'source_other' => 'Avota precizējums',
+        'status' => 'Statuss',
+        'stage' => 'Stadija',
+        'due_at' => 'Līdz',
+        'completed_at' => 'Pabeigts',
+        'scheduled_at' => 'Kad',
+        'duration_min' => 'Ilgums (min)',
+        'assigned_user_id' => 'Aģents',
+        'agent_user_id' => 'Aģents',
+        'owner_user_id' => 'Aģents',
+        'izpilditajs_id' => 'Izpildītājs',
+        'client_id' => 'Klients',
+        'property_id' => 'Īpašums',
+        'crm_property_id' => 'Īpašums',
+        'price_eur' => 'Cena (€)',
+        'final_price_eur' => 'Gala cena (€)',
+        'commission_eur' => 'Komisija (€)',
+        'category' => 'Kategorija',
+        'city' => 'Pilsēta',
+        'address' => 'Adrese',
+        'kadastra_nr' => 'Kadastra nr.',
+        'lead_source' => 'Pieteikuma avots',
+        'lead_owner' => 'Atbildīgais aģents',
+        'beds' => 'Istabas',
+        'baths' => 'Vannas istabas',
+        'size_m2' => 'Platība (m²)',
+        'land_m2' => 'Zeme (m²)',
     ];
 
     public function table(Table $table): Table
     {
         return $table
             ->heading('Uzņēmuma aktivitātes')
-            ->description('Jaunākie notikumi sistēmā')
+            ->description('Jaunākie notikumi sistēmā — kas, ko un kad izdarīja')
             ->query(fn () => $this->getQuery())
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')
@@ -35,60 +93,376 @@ class ActivityFeed extends BaseWidget
                     ->sortable()
                     ->alignCenter(),
 
-                Tables\Columns\TextColumn::make('type')
+                Tables\Columns\TextColumn::make('action')
                     ->label('Darbība')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => self::TYPE_LABELS[$state] ?? $state),
+                    ->formatStateUsing(fn ($state, $record) => $this->actionBadge($record)),
 
                 Tables\Columns\TextColumn::make('actor.name')
-                    ->label('Dalībnieks')
+                    ->label('Aģents')
                     ->sortable()
-                    ->placeholder('—'),
+                    ->placeholder('Sistēma'),
 
                 Tables\Columns\TextColumn::make('detail')
                     ->label('Detalizācija')
                     ->wrap()
-                    ->limit(60)
-                    ->getStateUsing(fn ($record) => $this->describe($record)),
+                    ->limit(140)
+                    ->tooltip(fn ($record) => $this->describe($record, false))
+                    ->getStateUsing(fn ($record) => $this->describe($record, true)),
+            ])
+            ->actions([
+                Actions\Action::make('atvert')
+                    ->label('Atvērt')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->color('gray')
+                    ->visible(fn ($record) => $this->recordUrl($record) !== null)
+                    ->url(fn ($record) => $this->recordUrl($record))
+                    ->openUrlInNewTab(),
             ])
             ->paginated([10, 25])
-            ->defaultPaginationPageOption(10);
+            ->defaultPaginationPageOption(10)
+            ->emptyStateHeading('Vēl nav aktivitāšu')
+            ->emptyStateDescription('Kad tiks izveidoti uzdevumi, apskates, klienti vai īpašumi, tie parādīsies šeit.')
+            ->emptyStateIcon('heroicon-o-clock');
     }
 
     protected function getQuery(): Builder
     {
-        return Activity::query()
-            ->with(['actor', 'deal', 'client'])
-            // Drop activities whose related records were deleted — they would
-            // render as broken/stale rows (e.g. test viewings removed from CRM).
-            ->where(fn ($q) => $q->whereNull('client_id')->orWhereHas('client'))
-            ->where(fn ($q) => $q->whereNull('deal_id')->orWhereHas('deal'))
-            ->where(fn ($q) => $q->whereNull('actor_user_id')->orWhereHas('actor'))
+        return AuditLog::query()
+            ->with(['actor'])
+            // WPForms background sync runs constantly — noise, not company activity.
+            ->where('action', '!=', 'wpform_sync')
+            // Darījumi no longer exist in the system — hide their legacy rows.
+            ->where('entity', '!=', 'deal')
             ->orderByDesc('created_at')
             ->limit(50);
     }
 
-    protected function describe(Activity $activity): string
+    protected function actionBadge(AuditLog $log): string
     {
-        $payload = $activity->payload ?? [];
+        $entity = self::ENTITY_LABELS[$log->entity] ?? $log->entity;
+
+        return $entity.' · '.$this->actionLabel($log);
+    }
+
+    /**
+     * Real-estate domain language per sector instead of generic CRUD verbs.
+     */
+    protected function actionLabel(AuditLog $log): string
+    {
+        $before = is_array($log->before) ? $log->before : [];
+        $after = is_array($log->after) ? $log->after : [];
+
+        if ($log->entity === 'viewing') {
+            if ($log->action === 'create') {
+                return 'Pieteikta';
+            }
+            if ($log->action === 'delete') {
+                return 'Dzēsta';
+            }
+            $st = $after['status'] ?? null;
+            if ($log->action === 'update' && is_string($st) && ($before['status'] ?? null) !== $st) {
+                return match ($st) {
+                    'done' => 'Notikusi',
+                    'cancelled' => 'Atcelta',
+                    'no_show' => 'Neatnāca',
+                    'scheduled' => 'Pārplānota',
+                    default => 'Atjaunināta',
+                };
+            }
+
+            return 'Atjaunināta';
+        }
+
+        if ($log->entity === 'task') {
+            if ($log->action === 'create') {
+                return 'Izveidots';
+            }
+            if ($log->action === 'delete') {
+                return 'Dzēsts';
+            }
+            if ($log->action === 'update' && ! empty($after['completed_at']) && empty($before['completed_at'])) {
+                return 'Pabeigts';
+            }
+
+            return 'Atjaunināts';
+        }
+
+        if ($log->entity === 'crm_property' || $log->entity === 'property') {
+            if ($log->action === 'create') {
+                return 'Pievienots';
+            }
+            if ($log->action === 'delete') {
+                return 'Dzēsts';
+            }
+            $st = $after['status'] ?? null;
+            if ($log->action === 'update' && is_string($st) && ($before['status'] ?? null) !== $st) {
+                return CrmProperty::STATUSES[$st] ?? 'Atjaunināts';
+            }
+
+            return 'Atjaunināts';
+        }
+
+        if ($log->entity === 'client') {
+            if ($log->action === 'create') {
+                return 'Jauns';
+            }
+            if ($log->action === 'delete') {
+                return 'Dzēsts';
+            }
+
+            return 'Atjaunināts';
+        }
+
+        return self::ACTION_LABELS[$log->action] ?? $log->action;
+    }
+
+    protected function describe(AuditLog $log, bool $short): string
+    {
+        $before = is_array($log->before) ? $log->before : [];
+        $after = is_array($log->after) ? $log->after : [];
         $parts = [];
 
-        if (isset($payload['from']) && isset($payload['to'])) {
-            $from = is_string($payload['from']) ? $payload['from'] : '—';
-            $to = is_string($payload['to']) ? $payload['to'] : '—';
-            $parts[] = $from.' → '.$to;
+        $title = $this->entityTitle($log, $before, $after);
+        if ($title !== '') {
+            $parts[] = $title;
         }
 
-        if ($activity->deal) {
-            $parts[] = 'Darījums: '.$activity->deal->title;
-        }
-        if ($activity->client) {
-            $parts[] = 'Klients: '.$activity->client->name;
-        }
-        if ($activity->type === 'viewing_booked' && isset($payload['scheduled_at'])) {
-            $parts[] = 'Apskate: '.\Carbon\Carbon::parse($payload['scheduled_at'])->format('d.m.Y H:i');
+        if ($log->action === 'create') {
+            $extra = $this->createExtra($log, $after);
+            if ($extra !== '') {
+                $parts[] = $extra;
+            }
+        } elseif ($log->action === 'update') {
+            $diff = $this->diffText($before, $after, $short ? 2 : 12);
+            if ($diff !== '') {
+                $parts[] = $diff;
+            }
+        } elseif ($log->action === 'delete') {
+            $parts[] = 'Ieraksts dzēsts';
+        } elseif ($log->action === 'wpform_sync') {
+            $count = $after['count'] ?? 0;
+            $parts[] = 'Sinhronizētas '.$count.' formas';
+        } elseif (in_array($log->action, ['export', 'erase', 'export_request', 'erase_request'], true)) {
+            $email = $after['email'] ?? $before['email'] ?? null;
+            if ($email) {
+                $parts[] = $email;
+            }
         }
 
-        return implode(' · ', $parts) ?: '—';
+        $text = implode(' · ', array_filter($parts));
+
+        if ($short && mb_strlen($text) > 140) {
+            return mb_substr($text, 0, 137).'…';
+        }
+
+        return $text !== '' ? $text : ($log->entity.' #'.($log->entity_id ?? '—'));
+    }
+
+    protected function entityTitle(AuditLog $log, array $before, array $after): string
+    {
+        $data = $after + $before;
+        $label = self::ENTITY_LABELS[$log->entity] ?? $log->entity;
+        $id = $log->entity_id ? ' #'.$log->entity_id : '';
+
+        $name = $data['title'] ?? $data['name'] ?? null;
+        if (is_string($name) && trim($name) !== '') {
+            $name = trim($name);
+            if (mb_strlen($name) > 60) {
+                $name = mb_substr($name, 0, 57).'…';
+            }
+
+            return $label.$id.': “'.$name.'”';
+        }
+
+        // Viewing without title — show property/client context
+        if ($log->entity === 'viewing') {
+            return $label.$id.$this->viewingContext($data);
+        }
+
+        return $label.$id;
+    }
+
+    protected function viewingContext(array $data): string
+    {
+        $bits = [];
+        if (! empty($data['scheduled_at'])) {
+            try {
+                $bits[] = \Carbon\Carbon::parse($data['scheduled_at'])->format('d.m.Y H:i');
+            } catch (\Throwable) {
+            }
+        }
+
+        return $bits ? ': '.implode(', ', $bits) : '';
+    }
+
+    protected function createExtra(AuditLog $log, array $after): string
+    {
+        $bits = [];
+
+        if (isset($after['client_id']) && is_numeric($after['client_id'])) {
+            $client = Client::find((int) $after['client_id']);
+            if ($client) {
+                $bits[] = 'Klients: '.$client->name;
+            }
+        }
+
+        if (isset($after['property_id']) && is_numeric($after['property_id'])) {
+            $prop = CrmProperty::find((int) $after['property_id']);
+            if ($prop) {
+                $bits[] = 'Īpašums: '.$prop->title;
+            }
+        }
+
+        foreach (['due_at', 'scheduled_at'] as $field) {
+            if (! empty($after[$field])) {
+                try {
+                    $bits[] = (self::FIELD_LABELS[$field] ?? $field).': '.\Carbon\Carbon::parse($after[$field])->format('d.m.Y H:i');
+                } catch (\Throwable) {
+                }
+            }
+        }
+
+        foreach (['final_price_eur', 'price_eur'] as $field) {
+            if (isset($after[$field]) && (float) $after[$field] > 0) {
+                $bits[] = 'Cena: '.number_format((float) $after[$field], 0, ',', ' ').' €';
+                break;
+            }
+        }
+
+        if (! empty($after['city']) && is_string($after['city'])) {
+            $bits[] = $after['city'];
+        }
+
+        if ($log->entity === 'client') {
+            if (! empty($after['phone'])) {
+                $bits[] = (string) $after['phone'];
+            }
+            if (! empty($after['source'])) {
+                $bits[] = 'Avots: '.(string) $after['source'];
+            }
+        }
+
+        if (isset($after['status']) && is_string($after['status'])) {
+            $status = $after['status'];
+            if ($log->entity === 'crm_property' || $log->entity === 'property') {
+                $status = CrmProperty::STATUSES[$status] ?? $status;
+            }
+            $bits[] = 'Statuss: '.$status;
+        }
+
+        return implode(' · ', $bits);
+    }
+
+    protected function diffText(array $before, array $after, int $max): string
+    {
+        $skip = ['updated_at', 'created_at', 'attachment_original_names', 'attachments'];
+        $changes = [];
+
+        foreach ($after as $key => $new) {
+            if (in_array($key, $skip, true)) {
+                continue;
+            }
+            $old = $before[$key] ?? null;
+            if ($this->valuesEqual($old, $new)) {
+                continue;
+            }
+            $label = self::FIELD_LABELS[$key] ?? $key;
+            $changes[] = $label.': '.$this->valueText($old).' → '.$this->valueText($new);
+            if (count($changes) >= $max) {
+                break;
+            }
+        }
+
+        $total = $this->countChanges($before, $after, $skip);
+        $text = implode('; ', $changes);
+        if ($total > count($changes)) {
+            $text .= ($text !== '' ? '; ' : '').'un vēl '.($total - count($changes)).'…';
+        }
+
+        return $text !== '' ? 'Mainīts — '.$text : '';
+    }
+
+    protected function countChanges(array $before, array $after, array $skip): int
+    {
+        $n = 0;
+        foreach ($after as $key => $new) {
+            if (in_array($key, $skip, true)) {
+                continue;
+            }
+            if (! $this->valuesEqual($before[$key] ?? null, $new)) {
+                $n++;
+            }
+        }
+
+        return $n;
+    }
+
+    protected function valuesEqual(mixed $a, mixed $b): bool
+    {
+        if ($a === $b) {
+            return true;
+        }
+        if ($a === null && $b === '') {
+            return true;
+        }
+        if ($b === null && $a === '') {
+            return true;
+        }
+
+        return (string) $a === (string) $b;
+    }
+
+    protected function valueText(mixed $v): string
+    {
+        if ($v === null || $v === '') {
+            return '—';
+        }
+        if (is_bool($v)) {
+            return $v ? 'jā' : 'nē';
+        }
+        if (is_array($v)) {
+            return count($v).' vien.';
+        }
+        $s = (string) $v;
+        // Datetime strings → short LV format
+        if (preg_match('/^\d{4}-\d{2}-\d{2}/', $s)) {
+            try {
+                return \Carbon\Carbon::parse($s)->format('d.m.Y H:i');
+            } catch (\Throwable) {
+            }
+        }
+        if (mb_strlen($s) > 40) {
+            return mb_substr($s, 0, 37).'…';
+        }
+
+        return $s;
+    }
+
+    protected function recordUrl(AuditLog $log): ?string
+    {
+        if (! $log->entity_id) {
+            return null;
+        }
+
+        try {
+            return match ($log->entity) {
+                'task' => Task::find($log->entity_id)
+                    ? route('filament.admin.resources.tasks.edit', $log->entity_id)
+                    : null,
+                'viewing' => Viewing::find($log->entity_id)
+                    ? route('filament.admin.resources.viewings.edit', $log->entity_id)
+                    : null,
+                'client' => Client::find($log->entity_id)
+                    ? route('filament.admin.resources.clients.view', $log->entity_id)
+                    : null,
+                'crm_property', 'property' => CrmProperty::find($log->entity_id)
+                    ? route('filament.admin.resources.crm-properties.view', $log->entity_id)
+                    : null,
+                default => null,
+            };
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

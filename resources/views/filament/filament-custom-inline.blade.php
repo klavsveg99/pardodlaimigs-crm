@@ -176,16 +176,34 @@ h1.fi-header-heading {
     z-index: 50000 !important;
 }
 
-/* Reduce sidebar/header authority – modals/lightbox/editor must be on top */
-.fi-sidebar,
+/* ── Modal stacking fix (root cause) ─────────────────────────────
+   .fi-main-ctn is a FLEX ITEM of .fi-layout: any z-index (even 10)
+   turns it into an atomic stacking context, burying every fixed-
+   position modal/lightbox/editor inside it below the sidebar
+   (lg:z-20 desktop, z-30/40 mobile) and the sticky topbar (z-30).
+   Keep page-level containers at z-index:auto so Filament modals
+   (fixed z-40/50 layers) escape to the root stacking context and
+   always paint above the sidebar and header. */
 .fi-topbar,
 .fi-header,
 .fi-main-ctn {
-    z-index: 10 !important;
+    z-index: auto !important;
+}
+/* Mobile sidebar must always paint above its close overlay. */
+@media (max-width: 1023px) {
+    .fi-sidebar {
+        z-index: 40 !important;
+    }
+    .fi-sidebar-close-overlay {
+        z-index: 30 !important;
+    }
 }
 
 .fi-modal,
 .fi-modal-window,
+.fi-modal > .fi-modal-close-overlay,
+.fi-modal > .fi-modal-window-ctn,
+.fi-modal .fi-modal-overlay,
 .fi-file-upload .fi-modal,
 .pdc-editor-modal,
 .pdc-editor-panel,
@@ -201,9 +219,11 @@ h1.fi-header-heading {
 .pdc-editor-modal .fi-modal-overlay {
     z-index: 2147483647 !important;
 }
-/* Lightbox must be absolute top – fix gallery lightbox showing under form actions / Piesaistītie klienti / Datumi */
-#content.form-actions, .fi-sc-actions, .fi-form-actions, .fi-page-footer,
-.fi-ta-header {
+/* Lightbox must be absolute top – fix gallery lightbox showing under form actions / Piesaistītie klienti / Datumi.
+   NOTE: .fi-ta-header must NOT be in this list — z-index on it traps table
+   header action modals ("Pievienot klientu" etc.) at z-1, painting them
+   below the sidebar and topbar. */
+#content.form-actions, .fi-sc-actions, .fi-form-actions, .fi-page-footer {
     z-index: 1 !important;
     position: relative;
 }
@@ -266,12 +286,16 @@ div[style*="z-index:999999"], div[style*="z-index: 999999"], div[style*="z-index
     border-color: var(--pdc-primary-darker) !important;
 }
 
-.fi-link {
-    color: var(--pdc-primary) !important;
+/* Plain (non-button) links use the standard text color in both modes —
+   only links explicitly colored primary keep the brand color. */
+a.fi-link:not(.fi-btn):not(.fi-color-primary),
+a.fi-link:not(.fi-btn):not(.fi-color-primary) .fi-link-label {
+    color: inherit !important;
 }
 
-.dark .fi-link {
-    color: #ffffff !important;
+.dark a.fi-link:not(.fi-btn):not(.fi-color-primary),
+.dark a.fi-link:not(.fi-btn):not(.fi-color-primary) .fi-link-label {
+    color: inherit !important;
 }
 
 .dark .pdc-map-search {
@@ -582,6 +606,10 @@ input[type="checkbox"][checked] {
 .dark .fi-modal-footer {
     border-color: #27303a !important;
 }
+
+/* NOTE: no manual modal positioning overrides — Filament centers and sizes
+   modal windows natively; forcing top/left/transform on inner containers
+   pushes content off-screen (heading/select rendered above the viewport). */
 
 /* Global dark mode overrides for view page data cards */
 html.dark .fi-section,

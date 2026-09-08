@@ -45,7 +45,7 @@ class UserResource extends Resource
                 Forms\Components\Select::make('role')->label('Loma')
                     ->options([
                         'aģents' => 'Aģents',
-                        'admin' => 'Admin',
+                        'admin' => 'Administrators',
                     ])
                     ->searchable()
                     ->default('aģents')
@@ -99,7 +99,7 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('role')->label('Loma')->badge()->sortable()
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'aģents', 'agent' => 'Aģents',
-                        'admin' => 'Admin',
+                        'admin' => 'Administrators',
                         default => $state ?: '—',
                     }),
             ])
@@ -108,7 +108,7 @@ class UserResource extends Resource
                     ->label('Loma')
                     ->options([
                         'aģents' => 'Aģents',
-                        'admin' => 'Admin',
+                        'admin' => 'Administrators',
                     ]),
             ])
             ->actions([

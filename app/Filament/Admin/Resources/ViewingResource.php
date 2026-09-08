@@ -112,9 +112,12 @@ class ViewingResource extends Resource
                     ->color(fn ($record) => $record->status === 'scheduled' && $record->scheduled_at->isPast() ? 'danger' : null)
                     ->icon(fn ($record) => $record->status === 'scheduled' && $record->scheduled_at->isPast() ? 'heroicon-o-exclamation-triangle' : null)
                     ->iconColor('danger'),
-                Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40)->sortable(),
-                Tables\Columns\TextColumn::make('client.name')->label('Klients')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('agent.name')->label('Aģents')->sortable(),
+                Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40)->sortable()
+                    ->url(fn ($record) => route('filament.admin.resources.viewings.edit', $record)),
+                Tables\Columns\TextColumn::make('client.name')->label('Klients')->searchable()->sortable()
+                    ->url(fn ($record) => $record->client_id ? route('filament.admin.resources.clients.view', $record->client_id) : null),
+                Tables\Columns\TextColumn::make('agent.name')->label('Aģents')->sortable()
+                    ->url(fn ($record) => $record->agent_user_id ? route('filament.admin.resources.users.edit', $record->agent_user_id) : null),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Statuss')
                     ->badge()

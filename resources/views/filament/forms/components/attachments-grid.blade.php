@@ -16,6 +16,7 @@
     $originalNamesPath = preg_replace('/attachments$/', 'attachment_original_names', $statePath);
     $uid = 'att-' . str_replace('.', '-', $statePath);
     $uploadUrl = route('filament.admin.property.upload-attachment');
+    $proxyUrl = route('filament.admin.property.image-proxy');
 @endphp
 
 <script type="application/json" id="{{ $uid }}-data">{!! $attachmentsJson !!}</script>
@@ -164,6 +165,7 @@
         files: [],
         selected: [],
         uploadUrl: null,
+        proxyUrl: null,
         csrfToken: null,
         draggedIndex: null,
         lightboxOpen: false,
@@ -181,6 +183,7 @@
         init() {
             try { this.files = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || []; } catch(e){ this.files=[]; }
             this.uploadUrl = this.$el.dataset.uploadUrl;
+            this.proxyUrl = this.$el.dataset.proxyUrl || null;
             this.csrfToken = document.querySelector('meta[name=&quot;csrf-token&quot;]')?.content || document.querySelector('meta[name=csrf-token]')?.content;
             window.__pdcAttachments = this;
             // Load cropper.js if not already loaded
@@ -269,16 +272,40 @@
         onDragLeave(e) {
             e.currentTarget.classList.remove('pdc-drag-over');
         },
+        // Shared insertion: drop position is before/after the hovered card
+        // depending on which half of the card the pointer is over. A plain
+        // insert-before-hovered-card can never move an item one step to the
+        // right (dropping onto the right neighbor re-inserts at the same spot).
+        moveItem(from, index, clientX, clientY, cardEl) {
+            if (from === null || from === index) return false;
+            let after = false;
+            if (cardEl && typeof clientX === 'number' && typeof clientY === 'number') {
+                const rect = cardEl.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) {
+                    const afterX = (clientX - rect.left) >= rect.width / 2;
+                    const afterY = (clientY - rect.top) >= rect.height / 2;
+                    // Forward in order (right/down in the grid): either half past
+                    // the middle means after. Backward: only the far corner.
+                    after = (index > from) ? (afterX || afterY) : (afterX && afterY);
+                }
+            } else if (from < index) {
+                after = true;
+            }
+            const item = this.files.splice(from, 1)[0];
+            let to = after ? index + 1 : index;
+            if (from < to) to -= 1; // compensate the removal shift
+            this.files.splice(Math.max(0, Math.min(to, this.files.length)), 0, item);
+            return true;
+        },
         onDrop(e, index) {
             e.preventDefault();
-            e.currentTarget.classList.remove('pdc-drag-over');
+            const card = e.currentTarget;
+            card.classList.remove('pdc-drag-over');
             const from = this.draggedIndex;
-            if (from === null || from === index) { this.draggedIndex = null; return; }
-            const item = this.files.splice(from, 1)[0];
-            const to = from < index ? index - 1 : index;
-            this.files.splice(to, 0, item);
             this.draggedIndex = null;
-            this.sync();
+            if (this.moveItem(from, index, e.clientX, e.clientY, card)) {
+                this.sync();
+            }
         },
         onDragEnd(e) {
             e.currentTarget.classList.remove('pdc-dragging');
@@ -306,11 +333,13 @@
             if (this.touchDragId === null) return;
             const t = (e.changedTouches && e.changedTouches[0]) || null;
             let targetIndex = index;
+            let targetCard = null;
             if (t) {
                 const el = document.elementFromPoint(t.clientX, t.clientY);
                 if (el) {
                     const card = el.closest('[data-attach-card]');
                     if (card) {
+                        targetCard = card;
                         const idxAttr = Array.from(this.$el.querySelectorAll('[data-attach-card]')).indexOf(card);
                         if (idxAttr >= 0) targetIndex = idxAttr;
                     }
@@ -319,11 +348,9 @@
             const from = this.touchDragId;
             this.touchDragId = null;
             this.$el.querySelectorAll('[data-attach-card]').forEach(c => c.classList.remove('pdc-drag-over','pdc-dragging'));
-            if (from === targetIndex) return;
-            const item = this.files.splice(from, 1)[0];
-            const to = from < targetIndex ? targetIndex - 1 : targetIndex;
-            this.files.splice(to, 0, item);
-            this.sync();
+            if (this.moveItem(from, targetIndex, t ? t.clientX : null, t ? t.clientY : null, targetCard)) {
+                this.sync();
+            }
         },
         openLightbox(index) {
             if (this.editorOpen) return;
@@ -342,6 +369,16 @@
             this.lightboxIndex = this.lightboxIndex < this.files.length - 1 ? this.lightboxIndex + 1 : 0;
         },
         get lightboxFile() { return this.files[this.lightboxIndex] || null; },
+        editUrl(file) {
+            if (!file || !file.url) return '';
+            try {
+                const u = new URL(file.url, window.location.origin);
+                if (u.origin !== window.location.origin && this.proxyUrl) {
+                    return this.proxyUrl + '?url=' + encodeURIComponent(file.url);
+                }
+            } catch(e) {}
+            return file.url;
+        },
         openEditor(index) {
             const file = this.files[index];
             if (!file || !file.url.match(/\.(jpe?g|png|webp|gif|bmp)$/i) && !file.name.match(/\.(jpe?g|png|webp|gif|bmp)$/i)) {
@@ -371,7 +408,7 @@
                     setTimeout(tryInit, 200);
                     return;
                 }
-                img.src = this.editorFile.url;
+                img.src = this.editUrl(this.editorFile);
                 img.onload = () => {
                     this.cropper = new window.Cropper(img, {
                         viewMode: 1,
@@ -559,6 +596,7 @@
     }"
     wire:ignore.self
     data-upload-url="{{ $uploadUrl }}"
+    data-proxy-url="{{ $proxyUrl }}"
     x-on:keydown.escape.window="if(lightboxOpen) closeLightbox(); if(editorOpen) closeEditor()"
     x-on:keydown.arrow-left.window="if(lightboxOpen) lightboxPrev()"
     x-on:keydown.arrow-right.window="if(lightboxOpen) lightboxNext()"

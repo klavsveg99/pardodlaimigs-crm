@@ -50,7 +50,7 @@ class ReconcileAllProperties implements ShouldQueue
 
         // Properties no longer returned by the feed (unpublished/hidden/removed)
         // are marked as hidden instead of deleted, keeping CRM references
-        // (client relations, deals, viewings) intact.
+        // (client relations, viewings) intact.
         //
         // Only run when the feed was actually fetched: an empty/errored
         // response must not wipe the whole cache to hidden.

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers;
 
+use App\Filament\Admin\Resources\Pages\Concerns\PievienotKlientuRelationAction;
 use App\Models\Client;
 use App\Models\ClientCrmProperty;
 use Filament\Actions;
@@ -10,11 +11,12 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\Access\Response;
 
 class ClientsRelationManager extends RelationManager
 {
+    use PievienotKlientuRelationAction;
+
     protected static string $relationship = 'clients';
 
     protected static ?string $title = 'Piesaistītie klienti';
@@ -44,6 +46,20 @@ class ClientsRelationManager extends RelationManager
         ]);
     }
 
+    /**
+     * Allow attaching/detaching on the property VIEW page too — Filament
+     * denies these actions on ViewRecord pages by default, which hid the
+     * "Pievienot klientu" button in the Piesaistītie klienti section.
+     */
+    public function getDefaultActionAuthorizationResponse(Actions\Action $action): ?Response
+    {
+        if ($action instanceof Actions\AttachAction || $action instanceof Actions\DetachAction) {
+            return null;
+        }
+
+        return parent::getDefaultActionAuthorizationResponse($action);
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -68,75 +84,7 @@ class ClientsRelationManager extends RelationManager
                     ->label('Mārketings')->boolean()->sortable(),
             ])
             ->headerActions([
-                Actions\AttachAction::make('attachBuyer')
-                    ->label('Piesaistīt pircēju')
-                    ->color('gray')
-                    ->icon('heroicon-o-user-plus')
-                    ->visible(fn () => $this->getOwnerRecord()->status === 'sold')
-                    ->recordSelectSearchColumns(['name', 'email', 'phone', 'id'])
-                    ->schema(fn (Actions\AttachAction $action): array => [
-                        $action->getRecordSelect(),
-                        Forms\Components\Hidden::make('relation')->default('buyer'),
-                        Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
-                    ])
-                    ->before(function (array $data): void {
-                        $clientId = $data['recordId'] ?? null;
-                        $property = $this->getOwnerRecord();
-
-                        if (! Client::find($clientId)?->marketing_consent) {
-                            throw ValidationException::withMessages([
-                                'data.recordId' => 'Lai piesaistītu pircēju pārdotam īpašumam, klientam jābūt mārketinga piekrišanai.',
-                            ]);
-                        }
-                    }),
-                Actions\AttachAction::make()
-                    ->label('Piesaistīt klientu')
-                    ->color('gray')
-                    ->recordSelectSearchColumns(['name', 'email', 'phone', 'id'])
-                    ->schema(function (Actions\AttachAction $action): array {
-                        return [
-                            $action->getRecordSelect(),
-                            Forms\Components\Select::make('relation')
-                                ->label('Saistība')
-                                ->options(fn () => $this->getOwnerRecord()->status === 'sold'
-                                    ? ['seller' => 'Pārdevējs', 'buyer' => 'Pircējs', 'tenant' => 'Īrnieks', 'landlord' => 'Izīrētājs', 'interested' => 'Interesents', 'contacted' => 'Sazināts']
-                                    : collect(ClientCrmProperty::RELATIONS)->except('buyer')->all())
-                                ->required(),
-                            Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3),
-                        ];
-                    })
-                    ->before(function (array $data): void {
-                        $clientId = $data['recordId'] ?? null;
-                        $relation = $data['relation'] ?? null;
-                        $property = $this->getOwnerRecord();
-
-                        if ($relation !== 'buyer') {
-                            return;
-                        }
-
-                        if ($property->status !== 'sold') {
-                            throw ValidationException::withMessages([
-                                'data.relation' => 'Īpašumam jābūt ar statusu "Pārdots", lai piesaistītu pircēju.',
-                            ]);
-                        }
-
-                        $hasSeller = DB::table('client_crm_properties')
-                            ->where('crm_property_id', $property->id)
-                            ->where('relation', 'seller')
-                            ->exists();
-
-                        if (! $hasSeller) {
-                            throw ValidationException::withMessages([
-                                'data.relation' => 'Īpašumam vispirms jābūt piesaistītam pārdevējam.',
-                            ]);
-                        }
-
-                        if (! Client::find($clientId)?->marketing_consent) {
-                            throw ValidationException::withMessages([
-                                'data.relation' => 'Lai piesaistītu pircēju pārdotam īpašumam, klientam jābūt mārketinga piekrišanai.',
-                            ]);
-                        }
-                    })
+                $this->getPievienotKlientuAction(),
             ])
             ->actions([
                 Actions\ActionGroup::make([

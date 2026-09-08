@@ -62,19 +62,29 @@ class TodayPriorities extends BaseWidget
                 Tables\Columns\TextColumn::make('title')
                     ->label('Kas')
                     ->weight('bold')
-                    ->wrap(),
+                    ->wrap()
+                    ->url(fn ($record) => $record['record_url'] ?? null),
 
                 Tables\Columns\TextColumn::make('assigned')
                     ->label('Aģents')
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->url(fn ($record) => $record['assigned_url'] ?? null),
 
                 Tables\Columns\TextColumn::make('client')
                     ->label('Klients')
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->url(fn ($record) => $record['client_url'] ?? null),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Statuss')
-                    ->badge(),
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => [
+                        'scheduled' => 'Ieplānota',
+                        'completed' => 'Pabeigta',
+                        'cancelled' => 'Atcelta',
+                        'Nokavēts' => 'Nokavēts',
+                        'Plānots' => 'Plānots',
+                    ][$state] ?? $state),
             ])
             ->paginated(false)
             ->emptyStateHeading('Šodien nekas nav jāveic')
@@ -112,6 +122,13 @@ class TodayPriorities extends BaseWidget
                         'assigned' => $task->assignedTo?->name,
                         'client' => $task->client?->name,
                         'status' => $task->isOverdue() ? 'Nokavēts' : 'Plānots',
+                        'record_url' => route('filament.admin.resources.tasks.edit', $task),
+                        'assigned_url' => $task->assigned_user_id
+                            ? route('filament.admin.resources.users.edit', $task->assigned_user_id)
+                            : null,
+                        'client_url' => $task->client_id
+                            ? route('filament.admin.resources.clients.view', $task->client_id)
+                            : null,
                     ];
                 });
 
@@ -129,6 +146,13 @@ class TodayPriorities extends BaseWidget
                         'assigned' => $viewing->agent?->name,
                         'client' => $viewing->client?->name,
                         'status' => $viewing->status,
+                        'record_url' => route('filament.admin.resources.viewings.edit', $viewing),
+                        'assigned_url' => $viewing->agent_user_id
+                            ? route('filament.admin.resources.users.edit', $viewing->agent_user_id)
+                            : null,
+                        'client_url' => $viewing->client_id
+                            ? route('filament.admin.resources.clients.view', $viewing->client_id)
+                            : null,
                     ];
                 });
         }
@@ -168,6 +192,13 @@ class TodayPriorities extends BaseWidget
                     'assigned' => $task->assignedTo?->name,
                     'client' => $task->client?->name,
                     'status' => $task->isOverdue() ? 'Nokavēts' : 'Plānots',
+                    'record_url' => route('filament.admin.resources.tasks.edit', $task),
+                    'assigned_url' => $task->assigned_user_id
+                        ? route('filament.admin.resources.users.edit', $task->assigned_user_id)
+                        : null,
+                    'client_url' => $task->client_id
+                        ? route('filament.admin.resources.clients.view', $task->client_id)
+                        : null,
                 ];
             });
 

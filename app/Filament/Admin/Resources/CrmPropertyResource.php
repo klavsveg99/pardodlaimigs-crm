@@ -5,20 +5,23 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\CrmPropertyResource\Pages;
-use App\Models\ClientCrmProperty;
+use App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers\ClientsRelationManager;
+use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 class CrmPropertyResource extends Resource
@@ -61,16 +64,21 @@ class CrmPropertyResource extends Resource
                         ->live(),
 
                     Forms\Components\Select::make('lead_source')
-                        ->label('Līda avots')
+                        ->label('Pieteikuma avots')
                         ->options(CrmProperty::LEAD_SOURCES)
                         ->default('internal')
                         ->required()
                         ->live()
+                        ->afterStateUpdated(function ($state, Set $set): void {
+                            if ($state !== 'external') {
+                                $set('lead_owner', null);
+                            }
+                        })
                         ->columnSpanFull(),
 
                     Forms\Components\TextInput::make('lead_owner')
-                        ->label('Līda īpašnieks')
-                        ->placeholder('Norādi līda īpašnieku')
+                        ->label('Atbildīgais aģents')
+                        ->placeholder('Norādi atbildīgo aģentu')
                         ->maxLength(255)
                         ->required(fn (Get $get): bool => $get('lead_source') === 'external')
                         ->visible(fn (Get $get): bool => $get('lead_source') === 'external')
@@ -102,7 +110,7 @@ class CrmPropertyResource extends Resource
                                     }
                                     $percent = $comm / $final * 100;
 
-                                    return number_format($percent, 2, ',', ' ') . ' %';
+                                    return number_format($percent, 2, ',', ' ').' %';
                                 }),
                         ]),
 
@@ -124,28 +132,38 @@ class CrmPropertyResource extends Resource
                     Forms\Components\TextInput::make('size_m2')->label('Platība (m²)')->numeric(),
                     Forms\Components\TextInput::make('land_m2')->label('Zemes platība (m²)')->numeric(),
                     Forms\Components\TextInput::make('kadastra_nr')
-                         ->label('Kadastra nr.')
-                         ->required()
-                         ->numeric()
-                         ->maxLength(11)
-                         ->minLength(11)
-                         ->rules(['regex:/^\d{11}$/'])
-                         ->extraInputAttributes([
-                             'maxlength' => 11,
-                             'inputmode' => 'numeric',
-                             'pattern' => '\d{11}',
-                             'autocomplete' => 'off',
-                             'x-on:input' => '$el.value = $el.value.replace(/\\D/g, \'\').slice(0, 11)',
-                             'x-on:paste' => '$el.value = ($event.clipboardData || window.clipboardData).getData(\'text\').replace(/\\D/g, \'\').slice(0, 11); $event.preventDefault();',
-                         ])
-                         ->placeholder('01000250003')
-                         ->validationMessages([
-                             'required' => 'Kadastra nr. ir obligāts lauks.',
-                             'regex' => 'Kadastra nr. jābūt tieši 11 cipariem.',
-                             'min' => 'Kadastra nr. jābūt tieši 11 cipariem.',
-                             'max' => 'Kadastra nr. nedrīkst pārsniegt 11 ciparus.',
-                         ])
-                         ->columnSpanFull(),
+                        ->label('Kadastra nr.')
+                        ->required()
+                        ->string()
+                        ->maxLength(11)
+                        ->minLength(11)
+                        ->rules(['regex:/^\d{11}$/'])
+                        // NOTE: do NOT add an x-on:paste handler that calls
+                        // preventDefault() and assigns $el.value — programmatic
+                        // assignment never fires an `input` event, so Livewire's
+                        // wire:model never syncs the pasted value and Save fails
+                        // with "Kadastra nr. ir obligāts lauks" while the input
+                        // visibly holds 11 digits. The input handler below
+                        // already strips/slices whatever paste inserts.
+                        ->extraInputAttributes([
+                            'maxlength' => 11,
+                            'inputmode' => 'numeric',
+                            'autocomplete' => 'off',
+                            'x-on:input' => 'let v = $el.value.replace(/\\D/g, \'\').slice(0, 11); if (v !== $el.value) { $el.value = v; }',
+                        ])
+                        ->placeholder('01000250003')
+                        // Belt & braces: normalize server-side too, so even if
+                        // the browser state somehow holds formatted input
+                        // (spaces, dashes), validation sees exactly the digits.
+                        ->mutateStateForValidationUsing(fn ($state): ?string => filled($state) ? preg_replace('/\D/', '', (string) $state) : $state)
+                        ->dehydrateStateUsing(fn ($state): ?string => filled($state) ? preg_replace('/\D/', '', (string) $state) : null)
+                        ->validationMessages([
+                            'required' => 'Kadastra nr. ir obligāts lauks.',
+                            'regex' => 'Kadastra nr. jābūt tieši 11 cipariem.',
+                            'min' => 'Kadastra nr. jābūt tieši 11 cipariem.',
+                            'max' => 'Kadastra nr. nedrīkst pārsniegt 11 ciparus.',
+                        ])
+                        ->columnSpanFull(),
                 ])->columnSpan(1),
             ])->columnSpanFull(),
 
@@ -184,28 +202,54 @@ class CrmPropertyResource extends Resource
                         ->modalDescription('Tiks izveidots īpašuma apraksts latviešu un angļu valodā, ņemot vērā ievadītos datus. Angļu versija tiek veidota no šablona (bez ārējiem API, lai izvairītos no rate-limit).')
                         ->modalSubmitActionLabel('Ģenerēt')
                         ->action(function (Get $get, Set $set): void {
-                            $category = (string) ($get('category') ?? 'īpašums');
-                            $city = (string) ($get('city') ?? '');
-                            $address = (string) ($get('address') ?? '');
-                            $price = (float) ($get('price_eur') ?? 0);
-                            $beds = (int) ($get('beds') ?? 0);
-                            $baths = (int) ($get('baths') ?? 0);
+                            $category = (string) ($get('data.category') ?? 'īpašums');
+                            $city = (string) ($get('data.city') ?? '');
+                            $address = (string) ($get('data.address') ?? '');
+                            $price = (float) ($get('data.price_eur') ?? 0);
+                            $beds = (int) ($get('data.beds') ?? 0);
+                            $baths = (int) ($get('data.baths') ?? 0);
                             $size = (int) ($get('size_m2') ?? 0);
                             $land = (int) ($get('land_m2') ?? 0);
-                            $kadastra = (string) ($get('kadastra_nr') ?? '');
-                            $status = (string) ($get('status') ?? '');
-                            $title = (string) ($get('title') ?? $category);
+                            $kadastra = (string) ($get('data.kadastra_nr') ?? '');
+                            $status = (string) ($get('data.status') ?? '');
+                            $leadSource = (string) ($get('data.lead_source') ?? '');
+                            $leadOwner = (string) ($get('data.lead_owner') ?? '');
+                            $finalPrice = (float) ($get('data.final_price_eur') ?? 0);
+                            $commission = (float) ($get('data.commission_eur') ?? 0);
+                            $title = (string) ($get('data.title') ?? $category);
 
                             $type = strtolower($category);
                             $locParts = array_filter([$city, $address]);
-                            $locText = $locParts ? ' — ' . implode(', ', $locParts) : '';
+                            $locText = $locParts ? ' — '.implode(', ', $locParts) : '';
 
                             $feat = [];
-                            if ($beds > 0) $feat[] = $beds . ' ist.';
-                            if ($baths > 0) $feat[] = $baths . ' vannas ist.';
-                            if ($size > 0) $feat[] = $size . ' m²';
-                            if ($land > 0) $feat[] = 'zeme ' . $land . ' m²';
-                            if ($kadastra) $feat[] = 'kadastra nr. ' . $kadastra;
+                            if ($beds > 0) {
+                                $feat[] = $beds.' ist.';
+                            }
+                            if ($baths > 0) {
+                                $feat[] = $baths.' vannas ist.';
+                            }
+                            if ($size > 0) {
+                                $feat[] = $size.' m²';
+                            }
+                            if ($land > 0) {
+                                $feat[] = 'zeme '.$land.' m²';
+                            }
+                            if ($kadastra) {
+                                $feat[] = 'kadastra nr. '.$kadastra;
+                            }
+                            if ($leadSource) {
+                                $feat[] = 'avots: '.$leadSource;
+                            }
+                            if ($leadOwner) {
+                                $feat[] = 'atbildīgais aģents: '.$leadOwner;
+                            }
+                            if ($finalPrice > 0) {
+                                $feat[] = 'gala cena: '.number_format($finalPrice, 0, ',', ' ').' €';
+                            }
+                            if ($commission > 0) {
+                                $feat[] = 'komisija: '.number_format($commission, 0, ',', ' ').' €';
+                            }
                             $featText = $feat ? implode(' · ', $feat) : '';
 
                             if ($status === 'sold') {
@@ -218,11 +262,11 @@ class CrmPropertyResource extends Resource
 
                             // --- LV (bagātīgāks šablons) ---
                             $lvLines = [];
-                            $lvLines[] = \Illuminate\Support\Str::ucfirst($prefix) . ' ' . strtolower($type) . $locText . ($featText ? '. ' . $featText . '.' : '.');
+                            $lvLines[] = Str::ucfirst($prefix).' '.strtolower($type).$locText.($featText ? '. '.$featText.'.' : '.');
                             $lvLines[] = '';
-                            $lvLines[] = $title ? '“' . $title . '” — mājīgs un pārdomāts piedāvājums, kas piemērots gan dzīvošanai, gan investīcijai.' : '';
+                            $lvLines[] = $title ? '“'.$title.'” — mājīgs un pārdomāts piedāvājums, kas piemērots gan dzīvošanai, gan investīcijai.' : '';
                             if ($price > 0) {
-                                $lvLines[] = 'Cena: ' . number_format($price, 0, ',', ' ') . ' €.';
+                                $lvLines[] = 'Cena: '.number_format($price, 0, ',', ' ').' €.';
                                 $lvLines[] = '';
                             }
                             $lvLines[] = 'Īpašums izceļas ar labu atrašanās vietu, sakārtotu dokumentāciju un iespēju pielāgot telpas savām vajadzībām. Plašāks apraksts un foto — pielikumos.';
@@ -230,7 +274,7 @@ class CrmPropertyResource extends Resource
                             $lvLines[] = 'Interesē šis īpašums? Sazinies ar mums, lai pieteiktu apskati un uzzinātu vairāk!';
                             $lvLines[] = '';
                             $lvLines[] = 'Pārdod Laimīgs — nekustamo īpašumu aģentūra.';
-                            $lvText = implode("\n", array_filter($lvLines, fn($l) => $l !== null));
+                            $lvText = implode("\n", array_filter($lvLines, fn ($l) => $l !== null));
 
                             // --- EN: pure template (no MyMemory call — was rate-limited) ---
                             $typeEn = match (strtolower($category)) {
@@ -249,11 +293,13 @@ class CrmPropertyResource extends Resource
                                 default => 'Offered',
                             };
                             $enLines = [];
-                            $enLines[] = $prefixEn . ': ' . $typeEn . ($city ? ' in ' . $city : '') . ($featText ? '. ' . $featText . '.' : '.');
+                            $enLines[] = $prefixEn.': '.$typeEn.($city ? ' in '.$city : '').($featText ? '. '.$featText.'.' : '.');
                             $enLines[] = '';
-                            if ($title) $enLines[] = '"' . $title . '" — a well-planned property suitable for living or investment.';
+                            if ($title) {
+                                $enLines[] = '"'.$title.'" — a well-planned property suitable for living or investment.';
+                            }
                             if ($price > 0) {
-                                $enLines[] = 'Price: EUR ' . number_format($price, 0, ',', ' ') . '.';
+                                $enLines[] = 'Price: EUR '.number_format($price, 0, ',', ' ').'.';
                                 $enLines[] = '';
                             }
                             $enLines[] = 'The property benefits from a good location, tidy documentation and a flexible layout. See more details and photos in the attachments.';
@@ -261,23 +307,39 @@ class CrmPropertyResource extends Resource
                             $enLines[] = 'Interested? Get in touch to schedule a viewing!';
                             $enLines[] = '';
                             $enLines[] = 'Pārdod Laimīgs — real estate agency.';
-                            $enText = implode("\n", array_filter($enLines, fn($l) => $l !== null));
+                            $enText = implode("\n", array_filter($enLines, fn ($l) => $l !== null));
 
-                            $html = '<p><strong>[LV]</strong><br>' . nl2br(e($lvText)) . '</p>'
-                                . '<p><strong>[EN]</strong><br>' . nl2br(e($enText)) . '</p>';
+                            $html = '<p><strong>[LV]</strong><br>'.nl2br(e($lvText)).'</p>'
+                                .'<p><strong>[EN]</strong><br>'.nl2br(e($enText)).'</p>';
 
                             $set('description', $html);
                         }),
                 ])
                 ->schema([
-                    Forms\Components\RichEditor::make('description')
-                        ->hiddenLabel()
-                        ->extraInputAttributes(['style' => 'min-height: 280px'])
+                    Tabs::make()
+                        ->tabs([
+                            Tab::make('Apraksts')
+                                ->icon('heroicon-o-pencil-square')
+                                ->schema([
+                                    Forms\Components\RichEditor::make('description')
+                                        ->hiddenLabel()
+                                        ->extraInputAttributes(['style' => 'min-height: 280px'])
+                                        ->columnSpanFull(),
+                                ]),
+                            Tab::make('Versijas')
+                                ->icon('heroicon-o-clock')
+                                ->badge(fn (?CrmProperty $record): ?string => $record ? (string) $record->descriptionRevisions()->count() : null)
+                                ->visible(fn (?CrmProperty $record): bool => $record !== null)
+                                ->schema([
+                                    View::make('filament.forms.components.description-revisions')
+                                        ->columnSpanFull(),
+                                ]),
+                        ])
                         ->columnSpanFull(),
                 ])->columnSpanFull(),
 
             Section::make('Pielikumi')->columnSpanFull()->schema([
-                \App\Filament\Forms\Components\AttachmentsGrid::make('attachments')
+                AttachmentsGrid::make('attachments')
                     ->label('Fotogrāfijas un plānojumi')
                     ->reorderable()
                     ->deletable()
@@ -304,15 +366,15 @@ class CrmPropertyResource extends Resource
                             return $first->cacheBustedUrl();
                         }
                         $urls = $record->image_urls ?? [];
-                        return is_array($urls) && !empty($urls[0]) ? $urls[0] : null;
+
+                        return is_array($urls) && ! empty($urls[0]) ? $urls[0] : null;
                     })
                     ->height(40)
                     ->width(60)
                     ->extraAttributes(['style' => 'object-fit: cover; border-radius: 0.375rem;'])
                     ->defaultImageUrl('https://via.placeholder.com/60x40?text=—'),
-                Tables\Columns\TextColumn::make('sort_order')->label('#')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap'])
-                    ->formatStateUsing(fn ($state, CrmProperty $record) => $record->sort_order ?: $record->id),
                 Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->sortable()->weight('bold')
+                    ->url(fn (CrmProperty $record) => static::getUrl('view', ['record' => $record]))
                     ->description(fn (CrmProperty $record): ?string => $record->clients()
                         ->wherePivot('relation', 'seller')
                         ->first()?->name),
@@ -363,7 +425,7 @@ class CrmPropertyResource extends Resource
     public static function getRelations(): array
     {
         return [
-            \App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers\ClientsRelationManager::class,
+            ClientsRelationManager::class,
         ];
     }
 }

@@ -190,6 +190,16 @@
     </x-filament::section>
 
     <x-filament::section heading="Saistītie klienti">
+        <x-slot:afterHeader>
+            <div wire:click="mountAction('piesaisit_klientu')"
+                 class="fi-btn fi-size-sm fi-color fi-color-gray fi-outlined"
+                 style="cursor: pointer;">
+                <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Pievienot klientu</span>
+            </div>
+        </x-slot:afterHeader>
         @if ($record->clients->isNotEmpty())
             <div class="flex flex-col gap-4">
                 @foreach ($record->clients as $client)

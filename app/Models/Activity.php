@@ -12,7 +12,7 @@ class Activity extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'actor_user_id', 'deal_id', 'client_id', 'property_id',
+        'actor_user_id', 'client_id', 'property_id',
         'type', 'payload', 'created_at',
     ];
 
@@ -24,11 +24,6 @@ class Activity extends Model
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');
-    }
-
-    public function deal(): BelongsTo
-    {
-        return $this->belongsTo(Deal::class);
     }
 
     public function client(): BelongsTo

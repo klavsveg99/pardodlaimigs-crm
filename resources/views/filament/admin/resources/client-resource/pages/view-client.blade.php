@@ -51,11 +51,7 @@
     </x-filament::section>
 
     <x-filament::section heading="Saistītie dati">
-        <div class="grid gap-3 grid-cols-1 md:grid-cols-3">
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Darījumi</dt>
-                <dd class="mt-1 text-lg font-bold text-gray-900 dark:text-white">{{ $record->deals_count ?? $record->deals?->count() ?? 0 }}</dd>
-            </div>
+        <div class="grid gap-3 grid-cols-1 md:grid-cols-2">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Apskates</dt>
                 <dd class="mt-1 text-lg font-bold text-gray-900 dark:text-white">{{ $record->viewings_count ?? $record->viewings?->count() ?? 0 }}</dd>

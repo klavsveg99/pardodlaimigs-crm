@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Calendar;
 
-use App\Models\Deal;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\Viewing;
@@ -44,7 +43,7 @@ class IcsExport
 
         // Tasks assigned to this user
         $tasks = Task::query()
-            ->with(['client', 'deal'])
+            ->with(['client'])
             ->where('assigned_user_id', $user->id)
             ->whereNull('completed_at')
             ->where('due_at', '>=', now()->subDays(7))
@@ -56,7 +55,6 @@ class IcsExport
             $summary = 'Uzdevums: '.$t->title;
             $description = collect([
                 $t->client ? 'Klients: '.$t->client->name : null,
-                $t->deal ? 'Darījums: '.$t->deal->title : null,
                 $t->body ? $t->body : null,
             ])->filter()->implode('\n');
 
@@ -66,36 +64,6 @@ class IcsExport
                 description: $description,
                 start: $start,
                 end: $end,
-            ));
-        }
-
-        // Deals with expected close date
-        $deals = Deal::query()
-            ->with(['client', 'property'])
-            ->where('owner_user_id', $user->id)
-            ->where('stage', '!=', 'pardots')
-            ->whereNotNull('expected_close_date')
-            ->where('expected_close_date', '>=', now()->subDays(7))
-            ->get();
-
-        foreach ($deals as $d) {
-            $start = Carbon::parse($d->expected_close_date)->startOfDay();
-            $end = $start->copy()->endOfDay();
-            $summary = 'Darījums: '.$d->title;
-            $description = collect([
-                $d->client ? 'Klients: '.$d->client->name : null,
-                $d->property ? 'Īpašums: '.$d->property->title : null,
-                $d->value_eur ? 'Vērtība: '.number_format((float) $d->value_eur, 0, '.', ' ').' €' : null,
-                'Posms: '.($d->stage_label ?? $d->stage),
-            ])->filter()->implode('\n');
-
-            $events->push($this->makeEvent(
-                uid: "deal-{$d->id}@crm.pardodlaimigs.lv",
-                summary: $summary,
-                description: $description,
-                start: $start,
-                end: $end,
-                allDay: true,
             ));
         }
 

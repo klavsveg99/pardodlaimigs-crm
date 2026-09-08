@@ -108,14 +108,11 @@ class ClientResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable()->weight('bold'),
+                Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable()->weight('bold')
+                    ->url(fn (Client $record) => static::getUrl('view', ['record' => $record])),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable()->sortable(),
                 Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->sortable()->placeholder('—'),
-                Tables\Columns\TextColumn::make('deals_count')
-                    ->counts('deals')
-                    ->label('Darījumi')
-                    ->alignCenter()->sortable(),
                 Tables\Columns\TextColumn::make('viewings_count')
                     ->counts('viewings')
                     ->label('Apskates')

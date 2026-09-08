@@ -6,11 +6,11 @@ use App\Models\ClientCrmProperty;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Facades\DB;
 
 class CrmPropertiesAsSellerRelationManager extends RelationManager
@@ -40,11 +40,23 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
         ]);
     }
 
+    /**
+     * Allow attaching/detaching on the client VIEW page too — Filament denies
+     * these actions on ViewRecord pages by default, which hid the buttons.
+     */
+    public function getDefaultActionAuthorizationResponse(Actions\Action $action): ?Response
+    {
+        if ($action instanceof Actions\AttachAction || $action instanceof Actions\DetachAction) {
+            return null;
+        }
+
+        return parent::getDefaultActionAuthorizationResponse($action);
+    }
+
     public function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->label('#')->sortable(),
                 Tables\Columns\TextColumn::make('title')->label('Īpašums')->sortable()->weight('bold')->wrap(),
                 Tables\Columns\TextColumn::make('city')->label('Pilsēta')->sortable()->wrap(),
                 Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->sortable()->placeholder('—')->wrap(),
@@ -60,15 +72,25 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
             ])
             ->headerActions([
                 Actions\AttachAction::make()
-                    ->label('Pievienot esošu īpašumu')
+                    ->label('Pievienot īpašumu')
+                    ->modalHeading('Pievienot īpašumu')
+                    ->modalSubmitActionLabel('Pievienot')
                     ->icon('heroicon-o-magnifying-glass-plus')
                     ->color('gray')
+                    ->recordTitle(fn (CrmProperty $record): string => $record->selection_label)
                     ->recordSelectSearchColumns(['title', 'city', 'kadastra_nr', 'id'])
                     ->recordSelectOptionsQuery(function ($query) {
                         return $query->where('status', '!=', 'sold')->limit(20);
                     })
                     ->schema(function (Actions\AttachAction $action): array {
-                        $recordSelect = $action->getRecordSelect();
+                        $recordSelect = $action->getRecordSelect()
+                            ->options(fn () => CrmProperty::query()
+                                ->where('status', '!=', 'sold')
+                                ->orderBy('title')
+                                ->get()
+                                ->mapWithKeys(fn (CrmProperty $p) => [$p->id => $p->selection_label])
+                                ->all())
+                            ->searchable(false);
 
                         return [
                             $recordSelect,
@@ -97,59 +119,6 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
                         $property = CrmProperty::find($propertyId);
                         if ($relation === 'buyer') {
                         }
-                    }),
-                Actions\Action::make('create_property')
-                    ->label('Jauns īpašums')
-                    ->icon('heroicon-o-plus')
-                    ->color('gray')
-                    ->modalHeading('Jauns īpašums')
-                    ->modalSubmitActionLabel('Izveidot')
-                    ->form([
-                        Forms\Components\TextInput::make('title')
-                            ->label('Nosaukums')
-                            ->required()
-                            ->maxLength(200),
-                        Forms\Components\Select::make('category')
-                            ->label('Kategorija')
-                            ->options(CrmProperty::CATEGORIES)
-                            ->required(),
-                        Forms\Components\TextInput::make('kadastra_nr')
-                            ->label('Kadastra nr.')
-                            ->maxLength(11)
-                            ->minLength(11)
-                            ->rules(['regex:/^\d{11}$/'])
-                            ->extraInputAttributes([
-                                'maxlength' => 11,
-                                'inputmode' => 'numeric',
-                                'pattern' => '\d{11}',
-                                'x-on:input' => '$el.value = $el.value.replace(/\\D/g, \'\').slice(0, 11)',
-                                'x-on:paste' => '$el.value = ($event.clipboardData || window.clipboardData).getData(\'text\').replace(/\\D/g, \'\').slice(0, 11); $event.preventDefault();',
-                            ])
-                            ->validationMessages([
-                                'regex' => 'Kadastra nr. jābūt tieši 11 cipariem.',
-                                'min' => 'Kadastra nr. jābūt tieši 11 cipariem.',
-                                'max' => 'Kadastra nr. nedrīkst pārsniegt 11 ciparus.',
-                            ]),
-                        Forms\Components\TextInput::make('city')
-                            ->label('Pilsēta')
-                            ->maxLength(128),
-                    ])
-                    ->action(function (array $data): void {
-                        $property = CrmProperty::create([
-                            'title' => $data['title'],
-                            'category' => $data['category'] ?? null,
-                            'kadastra_nr' => $data['kadastra_nr'] ?? null,
-                            'city' => $data['city'] ?? null,
-                            'status' => 'draft',
-                            'owner_user_id' => auth()->id(),
-                        ]);
-
-                        $this->getOwnerRecord()->crmProperties()->attach($property->id, ['relation' => 'seller']);
-
-                        Notification::make()
-                            ->title('Īpašums izveidots un pievienots')
-                            ->success()
-                            ->send();
                     }),
             ])
             ->actions([

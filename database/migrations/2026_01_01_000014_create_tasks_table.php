@@ -16,11 +16,9 @@ return new class extends Migration
             $t->timestamp('completed_at')->nullable();
             $t->foreignId('assigned_user_id')->nullable()->constrained('users')->nullOnDelete();
             $t->foreignId('created_by_user_id')->nullable()->constrained('users')->nullOnDelete();
-            $t->foreignId('deal_id')->nullable()->constrained('deals')->nullOnDelete();
             $t->foreignId('client_id')->nullable()->constrained('clients')->nullOnDelete();
-            $t->unsignedBigInteger('property_id')->nullable();
+            $t->foreignId('property_id')->nullable()->constrained('crm_properties')->nullOnDelete();
             $t->timestamps();
-            $t->foreign('property_id')->references('id')->on('properties_cache')->nullOnDelete();
         });
     }
 

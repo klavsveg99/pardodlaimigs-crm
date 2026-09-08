@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Services\AuditLogger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class CrmProperty extends Model
@@ -67,6 +69,19 @@ class CrmProperty extends Model
             // If final_price/commission set without sold status, keep sold_at; if needed, clear when not sold:
             // if ($property->status !== 'sold') { $property->sold_at = null; }
         });
+
+        static::created(fn (self $p) => app(AuditLogger::class)->log('create', 'crm_property', $p->id, null, $p->toArray()));
+
+        static::updated(function (self $p) {
+            $changes = $p->getChanges();
+            $meaningful = array_diff_key($changes, ['updated_at' => true]);
+            if ($meaningful === []) {
+                return;
+            }
+            app(AuditLogger::class)->log('update', 'crm_property', $p->id, array_intersect_key($p->getOriginal(), $changes), $changes);
+        });
+
+        static::deleted(fn (self $p) => app(AuditLogger::class)->log('delete', 'crm_property', $p->id, $p->toArray(), null));
     }
 
     public function owner(): BelongsTo
@@ -85,6 +100,11 @@ class CrmProperty extends Model
     public function attachments(): MorphMany
     {
         return $this->morphMany(Attachment::class, 'attachable')->orderBy('sort_order');
+    }
+
+    public function descriptionRevisions(): HasMany
+    {
+        return $this->hasMany(CrmPropertyDescriptionRevision::class);
     }
 
     public function getPriceDisplayAttribute(): string
@@ -168,7 +188,7 @@ class CrmProperty extends Model
             'crm_id' => $this->id,
             'sort_order' => $this->sort_order ?? $this->id,
             'agent' => $agent,
-            'attachments' => $this->attachments->map(fn (Attachment $attachment) => [
+            'attachments' => $this->attachments->sortBy('sort_order')->values()->map(fn (Attachment $attachment) => [
                 'url' => $attachment->url,
                 'name' => $attachment->original_name,
                 'mime_type' => $attachment->mime_type,

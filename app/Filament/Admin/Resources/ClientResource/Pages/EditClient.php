@@ -31,11 +31,18 @@ class EditClient extends EditRecord
                     if ($this->autosaveState === 'saved' && $this->autosaveAt) {
                         return 'Saglabāts '.$this->autosaveAt;
                     }
+                    if ($this->autosaveState === 'error') {
+                        return $this->autosaveError ?: 'Neizdevās saglabāt';
+                    }
                     return null;
                 })
-                ->icon('heroicon-o-cloud-arrow-up')
-                ->color(fn (): string => $this->autosaveState === 'saved' ? 'success' : 'gray')
-                ->visible(fn () => $this->autosaveState === 'saved')
+                ->icon(fn (): string => $this->autosaveState === 'error' ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-cloud-arrow-up')
+                ->color(fn (): string => match ($this->autosaveState) {
+                    'saved' => 'success',
+                    'error' => 'warning',
+                    default => 'gray',
+                })
+                ->visible(fn () => in_array($this->autosaveState, ['saved', 'error'], true))
                 ->disabled(),
         ];
     }

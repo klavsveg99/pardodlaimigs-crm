@@ -103,6 +103,46 @@ Route::post('/admin/avatar/upload', function () {
     ]);
 })->middleware(['auth', 'web'])->name('filament.admin.avatar.upload');
 
+// ── Same-origin image proxy for the photo editor ───────────────
+// Gallery images may live on the WP host (cross-origin). Loading them
+// directly taints the editor canvas — Cropper's CORS fetch fails too since
+// WP sends no ACAO headers — so cropping/saving breaks. This endpoint
+// fetches the remote file server-side and streams it same-origin.
+Route::get('/admin/property/image-proxy', function (\Illuminate\Http\Request $request) {
+    $url = (string) $request->query('url', '');
+    $parts = parse_url($url);
+    if (! $parts || ($parts['scheme'] ?? '') !== 'https') {
+        abort(400);
+    }
+    $host = strtolower($parts['host'] ?? '');
+    // SSRF guard: only our own WP/CRM hosts.
+    if (! in_array($host, ['pardodlaimigs.lv', 'www.pardodlaimigs.lv', 'crm.pardodlaimigs.lv'], true)) {
+        abort(403);
+    }
+
+    try {
+        $response = \Illuminate\Support\Facades\Http::timeout(20)->get($url);
+    } catch (\Throwable) {
+        abort(502);
+    }
+    if (! $response->successful()) {
+        abort(404);
+    }
+    $mime = strtok((string) $response->header('Content-Type', ''), ';');
+    if (! str_starts_with($mime, 'image/')) {
+        abort(415);
+    }
+    $body = $response->body();
+    if (strlen($body) > 25 * 1024 * 1024) {
+        abort(413);
+    }
+
+    return response($body, 200, [
+        'Content-Type' => $mime,
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+})->middleware(['auth', 'web'])->name('filament.admin.property.image-proxy');
+
 // ── Attachment upload endpoint ────────────────────────────────
 Route::post('/admin/property/upload-attachment', function () {
     $file = request()->file('file');

@@ -6,7 +6,6 @@ namespace App\Services;
 
 use App\Models\Activity;
 use App\Models\AuditLog;
-use App\Models\Deal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,12 +33,11 @@ class AuditLogger
         ]);
     }
 
-    public function activity(string $type, ?Deal $deal = null, array $payload = []): Activity
+    public function activity(string $type, array $payload = []): Activity
     {
         return Activity::create([
             'actor_user_id' => Auth::id(),
-            'deal_id' => $deal?->id,
-            'client_id' => $deal?->client_id ?? ($payload['client_id'] ?? null),
+            'client_id' => $payload['client_id'] ?? null,
             'property_id' => $payload['property_id'] ?? null,
             'type' => $type,
             'payload' => $payload,

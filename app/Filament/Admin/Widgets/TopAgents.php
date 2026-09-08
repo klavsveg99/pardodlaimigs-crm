@@ -129,6 +129,7 @@ class TopAgents extends BaseWidget
                     ->label('Aģents')
                     ->weight('bold')
                     ->searchable()
+                    ->url(fn ($record) => route('filament.admin.resources.users.edit', $record['id']))
                     ->formatStateUsing(fn ($state, $record) => $record['name']),
 
                 Tables\Columns\TextColumn::make('sold_count')

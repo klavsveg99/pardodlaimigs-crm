@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 
 use App\Filament\Admin\Resources\CrmPropertyResource;
-use App\Filament\Admin\Resources\Pages\Concerns\AttachSellerAction;
+use App\Filament\Admin\Resources\Pages\Concerns\PievienotKlientuRelationAction;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewCrmProperty extends ViewRecord
 {
-    use AttachSellerAction;
+    use PievienotKlientuRelationAction;
 
     protected static string $resource = CrmPropertyResource::class;
 
@@ -20,8 +20,7 @@ class ViewCrmProperty extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            $this->getAttachSellerAction(),
-            $this->getAttachBuyerAction(),
+            $this->getPievienotKlientuAction(),
             Actions\EditAction::make()->label('Rediģēt'),
             Actions\Action::make('open_site')
                 ->label('Atvērt vietnē')

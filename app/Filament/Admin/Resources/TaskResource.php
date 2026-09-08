@@ -6,7 +6,7 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\TaskResource\Pages;
 use App\Models\Client;
-use App\Models\Deal;
+use App\Models\CrmProperty;
 use App\Models\Izpilditajs;
 use App\Models\Task;
 use Filament\Actions;
@@ -52,56 +52,16 @@ class TaskResource extends Resource
                 ->searchable()
                 ->options(fn () => Client::query()->orderBy('name')->limit(20)->pluck('name', 'id')->all())
                 ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name),
-            Forms\Components\Select::make('deal_id')->label('Darījums')
+            Forms\Components\Select::make('property_id')->label('Īpašums')
                 ->searchable()
-                ->options(function () {
-                    return Deal::query()
-                        ->with(['client', 'property'])
-                        ->whereNotNull('property_id')
-                        ->orderByDesc('id')
-                        ->limit(20)
-                        ->get()
-                        ->mapWithKeys(function ($d) {
-                            $client = $d->client?->name ?? '—';
-                            $property = $d->property?->selection_label ?? '—';
-                            $stage = Deal::STAGES[$d->stage] ?? $d->stage;
-
-                            return [$d->id => "#{$d->id} · {$client} · {$property} · {$stage}"];
-                        })
-                        ->toArray();
-                })
-                ->getSearchResultsUsing(function (string $search) {
-                    return Deal::query()
-                        ->with(['client', 'property'])
-                        ->whereNotNull('property_id')
-                        ->where(function ($q) use ($search) {
-                            $q->where('id', 'like', "%{$search}%")
-                                ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$search}%"))
-                                ->orWhereHas('property', fn ($p) => $p->where('title', 'like', "%{$search}%")->orWhere('kadastra_nr', 'like', "%{$search}%"));
-                        })
-                        ->orderByDesc('id')
-                        ->limit(20)
-                        ->get()
-                        ->mapWithKeys(function ($d) {
-                            $client = $d->client?->name ?? '—';
-                            $property = $d->property?->selection_label ?? '—';
-                            $stage = Deal::STAGES[$d->stage] ?? $d->stage;
-
-                            return [$d->id => "#{$d->id} · {$client} · {$property} · {$stage}"];
-                        })
-                        ->toArray();
-                })
-                ->getOptionLabelUsing(function ($value): ?string {
-                    $d = Deal::with(['client', 'property'])->find($value);
-                    if (! $d) {
-                        return null;
-                    }
-                    $client = $d->client?->name ?? '—';
-                    $property = $d->property?->selection_label ?? '—';
-                    $stage = Deal::STAGES[$d->stage] ?? $d->stage;
-
-                    return "#{$d->id} · {$client} · {$property} · {$stage}";
-                }),
+                ->options(fn () => CrmProperty::query()
+                    ->where('status', '!=', 'dzests')
+                    ->orderByDesc('id')
+                    ->limit(100)
+                    ->get()
+                    ->mapWithKeys(fn ($p) => [$p->id => $p->selection_label])
+                    ->toArray())
+                ->getOptionLabelUsing(fn ($value): ?string => CrmProperty::find($value)?->selection_label),
             Forms\Components\FileUpload::make('attachments')
                 ->label('Pielikumi')
                 ->helperText('Atļauti failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
@@ -133,14 +93,20 @@ class TaskResource extends Resource
                     ->trueColor('warning')
                     ->tooltip(fn ($record) => $record->isOverdue() ? 'Nokavēts' : null)
                     ->sortable(query: fn ($query, $direction) => $query->orderBy('due_at', $direction)),
-                Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable()->weight('bold')->wrap(),
+                Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable()->weight('bold')->wrap()
+                    ->url(fn ($record) => route('filament.admin.resources.tasks.edit', $record)),
                 Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->color(fn ($record) => $record->isOverdue() ? 'danger' : null)
                     ->icon(fn ($record) => $record->isOverdue() ? 'heroicon-o-exclamation-triangle' : null)
                     ->iconColor('danger'),
-                Tables\Columns\TextColumn::make('assignedTo.name')->label('Aģents')->sortable(),
+                Tables\Columns\TextColumn::make('assignedTo.name')->label('Aģents')->sortable()
+                    ->url(fn ($record) => $record->assigned_user_id ? route('filament.admin.resources.users.edit', $record->assigned_user_id) : null),
                 Tables\Columns\TextColumn::make('izpilditajs.name')->label('Izpildītājs')->sortable()->placeholder('—'),
-                Tables\Columns\TextColumn::make('client.name')->label('Klients')->sortable(),
+                Tables\Columns\TextColumn::make('client.name')->label('Klients')->sortable()
+                    ->url(fn ($record) => $record->client_id ? route('filament.admin.resources.clients.view', $record->client_id) : null),
+                Tables\Columns\TextColumn::make('property.selection_label')->label('Īpašums')->wrap()
+                    ->placeholder('—')
+                    ->url(fn ($record) => $record->property_id ? route('filament.admin.resources.crm-properties.view', $record->property_id) : null),
             ])
             ->filters([
                 Tables\Filters\Filter::make('open')->label('Atvērti')->query(fn ($query) => $query->whereNull('completed_at')),

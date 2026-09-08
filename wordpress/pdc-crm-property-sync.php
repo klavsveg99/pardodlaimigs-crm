@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 2.3.2
+ * Version: 2.3.5
  * Author: Pārdod Laimīgs
  */
 
@@ -251,6 +251,11 @@ function pdc_find_existing_media_by_path($path, $url = '') {
     //    WP had to rename the stored file (e.g. "<name>-10.jpg" collision). Only
     //    existing attachments qualify (orphaned postmeta of deleted posts is ignored)
     //    and the newest match wins.
+    //    VERIFY the match: the pre-2.3 basename matcher stamped CRM URLs onto
+    //    other properties' files ("1.jpg", "5.jpg", ...). Such a stale stamp
+    //    points at a file in a different directory — ignore it so the sync
+    //    re-resolves to the correct file (or downloads it fresh) instead of
+    //    re-attaching the wrong property's photo as featured image.
     if ($url !== '') {
         $by_url = $wpdb->get_var(
             $wpdb->prepare(
@@ -266,7 +271,14 @@ function pdc_find_existing_media_by_path($path, $url = '') {
             )
         );
         if ($by_url && (int) $by_url > 0) {
-            return (int) $by_url;
+            $stored_file = get_post_meta((int) $by_url, '_wp_attached_file', true);
+            if (is_string($stored_file) && $stored_file !== ''
+                && pdc_same_upload_dir($stored_file, $path)
+                && pdc_same_upload_basename($stored_file, $path)) {
+                return (int) $by_url;
+            }
+            // Stale/contaminated stamp — ignore this match and fall through.
+            pdc_log('Ignoring stale URL stamp on #' . (int) $by_url . ' (' . $stored_file . ') for ' . $path);
         }
     }
 
@@ -314,26 +326,56 @@ function pdc_find_existing_media_by_path($path, $url = '') {
         }
     }
 
-    // 3. Last-resort basename fallback (anywhere in the uploads tree)
+    // 3. Last-resort basename fallback — SAME DIRECTORY ONLY.
+    //    Matching "anywhere in the uploads tree" is what attached other
+    //    properties' "1.jpg"/"5.jpg"/"6.jpg" as featured images. A fallback hit
+    //    must live in the expected directory; otherwise download fresh.
     $base = preg_replace('/-\d+$/', '', preg_replace('/\.[^.]+$/', '', $basename));
     $ext  = pathinfo($basename, PATHINFO_EXTENSION);
     if ($base === '' || $ext === '') {
         return 0;
     }
 
-    $like = $wpdb->esc_like($base . '.') . '%';
+    $dir = trim(dirname($path), '/');
+    if ($dir === '' || $dir === '.') {
+        return 0;
+    }
+
+    $like = $wpdb->esc_like($dir . '/' . $base . '.') . '%';
     $fallback = $wpdb->get_var(
         $wpdb->prepare(
             "SELECT post_id FROM {$wpdb->postmeta}
              WHERE meta_key = '_wp_attached_file'
                AND meta_value LIKE %s
-             ORDER BY post_id ASC
+             ORDER BY post_id DESC
              LIMIT 1",
-            '%/' . $like
+            $like
         )
     );
 
     return $fallback && (int) $fallback > 0 ? (int) $fallback : 0;
+}
+
+/**
+ * Same uploads-relative directory? (e.g. "2025/10" vs "2025/09" → false)
+ */
+function pdc_same_upload_dir($a, $b) {
+    return trim(dirname((string) $a), '/') === trim(dirname((string) $b), '/');
+}
+
+/**
+ * Same basename, tolerating WP collision renames ("5.jpg" vs "5-2.jpg" → true).
+ */
+function pdc_same_upload_basename($a, $b) {
+    $strip = function ($f) {
+        $name = basename((string) $f);
+        $name = preg_replace('/\.[^.]+$/', '', $name);
+        return preg_replace('/-\d+$/', '', (string) $name);
+    };
+    $ea = pathinfo((string) $a, PATHINFO_EXTENSION);
+    $eb = pathinfo((string) $b, PATHINFO_EXTENSION);
+    return $strip($a) !== '' && strcasecmp($strip($a), $strip($b)) === 0
+        && strcasecmp((string) $ea, (string) $eb) === 0;
 }
 
 function pdc_sync_attachments($post_id, $attachments) {
@@ -345,6 +387,15 @@ function pdc_sync_attachments($post_id, $attachments) {
         update_post_meta($post_id, 'real_estate_property_images', '');
         delete_post_thumbnail($post_id);
         return '';
+    }
+
+    // CRM order is canonical: sort by sort_order so index 0 is the CRM featured image.
+    if (is_array($attachments)) {
+        usort($attachments, function ($a, $b) {
+            $sa = isset($a['sort_order']) ? (int) $a['sort_order'] : 0;
+            $sb = isset($b['sort_order']) ? (int) $b['sort_order'] : 0;
+            return $sa <=> $sb;
+        });
     }
 
     $seen = [];
@@ -370,8 +421,12 @@ function pdc_sync_attachments($post_id, $attachments) {
         $unique[] = $attachment;
     }
 
+    // Single pass in CRM order — existing attachments are reused, missing ones
+    // are downloaded inline. The previous two-phase version (all existing first,
+    // then all downloads) scrambled gallery order whenever the CRM featured
+    // image had not been downloaded yet, so the WP featured image mismatched CRM.
     $image_ids = [];
-    $need_download = [];
+    $downloaded = 0;
 
     foreach ($unique as $attachment) {
         $url  = $attachment['url'];
@@ -380,32 +435,22 @@ function pdc_sync_attachments($post_id, $attachments) {
         $mime = isset($attachment['mime_type']) ? $attachment['mime_type'] : '';
 
         $is_image = (strpos($mime, 'image/') === 0 || preg_match('/\.(jpe?g|png|gif|webp|bmp)$/i', $name));
+        if (! $is_image) {
+            continue;
+        }
 
         $media_id = pdc_find_existing_media_by_path($path, $url);
 
         if ($media_id > 0) {
             update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
-            if ($is_image) {
-                $download_url = pdc_attachment_download_url($attachment);
-                $declared_size = isset($attachment['size']) ? (int) $attachment['size'] : 0;
-                if (pdc_attachment_needs_refresh($media_id, $download_url, $declared_size)) {
-                    pdc_refresh_attachment_file($media_id, $download_url, $name);
-                }
+            $download_url = pdc_attachment_download_url($attachment);
+            $declared_size = isset($attachment['size']) ? (int) $attachment['size'] : 0;
+            if (pdc_attachment_needs_refresh($media_id, $download_url, $declared_size)) {
+                pdc_refresh_attachment_file($media_id, $download_url, $name);
             }
-        } else {
-            $need_download[] = $attachment;
-        }
-
-        if ($media_id > 0 && $is_image) {
             $image_ids[] = $media_id;
+            continue;
         }
-    }
-
-    foreach ($need_download as $attachment) {
-        $url  = $attachment['url'];
-        $name = $attachment['name'];
-        $mime = isset($attachment['mime_type']) ? $attachment['mime_type'] : '';
-        $path = $attachment['path'];
 
         if (str_starts_with($url, 'https://crm.pardodlaimigs.lv')) {
             if ($path === '') {
@@ -442,22 +487,25 @@ function pdc_sync_attachments($post_id, $attachments) {
             update_post_meta($media_id, '_pdc_crm_attachment_size', $sideloaded_size);
         }
 
-        $is_image = (strpos($mime, 'image/') === 0 || preg_match('/\.(jpe?g|png|gif|webp|bmp)$/i', $name));
-        if ($is_image) {
-            $image_ids[] = $media_id;
-        }
+        $image_ids[] = (int) $media_id;
+        $downloaded++;
     }
 
     $gallery = implode('|', $image_ids);
     update_post_meta($post_id, 'real_estate_property_images', $gallery);
 
+    // Featured image must always mirror CRM: first attachment in CRM sort order.
     if ($image_ids) {
-        set_post_thumbnail($post_id, $image_ids[0]);
+        $featured = (int) $image_ids[0];
+        $current = (int) get_post_thumbnail_id($post_id);
+        if ($current !== $featured) {
+            set_post_thumbnail($post_id, $featured);
+        }
     } else {
         delete_post_thumbnail($post_id);
     }
 
-    pdc_log('Post #' . $post_id . ': ' . count($image_ids) . ' images (' . count($need_download) . ' downloaded)');
+    pdc_log('Post #' . $post_id . ': ' . count($image_ids) . ' images (' . $downloaded . ' downloaded)');
     return $gallery;
 }
 
@@ -722,8 +770,19 @@ function pdc_full_sync() {
     ignore_user_abort(true);
     set_time_limit(0);
 
+    // Guard against overlapping runs: WP-Cron fires every 5 min but a full
+    // sync with downloads takes longer — concurrent runs race each other,
+    // duplicate downloads and flip-flop galleries/thumbnails.
+    if (get_transient('pdc_sync_running')) {
+        pdc_log('Sync skipped: another sync is already running');
+        return 0;
+    }
+    set_transient('pdc_sync_running', time(), 15 * MINUTE_IN_SECONDS);
+
     $start = time();
     pdc_log('Sync started');
+
+    try {
 
     // No system cron on the CRM host: trigger the Laravel scheduler remotely
     // so SyncWpForms (contact form sync) and other scheduled jobs run.
@@ -738,6 +797,7 @@ function pdc_full_sync() {
     $data = pdc_fetch_json(PDC_CRM_API_URL);
     if (! $data || ! isset($data['properties'])) {
         pdc_log('No properties data from CRM');
+        delete_transient('pdc_sync_running');
         return 0;
     }
 
@@ -771,7 +831,12 @@ function pdc_full_sync() {
 
     update_option('pdc_last_sync', current_time('mysql'));
     update_option('pdc_synced_count', $synced);
+    delete_transient('pdc_sync_running');
     return $synced;
+    } finally {
+        // Always release the lock, even on fatal errors mid-sync.
+        delete_transient('pdc_sync_running');
+    }
 }
 
 add_action('init', function () {

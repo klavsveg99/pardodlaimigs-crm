@@ -18,7 +18,7 @@ class Task extends Model
     protected $fillable = [
         'title', 'body', 'due_at', 'completed_at',
         'assigned_user_id', 'izpilditajs_id', 'created_by_user_id',
-        'deal_id', 'client_id', 'property_id',
+        'client_id', 'property_id',
     ];
 
     protected $casts = [
@@ -35,7 +35,10 @@ class Task extends Model
 
         static::updated(function (self $t) {
             $changes = $t->getChanges();
-            app(AuditLogger::class)->log('update', 'task', $t->id, array_intersect_key($t->getOriginal(), $changes), $changes);
+            $meaningful = array_diff_key($changes, ['updated_at' => true]);
+            if ($meaningful !== []) {
+                app(AuditLogger::class)->log('update', 'task', $t->id, array_intersect_key($t->getOriginal(), $changes), $changes);
+            }
 
             $assignmentChanged = array_key_exists('assigned_user_id', $changes) || array_key_exists('izpilditajs_id', $changes);
             $elapsed = $t->updated_at && $t->created_at
@@ -60,11 +63,6 @@ class Task extends Model
         return $this->belongsTo(Izpilditajs::class, 'izpilditajs_id');
     }
 
-    public function deal(): BelongsTo
-    {
-        return $this->belongsTo(Deal::class);
-    }
-
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
@@ -72,7 +70,7 @@ class Task extends Model
 
     public function property(): BelongsTo
     {
-        return $this->belongsTo(PropertyCache::class, 'property_id');
+        return $this->belongsTo(CrmProperty::class, 'property_id');
     }
 
     public function isOverdue(): bool

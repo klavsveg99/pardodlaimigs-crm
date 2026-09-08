@@ -6,7 +6,6 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Models\Client;
 use App\Models\CrmProperty;
-use App\Models\Deal;
 use App\Models\Task;
 use App\Models\Viewing;
 use Filament\Widgets\StatsOverviewWidget;
@@ -47,12 +46,6 @@ class CrmStatsOverview extends StatsOverviewWidget
         $monthCommission = (float) $soldThisMonth['commission'];
         $monthSoldCount = $soldThisMonth['count'];
 
-        // Active deals (not sold) — potential commission estimate
-        $activeDeals = Deal::where('stage', '!=', 'pardots')
-            ->whereNull('closed_at')
-            ->where('value_eur', '>', 0)
-            ->pluck('value_eur');
-
         // Yearly sold for avg metrics
         $soldThisYear = $this->soldInRange($yearStart, $yearEnd);
         $yearCommission = round($soldThisYear['commission'], 2);
@@ -65,14 +58,6 @@ class CrmStatsOverview extends StatsOverviewWidget
 
         // Average commission percent across sold properties (per-property, weighted)
         $avgCommissionPercent = $this->averageCommissionPercent($yearStart, $yearEnd);
-
-        $potentialCommission = null;
-        if ($activeDeals->isNotEmpty()) {
-            $sumValue = (float) $activeDeals->sum();
-            if ($avgCommissionPercent !== null) {
-                $potentialCommission = round($sumValue * $avgCommissionPercent / 100, 2);
-            }
-        }
 
         $avgSellDays = $this->averageSellDays($yearStart, $yearEnd);
 
@@ -94,7 +79,7 @@ class CrmStatsOverview extends StatsOverviewWidget
 
         ];
 
-        $stats[] = Stat::make('Vid. darījuma vērtība (gads)', $avgDealValue !== null ? number_format($avgDealValue, 0, ',', ' ').' €' : '—')
+        $stats[] = Stat::make('Vid. pārdošanas cena (gads)', $avgDealValue !== null ? number_format($avgDealValue, 0, ',', ' ').' €' : '—')
             ->description($avgDealValue !== null ? 'Kopā šogad: '.number_format($yearFinalValue, 0, ',', ' ').' € ('.$yearCount.' pārdoti)' : 'Nav pārdoto īpašumu šogad')
             ->descriptionIcon('heroicon-o-banknotes')
             ->color('secondary');

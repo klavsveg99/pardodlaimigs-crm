@@ -4,6 +4,7 @@
     $currentUrl = $currentPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($currentPath) : null;
     $uid = 'avatar-' . str_replace('.', '-', $statePath);
     $uploadUrl = route('filament.admin.avatar.upload');
+    $proxyUrl = route('filament.admin.property.image-proxy');
 @endphp
 
 <script type="application/json" id="{{ $uid }}-data">{!! json_encode(['path' => $currentPath, 'url' => $currentUrl]) !!}</script>
@@ -155,6 +156,7 @@
         path: null,
         url: null,
         uploadUrl: null,
+        proxyUrl: null,
         csrfToken: null,
         cropper: null,
         editorOpen: false,
@@ -175,6 +177,7 @@
                 this.url = (data && data.url) ? data.url : null;
             } catch(e) { this.path = null; this.url = null; }
             this.uploadUrl = '{{ $uploadUrl }}';
+            this.proxyUrl = '{{ $proxyUrl }}';
             this.csrfToken = document.querySelector('meta[name=\'csrf-token\']')?.content || '';
             if (!window.Cropper && !document.querySelector('script[data-cropper]')) {
                 const s = document.createElement('script');
@@ -182,6 +185,16 @@
                 s.setAttribute('data-cropper','1');
                 document.head.appendChild(s);
             }
+        },
+        editUrl(url) {
+            if (!url) return '';
+            try {
+                const u = new URL(url, window.location.origin);
+                if (u.origin !== window.location.origin && this.proxyUrl) {
+                    return this.proxyUrl + '?url=' + encodeURIComponent(url);
+                }
+            } catch(e) {}
+            return url;
         },
         sync() { $wire.set('{{ $statePath }}', this.path, false); },
         async handleUpload(e) {
@@ -271,7 +284,7 @@
                     console.error('Avatar editor: image failed to load', this.url);
                     alert('Neizdevās ielādēt attēlu redaktorā.');
                 };
-                img.src = this.url;
+                img.src = this.editUrl(this.url);
                 if (img.complete && img.naturalWidth > 0) {
                     build();
                 }

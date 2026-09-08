@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
-use App\Models\Deal;
 use App\Models\PropertyCache;
 use App\Models\Task;
 use App\Models\Viewing;
@@ -40,8 +39,6 @@ class GdprController extends Controller
 
         $payload = [
             'client' => Client::withTrashed()->where('email', $email)->get(),
-            'deals' => Deal::whereIn('client_id',
-                Client::where('email', $email)->pluck('id'))->get(),
             'viewings' => Viewing::whereIn('client_id',
                 Client::where('email', $email)->pluck('id'))->get(),
             'tasks' => Task::whereIn('client_id',

@@ -32,7 +32,8 @@ class TasksRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable()
+                    ->url(fn ($record) => route('filament.admin.resources.tasks.edit', $record)),
                 Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable(),
                 Tables\Columns\IconColumn::make('is_overdue')
                     ->label('')

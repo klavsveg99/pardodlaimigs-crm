@@ -47,7 +47,8 @@ class AgentYearlyCommission extends BaseWidget
                 Tables\Columns\TextColumn::make('name')
                     ->label('Aģents')
                     ->weight('bold')
-                    ->wrap(),
+                    ->wrap()
+                    ->url(fn ($record) => route('filament.admin.resources.users.edit', $record['user_id'])),
 
                 Tables\Columns\TextColumn::make('sold_count')
                     ->label('Pārdoti (gads)')

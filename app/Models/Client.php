@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Services\AuditLogger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -38,6 +39,19 @@ class Client extends Model
                 $attachment->delete();
             });
         });
+
+        static::created(fn (Client $c) => app(AuditLogger::class)->log('create', 'client', $c->id, null, $c->toArray()));
+
+        static::updated(function (Client $c) {
+            $changes = $c->getChanges();
+            $meaningful = array_diff_key($changes, ['updated_at' => true]);
+            if ($meaningful === []) {
+                return;
+            }
+            app(AuditLogger::class)->log('update', 'client', $c->id, array_intersect_key($c->getOriginal(), $changes), $changes);
+        });
+
+        static::deleted(fn (Client $c) => app(AuditLogger::class)->log('delete', 'client', $c->id, $c->toArray(), null));
     }
 
     public function owner(): BelongsTo
@@ -58,11 +72,6 @@ class Client extends Model
             ->using(ClientCrmProperty::class)
             ->withPivot('relation', 'notes_md')
             ->withTimestamps();
-    }
-
-    public function deals(): HasMany
-    {
-        return $this->hasMany(Deal::class);
     }
 
     public function viewings(): HasMany
