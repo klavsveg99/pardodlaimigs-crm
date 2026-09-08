@@ -1092,6 +1092,9 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-header, .fi-page-header, .fi-header-heading-ctn { flex-wrap: wrap !important; gap: 0.75rem !important; }
     .fi-header-actions, .fi-page-header-actions, .fi-ac { flex-wrap: wrap !important; gap: 0.5rem !important; }
     .fi-header-actions .fi-btn, .fi-page-header .fi-btn { flex: 1 1 auto !important; min-width: 0 !important; justify-content: center !important; }
+    /* Page header wrapper keeps Filament's 32px paddings on mobile, which reads
+       as a large blank band between the topbar/heading and the table below */
+    .fi-page-header-main-ctn { padding-top: 1rem !important; padding-bottom: 0.75rem !important; }
     /* When header actions wrap below the heading, park them on the right */
     .fi-header-actions-ctn { margin-left: auto !important; }
     .fi-header-actions-ctn .fi-ac { justify-content: flex-end !important; }
@@ -1099,6 +1102,9 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     /* Row action buttons (⋮ Darbības) align right at the end of each record card */
     .fi-ta-table td:has(> .fi-ta-actions) { text-align: right !important; }
     .fi-ta-table td > .fi-ta-actions { justify-content: flex-end !important; }
+    /* Image-only cells (featured_thumb) with no photo would stack an empty
+       block above every record — collapse them on mobile */
+    .fi-ta-table td.fi-ta-cell-featured-thumb:not(:has(img)) { display: none !important; }
     /* Tabs scroll horizontally instead of wrapping off-screen */
     .fi-tabs, [role="tablist"], .fi-resource-tabs { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: none !important; flex-wrap: nowrap !important; }
     .fi-tabs::-webkit-scrollbar, [role="tablist"]::-webkit-scrollbar { display: none !important; }

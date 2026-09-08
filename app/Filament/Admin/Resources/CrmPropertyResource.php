@@ -371,8 +371,7 @@ class CrmPropertyResource extends Resource
                     })
                     ->height(40)
                     ->width(60)
-                    ->extraAttributes(['style' => 'object-fit: cover; border-radius: 0.375rem;'])
-                    ->defaultImageUrl('https://via.placeholder.com/60x40?text=—'),
+                    ->extraAttributes(['style' => 'object-fit: cover; border-radius: 0.375rem;']),
                 Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->sortable()->weight('bold')
                     ->url(fn (CrmProperty $record) => static::getUrl('view', ['record' => $record]))
                     ->description(fn (CrmProperty $record): ?string => $record->clients()
