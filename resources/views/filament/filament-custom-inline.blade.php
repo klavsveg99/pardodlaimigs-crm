@@ -1001,7 +1001,8 @@ html.dark .rounded-xl .text-emerald-900 {
 /* ── Property view page "Saistītie klienti" cards ────────────────
    Dedicated classes — Tailwind arbitrary utilities used previously are
    not present in the compiled app.css and rendered the cards unstyled.
-   Look matches the view page info cards (rounded-xl, bg-gray-50). */
+   Look matches the view page info cards (rounded-xl, bg-gray-50). The
+   whole card is a clickable link to the client view page. */
 .pdc-client-card {
     display: flex;
     align-items: center;
@@ -1012,6 +1013,14 @@ html.dark .rounded-xl .text-emerald-900 {
     border-radius: 0.75rem;
     background: #f9fafb;
     padding: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s, border-color 0.15s;
+}
+.pdc-client-card:hover {
+    border-color: var(--pdc-primary);
+    background: #f3f4f6;
 }
 .pdc-client-main {
     display: flex;
@@ -1052,19 +1061,13 @@ html.dark .rounded-xl .text-emerald-900 {
 }
 .pdc-client-badge {
     font-size: 0.7rem !important;
+    align-self: flex-start;
 }
-.pdc-client-link {
-    flex: none;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--pdc-primary);
-    text-decoration: none;
-}
-.pdc-client-link:hover { text-decoration: underline; }
 html.dark .pdc-client-card {
     background: #0b0f14 !important;
     border-color: #27303a !important;
 }
+html.dark .pdc-client-card:hover { background: #111827 !important; }
 html.dark .pdc-client-name { color: #f3f4f6 !important; }
 html.dark .pdc-client-contact { color: #9ca3af !important; }
 

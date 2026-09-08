@@ -203,34 +203,19 @@
         @if ($record->clients->isNotEmpty())
             <div class="flex flex-col gap-4">
                 @foreach ($record->clients as $client)
-                    <?php
-                        $relationColors = [
-                            'seller' => 'danger',
-                            'buyer' => 'success',
-                            'tenant' => 'warning',
-                            'landlord' => 'info',
-                            'interested' => 'gray',
-                            'contacted' => 'gray',
-                        ];
-                        $relationColor = $relationColors[$client->pivot->relation] ?? 'gray';
-                        $contactParts = array_filter([$client->phone, $client->email]);
-                    ?>
-                    <div class="pdc-client-card">
+                    <a href="{{ \App\Filament\Admin\Resources\ClientResource::getUrl('view', ['record' => $client]) }}"
+                       class="pdc-client-card">
                         <div class="pdc-client-main">
                             <div class="pdc-client-avatar">{{ strtoupper(mb_substr($client->name, 0, 1)) }}</div>
                             <div class="pdc-client-info">
                                 <p class="pdc-client-name">{{ $client->name }}</p>
-                                <p class="pdc-client-contact">{{ implode(' · ', $contactParts) ?: '—' }}</p>
-                                <x-filament::badge :color="$relationColor" class="pdc-client-badge">
+                                <p class="pdc-client-contact">{{ implode(' · ', array_filter([$client->phone, $client->email])) ?: '—' }}</p>
+                                <x-filament::badge color="gray" class="pdc-client-badge">
                                     {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
                                 </x-filament::badge>
                             </div>
                         </div>
-                        <a href="{{ \App\Filament\Admin\Resources\ClientResource::getUrl('view', ['record' => $client]) }}"
-                           class="pdc-client-link">
-                            Skatīt klientu →
-                        </a>
-                    </div>
+                    </a>
                 @endforeach
             </div>
         @else
