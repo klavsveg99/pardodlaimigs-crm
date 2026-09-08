@@ -45,6 +45,14 @@ class EditCrmProperty extends EditRecord
 
         $record = parent::handleRecordUpdate($record, $data);
 
+        // AI piezīmes tiek glabātas komponentes stāvoklī (modalā textarea),
+        // nevis caur shēmas dehidrāciju — saglabājam tās šeit.
+        $aiNotes = $this->data['ai_notes'] ?? null;
+        if (is_array($aiNotes)) {
+            $aiNotes = array_filter($aiNotes, fn ($v): bool => filled($v));
+            $record->update(['ai_notes' => $aiNotes === [] ? null : $aiNotes]);
+        }
+
         // Versija tiek fiksēta tikai pie manuālas saglabāšanas, nevis pie
         // melnraksta autosave — citādi katra taustiņšienis radītu jaunu versiju.
         if (! $wasAutosave && $record->wasChanged('description')) {

@@ -52,6 +52,7 @@
         }
         .pdc-ai-panel .pdc-ai-body { padding: 1rem 1.25rem 1.25rem; max-height: 70vh; overflow-y: auto; }
         .pdc-ai-panel .pdc-ai-sec { margin-bottom: 1.1rem; }
+        .pdc-ai-panel .pdc-ai-sec:last-child { margin-bottom: 0; }
         .pdc-ai-panel .pdc-ai-sec-label {
             display: flex; align-items: center; justify-content: space-between; gap: .5rem;
             font-size: .8rem; font-weight: 600; margin-bottom: .35rem;
@@ -59,7 +60,7 @@
         .dark .pdc-ai-panel .pdc-ai-sec-label { color: #e5e7eb; }
         .pdc-ai-panel .pdc-ai-sec textarea {
             width: 100%; border: 1px solid rgb(148 163 184 / 0.6); border-radius: .5rem;
-            padding: .55rem .7rem; font-size: .85rem; line-height: 1.45; min-height: 92px;
+            padding: .55rem .7rem; font-size: .85rem; line-height: 1.45; min-height: 84px;
             background: #fff; color: #111827; resize: vertical;
         }
         .dark .pdc-ai-panel .pdc-ai-sec textarea { background: #0b0f14; color: #f3f4f6; border-color: #374151; }
@@ -71,41 +72,12 @@
         .pdc-ai-panel .pdc-ai-btn:hover:not(:disabled) { background: #f1f5f9; }
         .pdc-ai-panel .pdc-ai-btn:disabled { opacity: .55; cursor: not-allowed; }
         .dark .pdc-ai-panel .pdc-ai-btn { background: #1f2937; color: #e5e7eb; border-color: #374151; }
-        .pdc-ai-panel .pdc-ai-btn-primary {
-            background: var(--primary, #14532d); color: #fff; border-color: var(--primary, #14532d);
-        }
-        .pdc-ai-panel .pdc-ai-btn-primary:hover:not(:disabled) { filter: brightness(1.1); background: var(--primary, #14532d); }
         .pdc-ai-panel .pdc-ai-btn-inserted { background: #dcfce7 !important; color: #166534 !important; border-color: #86efac !important; }
         .pdc-ai-panel .pdc-ai-foot {
             display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; justify-content: flex-end;
             padding: .75rem 1.25rem; border-top: 1px solid rgb(148 163 184 / 0.35);
         }
-        .pdc-ai-panel .pdc-ai-gen-btn {
-            display: inline-flex; align-items: center; gap: .45rem;
-            padding: .5rem .9rem; border-radius: .5rem; font-size: .85rem; font-weight: 600;
-            border: 1px solid rgb(148 163 184 / 0.6); background: #fff; color: #374151; cursor: pointer;
-        }
-        .dark .pdc-ai-panel .pdc-ai-gen-btn { background: #1f2937; color: #e5e7eb; border-color: #374151; }
-        .pdc-ai-panel .pdc-ai-gen-btn:disabled { opacity: .6; cursor: wait; }
-        .pdc-ai-panel .pdc-ai-spin {
-            width: .9rem; height: .9rem; border-radius: 9999px;
-            border: 2px solid rgb(148 163 184 / .5); border-top-color: currentColor;
-            animation: pdc-spin 1s linear infinite; display: inline-block;
-        }
-        @keyframes pdc-spin { to { transform: rotate(360deg); } }
     </style>
-
-    <div class="flex items-center gap-3 flex-wrap">
-        <button type="button" class="pdc-ai-gen-btn" @click="$wire.generateAi('full')" :disabled="$wire.aiGenerating">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L13.663 8.5a2 2 0 0 0 1.437 1.437l6.135 1.581a.5.5 0 0 1 0 .964L15.5 13.663a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/></svg>
-            <span wire:loading.remove wire:target="generateAi">Ģenerēt tekstus ar AI</span>
-            <span wire:loading wire:target="generateAi"><span class="pdc-ai-spin"></span> Ģenerē…</span>
-        </button>
-        <span class="text-xs text-gray-500 dark:text-gray-400">
-            Ģenerē: pilno aprakstu (LV+EN), ss.lv tekstu, virsrakstu, Facebook un Instagram
-            @if ($providerLabel !== '—') · {{ $providerLabel }} @endif
-        </span>
-    </div>
 
     <template x-if="open">
         <div class="pdc-ai-modal" @click.self="open = false" @keydown.escape.window="open = false">

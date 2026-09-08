@@ -347,38 +347,46 @@ class CrmPropertyResource extends Resource
 
             Section::make('AI teksta ģenerators')
                 ->columnSpanFull()
-                ->description('Papildu informācija, ko AI izmanto sludinājuma tekstu ģenerēšanai. Ievadi tikai to, kas vēl NAV aizpildīts formas laukos — AI pārējo ņem no īpašuma datiem.')
-                ->schema([
-                    Grid::make(['default' => 1, 'md' => 2])->schema([
-                        Forms\Components\Textarea::make('ai_notes.advantages')
-                            ->label('Priekšrocības')
-                            ->rows(3)
-                            ->maxLength(2000)
-                            ->placeholder('Piem.: 10 min līdz jūrai, klusa iela, jauna komunikācija, skats uz pļavu'),
-                        Forms\Components\Textarea::make('ai_notes.technical')
-                            ->label('Tehniskā informācija')
-                            ->rows(3)
-                            ->maxLength(2000)
-                            ->placeholder('Piem.: gāzes apkure, pilsētas ūdens/kanalizācija, ēka 2005. g., komunikācijas pie ielas'),
-                        Forms\Components\Textarea::make('ai_notes.investment')
-                            ->label('Investīciju potenciāls')
-                            ->rows(3)
-                            ->maxLength(2000)
-                            ->placeholder('Piem.: iespēja dalīt 3 zemes vienībās, loģistikas piekļuve, komercpotenciāls'),
-                        Forms\Components\Textarea::make('ai_notes.extra')
-                            ->label('Papildu informācija')
-                            ->rows(3)
-                            ->maxLength(4000)
-                            ->placeholder('Brīvs teksts — viss svarīgais, ko AI vēl jāņem vērā'),
-                    ]),
-                    View::make('filament.forms.components.ai-generator-panel')
-                        ->viewData([
-                            'providerLabel' => match (DescriptionGenerator::provider()) {
-                                'gemini' => 'Google Gemini',
-                                'openai' => 'OpenAI',
-                                default => '—',
-                            },
+                ->description('Sludinājuma tekstu ģenerators — pilnais apraksts, ss.lv, virsraksts, Facebook un Instagram vienā soļā.')
+                ->headerActions([
+                    Actions\Action::make('ai_generator')
+                        ->label('AI ģenerēt aprakstu')
+                        ->icon('heroicon-o-sparkles')
+                        ->color('gray')
+                        ->visible(fn (): bool => DescriptionGenerator::provider() !== null)
+                        ->modalHeading('AI teksta ģenerators')
+                        ->modalDescription('Ievadi tikai to, kas vēl NAV aizpildīts formas laukos — pārējo AI ņem no īpašuma datiem.')
+                        ->modalSubmitActionLabel('Ģenerēt')
+                        ->form([
+                            Forms\Components\Textarea::make('advantages')
+                                ->label('Priekšrocības')
+                                ->rows(3)
+                                ->helperText('Atrašanās vieta, piekļuve, infrastruktūra, skats, ūdens, daba u.c.'),
+                            Forms\Components\Textarea::make('technical')
+                                ->label('Tehniskā informācija')
+                                ->rows(3)
+                                ->helperText('Apkure, ūdens, kanalizācija, elektrība, ēkas stāvoklis, būvniecības gads'),
+                            Forms\Components\Textarea::make('investment')
+                                ->label('Investīciju potenciāls')
+                                ->rows(3)
+                                ->helperText('Attīstības iespējas, zemes izmantošana, loģistika, komerciālais potenciāls'),
+                            Forms\Components\Textarea::make('extra')
+                                ->label('Papildu informācija')
+                                ->rows(3)
+                                ->helperText('Brīvs teksts — viss svarīgais, ko AI vēl jāņem vērā'),
                         ])
+                        ->fillForm(fn (?CrmProperty $record): array => [
+                            'advantages' => $record?->ai_notes['advantages'] ?? null,
+                            'technical' => $record?->ai_notes['technical'] ?? null,
+                            'investment' => $record?->ai_notes['investment'] ?? null,
+                            'extra' => $record?->ai_notes['extra'] ?? null,
+                        ])
+                        ->action(fn (array $data, $livewire) => $livewire->runAiGenerator($data)),
+                ])
+                ->schema([
+                    // Rezultātu popup (Kopēt / Ievietot / variantu pogas). Ievades
+                    // rāda standarta Filament Action modal augstāk.
+                    View::make('filament.forms.components.ai-generator-panel')
                         ->columnSpanFull(),
                 ])->columnSpanFull(),
 
