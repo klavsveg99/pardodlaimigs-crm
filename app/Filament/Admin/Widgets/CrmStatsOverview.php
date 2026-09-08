@@ -64,17 +64,20 @@ class CrmStatsOverview extends StatsOverviewWidget
         $stats = [
             Stat::make('Aktīvie īpašumi', $activeProperties)
                 ->descriptionIcon('heroicon-o-home')
-                ->color('success'),
+                ->color('success')
+                ->url(\App\Filament\Admin\Resources\CrmPropertyResource::getUrl('index')),
 
             Stat::make('Klienti (kopā)', $totalClients)
                 ->description('Jauni šomēnes: '.Client::whereBetween('created_at', [$monthStart, $monthEnd])->count())
                 ->descriptionIcon('heroicon-o-users')
-                ->color('info'),
+                ->color('info')
+                ->url(\App\Filament\Admin\Resources\ClientResource::getUrl('index')),
 
             Stat::make('Šomēnes pārdoti', $monthSoldCount)
                 ->description('Komisija: '.number_format($monthCommission, 2, ',', ' ').' €')
                 ->descriptionIcon('heroicon-o-check-badge')
-                ->color('primary'),
+                ->color('primary')
+                ->url(\App\Filament\Admin\Resources\CrmPropertyResource::getUrl('index')),
 
 
         ];
@@ -82,19 +85,22 @@ class CrmStatsOverview extends StatsOverviewWidget
         $stats[] = Stat::make('Vid. pārdošanas cena (gads)', $avgDealValue !== null ? number_format($avgDealValue, 0, ',', ' ').' €' : '—')
             ->description($avgDealValue !== null ? 'Kopā šogad: '.number_format($yearFinalValue, 0, ',', ' ').' € ('.$yearCount.' pārdoti)' : 'Nav pārdoto īpašumu šogad')
             ->descriptionIcon('heroicon-o-banknotes')
-            ->color('secondary');
+            ->color('secondary')
+            ->url(\App\Filament\Admin\Resources\CrmPropertyResource::getUrl('index'));
 
 
 
         $stats[] = Stat::make('Atvērtas apskates šodien', Viewing::whereBetween('scheduled_at', [$todayStart, $todayEnd])->count())
             ->description($lateViewings > 0 ? 'Nokavētas: '.$lateViewings : null)
             ->descriptionIcon($lateViewings > 0 ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-calendar-days')
-            ->color($lateViewings > 0 ? 'warning' : 'info');
+            ->color($lateViewings > 0 ? 'warning' : 'info')
+            ->url(\App\Filament\Admin\Resources\ViewingResource::getUrl('index'));
 
         $stats[] = Stat::make('Atvērtie uzdevumi', $openTasks)
             ->description($overdueTasks > 0 ? 'Nokavētas: '.$overdueTasks : null)
             ->descriptionIcon($overdueTasks > 0 ? 'heroicon-o-exclamation-triangle' : null)
-            ->color($overdueTasks > 0 ? 'warning' : 'secondary');
+            ->color($overdueTasks > 0 ? 'warning' : 'secondary')
+            ->url(\App\Filament\Admin\Resources\TaskResource::getUrl('index'));
 
         return $stats;
     }

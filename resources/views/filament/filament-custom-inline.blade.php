@@ -199,6 +199,12 @@ h1.fi-header-heading {
     }
 }
 
+/* View pages render disabled selects — the "x" (Clear selection) button is
+   dead weight there and must only exist on editable forms. */
+.fi-input-wrp.fi-disabled .fi-select-input-value-remove-btn {
+    display: none !important;
+}
+
 .fi-modal,
 .fi-modal-window,
 .fi-modal > .fi-modal-close-overlay,
@@ -233,6 +239,14 @@ h1.fi-header-heading {
 .fi-ta-header-toolbar {
     z-index: 60 !important;
     position: relative;
+}
+/* …but below the mobile sidebar (z-40): with z-60 the search bar and filter
+   buttons painted OVER the open mobile menu. Dropdown panels themselves are
+   fixed at z-50000, so they keep floating above everything. */
+@media (max-width: 1023px) {
+    .fi-ta-header-toolbar {
+        z-index: auto !important;
+    }
 }
 .fi-section, .fi-resource-relation-managers { z-index: auto !important; position: relative; }
 .fi-section { transform: none !important; will-change: auto !important; }
@@ -1078,7 +1092,13 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-header, .fi-page-header, .fi-header-heading-ctn { flex-wrap: wrap !important; gap: 0.75rem !important; }
     .fi-header-actions, .fi-page-header-actions, .fi-ac { flex-wrap: wrap !important; gap: 0.5rem !important; }
     .fi-header-actions .fi-btn, .fi-page-header .fi-btn { flex: 1 1 auto !important; min-width: 0 !important; justify-content: center !important; }
+    /* When header actions wrap below the heading, park them on the right */
+    .fi-header-actions-ctn { margin-left: auto !important; }
+    .fi-header-actions-ctn .fi-ac { justify-content: flex-end !important; }
     .fi-btn { white-space: normal !important; text-align: center !important; }
+    /* Row action buttons (⋮ Darbības) align right at the end of each record card */
+    .fi-ta-table td:has(> .fi-ta-actions) { text-align: right !important; }
+    .fi-ta-table td > .fi-ta-actions { justify-content: flex-end !important; }
     /* Tabs scroll horizontally instead of wrapping off-screen */
     .fi-tabs, [role="tablist"], .fi-resource-tabs { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: none !important; flex-wrap: nowrap !important; }
     .fi-tabs::-webkit-scrollbar, [role="tablist"]::-webkit-scrollbar { display: none !important; }

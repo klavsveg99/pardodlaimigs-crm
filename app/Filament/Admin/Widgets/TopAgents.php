@@ -128,7 +128,6 @@ class TopAgents extends BaseWidget
                 Tables\Columns\TextColumn::make('name')
                     ->label('Aģents')
                     ->weight('bold')
-                    ->searchable()
                     ->url(fn ($record) => route('filament.admin.resources.users.edit', $record['id']))
                     ->formatStateUsing(fn ($state, $record) => $record['name']),
 
@@ -154,14 +153,6 @@ class TopAgents extends BaseWidget
                     ->alignCenter()
                     ->badge()
                     ->formatStateUsing(fn ($state, $record) => number_format((float) $record['avg_percent'], 2, ',', ' ') . ' %')
-                    ->extraCellAttributes(['class' => 'pdc-nowrap']),
-
-                Tables\Columns\TextColumn::make('total_final_price')
-                    ->label('Gala cenas kopsumma')
-                    ->alignEnd()
-                    ->money('EUR')
-                    ->getStateUsing(fn ($record) => $record['total_final_price'])
-                    ->toggleable(isToggledHiddenByDefault: true)
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
             ])
             ->paginated(false)
