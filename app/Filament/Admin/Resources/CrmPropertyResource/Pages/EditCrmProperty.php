@@ -60,6 +60,19 @@ class EditCrmProperty extends EditRecord
     }
 
     /**
+     * Apakšējā "Saglabāt izmaiņas" poga ir ārā no <form> elementa —
+     * HTML submit vairs nedarbojas, tāpēc saglabāšana notiek tieši ar
+     * Livewire save() izsaukumu (kā augšējai "Saglabāt" pogai).
+     */
+    protected function getSaveFormAction(): Actions\Action
+    {
+        return Actions\Action::make('save')
+            ->label(__('filament-panels::resources/pages/edit-record.form.actions.save.label'))
+            ->action($this->getSubmitFormLivewireMethodName())
+            ->keyBindings(['mod+s']);
+    }
+
+    /**
      * Autosave tikai melnrakstiem ("jauniem" īpašumiem). Publicētiem un
      * pārdotiem īpašumiem katra izmaiņa jāsaglabā ar "Saglabāt" — citādi
      * katrs taustiņšienis netīšām pārraksta jau publicētos datus.
