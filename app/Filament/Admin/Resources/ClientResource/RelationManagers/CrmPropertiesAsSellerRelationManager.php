@@ -21,18 +21,6 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
 
     protected static string|\BackedEnum|null $icon = 'heroicon-o-building-office-2';
 
-    public function getEloquentQuery()
-    {
-        return parent::getEloquentQuery()
-            ->whereExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('client_crm_properties')
-                    ->whereRaw('client_crm_properties.crm_property_id = crm_properties.id')
-                    ->where('client_crm_properties.client_id', $this->getOwnerRecord()->getKey())
-                    ->where('client_crm_properties.relation', 'seller');
-            });
-    }
-
     public function form(Schema $schema): Schema
     {
         return $schema->schema([
@@ -56,6 +44,13 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            // Constrain the JOINED pivot rows to seller only. NOTE: this must
+            // be done via modifyQueryUsing — the RM table query comes from the
+            // Eloquent relationship and a getEloquentQuery() override on the
+            // relation manager is never applied by the table pipeline. Without
+            // this, a client who is both Pārdevējs and Pircējs on the same
+            // property appears twice (once with the wrong relation badge).
+            ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('client_crm_properties.relation', 'seller'))
             ->columns([
                 Tables\Columns\TextColumn::make('title')->label('Īpašums')->sortable()->weight('bold')->wrap(),
                 Tables\Columns\TextColumn::make('city')->label('Pilsēta')->sortable()->wrap(),
