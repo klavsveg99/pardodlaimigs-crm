@@ -178,7 +178,19 @@ class DescriptionGenerator
         }
 
         $decoded = json_decode($text, true);
+
         if (! is_array($decoded)) {
+            // Models may prepend a sentence or append text around the JSON
+            // object — extract the outermost {...} and retry.
+            $start = mb_strpos($text, '{');
+            $end = mb_strrpos($text, '}');
+            if ($start !== false && $end !== false && $end > $start) {
+                $decoded = json_decode(mb_substr($text, $start, $end - $start + 1), true);
+            }
+        }
+
+        if (! is_array($decoded)) {
+            \Illuminate\Support\Facades\Log::warning('AI non-JSON response', ['text' => mb_substr($text, 0, 600)]);
             throw new RuntimeException('AI atbilde nav derīgs JSON.');
         }
 
