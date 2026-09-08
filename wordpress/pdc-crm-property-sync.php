@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 2.3.5
+ * Version: 2.3.6
  * Author: Pārdod Laimīgs
  */
 
@@ -18,6 +18,19 @@ define('PDC_SYNC_INTERVAL', 5 * MINUTE_IN_SECONDS);
 
 function pdc_log($msg) {
     error_log('[PDC CRM] ' . $msg);
+}
+
+/**
+ * Purge the public page for a property post.
+ *
+ * Gallery and featured-image changes are meta-only updates: they never fire
+ * save_post, so the LiteSpeed page cache would keep serving stale HTML with
+ * the old gallery (the "text updated but images didn't" report). Purge the
+ * post explicitly whenever the gallery or thumbnail actually changes.
+ */
+function pdc_purge_post_cache($post_id) {
+    clean_post_cache($post_id);
+    do_action('litespeed_purge_post', $post_id);
 }
 
 function pdc_map_status($crm_status) {
@@ -383,9 +396,18 @@ function pdc_sync_attachments($post_id, $attachments) {
     require_once ABSPATH . 'wp-admin/includes/media.php';
     require_once ABSPATH . 'wp-admin/includes/image.php';
 
+    $previous_gallery = (string) get_post_meta($post_id, 'real_estate_property_images', true);
+    $previous_thumb = (int) get_post_thumbnail_id($post_id);
+
     if (empty($attachments)) {
-        update_post_meta($post_id, 'real_estate_property_images', '');
-        delete_post_thumbnail($post_id);
+        if ($previous_gallery !== '') {
+            update_post_meta($post_id, 'real_estate_property_images', '');
+            pdc_purge_post_cache($post_id);
+        }
+        if ($previous_thumb !== 0) {
+            delete_post_thumbnail($post_id);
+            pdc_purge_post_cache($post_id);
+        }
         return '';
     }
 
@@ -491,18 +513,26 @@ function pdc_sync_attachments($post_id, $attachments) {
         $downloaded++;
     }
 
+    // CRM order is canonical: the gallery is the attachment IDs joined in CRM
+    // sort_order, so a pure reorder (same images, different order) still yields
+    // a different string → meta update + cache purge. Updates and purges only
+    // happen when the value actually changed, so the 5-minute sync stays quiet.
     $gallery = implode('|', $image_ids);
-    update_post_meta($post_id, 'real_estate_property_images', $gallery);
+    if ($gallery !== $previous_gallery) {
+        update_post_meta($post_id, 'real_estate_property_images', $gallery);
+        pdc_purge_post_cache($post_id);
+    }
 
     // Featured image must always mirror CRM: first attachment in CRM sort order.
     if ($image_ids) {
         $featured = (int) $image_ids[0];
-        $current = (int) get_post_thumbnail_id($post_id);
-        if ($current !== $featured) {
+        if ($previous_thumb !== $featured) {
             set_post_thumbnail($post_id, $featured);
+            pdc_purge_post_cache($post_id);
         }
-    } else {
+    } elseif ($previous_thumb !== 0) {
         delete_post_thumbnail($post_id);
+        pdc_purge_post_cache($post_id);
     }
 
     pdc_log('Post #' . $post_id . ': ' . count($image_ids) . ' images (' . $downloaded . ' downloaded)');
