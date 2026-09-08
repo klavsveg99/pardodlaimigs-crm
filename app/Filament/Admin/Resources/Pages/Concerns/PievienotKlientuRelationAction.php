@@ -48,10 +48,7 @@ trait PievienotKlientuRelationAction
                     ->required()
                     ->default('seller')
                     ->inline()
-                    ->live()
-                    ->hintIcon('heroicon-m-question-mark-circle', tooltip: $isSold
-                        ? 'Pircējs ir pieejams, jo īpašums ir atzīmēts kā «Pārdots».'
-                        : 'Pircējs kļūst pieejams tikai pēc tam, kad īpašuma statuss ir nomainīts uz «Pārdots».');
+                    ->live();
 
                 if (! $isSold) {
                     $radio->helperText('Pircējs pieejams tikai «Pārdots» statusa īpašumiem.');
