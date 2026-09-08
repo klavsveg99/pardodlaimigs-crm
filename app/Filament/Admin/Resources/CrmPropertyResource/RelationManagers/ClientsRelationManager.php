@@ -7,11 +7,13 @@ use App\Models\Client;
 use App\Models\ClientCrmProperty;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\DB;
 
 class ClientsRelationManager extends RelationManager
 {
@@ -58,6 +60,87 @@ class ClientsRelationManager extends RelationManager
         }
 
         return parent::getDefaultActionAuthorizationResponse($action);
+    }
+
+    /**
+     * "Piesaistīt pārdevēju" / "Piesaistīt pircēju" — pārcelti no lapas
+     * augšējās joslas zem "Piesaistītie klienti" (īpašuma rediģēšana).
+     */
+    protected function getAttachSellerAction(): Actions\Action
+    {
+        return Actions\Action::make('attach_seller')
+            ->label('Piesaistīt pārdevēju')
+            ->icon('heroicon-o-user-plus')
+            ->color('gray')
+            ->form([
+                Forms\Components\Select::make('client_id')
+                    ->label('Pārdevējs')
+                    ->searchable()
+                    ->options(fn () => Client::query()->orderBy('name')->limit(20)->pluck('name', 'id')->all())
+                    ->getSearchResultsUsing(fn (string $search): array => Client::query()
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->limit(20)
+                        ->pluck('name', 'id')
+                        ->all())
+                    ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name)
+                    ->required(),
+            ])
+            ->action(function (array $data): void {
+                if (DB::table('client_crm_properties')
+                    ->where('crm_property_id', $this->getOwnerRecord()->id)
+                    ->where('relation', 'seller')
+                    ->exists()
+                ) {
+                    Notification::make()->title('Pārdevējs jau ir piesaistīts')->warning()->send();
+
+                    return;
+                }
+
+                $this->getOwnerRecord()->clients()->attach($data['client_id'], ['relation' => 'seller']);
+                Notification::make()->title('Pārdevējs piesaistīts')->success()->send();
+            });
+    }
+
+    protected function getAttachBuyerAction(): Actions\Action
+    {
+        return Actions\Action::make('attach_buyer')
+            ->label('Piesaistīt pircēju')
+            ->icon('heroicon-o-user-plus')
+            ->color('gray')
+            ->visible(fn () => ($this->getOwnerRecord()->status ?? null) === 'sold')
+            ->form([
+                Forms\Components\Select::make('client_id')
+                    ->label('Pircējs')
+                    ->searchable()
+                    ->options(fn () => Client::query()->orderBy('name')->limit(20)->pluck('name', 'id')->all())
+                    ->getSearchResultsUsing(fn (string $search): array => Client::query()
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->limit(20)
+                        ->pluck('name', 'id')
+                        ->all())
+                    ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name)
+                    ->required(),
+                Forms\Components\Textarea::make('notes_md')
+                    ->label('Piezīmes')
+                    ->rows(2)
+                    ->maxLength(1000),
+            ])
+            ->action(function (array $data): void {
+                if (DB::table('client_crm_properties')
+                    ->where('crm_property_id', $this->getOwnerRecord()->id)
+                    ->where('relation', 'buyer')
+                    ->exists()
+                ) {
+                    Notification::make()->title('Pircējs jau ir piesaistīts')->warning()->send();
+
+                    return;
+                }
+
+                $this->getOwnerRecord()->clients()->attach($data['client_id'], ['relation' => 'buyer', 'notes_md' => $data['notes_md'] ?? null]);
+                Notification::make()->title('Pircējs piesaistīts')->success()->send();
+            });
     }
 
     public function table(Table $table): Table

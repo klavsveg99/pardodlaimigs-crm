@@ -13,6 +13,10 @@ use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Group;
 use Illuminate\Database\Eloquent\Model;
 
 class EditCrmProperty extends EditRecord
@@ -27,6 +31,32 @@ class EditCrmProperty extends EditRecord
     public function getTitle(): string
     {
         return 'Rediģēt īpašumu';
+    }
+
+    /**
+     * "Saglabāt izmaiņas" / "Atcelt" pogas pārceltas uz VISS apakšu — pēc
+     * saistīto ierakstu sadaļām (Piesaistītie klienti), nevis starp formu
+     * un Piesaistītie klienti (pēc noklusējuma).
+     */
+    public function getFormContentComponent(): Component
+    {
+        if (! $this->hasFormWrapper()) {
+            return Group::make([
+                EmbeddedSchema::make('form'),
+            ]);
+        }
+
+        return Form::make([EmbeddedSchema::make('form')])
+            ->id('form')
+            ->livewireSubmitHandler($this->getSubmitFormLivewireMethodName());
+    }
+
+    public function getRelationManagersContentComponent(): Component
+    {
+        return Group::make([
+            parent::getRelationManagersContentComponent(),
+            $this->getFormActionsContentComponent(),
+        ]);
     }
 
     /**
