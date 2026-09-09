@@ -124,6 +124,11 @@ class DescriptionGenerator
                 'generationConfig' => [
                     'temperature' => 0.7,
                     'responseMimeType' => 'application/json',
+                    // "Thinking" (domu) žetoni rēķinās kopā ar atbildes tekstiem
+                    // maxOutputTokens limitā — bez skaidri noteiktā augstā
+                    // limita atbilde var tikt nogriezta vidū un JSON nebūs
+                    // sintaktiski derīgs.
+                    'maxOutputTokens' => 16384,
                 ],
             ]);
 
@@ -190,7 +195,11 @@ class DescriptionGenerator
         }
 
         if (! is_array($decoded)) {
-            \Illuminate\Support\Facades\Log::warning('AI non-JSON response', ['text' => mb_substr($text, 0, 600)]);
+            \Illuminate\Support\Facades\Log::warning('AI non-JSON response', [
+                'text' => mb_substr($text, 0, 600),
+                'text_len' => mb_strlen($text),
+                'json_error' => json_last_error_msg(),
+            ]);
             throw new RuntimeException('AI atbilde nav derīgs JSON.');
         }
 
