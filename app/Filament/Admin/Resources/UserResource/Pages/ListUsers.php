@@ -16,8 +16,7 @@ class ListUsers extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Pievienot aģentu')
-                ->icon('heroicon-o-user-plus')
+                ->label('Jauns aģents')
                 ->color('gray'),
         ];
     }
