@@ -1157,5 +1157,7 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-section-content .rounded-xl { word-break: break-word !important; }
     /* Topbar user menu stays */
     .fi-topbar { padding-left: 1rem !important; padding-right: 1rem !important; }
+    /* More bottom space on mobile so content doesn't sit on the screen edge */
+    .fi-main { padding-bottom: 6rem !important; }
 }
 </style>
