@@ -23,6 +23,7 @@ use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use UnitEnum;
 
@@ -197,17 +198,24 @@ class CrmPropertyResource extends Resource
             Section::make('Apraksts')
                 ->columnSpanFull()
                 ->headerActions([
-                    // Standarta Filament modāls ar 4 papildu ievadēm un
-                    // ģenerēšanu — zaļa poga WYSIWYG bloka galvenē.
+                    // Standarta Filament modāls ar CRM datu pārskatu un
+                    // 4 papildu ievadēm — zaļa poga WYSIWYG bloka galvenē.
+                    // CRM 2.2: modāls rāda "Informācija no CRM" (automātiski
+                    // savāktie dati), lai aģentam nav jādomā, kur ko ievadīt.
                     Actions\Action::make('ai_generator')
                         ->visible(fn (): bool => DescriptionGenerator::provider() !== null)
                         ->label('AI ģenerēt aprakstu')
                         ->icon('heroicon-o-sparkles')
                         ->color('primary')
-                        ->modalHeading('AI teksta ģenerators')
-                        ->modalDescription('Ievadi tikai to, kas vēl NAV aizpildīts formas laukos — pārējo AI ņem no īpašuma datiem.')
-                        ->modalSubmitActionLabel('Ģenerēt')
+                        ->modalHeading('AI īpašuma apraksta ģenerators')
+                        ->modalDescription('Apraksts tiek veidots no CRM datos — "Papildu informācijā" ievadi tikai to, kas vēl NAV aizpildīts formas laukos.')
+                        ->modalSubmitActionLabel('Ģenerēt aprakstu')
                         ->form([
+                            Forms\Components\Placeholder::make('crm_info')
+                                ->hiddenLabel()
+                                ->content(fn ($livewire, ?CrmProperty $record) => view('filament.forms.components.ai-crm-info', [
+                                    'rows' => self::aiCrmInfoRows(is_array($livewire->data ?? null) ? $livewire->data : [], $record),
+                                ])),
                             Forms\Components\Textarea::make('advantages')
                                 ->label('Priekšrocības')
                                 ->rows(3)
@@ -413,6 +421,38 @@ class CrmPropertyResource extends Resource
         ]);
     }
 
+    /**
+     * "Informācija no CRM" dati AI modālam (CRM 2.2): automātiski savāktie
+     * īpašuma lauki no pašreizējās formas stāvokļa (ar kritumu uz saglabāto
+     * ierakstu, ja formas lauks vēl nav aizpildīts — svarīgi Create lapā).
+     *
+     * @return array<string, string> tikai aizpildītie lauki
+     */
+    private static function aiCrmInfoRows(array $data, ?CrmProperty $record): array
+    {
+        $value = function (string $key) use ($data, $record) {
+            $fromForm = array_key_exists($key, $data) && filled($data[$key]) ? $data[$key] : null;
+
+            return filled($fromForm) ? $fromForm : ($record?->{$key} ?? null);
+        };
+
+        $rows = [
+            'Nosaukums' => $value('title'),
+            'Kategorija' => $value('category'),
+            'Statuss' => CrmProperty::STATUSES[$value('status')] ?? null,
+            'Cena' => ($price = $value('price_eur')) ? number_format((float) $price, 0, ',', ' ').' €' : null,
+            'Istabas' => $value('beds'),
+            'Vannas istabas' => $value('baths'),
+            'Platība' => ($size = $value('size_m2')) ? ((string) $size).' m²' : null,
+            'Zemes platība' => ($land = $value('land_m2')) ? ((string) $land).' m²' : null,
+            'Kadastra nr.' => $value('kadastra_nr'),
+            'Pilsēta' => $value('city'),
+            'Adrese' => $value('address'),
+        ];
+
+        return array_filter($rows, fn ($v): bool => filled($v));
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -501,6 +541,38 @@ class CrmPropertyResource extends Resource
                             $record->update(['status' => 'draft']);
                             Notification::make()
                                 ->title('Īpašums atjaunots')
+                                ->success()
+                                ->send();
+                        }),
+                    // Neatgriezeniska dzēšana (CRM 2.2, #1): tikai "Dzēstie"
+                    // sadaļā un tikai administratoram. Atšķirībā no "Dzēst"
+                    // (statuss → "Dzēsts") šī darbība ierakstu IZŅEM no CRM —
+                    // bildes dzēš no diska, pivot un apraksta versijas kaskādē
+                    // datubāzē; WP pusē īpašums jau ir atspiests (statuss
+                    // "Dzēsts") un pēc dzēšanas pazūd no feeda.
+                    Actions\Action::make('force_delete_property')
+                        ->label('Izdzēst neatgriezeniski')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->visible(fn (CrmProperty $record): bool => $record->status === 'deleted'
+                            && auth()->user()?->can('manage'))
+                        ->requiresConfirmation()
+                        ->modalHeading('Vai tiešām vēlaties neatgriezeniski dzēst šo īpašumu?')
+                        ->modalDescription('Pēc dzēšanas īpašumu vairs nebūs iespējams atjaunot un tas tiks pilnībā izņemts no CRM sistēmas.')
+                        ->modalSubmitActionLabel('Izdzēst neatgriezeniski')
+                        ->action(function (CrmProperty $record): void {
+                            foreach ($record->attachments()->get() as $attachment) {
+                                if (str_starts_with($attachment->path, 'http://') || str_starts_with($attachment->path, 'https://')) {
+                                    continue;
+                                }
+                                Storage::disk($attachment->disk)->delete($attachment->path);
+                            }
+                            $record->attachments()->delete();
+                            $record->delete();
+
+                            Notification::make()
+                                ->title('Īpašums neatgriezeniski izdzēsts')
+                                ->body('Īpašums un visi saistītie dati ir pilnībā izņemti no CRM.')
                                 ->success()
                                 ->send();
                         }),
