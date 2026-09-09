@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\UserResource\Pages;
 
 use App\Filament\Admin\Resources\UserResource;
@@ -16,7 +18,7 @@ class ListUsers extends ListRecords
             CreateAction::make()
                 ->label('Pievienot aģentu')
                 ->icon('heroicon-o-user-plus')
-                ->color('primary'),
+                ->color('gray'),
         ];
     }
 }
