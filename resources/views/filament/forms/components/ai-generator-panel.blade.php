@@ -1,5 +1,6 @@
 <div class="pdc-ai-panel" x-data="{
         open: false,
+        loading: false,
         result: { title: '', description: '', description_ss: '', facebook: '', instagram: '' },
         inserted: { title: false, description: false },
         init() {
@@ -16,8 +17,14 @@
                 this.open = true;
             });
         },
-        regenerate(mode) {
-            this.$wire.generateAi(mode, this.result.description);
+        async regenerate(mode) {
+            if (this.loading) return;
+            this.loading = true;
+            try {
+                await this.$wire.generateAi(mode, this.result.description);
+            } finally {
+                this.loading = false;
+            }
         },
         insert(field) {
             if (field === 'description') {
@@ -128,7 +135,7 @@
                             </span>
                         </div>
                         <textarea x-model="result.title" x-on:input="inserted.title = false"
-                                  :disabled="$wire.aiGenerating"
+                                  :disabled="loading"
                                   placeholder="Ģenerētais virsraksts"></textarea>
                     </div>
 
@@ -146,7 +153,7 @@
                             </span>
                         </div>
                         <textarea x-model="result.description" x-on:input="inserted.description = false"
-                                  :disabled="$wire.aiGenerating"
+                                  :disabled="loading"
                                   style="min-height: 170px"
                                   placeholder="Ģenerētais apraksts"></textarea>
                     </div>
@@ -156,7 +163,7 @@
                             <span>ss.lv teksts</span>
                             <button type="button" class="pdc-ai-btn" @click="copy(result.description_ss)">Kopēt</button>
                         </div>
-                        <textarea x-model="result.description_ss" :disabled="$wire.aiGenerating" placeholder="ss.lv stila teksts"></textarea>
+                        <textarea x-model="result.description_ss" :disabled="loading" placeholder="ss.lv stila teksts"></textarea>
                     </div>
 
                     <div class="pdc-ai-sec">
@@ -164,7 +171,7 @@
                             <span>Facebook ieraksts</span>
                             <button type="button" class="pdc-ai-btn" @click="copy(result.facebook)">Kopēt</button>
                         </div>
-                        <textarea x-model="result.facebook" :disabled="$wire.aiGenerating" placeholder="Facebook teksts"></textarea>
+                        <textarea x-model="result.facebook" :disabled="loading" placeholder="Facebook teksts"></textarea>
                     </div>
 
                     <div class="pdc-ai-sec">
@@ -172,22 +179,22 @@
                             <span>Instagram / Reels</span>
                             <button type="button" class="pdc-ai-btn" @click="copy(result.instagram)">Kopēt</button>
                         </div>
-                        <textarea x-model="result.instagram" :disabled="$wire.aiGenerating" placeholder="Instagram / Reels teksts"></textarea>
+                        <textarea x-model="result.instagram" :disabled="loading" placeholder="Instagram / Reels teksts"></textarea>
                     </div>
                 </div>
                 <div class="pdc-ai-foot">
-                    <span x-show="$wire.aiGenerating" class="pdc-ai-spinner" aria-label="Ģenerē..."></span>
-                    <span x-show="$wire.aiGenerating" class="text-xs text-gray-500">Ģenerē...</span>
-                    <button type="button" class="pdc-ai-btn" :disabled="$wire.aiGenerating" @click="regenerate('full')">
-                        <span x-show="$wire.aiGenerating" class="pdc-ai-spinner" aria-hidden="true"></span>
+                    <span x-show="loading" class="pdc-ai-spinner" aria-label="Ģenerē..."></span>
+                    <span x-show="loading" class="text-xs text-gray-500">Ģenerē...</span>
+                    <button type="button" class="pdc-ai-btn" :disabled="loading" @click="regenerate('full')">
+                        <span x-show="loading" class="pdc-ai-spinner" aria-hidden="true"></span>
                         <span>Ģenerēt vēlreiz</span>
                     </button>
-                    <button type="button" class="pdc-ai-btn" :disabled="$wire.aiGenerating" @click="regenerate('shorten')">
-                        <span x-show="$wire.aiGenerating" class="pdc-ai-spinner" aria-hidden="true"></span>
+                    <button type="button" class="pdc-ai-btn" :disabled="loading" @click="regenerate('shorten')">
+                        <span x-show="loading" class="pdc-ai-spinner" aria-hidden="true"></span>
                         <span>Saīsināt</span>
                     </button>
-                    <button type="button" class="pdc-ai-btn" :disabled="$wire.aiGenerating" @click="regenerate('persuasive')">
-                        <span x-show="$wire.aiGenerating" class="pdc-ai-spinner" aria-hidden="true"></span>
+                    <button type="button" class="pdc-ai-btn" :disabled="loading" @click="regenerate('persuasive')">
+                        <span x-show="loading" class="pdc-ai-spinner" aria-hidden="true"></span>
                         <span>Padarīt pārliecinošāku</span>
                     </button>
                 </div>
