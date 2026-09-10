@@ -205,8 +205,8 @@ class DescriptionGenerator
             : 'null';
 
         $instruction = match ($mode) {
-            self::MODE_SHORTEN => 'REŽĪMS: SAĪSINĀT. Paņem esošo aprakstu ( zemāk "esošais_apraksts" ) un saīsini to par aptuveni 40%, saglabājot visus faktus un bez izdomāšanas. Pārģenerē arī citos formātos no saīsinātā apraksta.',
-            self::MODE_PERSUASIVE => 'REŽĪMS: PADARĪT PĀRLIECINOŠĀKU. Paņem esošo aprakstu un padari to pārliecinošāku pārdošanai (dzīvīgāks tonis, uzsvars uz ieguvumiem), bet NEDRĪKST pievienot jaunus faktus, ko dati neapstiprina. Pārģenerē arī citos formātos.',
+            self::MODE_SHORTEN => 'REŽĪMS: SAĪSINĀT. Paņem esošo aprakstu ( zemāk "esošais_apraksts" ) un saīsini to KVANTITATĪVI: gala apraksta vārdu skaitam JĀBŪT aptuveni 60% no esošā apraksta vārdu skaita (skaiti pirms raksti). Saglabā visus faktus un NEIZDOMĀ neko jaunu. Pārģenerē arī citos formātos (ss.lv, Facebook, Instagram, virsrakstu) no saīsinātā apraksta — arī tie īsāki.',
+            self::MODE_PERSUASIVE => 'REŽĪMS: PADARĪT PĀRLIECINOŠĀKU. Paņem esošo aprakstu un padari to pārliecinošāku pārdošanai (dzīvīgāks tonis, uzsvars uz ieguvumiem, aicinoša noslēguma frāze), bet NEDRĪKST pievienot jaunus faktus, ko dati neapstiprina, un garums drīkst atšķirties no esošā ne vairāk kā ±15%. Pārģenerē arī citos formātos.',
             default => $currentDescription === null
                 ? 'REŽĪMS: ĢENERĒT NO DATIEM.'
                 : 'REŽĪMS: ĢENERĒT VĒLREIZ (variēja formulējumus, neaiztiek faktus).',
