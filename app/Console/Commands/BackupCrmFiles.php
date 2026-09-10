@@ -9,23 +9,26 @@ use Illuminate\Support\Facades\Storage;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
+use FilesystemIterator;
 use ZipArchive;
 
 /**
- * Daily file backup of everything users upload to the CRM's public storage
- * disk (property photos/plans under `attachments/`, agent `avatars/`).
+ * Daily file backup of EVERYTHING users upload to the CRM's public storage
+ * disk — property images/plans, plus attachments on clients, tasks,
+ * viewings, avatars etc. The whole disk (`storage/app/public`) is archived,
+ * so every future attachment subdirectory is covered automatically.
  *
  * Produces `<dir>/files-YYYY-MM-DD.zip` and keeps only the newest N copies
- * (same retention as the database backup). Files are NOT compressed hard —
- * photos dominate and are already optimized — the zip is stored deflated,
- * which keeps rebuilds simple on shared hosting.
+ * (same retention as the database backup). Photos dominate the payload and
+ * are already optimized server-side — the zip is stored with default
+ * compression, which is enough without slowing uploads of the archive.
  */
 class BackupCrmFiles extends Command
 {
     protected $signature = 'pdc:backup-files
         {--keep= : Number of daily file backups to keep (default: config backup.keep)}';
 
-    protected $description = 'Backup the uploaded storage files (attachments + avatars) into a dated zip, keeping the newest N backups';
+    protected $description = 'Backup all uploaded storage files (whole public disk: attachments, avatars, …) into a dated zip, keeping the newest N backups';
 
     public function handle(): int
     {
@@ -37,25 +40,12 @@ class BackupCrmFiles extends Command
             return self::FAILURE;
         }
 
-        $includeDirs = ['attachments', 'avatars'];
+        $count = iterator_count(new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($diskPath, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::LEAVES_ONLY,
+        ));
 
-        $collectCount = function () use ($diskPath): int {
-            $count = 0;
-            foreach (['attachments', 'avatars'] as $subdir) {
-                if (! is_dir($diskPath.$subdir)) {
-                    continue;
-                }
-
-                $it = new RecursiveIteratorIterator(
-                    new RecursiveDirectoryIterator($diskPath.$subdir, FilesystemIterator::SKIP_DOTS),
-                );
-                $count += iterator_count($it);
-            }
-
-            return $count;
-        };
-
-        if ($collectCount() === 0) {
+        if ($count === 0) {
             $this->info('Nav datņu, ko rezervēt — izlaista.');
 
             return self::SUCCESS;
@@ -80,31 +70,29 @@ class BackupCrmFiles extends Command
             return self::FAILURE;
         }
 
+        $added = 0;
+
         try {
-            foreach (['attachments', 'avatars'] as $subdir) {
-                if (! is_dir($diskPath.$subdir)) {
+            $it = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($diskPath, FilesystemIterator::SKIP_DOTS),
+                RecursiveIteratorIterator::LEAVES_ONLY,
+            );
+
+            foreach ($it as $file) {
+                /** @var \SplFileInfo $file */
+                if (! $file->isFile()) {
                     continue;
                 }
 
-                $it = new RecursiveIteratorIterator(
-                    new RecursiveDirectoryIterator($diskPath.$subdir, FilesystemIterator::SKIP_DOTS),
-                );
+                // Relative path inside the zip = relative to the disk root.
+                $relative = ltrim(str_replace($diskPath, '', str_replace('\\', '/', $file->getPathname())), '/');
 
-                foreach ($it as $file) {
-                    /* @var SplFileInfo $file */
-                    if (! $file->isFile()) {
-                        continue;
-                    }
-
-                    if (! $zip->addFile($file->getPathname(), $subdir.'/'.$it->getSubPathName())) {
-                        // The uploaded originals are on the same disk; addFile
-                        // copies them while the file handle is open — failures
-                        // here would silently lose data, so fail loudly.
-                        throw new RuntimeException('Neizdevās pievienot '.$file->getPathname());
-                    }
-
-                    $fileCount++;
+                if (! $zip->addFile($file->getPathname(), $relative)) {
+                    // addFile failures would silently lose files — fail loudly.
+                    throw new RuntimeException('Neizdevās pievienot '.$file->getPathname());
                 }
+
+                $added++;
             }
 
             $zip->close();
@@ -124,14 +112,14 @@ class BackupCrmFiles extends Command
 
         $this->rotate($dir, $keep);
 
-        $this->info('Files backup saglabāts: '.$dest.' ('.number_format((float) filesize($dest) / 1024 / 1024, 1, ',', ' ').' MB, '.$fileCount.' datnes)');
+        $this->info('Files backup saglabāts: '.$dest.' ('.number_format((float) filesize($dest) / 1024 / 1024, 1, ',', ' ').' MB, '.$added.' datnes)');
 
         return self::SUCCESS;
     }
 
     /**
      * Keep only the newest `$keep` daily file backups (date-named
-     * files-YYYY-MM-DD.zip). Manual / emergency copies never match the
+     * files-YYYY-MM-DD.zip). Manual/emergency copies never match the
      * pattern and are never removed.
      *
      * @param  string  $dir

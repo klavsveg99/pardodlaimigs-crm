@@ -4,7 +4,7 @@
  * PRIVATE CREDENTIALS - NEVER COMMIT THIS FILE
  *
  * Local dev: copy to ./private/config.php
- * Hostinger: copy to ~/domains/pardodlaimigs.lv/private/crm-config.php
+ * Hostinger: copy to ~/private/config.php (home dir, outside public_html)
  */
 
 return [
@@ -23,5 +23,22 @@ return [
     'DB_PASSWORD'   => '',
 
     // ─── WP Feed Auth ───────────────────────────────────────────
-    'WP_CRM_API_KEY' => '',
+    'WP_CRM_API_KEY' => '',  // crm side mirror of WP_PDC_CRM_API_KEY define in prod wp-config.php
+
+    // ─── Hostinger SMTP ────────────────────────────────────────
+    'MAIL_MAILER' => 'smtp',
+    'MAIL_HOST' => 'smtp.hostinger.com',
+    'MAIL_PORT' => '465',
+    'MAIL_USERNAME' => '',
+    'MAIL_PASSWORD' => '',
+    'MAIL_ENCRYPTION' => 'ssl',
+    'MAIL_FROM_ADDRESS' => '',
+    'MAIL_FROM_NAME' => 'Pārdod Laimīgs CRM',
+
+    // ─── Google Maps ───────────────────────────────────────────
+    'GOOGLE_MAPS_KEY' => '',
+
+    // ─── AI (Gemini) ─────────────────────────────────────────────
+    'GEMINI_API_KEY' => '',
+    'GEMINI_MODEL' => 'gemini-3.5-flash-lite',
 ];

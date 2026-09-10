@@ -36,3 +36,10 @@ Schedule::command('pdc:backup-database')
     ->dailyAt('00:00')
     ->name('daily-backup')
     ->withoutOverlapping();
+
+// Uploaded-files backup (attachments/avatars/...) as a SEPARATE archive 5
+// minutes later, same retention as the database backup.
+Schedule::command('pdc:backup-files')
+    ->dailyAt('00:05')
+    ->name('daily-files-backup')
+    ->withoutOverlapping();
