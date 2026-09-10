@@ -153,28 +153,20 @@
     x-init="$nextTick(() => initMap())"
     wire:ignore.self
 >
-    <div style="position: relative; margin-bottom: 0.5rem;">
+    <div class="fi-fo-field-label-ctn">
         <label for="pdc-map-search" class="fi-fo-field-label">
             <span class="fi-fo-field-label-content">Precīza atrašanās vieta kartē</span>
         </label>
-        <input
-            id="pdc-map-search"
-            class="pdc-map-search"
-            x-ref="searchBox"
-            type="text"
-            placeholder="Meklēt adresi..."
-            style="
-                width: 100%;
-                padding: 0.5rem 0.75rem;
-                border: 1px solid #d1d5db;
-                border-radius: 0.375rem;
-                font-size: 0.875rem;
-                outline: none;
-            "
-            @focus="this.style.borderColor = 'var(--pdc-primary)'"
-            @blur="this.style.borderColor = ''"
-        />
     </div>
+    <input
+        id="pdc-map-search"
+        class="fi-input pdc-map-search"
+        x-ref="searchBox"
+        type="text"
+        placeholder="Meklēt adresi..."
+        @focus="this.classList.add('map-search-focus')"
+        @blur="this.classList.remove('map-search-focus')"
+    />
     <div
         x-ref="mapContainer"
         wire:ignore
