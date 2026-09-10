@@ -67,9 +67,9 @@ class EditCrmProperty extends EditRecord
     protected function getSaveFormAction(): Actions\Action
     {
         return Actions\Action::make('save')
-            ->label(__('filament-panels::resources/pages/edit-record.form.actions.save.label'))
-            ->action($this->getSubmitFormLivewireMethodName())
-            ->keyBindings(['mod+s']);
+            ->label('Saglabāt izmaiņas')
+            ->color('primary')
+            ->action($this->getSubmitFormLivewireMethodName());
     }
 
     /**
@@ -147,20 +147,14 @@ class EditCrmProperty extends EditRecord
     {
         return [
             Actions\Action::make('save')
-                ->label('Saglabāt')
-                ->icon('heroicon-o-check')
+                ->label('Saglabāt izmaiņas')
                 ->color('primary')
+                ->badge(fn (): ?string => $this->autosaveState === 'error' ? ($this->autosaveError ?: 'Nav izdevies saglabāt') : null)
+                ->badgeColor('warning')
                 ->keyBindings(['mod+s'])
                 ->action(function () {
                     $this->save();
                 }),
-            Actions\Action::make('autosave_indicator')
-                ->label(fn (): string => $this->autosaveState === 'error'
-                    ? ($this->autosaveError ?: 'Neizdevās saglabāt')
-                    : 'Saglabāts')
-                ->icon(fn (): string => $this->autosaveState === 'error' ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-check')
-                ->color(fn (): string => $this->autosaveState === 'error' ? 'warning' : 'gray')
-                ->action(fn () => $this->save()),
             $this->getAttachSellerAction(),
             $this->getAttachBuyerAction(),
             Actions\Action::make('open_site')

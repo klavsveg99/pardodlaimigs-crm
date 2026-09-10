@@ -27,11 +27,10 @@ class EditClient extends EditRecord
         return [
             Actions\ViewAction::make()->label('Skatīt'),
             Actions\Action::make('saglabat')
-                ->label(fn (): string => $this->autosaveState === 'error'
-                    ? ($this->autosaveError ?: 'Neizdevās saglabāt')
-                    : 'Saglabāt')
-                ->icon(fn (): string => $this->autosaveState === 'error' ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-cloud-arrow-up')
+                ->label('Saglabāt izmaiņas')
                 ->color(fn (): string => $this->autosaveState === 'error' ? 'warning' : 'primary')
+                ->badge(fn (): ?string => $this->autosaveState === 'error' ? ($this->autosaveError ?: 'Nav izdevies saglabāt') : null)
+                ->badgeColor('warning')
                 ->keyBindings(['mod+s'])
                 ->action(fn () => $this->save()),
         ];
