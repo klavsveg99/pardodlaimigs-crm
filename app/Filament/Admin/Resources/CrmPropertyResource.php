@@ -216,6 +216,7 @@ class CrmPropertyResource extends Resource
                         ->visible(fn (): bool => DescriptionGenerator::provider() !== null)
                         ->label('AI ģenerēt aprakstu')
                         ->icon('heroicon-o-sparkles')
+                        ->extraAttributes([':disabled' => '$wire.aiGenerating'])
                         ->color('primary')
                         ->modalHeading('AI īpašuma apraksta ģenerators')
                         ->modalSubmitActionLabel('Ģenerēt aprakstu')
@@ -228,18 +229,22 @@ class CrmPropertyResource extends Resource
                             Forms\Components\Textarea::make('advantages')
                                 ->label('Priekšrocības')
                                 ->rows(3)
+                                ->extraInputAttributes([':disabled' => '$wire.aiGenerating'])
                                 ->helperText('Galvenais pārdošanas akcents; 3–7 svarīgākās priekšrocības; teritorija (pagalms, dārzs, žogs, piebraucamais ceļš, ainava); apkārtne (attālumi, veikali, skolas, transports, ezers/mežs).'),
                             Forms\Components\Textarea::make('technical')
                                 ->label('Tehniskā informācija')
                                 ->rows(3)
+                                ->extraInputAttributes([':disabled' => '$wire.aiGenerating'])
                                 ->helperText('Stāvu skaits, papildu platības; būvniecības/renovācijas gads, stāvoklis, dokumentācija; telpas (virtuve, pirts, garāža u.c.); komunikācijas; apkure, patēriņš, izmaksas; konstrukcija (sienas, jumts, logi, siltinājums).'),
                             Forms\Components\Textarea::make('investment')
                                 ->label('Investīciju potenciāls')
                                 ->rows(3)
+                                ->extraInputAttributes([':disabled' => '$wire.aiGenerating'])
                                 ->helperText('Cena apspriežama, steidzama pārdošana, pirmā iemaksa, maksājumu grafiks, hipotēka/Altum, citi nosacījumi; pārdošanas iemesls (tikai ja patiess).'),
                             Forms\Components\Textarea::make('extra')
                                 ->label('Papildu informācija')
                                 ->rows(3)
+                                ->extraInputAttributes([':disabled' => '$wire.aiGenerating'])
                                 ->helperText('Viss pārējais svarīgais + vēlamais kontakta veids / noslēguma akcents.'),
                         ])
                         ->fillForm(fn (?CrmProperty $record): array => [

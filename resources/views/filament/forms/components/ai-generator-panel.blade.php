@@ -165,6 +165,7 @@
                     </div>
                 </div>
                 <div class="pdc-ai-foot">
+                    <span x-show="$wire.aiGenerating" class="text-xs text-gray-500">Ģenerē...</span>
                     <button type="button" class="pdc-ai-btn" :disabled="$wire.aiGenerating" @click="regenerate('full')">Ģenerēt vēlreiz</button>
                     <button type="button" class="pdc-ai-btn" :disabled="$wire.aiGenerating" @click="regenerate('shorten')">Saīsināt</button>
                     <button type="button" class="pdc-ai-btn" :disabled="$wire.aiGenerating" @click="regenerate('persuasive')">Padarīt pārliecinošāku</button>
