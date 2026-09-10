@@ -170,7 +170,7 @@
                             </span>
                         </div>
                         <div class="pdc-ai-desc pdc-prose" :class="loading ? 'opacity-60 pointer-events-none' : ''"
-                             x-html="sanitizeHtml(result.description || '<p style=\"color:#9ca3af\">Ģenerētais apraksts</p>')"></div>
+                             x-html="sanitizeHtml(result.description)"></div>
                     </div>
 
                     <div class="pdc-ai-sec">
