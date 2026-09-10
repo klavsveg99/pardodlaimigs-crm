@@ -26,24 +26,14 @@ class EditClient extends EditRecord
     {
         return [
             Actions\ViewAction::make()->label('Skatīt'),
-            Actions\Action::make('autosave_indicator')
-                ->label(function (): ?string {
-                    if ($this->autosaveState === 'saved' && $this->autosaveAt) {
-                        return 'Saglabāts '.$this->autosaveAt;
-                    }
-                    if ($this->autosaveState === 'error') {
-                        return $this->autosaveError ?: 'Neizdevās saglabāt';
-                    }
-                    return null;
-                })
+            Actions\Action::make('saglabat')
+                ->label(fn (): string => $this->autosaveState === 'error'
+                    ? ($this->autosaveError ?: 'Neizdevās saglabāt')
+                    : 'Saglabāt')
                 ->icon(fn (): string => $this->autosaveState === 'error' ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-cloud-arrow-up')
-                ->color(fn (): string => match ($this->autosaveState) {
-                    'saved' => 'success',
-                    'error' => 'warning',
-                    default => 'gray',
-                })
-                ->visible(fn () => in_array($this->autosaveState, ['saved', 'error'], true))
-                ->disabled(),
+                ->color(fn (): string => $this->autosaveState === 'error' ? 'warning' : 'primary')
+                ->keyBindings(['mod+s'])
+                ->action(fn () => $this->save()),
         ];
     }
 

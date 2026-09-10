@@ -155,24 +155,12 @@ class EditCrmProperty extends EditRecord
                     $this->save();
                 }),
             Actions\Action::make('autosave_indicator')
-                ->label(function (): ?string {
-                    if ($this->autosaveState === 'saved' && $this->autosaveAt) {
-                        return 'Saglabāts '.$this->autosaveAt;
-                    }
-                    if ($this->autosaveState === 'error') {
-                        return $this->autosaveError ?: 'Neizdevās saglabāt';
-                    }
-
-                    return null;
-                })
-                ->icon(fn (): string => $this->autosaveState === 'error' ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-cloud-arrow-up')
-                ->color(fn (): string => match ($this->autosaveState) {
-                    'saved' => 'success',
-                    'error' => 'warning',
-                    default => 'gray',
-                })
-                ->visible(fn () => in_array($this->autosaveState, ['saved', 'error'], true))
-                ->disabled(),
+                ->label(fn (): string => $this->autosaveState === 'error'
+                    ? ($this->autosaveError ?: 'Neizdevās saglabāt')
+                    : 'Saglabāts')
+                ->icon(fn (): string => $this->autosaveState === 'error' ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-check')
+                ->color(fn (): string => $this->autosaveState === 'error' ? 'warning' : 'gray')
+                ->action(fn () => $this->save()),
             $this->getAttachSellerAction(),
             $this->getAttachBuyerAction(),
             Actions\Action::make('open_site')

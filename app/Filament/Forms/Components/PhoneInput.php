@@ -14,8 +14,12 @@ class PhoneInput extends TextInput
     {
         $statePath = $this->getStatePath();
 
+        // View / readonly pages: no prefix selector, just the full stored
+        // value (with + dial code) as static text.
+        $isStatic = $this->getContainer()->getOperation() === 'view' || $this->isDisabled() || $this->isReadOnly();
+
         ob_start(); ?>
-        <div x-data="pdcPhone('<?= e($statePath) ?>')" class="pdc-phone-field" wire:ignore>
+        <div x-data="pdcPhone('<?= e($statePath) ?>', <?= $isStatic ? 'true' : 'false' ?>)" class="pdc-phone-field<?= $isStatic ? ' pdc-phone-field-static' : '' ?>" wire:ignore>
             <input
                 type="tel"
                 x-ref="tel"
@@ -23,6 +27,7 @@ class PhoneInput extends TextInput
                 autocomplete="tel"
                 spellcheck="false"
                 class="fi-input fi-text-input"
+                <?= $isStatic ? 'readonly tabindex="-1"' : '' ?>
             />
             <p x-cloak x-show="error" style="margin-top:0.3rem;font-size:0.8125rem;line-height:1.25;color:#cf2e2e;">
                 Nederīgs tālruņa numurs — pārbaudiet valsts kodu un numuru

@@ -9,12 +9,29 @@
         width: 100%;
     }
 
+    /* Let the country dropdown escape the input's overflow/max-height clipping */
+    .pdc-phone-field .iti,
+    .iti__country-container {
+        overflow: visible !important;
+    }
+
+    /* Filament's fi-input-wrp has overflow:hidden — it would clip the dropdown */
+    .fi-fo-text-input:has(> .pdc-phone-field) {
+        overflow: visible !important;
+    }
+
+    .iti__country-selector {
+        z-index: 90;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
     .pdc-phone-field .iti__selected-flag {
         background-color: #fff;
         border-radius: 0.5rem 0 0 0.5rem;
     }
 
-    .pdc-phone-field .iti__country-container .iti__arrow {
+    .iti__country-container .iti__arrow {
         position: static;
         margin-left: 5px;
         margin-top: 0;
@@ -25,7 +42,7 @@
         border-color: #cf2e2e !important;
     }
 
-    .pdc-phone-field .iti__country-container .iti__dial-code {
+    .iti__country-container .iti__dial-code {
         color: #374151;
         font-weight: 500;
     }
@@ -39,57 +56,68 @@
         background-color: #3f3f46;
     }
 
-    .dark .pdc-phone-field .iti__country-container .iti__arrow {
+    .dark .iti__country-container .iti__arrow {
         border-top-color: #a1a1aa;
     }
 
-    .dark .pdc-phone-field .iti__country-container .iti__dial-code {
+    .dark .iti__country-container .iti__dial-code {
         color: #d4d4d8;
     }
 
-    .dark .pdc-phone-field .iti__country-list {
+    .dark .iti__country-selector {
         background-color: #18181b;
         border-color: #3f3f46;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
     }
 
-    .dark .pdc-phone-field .iti__country {
+    .dark .iti__country {
         background-color: #18181b;
         color: #e5e7eb;
     }
 
-    .dark .pdc-phone-field .iti__country:hover {
+    .dark .iti__country:hover {
         background-color: #27272a;
     }
 
-    .dark .pdc-phone-field .iti__country .iti__dial-code {
+    .dark .iti__country .iti__dial-code {
         color: #a1a1aa;
     }
 
-    .dark .pdc-phone-field .iti__search-input {
+    .dark .iti__search-input {
         background-color: #27272a;
         color: #e5e7eb;
         border-color: #3f3f46;
     }
 
-    .dark .pdc-phone-field .iti__search-input::placeholder {
+    .dark .iti__search-input::placeholder {
         color: #a1a1aa;
     }
 
-    .dark .pdc-phone-field .iti__search-clear,
-    .dark .pdc-phone-field .iti__search-icon {
+    .dark .iti__search-clear,
+    .dark .iti__search-icon {
         color: #a1a1aa;
     }
 
-    .dark .pdc-phone-field .iti__noresults {
+    .dark .iti__noresults {
         background-color: #18181b;
         color: #a1a1aa;
+    }
+
+    /* View pages: plain static value, no prefix widget */
+    .pdc-phone-field-static .fi-input {
+        color: inherit;
+        background: transparent;
+        border: none;
+        padding-left: 0.75rem;
+    }
+    .pdc-phone-field-static .iti__country-container {
+        display: none !important;
     }
 </style>
 
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('pdcPhone', (statePath) => {
+        Alpine.data('pdcPhone', (statePath, isStatic = false) => {
             // Keep the Iti instance outside Alpine's reactive proxy — it is
             // a private-class object and breaks behind a Proxy.
             let iti = null;
@@ -99,23 +127,30 @@
                 error: false,
                 syncing: false,
                 init() {
+                    const input = this.$refs.tel;
+
+                    if (isStatic) {
+                        // View pages: show the full stored value with prefix.
+                        input.value = String(this.$wire.get(statePath) ?? '');
+                        return;
+                    }
+
                     if (typeof window.intlTelInput !== 'function') {
                         this.$nextTick(() => this.init());
                         return;
                     }
 
-                    const input = this.$refs.tel;
-
                     iti = window.intlTelInput(input, {
+                        dropdownParent: document.body,
                         initialCountry: 'lv',
                         separateDialCode: true,
                         strictMode: true,
                         countryNameLocale: 'lv',
+                        countrySearch: false,
                         hiddenInputs: null,
                         uiTranslations: {
                             noCountrySelected: 'Izvēlieties valsti tālruņa numuram',
                             countryListAriaLabel: 'Valstu saraksts',
-                            searchPlaceholder: 'Meklēt',
                         },
                     });
 
