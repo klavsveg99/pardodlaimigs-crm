@@ -13,6 +13,13 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
+    # Canonical URL: direct visits to /public/... must become /... — the
+    # CRM is served at https://crm.pardodlaimigs.lv/, never under /public/.
+    # (%{THE_REQUEST} is the original request line, so internal rewrites
+    # produced by the parent .htaccess cannot trigger this rule again.)
+    RewriteCond %{THE_REQUEST} \s/public/([^\s?#]*)
+    RewriteRule ^ /%1 [R=301,L]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
