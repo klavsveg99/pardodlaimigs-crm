@@ -33,7 +33,7 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
             ->when((bool) $task->body, fn ($m) => $m->line((string) $task->body))
             ->line("Termiņš: {$due}")
             ->when($task->client, fn ($m) => $m->line("Klients: {$task->client->name}"))
-            ->action('Atvērt uzdevumu', url("/admin/tasks/{$task->id}/edit"))
+            ->action('Atvērt uzdevumu', url("/tasks/{$task->id}/edit"))
             ->salutation('Pārdod Laimīgs');
     }
 }

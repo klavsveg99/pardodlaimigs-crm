@@ -18,23 +18,24 @@ Route::get('/cron-schedule', function () {
     return response()->json(['ok' => true, 'ran_at' => now()->toIso8601String()]);
 })->name('cron-schedule');
 
-Route::get('/', function () {
-    return redirect('/admin');
-});
-
 // Vecie īpašumu URL (/admin/crm-properties/66, .../66/edit) → jaunie slug URL.
 // Resursam tagad ir slug "properties" ar ieraksta atslēgu "slug".
 Route::get('/admin/crm-properties/{id}/{page?}', function (string $id, ?string $page = null) {
     $property = \App\Models\CrmProperty::find($id)
         ?? \App\Models\CrmProperty::where('slug', $id)->first();
     abort_unless($property?->slug, 404);
-    $path = '/admin/properties/'.$property->slug;
+    $path = '/properties/'.$property->slug;
     if ($page === 'edit') {
         $path .= '/edit';
     }
 
     return redirect($path, 301);
 })->where(['id' => '[A-Za-z0-9_-]+', 'page' => 'edit']);
+
+// Panelis ir pārcelts uz sākumlapu ("/") — visi oriģinālie /admin/... un
+// /public/... URL tiek pārvirzīti uz tīrajiem ceļiem bez /admin.
+Route::redirect('/admin', '/', 301);
+Route::redirect('/admin/{path}', '/{path}', 301)->where('path', '.*');
 
 Route::get('/api/badges', function () {
     if (! auth()->check()) {
@@ -89,7 +90,7 @@ Route::get('/calendar/feed/{user}/{token}.ics', function (User $user, string $to
 })->name('calendar.feed');
 
 // ── Avatar upload endpoint (single file, avatars) ────────────────
-Route::post('/admin/avatar/upload', function () {
+Route::post('/avatar/upload', function () {
     $file = request()->file('file');
 
     if (! $file) {
@@ -122,7 +123,7 @@ Route::post('/admin/avatar/upload', function () {
 // directly taints the editor canvas — Cropper's CORS fetch fails too since
 // WP sends no ACAO headers — so cropping/saving breaks. This endpoint
 // fetches the remote file server-side and streams it same-origin.
-Route::get('/admin/property/image-proxy', function (\Illuminate\Http\Request $request) {
+Route::get('/property/image-proxy', function (\Illuminate\Http\Request $request) {
     $url = (string) $request->query('url', '');
     $parts = parse_url($url);
     if (! $parts || ($parts['scheme'] ?? '') !== 'https') {
@@ -158,7 +159,7 @@ Route::get('/admin/property/image-proxy', function (\Illuminate\Http\Request $re
 })->middleware(['auth', 'web'])->name('filament.admin.property.image-proxy');
 
 // ── Attachment upload endpoint ────────────────────────────────
-Route::post('/admin/property/upload-attachment', function () {
+Route::post('/property/upload-attachment', function () {
     $file = request()->file('file');
 
     if (! $file) {

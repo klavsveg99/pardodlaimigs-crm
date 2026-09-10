@@ -33,7 +33,7 @@ class OverdueTaskReminder extends Notification implements ShouldQueue
             ->line('Uzdevums: '.$task->title)
             ->when($task->client, fn (MailMessage $m, $c) => $m->line('Klients: '.$c->name))
             ->when($task->property, fn (MailMessage $m, $p) => $m->line('Īpašums: '.$p->selection_label))
-            ->action('Atvērt uzdevumu', url('/admin/tasks/'.$task->id.'/edit'))
+            ->action('Atvērt uzdevumu', url('/tasks/'.$task->id.'/edit'))
             ->line('Lūdzu, pabeidziet šo uzdevumu pēc iespējas ātrāk.');
     }
 }

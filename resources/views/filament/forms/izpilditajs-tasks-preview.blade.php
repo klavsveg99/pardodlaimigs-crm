@@ -15,7 +15,7 @@
         @foreach ($tasks as $task)
             <li class="flex items-center justify-between gap-3 py-2">
                 <div class="min-w-0 flex-1">
-                    <a href="{{ url('/admin/tasks/'.$task->id.'/edit') }}"
+                    <a href="{{ url('/tasks/'.$task->id.'/edit') }}"
                        class="font-medium text-primary-600 hover:underline truncate block">
                         {{ $task->title }}
                     </a>

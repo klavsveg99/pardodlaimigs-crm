@@ -32,7 +32,7 @@ class OverdueViewingReminder extends Notification implements ShouldQueue
             ->line('Apskate, kas bija ieplānota '.$viewing->scheduled_at->format('d.m.Y H:i').', nav notikusi vai nav atzīmēta kā pabeigta.')
             ->when($viewing->property, fn (MailMessage $m, $p) => $m->line('Īpašums: '.$p->title))
             ->when($viewing->client, fn (MailMessage $m, $c) => $m->line('Klients: '.$c->name))
-            ->action('Atvērt apskati', url('/admin/viewings/'.$viewing->id.'/edit'))
+            ->action('Atvērt apskati', url('/viewings/'.$viewing->id.'/edit'))
             ->line('Lūdzu, atzīmējiet apskates rezultātu.');
     }
 }

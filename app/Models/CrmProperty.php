@@ -61,7 +61,7 @@ class CrmProperty extends Model
 
     public function getRouteKeyName(): string
     {
-        // Admin URL izmanto slug: /admin/properties/{slug}/edit
+        // Admin URL izmanto slug: /properties/{slug}/edit
         return 'slug';
     }
 

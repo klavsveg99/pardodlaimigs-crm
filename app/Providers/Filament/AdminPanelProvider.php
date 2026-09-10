@@ -29,7 +29,9 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->id('admin')
-            ->path('admin')
+            // CRM is served straight from the domain root — the main screen
+            // is https://crm.pardodlaimigs.lv/ without /admin or /public.
+            ->path('/')
             ->brandName('Pārdod Laimīgs · CRM')
             ->brandLogo(asset('images/favicon-180x180.jpg'))
             ->brandLogoHeight('2rem')
