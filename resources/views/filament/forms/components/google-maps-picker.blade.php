@@ -154,7 +154,9 @@
     wire:ignore.self
 >
     <div style="position: relative; margin-bottom: 0.5rem;">
-        <label for="pdc-map-search" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">Precīza atrašanās vieta kartē</label>
+        <label for="pdc-map-search" class="fi-fo-field-label">
+            <span class="fi-fo-field-label-content">Precīza atrašanās vieta kartē</span>
+        </label>
         <input
             id="pdc-map-search"
             class="pdc-map-search"
