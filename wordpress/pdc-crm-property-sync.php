@@ -12,7 +12,7 @@ if (! defined('ABSPATH')) {
 }
 
 define('PDC_CRM_API_URL', 'https://crm.pardodlaimigs.lv/api/crm/properties');
-define('PDC_CRM_API_KEY', 'WP_PDC_CRM_API_KEY_PROVISIONED_ON_SERVER');
+define('PDC_CRM_API_KEY', defined('WP_PDC_CRM_API_KEY') ? WP_PDC_CRM_API_KEY : '');
 define('PDC_CRM_AGENTS_URL', 'https://crm.pardodlaimigs.lv/api/crm/agents');
 define('PDC_SYNC_INTERVAL', 5 * MINUTE_IN_SECONDS);
 
