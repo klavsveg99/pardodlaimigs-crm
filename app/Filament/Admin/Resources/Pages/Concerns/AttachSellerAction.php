@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources\Pages\Concerns;
 
+use App\Filament\Admin\Resources\ClientResource;
 use App\Models\Client;
 use Filament\Actions;
 use Filament\Forms;
@@ -18,6 +19,15 @@ trait AttachSellerAction
             ->label('Piesaistīt pārdevēju')
             ->icon('heroicon-o-user-plus')
             ->color('gray')
+            ->modalSubmitActionLabel('Pievienot')
+            ->extraModalFooterActions([
+                Actions\Action::make('izveidot_jaunu_klientu')
+                    ->label('Izveidot jaunu klientu')
+                    ->icon('heroicon-o-plus')
+                    ->color('gray')
+                    ->url(fn (): string => ClientResource::getUrl('create'))
+                    ->openUrlInNewTab(),
+            ])
             ->form([
                 Forms\Components\Select::make('client_id')
                     ->label('Pārdevējs')
@@ -55,6 +65,15 @@ trait AttachSellerAction
             ->icon('heroicon-o-user-plus')
             ->color('gray')
             ->visible(fn () => ($this->record->status ?? null) === 'sold')
+            ->modalSubmitActionLabel('Pievienot')
+            ->extraModalFooterActions([
+                Actions\Action::make('izveidot_jaunu_klientu')
+                    ->label('Izveidot jaunu klientu')
+                    ->icon('heroicon-o-plus')
+                    ->color('gray')
+                    ->url(fn (): string => ClientResource::getUrl('create'))
+                    ->openUrlInNewTab(),
+            ])
             ->form([
                 Forms\Components\Select::make('client_id')
                     ->label('Pircējs')

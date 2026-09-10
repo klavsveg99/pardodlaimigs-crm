@@ -82,7 +82,7 @@
     <x-filament::section heading="Atrašanās vieta">
         <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pilsēta</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pilsēta/rajons</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->city ?: '—' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14] lg:col-span-2">

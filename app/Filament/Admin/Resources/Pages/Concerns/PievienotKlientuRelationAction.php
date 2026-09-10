@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources\Pages\Concerns;
 
+use App\Filament\Admin\Resources\ClientResource;
 use App\Models\Client;
 use App\Models\CrmProperty;
 use Filament\Actions;
@@ -36,6 +37,14 @@ trait PievienotKlientuRelationAction
             ->modalHeading('Pievienot klientu')
             ->modalDescription('Piesaistiet esošu klientu īpašumam kā pārdevēju vai pircēju.')
             ->modalSubmitActionLabel('Pievienot')
+            ->extraModalFooterActions([
+                Actions\Action::make('izveidot_jaunu_klientu')
+                    ->label('Izveidot jaunu klientu')
+                    ->icon('heroicon-o-plus')
+                    ->color('gray')
+                    ->url(fn (): string => ClientResource::getUrl('create'))
+                    ->openUrlInNewTab(),
+            ])
             ->form(function (): array {
                 $property = $this->getPievienotKlientuProperty();
                 $isSold = ($property?->status ?? null) === 'sold';

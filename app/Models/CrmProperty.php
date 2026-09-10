@@ -142,8 +142,15 @@ class CrmProperty extends Model
 
     public function getPublicUrlAttribute(): string
     {
-        return rtrim((string) config('wp-bridge.wordpress.site_url'), '/')
-            .'/ipasums/'.($this->slug ?: $this->wp_post_id ?: $this->id).'/';
+        $base = rtrim((string) config('wp-bridge.wordpress.site_url'), '/');
+
+        // WP saite pēc post ID vienmēr aizved uz īsto ierakstu pat tad,
+        // ja CRM slug novecojis vai nesakrīt ar WP post_name.
+        if (filled($this->wp_post_id)) {
+            return $base.'/?p='.(int) $this->wp_post_id;
+        }
+
+        return $base.'/ipasums/'.($this->slug ?: $this->id).'/';
     }
 
     public function getCommissionPercentAttribute(): ?float

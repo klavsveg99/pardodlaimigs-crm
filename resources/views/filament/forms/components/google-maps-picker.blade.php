@@ -31,6 +31,12 @@
             if (hasCoords) {
                 this.placeMarker(new google.maps.LatLng(parseFloat(this.lat), parseFloat(this.lng)), false);
             }
+            // Klikšķis kartē pārvieto (vai izveido) vienu spraudīti.
+            this.map.addListener('click', (e) => {
+                if (!e.latLng) return;
+                this.map.panTo(e.latLng);
+                this.placeMarker(e.latLng, true);
+            });
             const input = $refs.searchBox;
             const autocomplete = new google.maps.places.Autocomplete(input);
             autocomplete.bindTo('bounds', this.map);
@@ -148,7 +154,9 @@
     wire:ignore.self
 >
     <div style="position: relative; margin-bottom: 0.5rem;">
+        <label for="pdc-map-search" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">Precīza atrašanās vieta kartē</label>
         <input
+            id="pdc-map-search"
             class="pdc-map-search"
             x-ref="searchBox"
             type="text"
@@ -178,7 +186,6 @@
         "
     ></div>
     <div class="pdc-map-help" style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
-        <span>Adrese un pilsēta tiek aizpildītas automātiski no kartes. Noklikšķiniet kartē vai meklējiet adresi — pilsēta tiks noteikta kā apdzīvota vieta (nevis iela).</span>
         <span x-show="lat && lng" x-text="'Lat: ' + lat + ', Lng: ' + lng"></span>
     </div>
 </div>

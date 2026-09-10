@@ -174,14 +174,20 @@ class CrmPropertyResource extends Resource
 
             Section::make('Atrašanās vieta')->columns(['default' => 1, 'md' => 2])->schema([
                 Forms\Components\TextInput::make('city')
-                    ->label('Pilsēta')
+                    ->label('Pilsēta/rajons')
                     ->maxLength(128)
-                    ->nullable(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Pilsēta/rajons ir obligāts lauks.',
+                    ]),
 
                 Forms\Components\TextInput::make('address')
                     ->label('Adrese')
                     ->maxLength(255)
-                    ->nullable(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Adrese ir obligāts lauks.',
+                    ]),
 
                 Forms\Components\Hidden::make('lat'),
                 Forms\Components\Hidden::make('lng'),
@@ -445,7 +451,7 @@ class CrmPropertyResource extends Resource
             'Platība' => ($size = $value('size_m2')) ? ((string) $size).' m²' : null,
             'Zemes platība' => ($land = $value('land_m2')) ? ((string) $land).' m²' : null,
             'Kadastra nr.' => $value('kadastra_nr'),
-            'Pilsēta' => $value('city'),
+            'Pilsēta/rajons' => $value('city'),
             'Adrese' => $value('address'),
         ];
 
@@ -485,7 +491,7 @@ class CrmPropertyResource extends Resource
                     ->sortable()
                     ->color('gray')
                     ->formatStateUsing(fn ($state) => CrmProperty::STATUSES[$state] ?? $state),
-                Tables\Columns\TextColumn::make('city')->label('Pilsēta')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('city')->label('Pilsēta/rajons')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->sortable()
                     ->placeholder(fn ($state) => $state ? null : '—')
                     ->icon(fn ($state) => $state ? null : 'heroicon-o-exclamation-triangle')
