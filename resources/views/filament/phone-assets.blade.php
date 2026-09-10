@@ -31,11 +31,9 @@
         border-radius: 0.5rem 0 0 0.5rem;
     }
 
+    /* Country prefix selector bez caret bultiņas */
     .iti__country-container .iti__arrow {
-        position: static;
-        margin-left: 5px;
-        margin-top: 0;
-        border-top-color: #6b7280;
+        display: none;
     }
 
     .pdc-phone-field input.pdc-phone-invalid {
@@ -54,10 +52,6 @@
     .dark .pdc-phone-field .iti__selected-flag:hover,
     .dark .pdc-phone-field .iti__selected-flag:focus {
         background-color: #3f3f46;
-    }
-
-    .dark .iti__country-container .iti__arrow {
-        border-top-color: #a1a1aa;
     }
 
     .dark .iti__country-container .iti__dial-code {
