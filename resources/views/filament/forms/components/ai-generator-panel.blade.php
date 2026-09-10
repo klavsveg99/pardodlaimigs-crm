@@ -50,13 +50,16 @@
             gap: 1rem; padding: 0.875rem 1.25rem;
             border-bottom: 1px solid rgb(148 163 184 / 0.35);
         }
-        .pdc-ai-panel .pdc-ai-body { padding: 1rem 1.25rem 1.25rem; max-height: 70vh; overflow-y: auto; }
+        .pdc-ai-panel .pdc-ai-body { padding: 1rem 1.25rem 1.25rem; max-height: min(70vh, calc(100dvh - 13rem)); overflow-y: auto; }
         .pdc-ai-panel .pdc-ai-sec { margin-bottom: 1.1rem; }
         .pdc-ai-panel .pdc-ai-sec:last-child { margin-bottom: 0; }
         .pdc-ai-panel .pdc-ai-sec-label {
             display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+            flex-wrap: wrap;
             font-size: .8rem; font-weight: 600; margin-bottom: .35rem;
         }
+        .pdc-ai-panel .pdc-ai-sec-label > span:first-child { flex: 1 1 auto; min-width: 0; }
+        .pdc-ai-panel .pdc-ai-sec-label .flex.gap-2 { flex-wrap: wrap; }
         .dark .pdc-ai-panel .pdc-ai-sec-label { color: #e5e7eb; }
         .pdc-ai-panel .pdc-ai-sec textarea {
             width: 100%; border: 1px solid rgb(148 163 184 / 0.6); border-radius: .5rem;
@@ -65,7 +68,8 @@
         }
         .dark .pdc-ai-panel .pdc-ai-sec textarea { background: #0b0f14; color: #f3f4f6; border-color: #374151; }
         .pdc-ai-panel .pdc-ai-btn {
-            display: inline-flex; align-items: center; gap: .35rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
+            white-space: nowrap;
             padding: .3rem .6rem; border-radius: .45rem; font-size: .75rem; font-weight: 600;
             border: 1px solid rgb(148 163 184 / 0.6); background: #fff; color: #374151; cursor: pointer;
         }
@@ -76,6 +80,20 @@
         .pdc-ai-panel .pdc-ai-foot {
             display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; justify-content: flex-end;
             padding: .75rem 1.25rem; border-top: 1px solid rgb(148 163 184 / 0.35);
+        }
+        /* Narrow screens: tighter dialog chrome, labels above their buttons,
+           footer actions share the row width. */
+        @media (max-width: 520px) {
+            .pdc-ai-panel .pdc-ai-modal { padding: 0.75rem 0.625rem; align-items: flex-start; }
+            .pdc-ai-panel .pdc-ai-card { margin-top: 0.75rem; border-radius: 0.625rem; }
+            .pdc-ai-panel .pdc-ai-head { padding: 0.75rem 1rem; }
+            .pdc-ai-panel .pdc-ai-body { padding: 0.875rem 1rem 1rem; }
+            .pdc-ai-panel .pdc-ai-sec { margin-bottom: 0.9rem; }
+            .pdc-ai-panel .pdc-ai-sec-label { row-gap: 0.4rem; }
+            .pdc-ai-panel .pdc-ai-sec-label > span:first-child { flex: 1 1 100%; }
+            .pdc-ai-panel .pdc-ai-sec textarea { min-height: 76px; }
+            .pdc-ai-panel .pdc-ai-foot { padding: 0.625rem 1rem; }
+            .pdc-ai-panel .pdc-ai-foot .pdc-ai-btn { flex: 1 1 auto; padding: 0.4rem 0.6rem; }
         }
     </style>
 
