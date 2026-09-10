@@ -36,7 +36,9 @@ class CrmStatsOverview extends StatsOverviewWidget
         $lateViewings = Viewing::where('scheduled_at', '<', now())
             ->where('status', '!=', 'done')
             ->count();
-        $activeProperties = CrmProperty::whereNotIn('status', ['sold'])->count();
+        // "Aktīvie" = publicētie (Pārdošanā) — saskaņā ar Īpašumu saraksta
+        // cilni: melnraksti, pārdotie un dzēstie netiek skaitīti.
+        $activeProperties = CrmProperty::whereNotIn('status', ['draft', 'sold', 'deleted'])->count();
         $openTasks = Task::whereNull('completed_at')->count();
         $totalClients = Client::count();
 
