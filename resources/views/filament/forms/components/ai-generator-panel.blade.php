@@ -37,6 +37,14 @@
         copy(text) {
             navigator.clipboard?.writeText(text ?? '');
         },
+        sanitizeHtml(html) {
+            return (html ?? '')
+                .replace(/<script[\s\S]*?<\/script>/gi, '')
+                .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
+                .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
+                .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
+                .replace(/javascript:/gi, '');
+        },
     }" x-cloak>
     <style>
         .pdc-ai-panel [x-cloak] { display: none !important; }
@@ -91,6 +99,16 @@
         }
         @keyframes pdc-ai-spin { to { transform: rotate(360deg); } }
         .pdc-ai-panel .pdc-ai-sec textarea:disabled { opacity: .6; cursor: not-allowed; }
+        .pdc-ai-panel .pdc-ai-desc {
+            border: 1px solid rgb(148 163 184 / 0.6); border-radius: .5rem;
+            padding: .7rem .8rem; min-height: 130px; max-height: 300px; overflow-y: auto;
+            background: #fff; color: #111827; font-size: .85rem; line-height: 1.55;
+        }
+        .dark .pdc-ai-panel .pdc-ai-desc { background: #0b0f14; color: #f3f4f6; border-color: #374151; }
+        .pdc-ai-panel .pdc-ai-desc p { margin: .35rem 0; }
+        .pdc-ai-panel .pdc-ai-desc ul, .pdc-ai-panel .pdc-ai-desc ol { margin: .4rem 0 .4rem 1.1rem; list-style: disc; }
+        .pdc-ai-panel .pdc-ai-desc ol { list-style: decimal; }
+        .pdc-ai-panel .pdc-ai-desc h1, .pdc-ai-panel .pdc-ai-desc h2, .pdc-ai-panel .pdc-ai-desc h3 { font-weight: 700; margin: .5rem 0 .3rem; }
         .dark .pdc-ai-panel .pdc-ai-btn { background: #1f2937; color: #e5e7eb; border-color: #374151; }
         .pdc-ai-panel .pdc-ai-btn-inserted { background: #dcfce7 !important; color: #166534 !important; border-color: #86efac !important; }
         .pdc-ai-panel .pdc-ai-foot {
@@ -152,10 +170,8 @@
                                 </button>
                             </span>
                         </div>
-                        <textarea x-model="result.description" x-on:input="inserted.description = false"
-                                  :disabled="loading"
-                                  style="min-height: 170px"
-                                  placeholder="Ģenerētais apraksts"></textarea>
+                        <div class="pdc-ai-desc pdc-prose" :class="loading ? 'opacity-60 pointer-events-none' : ''"
+                             x-html="sanitizeHtml(result.description || '<p style=\"color:#9ca3af\">Ģenerētais apraksts</p>')"></div>
                     </div>
 
                     <div class="pdc-ai-sec">
