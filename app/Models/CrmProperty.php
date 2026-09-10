@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Str;
 
 class CrmProperty extends Model
 {
@@ -68,10 +69,14 @@ class CrmProperty extends Model
     protected static function booted(): void
     {
         static::saving(function (self $property) {
-            // Slug ir obligāts maršrutēšanai — jauniem ierakstiem ģenerējam
-            // no nosaukuma. Esošus nekad nepārrakstām, lai WP saites nemainītos.
-            if (empty($property->slug) && filled($property->title)) {
-                $base = \Illuminate\Support\Str::slug((string) $property->title) ?: 'ipasums';
+            // Slug ir obligāts maršrutēšanai — ģenerējam no nosaukuma un
+            // atjaunojam, kad nosaukums mainās, lai permalinki vienmēr
+            // atspoguļo titulu.
+            if (
+                (empty($property->slug) || $property->isDirty('title'))
+                && filled($property->title)
+            ) {
+                $base = Str::slug((string) $property->title) ?: 'ipasums';
                 $slug = $base;
                 $i = 2;
                 while (static::where('slug', $slug)->whereKeyNot($property->getKey() ?? 0)->exists()) {

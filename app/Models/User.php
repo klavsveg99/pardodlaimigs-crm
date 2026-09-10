@@ -11,13 +11,14 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'role', 'calendar_token', 'phone', 'position', 'description', 'avatar_path', 'facebook_url', 'instagram_url', 'linkedin_url', 'website_url', 'office_address'])]
+#[Fillable(['name', 'email', 'password', 'role', 'calendar_token', 'slug', 'phone', 'position', 'description', 'avatar_path', 'facebook_url', 'instagram_url', 'linkedin_url', 'website_url', 'office_address'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use \App\Models\Concerns\HasSlug, HasFactory, Notifiable;
 
     protected static function booted(): void
     {
@@ -48,7 +49,7 @@ class User extends Authenticatable implements FilamentUser
     public function getCalendarFeedUrl(): string
     {
         return route('calendar.feed', [
-            'user' => $this->id,
+            'user' => $this->slug ?: $this->getKey(),
             'token' => $this->calendar_token,
         ]);
     }
@@ -59,7 +60,7 @@ class User extends Authenticatable implements FilamentUser
             return null;
         }
 
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $disk = Storage::disk('public');
         if (! $disk->exists($this->avatar_path)) {
             return null;
         }

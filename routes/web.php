@@ -1,9 +1,15 @@
 <?php
 
+use App\Models\CrmProperty;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\WpformEntry;
 use App\Services\Calendar\IcsExport;
+use App\Services\ImageOptimizer;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,7 +19,7 @@ Route::get('/cron-schedule', function () {
     if (request()->header('X-CRM-API-Key') !== config('wp-bridge.wordpress.api_key')) {
         abort(403);
     }
-    \Illuminate\Support\Facades\Artisan::call('schedule:run');
+    Artisan::call('schedule:run');
 
     return response()->json(['ok' => true, 'ran_at' => now()->toIso8601String()]);
 })->name('cron-schedule');
@@ -21,8 +27,8 @@ Route::get('/cron-schedule', function () {
 // Vecie īpašumu URL (/admin/crm-properties/66, .../66/edit) → jaunie slug URL.
 // Resursam tagad ir slug "properties" ar ieraksta atslēgu "slug".
 Route::get('/admin/crm-properties/{id}/{page?}', function (string $id, ?string $page = null) {
-    $property = \App\Models\CrmProperty::find($id)
-        ?? \App\Models\CrmProperty::where('slug', $id)->first();
+    $property = CrmProperty::find($id)
+        ?? CrmProperty::where('slug', $id)->first();
     abort_unless($property?->slug, 404);
     $path = '/properties/'.$property->slug;
     if ($page === 'edit') {
@@ -41,33 +47,44 @@ Route::get('/api/badges', function () {
     if (! auth()->check()) {
         return response()->json(['tasks' => 0, 'wpforms' => 0], 200);
     }
+
     return response()->json([
         'tasks' => Task::whereNull('completed_at')->count(),
         'wpforms' => WpformEntry::where('status', 'new')->count(),
     ]);
 });
 
-Route::get('/api/crm/attachment-proxy', function (\Illuminate\Http\Request $request) {
+Route::get('/api/crm/attachment-proxy', function (Request $request) {
     $key = (string) $request->query('_k', '');
     $path = (string) $request->query('path', '');
-    if ($key === '' || $path === '') abort(400);
+    if ($key === '' || $path === '') {
+        abort(400);
+    }
     $expected = substr(hash_hmac('sha256', $path, (string) config('wp-bridge.wordpress.api_key')), 0, 16);
-    if (! hash_equals($expected, $key)) abort(403);
+    if (! hash_equals($expected, $key)) {
+        abort(403);
+    }
 
-    $disk = \Illuminate\Support\Facades\Storage::disk('public');
+    $disk = Storage::disk('public');
     $abs = $disk->path($path);
     if (! is_file($abs)) {
         $basename = basename($path);
         if ($basename !== '' && $basename !== '.' && $basename !== '/') {
             foreach (['attachments', 'avatars'] as $dir) {
-                $candidate = $disk->path($dir . '/' . $basename);
-                if (is_file($candidate)) { $abs = $candidate; break; }
+                $candidate = $disk->path($dir.'/'.$basename);
+                if (is_file($candidate)) {
+                    $abs = $candidate;
+                    break;
+                }
             }
         }
     }
-    if (! is_file($abs)) abort(404);
+    if (! is_file($abs)) {
+        abort(404);
+    }
 
-    $mime = \Illuminate\Support\Facades\File::mimeType($abs) ?: 'application/octet-stream';
+    $mime = File::mimeType($abs) ?: 'application/octet-stream';
+
     return response()->file($abs, [
         'Content-Type' => $mime,
         'Cache-Control' => 'no-store',
@@ -75,12 +92,15 @@ Route::get('/api/crm/attachment-proxy', function (\Illuminate\Http\Request $requ
 })->name('crm.attachment.proxy');
 
 // ── Calendar .ics feed (authenticated by token) ───────────────
-Route::get('/calendar/feed/{user}/{token}.ics', function (User $user, string $token) {
-    if (! hash_equals($user->calendar_token ?? '', $token)) {
+// {user} var būt kā slug (raivo-pukes), tā arī vecais skaitliskais id —
+// lai jau esošās kalendāru parakstīšanās saites paliek derīgas.
+Route::get('/calendar/feed/{user}/{token}.ics', function (string $user, string $token) {
+    $feedUser = User::where('slug', $user)->first() ?? User::whereKey((int) $user)->first();
+    if (! $feedUser || ! hash_equals($feedUser->calendar_token ?? '', $token)) {
         abort(403);
     }
 
-    $ics = app(IcsExport::class)->generateForUser($user);
+    $ics = app(IcsExport::class)->generateForUser($feedUser);
 
     return response($ics, 200, [
         'Content-Type' => 'text/calendar; charset=utf-8',
@@ -123,7 +143,7 @@ Route::post('/avatar/upload', function () {
 // directly taints the editor canvas — Cropper's CORS fetch fails too since
 // WP sends no ACAO headers — so cropping/saving breaks. This endpoint
 // fetches the remote file server-side and streams it same-origin.
-Route::get('/property/image-proxy', function (\Illuminate\Http\Request $request) {
+Route::get('/property/image-proxy', function (Request $request) {
     $url = (string) $request->query('url', '');
     $parts = parse_url($url);
     if (! $parts || ($parts['scheme'] ?? '') !== 'https') {
@@ -136,8 +156,8 @@ Route::get('/property/image-proxy', function (\Illuminate\Http\Request $request)
     }
 
     try {
-        $response = \Illuminate\Support\Facades\Http::timeout(20)->get($url);
-    } catch (\Throwable) {
+        $response = Http::timeout(20)->get($url);
+    } catch (Throwable) {
         abort(502);
     }
     if (! $response->successful()) {
@@ -180,13 +200,13 @@ Route::post('/property/upload-attachment', function () {
     $originalName = $file->getClientOriginalName();
     $disk = Storage::disk('public');
     $base = pathinfo($originalName, PATHINFO_FILENAME);
-    $ext  = pathinfo($originalName, PATHINFO_EXTENSION);
-    $dir  = 'attachments';
-    $candidate = $dir . '/' . $originalName;
+    $ext = pathinfo($originalName, PATHINFO_EXTENSION);
+    $dir = 'attachments';
+    $candidate = $dir.'/'.$originalName;
     if ($disk->exists($candidate)) {
         $i = 1;
         do {
-            $candidate = $dir . '/' . $base . '-' . $i . ($ext ? '.' . $ext : '');
+            $candidate = $dir.'/'.$base.'-'.$i.($ext ? '.'.$ext : '');
             $i++;
         } while ($disk->exists($candidate));
     }
@@ -195,9 +215,9 @@ Route::post('/property/upload-attachment', function () {
     try {
         $abs = Storage::disk('public')->path($path);
         if (is_file($abs) && str_starts_with((string) $file->getMimeType(), 'image/')) {
-            app(\App\Services\ImageOptimizer::class)->optimize($abs);
+            app(ImageOptimizer::class)->optimize($abs);
         }
-    } catch (\Throwable $e) {
+    } catch (Throwable $e) {
     }
 
     return response()->json([

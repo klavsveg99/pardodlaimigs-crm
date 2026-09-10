@@ -34,6 +34,8 @@ class IzpilditajsResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Izpildītāji';
 
+    protected static ?string $recordRouteKeyName = 'slug';
+
     public static function canAccess(): bool
     {
         return auth()->user()?->can('manage') ?? false;
