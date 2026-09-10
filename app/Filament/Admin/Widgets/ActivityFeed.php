@@ -242,9 +242,9 @@ class ActivityFeed extends BaseWidget
             $parts[] = 'Ieraksts dzēsts';
         } elseif ($log->action === 'wpform_sync') {
             $count = $after['count'] ?? 0;
-            $parts[] = 'Sinhronizētas '.$count.' formas';
+            $parts[] = 'Sinhronizētas '.($this->textValue($count) ?? '0').' formas';
         } elseif (in_array($log->action, ['export', 'erase', 'export_request', 'erase_request'], true)) {
-            $email = $after['email'] ?? $before['email'] ?? null;
+            $email = $this->textValue($after['email'] ?? $before['email'] ?? null);
             if ($email) {
                 $parts[] = $email;
             }
@@ -335,11 +335,13 @@ class ActivityFeed extends BaseWidget
         }
 
         if ($log->entity === 'client') {
-            if (! empty($after['phone'])) {
-                $bits[] = (string) $after['phone'];
+            $phone = $this->textValue($after['phone'] ?? null);
+            if ($phone) {
+                $bits[] = $phone;
             }
-            if (! empty($after['source'])) {
-                $bits[] = 'Avots: '.(string) $after['source'];
+            $source = $this->textValue($after['source'] ?? null);
+            if ($source) {
+                $bits[] = 'Avots: '.$source;
             }
         }
 
@@ -409,8 +411,28 @@ class ActivityFeed extends BaseWidget
         if ($b === null && $a === '') {
             return true;
         }
+        // Audit snapshots may hold arrays (ai_notes, image_urls, ...) —
+        // comparing them as strings crashes ("Array to string conversion").
+        if (is_array($a) || is_array($b)) {
+            return $a == $b;
+        }
+        if (is_object($a) || is_object($b)) {
+            return json_encode($a) === json_encode($b);
+        }
 
         return (string) $a === (string) $b;
+    }
+
+    /**
+     * Audit snapshots may hold arrays/objects — only scalars render as text.
+     */
+    protected function textValue(mixed $v): ?string
+    {
+        if (is_string($v) || is_int($v) || is_float($v)) {
+            return (string) $v;
+        }
+
+        return null;
     }
 
     protected function valueText(mixed $v): string
@@ -423,6 +445,15 @@ class ActivityFeed extends BaseWidget
         }
         if (is_array($v)) {
             return count($v).' vien.';
+        }
+        // Audit snapshots sometimes hold double-encoded JSON strings
+        // (model getChanges() raw attributes, e.g. ai_notes) — render
+        // them as item counts instead of dumping raw JSON.
+        if (is_string($v) && isset($v[0]) && ($v[0] === '{' || $v[0] === '[')) {
+            $decoded = json_decode($v, true);
+            if (is_array($decoded)) {
+                return count($decoded).' vien.';
+            }
         }
         $s = (string) $v;
         // Datetime strings → short LV format
