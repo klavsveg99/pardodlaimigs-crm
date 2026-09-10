@@ -29,7 +29,7 @@ class PhoneInput extends TextInput
                 class="fi-input fi-text-input"
                 <?= $isStatic ? 'readonly tabindex="-1"' : '' ?>
             />
-            <p x-cloak x-show="error" style="margin-top:0.3rem;font-size:0.8125rem;line-height:1.25;color:#cf2e2e;">
+            <p x-cloak x-show="error" style="margin-top:0.3rem;padding:0.375rem 0.625rem;border-radius:0.375rem;font-size:0.8125rem;line-height:1.25;color:#cf2e2e;background:rgba(207,46,46,0.07);">
                 Nederīgs tālruņa numurs — pārbaudiet valsts kodu un numuru
             </p>
         </div>
