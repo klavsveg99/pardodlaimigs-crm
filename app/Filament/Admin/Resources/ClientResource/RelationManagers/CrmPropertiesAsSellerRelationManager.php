@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\ClientResource\RelationManagers;
 
+use App\Filament\Admin\Resources\CrmPropertyResource;
 use App\Models\ClientCrmProperty;
 use App\Models\CrmProperty;
 use Filament\Actions;
@@ -52,7 +53,8 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
             // property appears twice (once with the wrong relation badge).
             ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('client_crm_properties.relation', 'seller'))
             ->columns([
-                Tables\Columns\TextColumn::make('title')->label('Īpašums')->sortable()->weight('bold')->wrap(),
+                Tables\Columns\TextColumn::make('title')->label('Īpašums')->sortable()->weight('bold')->wrap()
+                    ->url(fn (CrmProperty $record) => CrmPropertyResource::getUrl('view', ['record' => $record])),
                 Tables\Columns\TextColumn::make('city')->label('Pilsēta')->sortable()->wrap(),
                 Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->sortable()->placeholder('—')->wrap(),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
