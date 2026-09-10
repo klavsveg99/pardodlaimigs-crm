@@ -1,2 +1,20 @@
-RewriteEngine On
-RewriteRule ^(.*)$ public/$1 [L]
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Never expose "/public/" in the visible URL — 301 to the clean path.
+    # (%{THE_REQUEST} is the original client request line, so internal
+    # rewrites below cannot trigger this rule again.)
+    RewriteCond %{THE_REQUEST} \s/public/([^\s?#]*)
+    RewriteRule ^ /%1 [R=301,L]
+
+    # Serve the Laravel app out of public/.
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

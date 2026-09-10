@@ -24,6 +24,14 @@ class SeedCrmProperties extends Command
 
     public function handle(WpSource $source, PropertyNormalizer $normalizer): int
     {
+        // Aizliegts produkcijā — importēšana no feeda ir tikai sākotnējā
+        // iemigrācija, nevis izpildāma darba vidē ar reāliem datiem.
+        if (config('app.env') === 'production') {
+            $this->error('Aizliegts: īpašumu importēšana produkcijā nav atļauta.');
+
+            return self::FAILURE;
+        }
+
         if (! $this->option('skip-refresh')) {
             $this->info('Refreshing the WordPress property cache...');
             (new ReconcileAllProperties)->handle($source, $normalizer);

@@ -50,6 +50,14 @@ class SeedTestData extends Command
 
     public function handle(): int
     {
+        // Test datu sēšana ir aizliegta produkcijā — AIZLIEGTS pārrakstīt reālos
+        // klientus/īpašumus. Ja tomēr vajag, palaid uz pagaidu DB kopijas.
+        if (config('app.env') === 'production') {
+            $this->error('Aizliegts: test datu sēšana produkcijā nav atļauta.');
+
+            return self::FAILURE;
+        }
+
         if ($this->option('fresh')) {
             $this->cleanTestData();
         }

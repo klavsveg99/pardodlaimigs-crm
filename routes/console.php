@@ -28,3 +28,11 @@ Schedule::command('pdc:send-reminders')
     ->dailyAt('08:00')
     ->name('send-reminders')
     ->withoutOverlapping();
+
+// Full-data backup daily at 00:00 (APP_TIMEZONE, i.e. Europe/Riga on prod).
+// Scheduler is HTTP-triggered via /cron-schedule, so the first post-midnight
+// ping runs it; runs once per day and keeps config('backup.keep') copies.
+Schedule::command('pdc:backup-database')
+    ->dailyAt('00:00')
+    ->name('daily-backup')
+    ->withoutOverlapping();

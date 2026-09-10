@@ -31,18 +31,31 @@ class WpformEntry extends Model
 
     protected static function booted(): void
     {
-        // Deletions made in the CRM are authoritative: record a tombstone so
-        // the periodic WordPress sync never re-creates this entry (or a
-        // resurrected version of it) later.
+        // Deletions made in the CRM are authoritative: persist BOTH a
+        // tombstone (so the periodic WordPress sync never re-creates the
+        // entry) and a full archived snapshot of the record (so the data
+        // survives locally even after the row is gone).
         static::deleted(function (WpformEntry $entry): void {
-            if (filled($entry->external_id)) {
-                $now = now();
-
-                DB::table('wpform_entry_deletions')->updateOrInsert(
-                    ['external_id' => (string) $entry->external_id],
-                    ['deleted_at' => $now],
-                );
+            if ($entry->external_id === null || $entry->external_id === '') {
+                return;
             }
+
+            $now = now();
+
+            DB::table('wpform_entry_deletions')->updateOrInsert(
+                ['external_id' => (string) $entry->external_id],
+                [
+                    'deleted_at' => $now,
+                    'entry_id' => $entry->entry_id,
+                    'form_id' => $entry->form_id,
+                    'form_name' => $entry->form_name,
+                    'client_id' => $entry->client_id,
+                    'fields' => $entry->fields !== null
+                        ? json_encode($entry->fields, JSON_UNESCAPED_UNICODE)
+                        : null,
+                    'entry_created_at' => $entry->created_at,
+                ],
+            );
         });
     }
 
