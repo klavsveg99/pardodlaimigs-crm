@@ -224,19 +224,19 @@ class CrmPropertyResource extends Resource
                             Forms\Components\Textarea::make('advantages')
                                 ->label('Priekšrocības')
                                 ->rows(3)
-                                ->helperText('Atrašanās vieta, piekļuve, infrastruktūra, skats, ūdens, daba u.c.'),
+                                ->helperText('Galvenais pārdošanas akcents; 3–7 svarīgākās priekšrocības; teritorija (pagalms, dārzs, žogs, piebraucamais ceļš, ainava); apkārtne (attālumi, veikali, skolas, transports, ezers/mežs).'),
                             Forms\Components\Textarea::make('technical')
                                 ->label('Tehniskā informācija')
                                 ->rows(3)
-                                ->helperText('Apkure, ūdens, kanalizācija, elektrība, ēkas stāvoklis, būvniecības gads'),
+                                ->helperText('Stāvu skaits, papildu platības; būvniecības/renovācijas gads, stāvoklis, dokumentācija; telpas (virtuve, pirts, garāža u.c.); komunikācijas; apkure, patēriņš, izmaksas; konstrukcija (sienas, jumts, logi, siltinājums).'),
                             Forms\Components\Textarea::make('investment')
                                 ->label('Investīciju potenciāls')
                                 ->rows(3)
-                                ->helperText('Attīstības iespējas, zemes izmantošana, loģistika, komerciālais potenciāls'),
+                                ->helperText('Cena apspriežama, steidzama pārdošana, pirmā iemaksa, maksājumu grafiks, hipotēka/Altum, citi nosacījumi; pārdošanas iemesls (tikai ja patiess).'),
                             Forms\Components\Textarea::make('extra')
                                 ->label('Papildu informācija')
                                 ->rows(3)
-                                ->helperText('Brīvs teksts — viss svarīgais, ko AI vēl jāņem vērā'),
+                                ->helperText('Viss pārējais svarīgais + vēlamais kontakta veids / noslēguma akcents. Tips, cena, platības, istabas, pilsēta un adrese jau nāk no CRM — tos šeit neatkārtot.'),
                         ])
                         ->fillForm(fn (?CrmProperty $record): array => [
                             'advantages' => $record?->ai_notes['advantages'] ?? null,
