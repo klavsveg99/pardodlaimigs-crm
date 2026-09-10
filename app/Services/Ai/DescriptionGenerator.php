@@ -12,7 +12,7 @@ use RuntimeException;
  * AI teksta ģenerators īpašumu aprakstiem.
  *
  * Balstās strikti uz CRM datos un aģenta ievadītajām piezīmēm — modelim ir
- * aizliegts izdomāt faktus. Atbalsta Gemini (bezmaksas līmenis) un OpenAI;
+ * aizliegts izdomāt faktus. Atbalsta Gemini un OpenAI;
  * pietiek vienas konfigurētas atslēgas.
  */
 class DescriptionGenerator
@@ -58,10 +58,6 @@ class DescriptionGenerator
 
     public static function provider(): ?string
     {
-        if (filled(config('services.openrouter.key'))) {
-            return 'openrouter';
-        }
-
         if (filled(config('services.gemini.key'))) {
             return 'gemini';
         }
@@ -76,47 +72,10 @@ class DescriptionGenerator
     private function callModel(string $prompt): array
     {
         return match (self::provider()) {
-            'openrouter' => $this->callOpenrouter($prompt),
             'gemini' => $this->callGemini($prompt),
             'openai' => $this->callOpenai($prompt),
-            default => throw new RuntimeException('Nav konfigurēta AI atslēga (OPENROUTER_API_KEY, GEMINI_API_KEY vai OPENAI_API_KEY).'),
+            default => throw new RuntimeException('Nav konfigurēta AI atslēga (GEMINI_API_KEY vai OPENAI_API_KEY).'),
         };
-    }
-
-    /**
-     * OpenRouter (OpenAI-saderīgs API). Bezmaksas modeļi neatbalsta
-     * response_format — JSON dekodēšana notiek ar fence-stripping.
-     */
-    private function callOpenrouter(string $prompt): array
-    {
-        $model = (string) config('services.openrouter.model', 'google/gemma-4-31b-it:free');
-        $key = (string) config('services.openrouter.key');
-
-        $response = Http::withToken($key)
-            ->withHeaders([
-                'HTTP-Referer' => rtrim((string) config('app.url', ''), '/') ?: 'https://crm.pardodlaimigs.lv',
-                'X-Title' => 'Pardod Laimigs CRM',
-            ])
-            ->timeout(120)
-            ->retry(1, 300)
-            ->post('https://openrouter.ai/api/v1/chat/completions', [
-                'model' => $model,
-                'temperature' => 0.7,
-                'messages' => [
-                    ['role' => 'user', 'content' => $prompt],
-                ],
-            ]);
-
-        if ($response->failed()) {
-            throw new RuntimeException('OpenRouter API kļūda: HTTP '.$response->status().': '.(string) $response->json('error.message', ''));
-        }
-
-        $text = $response->json('choices.0.message.content');
-        if (! is_string($text) || $text === '') {
-            throw new RuntimeException('OpenRouter atgrieza tukšu atbildi.');
-        }
-
-        return $this->decodeJson($text);
     }
 
     private function callGemini(string $prompt): array
@@ -125,7 +84,11 @@ class DescriptionGenerator
         $key = (string) config('services.gemini.key');
 
         $response = Http::timeout(90)
-            ->retry(1, 300)
+            ->retry([1000, 2000, 4000], function ($exception) {
+                return $exception instanceof \Illuminate\Http\Client\RequestException
+                    && $exception->response
+                    && $exception->response->status() === 429;
+            })
             ->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$key}", [
                 'contents' => [
                     ['parts' => [['text' => $prompt]]],
@@ -160,7 +123,11 @@ class DescriptionGenerator
 
         $response = Http::withToken($key)
             ->timeout(90)
-            ->retry(1, 300)
+            ->retry([1000, 2000, 4000], function ($exception) {
+                return $exception instanceof \Illuminate\Http\Client\RequestException
+                    && $exception->response
+                    && $exception->response->status() === 429;
+            })
             ->post('https://api.openai.com/v1/chat/completions', [
                 'model' => $model,
                 'temperature' => 0.7,

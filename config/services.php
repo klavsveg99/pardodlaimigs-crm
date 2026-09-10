@@ -53,12 +53,6 @@ return [
         'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
     ],
 
-    // OpenRouter — vienota API ar bezmaksas (:free) modeļiem UN maksas
-    // (augstākas klases) modeļiem vienā atslēgā. Jaunināšana = mainīt
-    // OPENROUTER_MODEL .env vērtību.
-    'openrouter' => [
-        'key' => env('OPENROUTER_API_KEY'),
-        'model' => env('OPENROUTER_MODEL', 'google/gemma-4-31b-it:free'),
-    ],
+
 
 ];

@@ -440,9 +440,9 @@ class CrmPropertyResource extends Resource
     private static function aiCrmInfoRows(array $data, ?CrmProperty $record): array
     {
         $value = function (string $key) use ($data, $record) {
-            $fromForm = array_key_exists($key, $data) && filled($data[$key]) ? $data[$key] : null;
+            $fromForm = array_key_exists($key, $data) && $data[$key] !== '' ? $data[$key] : null;
 
-            return filled($fromForm) ? $fromForm : ($record?->{$key} ?? null);
+            return ($fromForm !== null && $fromForm !== '') ? $fromForm : ($record?->{$key} ?? null);
         };
 
         $rows = [
@@ -459,7 +459,7 @@ class CrmPropertyResource extends Resource
             'Adrese' => $value('address'),
         ];
 
-        return array_filter($rows, fn ($v): bool => filled($v));
+        return array_filter($rows, fn ($v): bool => $v !== null && $v !== '');
     }
 
     public static function table(Table $table): Table
