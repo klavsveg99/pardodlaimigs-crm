@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
                 'role' => 'admin',
                 'phone' => '+371 24 922 942',
                 'description' => 'Nodrošinu profesionālu atbalstu nekustamā īpašuma realizācijā. Sadarbība ar mani ir pilnībā caurskatāma un saprotama. Jums būs skaidrs kā rodas īpašuma vērtība.',
-                'password' => bcrypt('changeme'),
+                'password' => bcrypt(($_ENV['CRM_ADMIN_PASSWORD'] ?? getenv('CRM_ADMIN_PASSWORD')) ?: 'changeme'),
                 'calendar_token' => 'hhEaJESI6euav6L7DWtoFH7kuqhtjJZFl871dRSYNgn933RHPVK6s60HhUe1',
                 'linkedin_url' => 'https://www.linkedin.com/in/roberts-evarsons-861151106/',
             ]
