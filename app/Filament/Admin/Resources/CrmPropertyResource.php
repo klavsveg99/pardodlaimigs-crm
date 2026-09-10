@@ -240,7 +240,7 @@ class CrmPropertyResource extends Resource
                             Forms\Components\Textarea::make('extra')
                                 ->label('Papildu informācija')
                                 ->rows(3)
-                                ->helperText('Viss pārējais svarīgais + vēlamais kontakta veids / noslēguma akcents. Tips, cena, platības, istabas, pilsēta un adrese jau nāk no CRM — tos šeit neatkārtot.'),
+                                ->helperText('Viss pārējais svarīgais + vēlamais kontakta veids / noslēguma akcents.'),
                         ])
                         ->fillForm(fn (?CrmProperty $record): array => [
                             'advantages' => $record?->ai_notes['advantages'] ?? null,
