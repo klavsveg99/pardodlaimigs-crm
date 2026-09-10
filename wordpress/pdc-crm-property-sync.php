@@ -801,6 +801,33 @@ function pdc_upsert_property($data, $agent_map = []) {
     return (int) $post_id;
 }
 
+/**
+ * Push the WP post ID + actual post_name back to CRM so the CRM "Skatīt"
+ * button always resolves to the real post (CRM stores it as wp_post_id).
+ * Non-blocking; the CRM endpoint only writes when values differ.
+ */
+function pdc_push_link_back($prop, $post_id) {
+    $crm_id = isset($prop['crm_id']) ? (int) $prop['crm_id'] : 0;
+    if ($crm_id <= 0 || (int) $post_id <= 0) {
+        return;
+    }
+    $slug = get_post_field('post_name', (int) $post_id);
+    wp_remote_post('https://crm.pardodlaimigs.lv/api/crm/properties/link', [
+        'timeout' => 15,
+        'blocking' => false,
+        'headers' => [
+            'X-CRM-API-Key' => PDC_CRM_API_KEY,
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+        ],
+        'body' => wp_json_encode([
+            'crm_id' => $crm_id,
+            'wp_post_id' => (int) $post_id,
+            'slug' => $slug ? (string) $slug : null,
+        ]),
+    ]);
+}
+
 function pdc_full_sync() {
     ignore_user_abort(true);
     set_time_limit(0);
@@ -841,7 +868,10 @@ function pdc_full_sync() {
 
     foreach ($properties as $prop) {
         $result = pdc_upsert_property($prop, $agent_map);
-        if ($result > 0) { $synced++; }
+        if ($result > 0) {
+            $synced++;
+            pdc_push_link_back($prop, $result);
+        }
     }
 
     $crm_ids = [];

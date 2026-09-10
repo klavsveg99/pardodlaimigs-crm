@@ -81,6 +81,44 @@ class CrmPropertyFeedController extends Controller
         ]);
     }
 
+    /**
+     * WP sinhronizācija pēc katra upsert atsūta atpakaļ saiti
+     * (WP post ID + faktiskais post_name), lai CRM "Skatīt" poga vienmēr
+     * vestu uz īsto ierakstu. Raksta tikai izmainītos laukus, lai nerastos
+     * lieki audit ieraksti un updated_at izmaiņas.
+     */
+    public function link(Request $request): JsonResponse
+    {
+        if (! $this->hasValidApiKey($request)) {
+            return response()->json(['message' => 'Unauthorized.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $data = $request->validate([
+            'crm_id' => 'required|integer|min:1',
+            'wp_post_id' => 'required|integer|min:1',
+            'slug' => 'nullable|string|max:255',
+        ]);
+
+        $property = CrmProperty::find($data['crm_id']);
+        if (! $property) {
+            return response()->json(['message' => 'Property not found.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $updates = [];
+        if ((int) ($property->wp_post_id ?? 0) !== (int) $data['wp_post_id']) {
+            $updates['wp_post_id'] = (int) $data['wp_post_id'];
+        }
+        if (filled($data['slug'] ?? null) && $property->slug !== $data['slug']) {
+            $updates['slug'] = $data['slug'];
+        }
+
+        if ($updates !== []) {
+            $property->update($updates);
+        }
+
+        return response()->json(['ok' => true, 'public_url' => $property->public_url]);
+    }
+
     private function hasValidApiKey(Request $request): bool
     {
         $expected = (string) config('wp-bridge.wordpress.api_key');
