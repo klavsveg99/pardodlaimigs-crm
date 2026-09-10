@@ -16,6 +16,6 @@ return [
 
     'dir' => env('BACKUP_DIR', storage_path('app/backups')),
 
-    'keep' => (int) env('BACKUP_KEEP', 5),
+    'keep' => (int) env('BACKUP_KEEP', 3),
 
 ];
