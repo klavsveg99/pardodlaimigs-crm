@@ -22,6 +22,20 @@ Route::get('/', function () {
     return redirect('/admin');
 });
 
+// Vecie īpašumu URL (/admin/crm-properties/66, .../66/edit) → jaunie slug URL.
+// Resursam tagad ir slug "properties" ar ieraksta atslēgu "slug".
+Route::get('/admin/crm-properties/{id}/{page?}', function (string $id, ?string $page = null) {
+    $property = \App\Models\CrmProperty::find($id)
+        ?? \App\Models\CrmProperty::where('slug', $id)->first();
+    abort_unless($property?->slug, 404);
+    $path = '/admin/properties/'.$property->slug;
+    if ($page === 'edit') {
+        $path .= '/edit';
+    }
+
+    return redirect($path, 301);
+})->where(['id' => '[A-Za-z0-9_-]+', 'page' => 'edit']);
+
 Route::get('/api/badges', function () {
     if (! auth()->check()) {
         return response()->json(['tasks' => 0, 'wpforms' => 0], 200);

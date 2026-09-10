@@ -106,7 +106,7 @@ class TaskResource extends Resource
                     ->url(fn ($record) => $record->client_id ? route('filament.admin.resources.clients.view', $record->client_id) : null),
                 Tables\Columns\TextColumn::make('property.selection_label')->label('Īpašums')->wrap()
                     ->placeholder('—')
-                    ->url(fn ($record) => $record->property_id ? route('filament.admin.resources.crm-properties.view', $record->property_id) : null),
+                    ->url(fn ($record) => $record->property ? route('filament.admin.resources.properties.view', $record->property) : null),
             ])
             ->filters([
                 Tables\Filters\Filter::make('open')->label('Atvērti')->query(fn ($query) => $query->whereNull('completed_at')),

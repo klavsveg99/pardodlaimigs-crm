@@ -59,9 +59,26 @@ class CrmProperty extends Model
         'ai_notes' => 'array',
     ];
 
+    public function getRouteKeyName(): string
+    {
+        // Admin URL izmanto slug: /admin/properties/{slug}/edit
+        return 'slug';
+    }
+
     protected static function booted(): void
     {
         static::saving(function (self $property) {
+            // Slug ir obligāts maršrutēšanai — jauniem ierakstiem ģenerējam
+            // no nosaukuma. Esošus nekad nepārrakstām, lai WP saites nemainītos.
+            if (empty($property->slug) && filled($property->title)) {
+                $base = \Illuminate\Support\Str::slug((string) $property->title) ?: 'ipasums';
+                $slug = $base;
+                $i = 2;
+                while (static::where('slug', $slug)->whereKeyNot($property->getKey() ?? 0)->exists()) {
+                    $slug = $base.'-'.$i++;
+                }
+                $property->slug = $slug;
+            }
             if ($property->isDirty('status')) {
                 if ($property->status === 'sold' && empty($property->sold_at)) {
                     $property->sold_at = now();

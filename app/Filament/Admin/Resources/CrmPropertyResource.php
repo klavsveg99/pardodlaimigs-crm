@@ -31,6 +31,10 @@ class CrmPropertyResource extends Resource
 {
     protected static ?string $model = CrmProperty::class;
 
+    protected static ?string $slug = 'properties';
+
+    protected static ?string $recordRouteKeyName = 'slug';
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 
     protected static ?string $navigationLabel = 'Īpašumi';

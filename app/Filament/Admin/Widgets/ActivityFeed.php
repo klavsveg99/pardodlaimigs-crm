@@ -487,8 +487,8 @@ class ActivityFeed extends BaseWidget
                 'client' => Client::find($log->entity_id)
                     ? route('filament.admin.resources.clients.view', $log->entity_id)
                     : null,
-                'crm_property', 'property' => CrmProperty::find($log->entity_id)
-                    ? route('filament.admin.resources.crm-properties.view', $log->entity_id)
+                'crm_property', 'property' => ($property = CrmProperty::find($log->entity_id))
+                    ? route('filament.admin.resources.properties.view', $property)
                     : null,
                 default => null,
             };
