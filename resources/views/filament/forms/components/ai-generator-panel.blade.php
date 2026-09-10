@@ -39,10 +39,9 @@
         },
         sanitizeHtml(html) {
             return (html ?? '')
-                .replace(/<script[\s\S]*?<\/script>/gi, '')
-                .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
-                .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
-                .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
+                .replace(new RegExp('<script[\\\\s\\\\S]*?<\\\\/script>', 'gi'), '')
+                .replace(new RegExp('<iframe[\\\\s\\\\S]*?<\\\\/iframe>', 'gi'), '')
+                .replace(new RegExp('\\\\son\\\\w+[\\\\s\\\\S]*?(?=[\\\\s>])', 'gi'), '')
                 .replace(/javascript:/gi, '');
         },
     }" x-cloak>
