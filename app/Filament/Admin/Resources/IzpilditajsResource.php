@@ -8,6 +8,7 @@ use App\Filament\Admin\Resources\IzpilditajsResource\Pages;
 use App\Filament\Forms\Components\PhoneInput;
 use App\Models\Izpilditajs;
 use App\Rules\Phone;
+use App\Support\PhoneFormat;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
@@ -88,7 +89,7 @@ class IzpilditajsResource extends Resource
                 Tables\Columns\TextColumn::make('category')->label('Kategorija')->badge()->searchable()->sortable()
                     ->color('gray'),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable()->placeholder('—'),
-                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->placeholder('—')->toggleable(),
+                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->placeholder('—')->toggleable()->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
                 Tables\Columns\TextColumn::make('tasks_count')
                     ->label('Uzdevumu')
                     ->counts('tasks')

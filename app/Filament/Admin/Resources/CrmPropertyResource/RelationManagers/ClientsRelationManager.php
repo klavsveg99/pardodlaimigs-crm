@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers;
 use App\Filament\Admin\Resources\Pages\Concerns\PievienotKlientuRelationAction;
 use App\Models\Client;
 use App\Models\ClientCrmProperty;
+use App\Support\PhoneFormat;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
@@ -149,7 +150,7 @@ class ClientsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('#')->sortable(),
                 Tables\Columns\TextColumn::make('name')->label('Klients')->sortable()->weight('bold')->wrap(),
-                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->sortable()->wrap(),
+                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->sortable()->wrap()->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->sortable()->wrap(),
                 Tables\Columns\TextColumn::make('pivot.relation')
                     ->label('Saistība')

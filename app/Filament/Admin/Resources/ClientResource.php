@@ -10,6 +10,7 @@ use App\Filament\Forms\Components\PersonasKodsInput;
 use App\Filament\Forms\Components\PhoneInput;
 use App\Models\Client;
 use App\Rules\Phone;
+use App\Support\PhoneFormat;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
@@ -116,7 +117,7 @@ class ClientResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable()->weight('bold')
                     ->url(fn (Client $record) => static::getUrl('view', ['record' => $record])),
-                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable()->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable()->sortable(),
                 Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->sortable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('viewings_count')

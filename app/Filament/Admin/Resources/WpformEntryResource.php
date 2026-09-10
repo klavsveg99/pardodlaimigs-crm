@@ -6,6 +6,7 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\WpformEntryResource\Pages;
 use App\Models\WpformEntry;
+use App\Support\PhoneFormat;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -64,7 +65,7 @@ class WpformEntryResource extends Resource
                     ->wrap()
                     ->limit(30)
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Jūsu vārds%')->where('fields', 'like', "%{$search}%")),
-                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')
+                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state))
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('Telefona numurs'))
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Telefona numurs%')->where('fields', 'like', "%{$search}%")),
                 Tables\Columns\SelectColumn::make('status')->label('Statuss')

@@ -9,6 +9,7 @@ use App\Filament\Forms\Components\AvatarEditor;
 use App\Filament\Forms\Components\PhoneInput;
 use App\Models\User;
 use App\Rules\Phone;
+use App\Support\PhoneFormat;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
@@ -99,7 +100,7 @@ class UserResource extends Resource
                 Tables\Columns\ImageColumn::make('avatar_path')->label('Foto')->disk('public')->circular()->defaultImageUrl(asset('images/no-photo.svg')),
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->toggleable(),
+                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->toggleable()->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
                 Tables\Columns\TextColumn::make('office_address')->label('Birojs')->searchable()->toggleable(isToggledHiddenByDefault: true)->placeholder('—'),
                 Tables\Columns\TextColumn::make('role')->label('Loma')->badge()->sortable()
                     ->formatStateUsing(fn ($state) => match ($state) {

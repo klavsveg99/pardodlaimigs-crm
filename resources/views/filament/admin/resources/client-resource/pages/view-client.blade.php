@@ -13,7 +13,7 @@
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tālrunis</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->phone ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ \App\Support\PhoneFormat::display($record->phone) ?: '—' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Personas kods</dt>

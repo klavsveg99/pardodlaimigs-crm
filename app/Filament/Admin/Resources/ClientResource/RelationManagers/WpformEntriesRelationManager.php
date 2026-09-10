@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\ClientResource\RelationManagers;
 
 use App\Filament\Admin\Resources\WpformEntryResource;
+use App\Support\PhoneFormat;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -30,7 +31,7 @@ class WpformEntriesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('name')->label('Vārds')
                     ->getStateUsing(fn ($record) => $record->fieldValue('Jūsu vārds'))
                     ->placeholder('—'),
-                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')
+                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state))
                     ->getStateUsing(fn ($record) => $record->fieldValue('Telefona numurs'))
                     ->placeholder('—'),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')

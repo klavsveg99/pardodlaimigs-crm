@@ -211,7 +211,7 @@
                             <div class="pdc-client-avatar">{{ strtoupper(mb_substr($client->name, 0, 1)) }}</div>
                             <div class="pdc-client-info">
                                 <p class="pdc-client-name">{{ $client->name }}</p>
-                                <p class="pdc-client-contact">{{ implode(' · ', array_filter([$client->phone, $client->email])) ?: '—' }}</p>
+                                <p class="pdc-client-contact">{{ implode(' · ', array_filter([\App\Support\PhoneFormat::display($client->phone ?? null), $client->email])) ?: '—' }}</p>
                                 <x-filament::badge color="gray" class="pdc-client-badge">
                                     {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
                                 </x-filament::badge>
