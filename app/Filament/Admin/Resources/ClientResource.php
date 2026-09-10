@@ -6,7 +6,10 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\ClientResource\Pages;
 use App\Filament\Admin\Resources\ClientResource\RelationManagers;
+use App\Filament\Forms\Components\PersonasKodsInput;
+use App\Filament\Forms\Components\PhoneInput;
 use App\Models\Client;
+use App\Rules\Phone;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
@@ -17,6 +20,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 class ClientResource extends Resource
@@ -41,14 +45,14 @@ class ClientResource extends Resource
             Section::make()->columnSpanFull()->columns(['lg' => 2])->schema([
                 Grid::make(['default' => 1, 'md' => 2])->columnSpan(1)->schema([
                     Forms\Components\TextInput::make('name')->label('Vārds, uzvārds')->required()->maxLength(255),
-                    Forms\Components\TextInput::make('phone')->label('Tālrunis')->tel()->maxLength(40),
+                    PhoneInput::make('phone')->label('Tālrunis')->maxLength(20)->rule(new Phone),
                     Forms\Components\TextInput::make('email')->label('E-pasts')->email()->maxLength(255),
-                    \App\Filament\Forms\Components\PersonasKodsInput::make('personas_kods')
+                    PersonasKodsInput::make('personas_kods')
                         ->label('Personas kods')
                         ->maxLength(12)
                         ->helperText('Formāts: XXXXXX-XXXXX')
                         ->disabled(fn (string $operation) => $operation === 'view')
-                        ->readonly(fn (\App\Models\Client $record) => \Illuminate\Support\Str::filled($record->personas_kods)),
+                        ->readonly(fn (Client $record) => Str::filled($record->personas_kods)),
                     Forms\Components\Select::make('source')
                         ->label('Avots (kā uzzināja)')
                         ->searchable()
@@ -132,50 +136,50 @@ class ClientResource extends Resource
                     ->relationship('owner', 'name'),
             ])
             ->actions([
-                    Actions\ActionGroup::make([
-                        Actions\ViewAction::make()->label('Skatīt')->color('gray'),
-                        Actions\Action::make('export_personal_data')
-                            ->label('Eksportēt personas datus')
-                            ->icon('heroicon-o-arrow-down-tray')
-                            ->visible(fn () => auth()->user()?->can('manage'))
-                            ->action(function (Client $record) {
-                                $url = URL::signedRoute(
-                                    'gdpr.export',
-                                    ['email' => $record->email]
-                                );
-                                Notification::make()
-                                    ->title('Eksporta saite izveidota')
-                                    ->body($url)
-                                    ->success()
-                                    ->send();
-                            }),
-                        Actions\Action::make('erase_personal_data')
-                            ->label('Dzēst personas datus')
-                            ->icon('heroicon-o-trash')
-                            ->color('gray')
-                            ->requiresConfirmation()
-                            ->visible(fn (Client $record) => ! $record->gdpr_erased_at)
-                            ->action(function (Client $record) {
-                                $record->update([
-                                    'name' => '—',
-                                    'phone' => null,
-                                    'email' => null,
-                                    'source' => null,
-                                    'notes_md' => null,
-                                    'gdpr_erased_at' => now(),
-                                ]);
-                                Notification::make()
-                                    ->title('Klienta dati dzēsti')
-                                    ->warning()
-                                    ->send();
-                            }),
-                        Actions\DeleteAction::make()
-                            ->label('Dzēst klientu pilnībā')
-                            ->modalHeading('Dzēst klientu pilnībā?')
-                            ->modalDescription('Klients un visi ar to saistītie CRM dati tiks neatgriezeniski dzēsti.')
-                            ->color('gray')
-                            ->using(fn (Client $record): ?bool => $record->forceDelete()),
-                    ])->color('gray'),
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make()->label('Skatīt')->color('gray'),
+                    Actions\Action::make('export_personal_data')
+                        ->label('Eksportēt personas datus')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->visible(fn () => auth()->user()?->can('manage'))
+                        ->action(function (Client $record) {
+                            $url = URL::signedRoute(
+                                'gdpr.export',
+                                ['email' => $record->email]
+                            );
+                            Notification::make()
+                                ->title('Eksporta saite izveidota')
+                                ->body($url)
+                                ->success()
+                                ->send();
+                        }),
+                    Actions\Action::make('erase_personal_data')
+                        ->label('Dzēst personas datus')
+                        ->icon('heroicon-o-trash')
+                        ->color('gray')
+                        ->requiresConfirmation()
+                        ->visible(fn (Client $record) => ! $record->gdpr_erased_at)
+                        ->action(function (Client $record) {
+                            $record->update([
+                                'name' => '—',
+                                'phone' => null,
+                                'email' => null,
+                                'source' => null,
+                                'notes_md' => null,
+                                'gdpr_erased_at' => now(),
+                            ]);
+                            Notification::make()
+                                ->title('Klienta dati dzēsti')
+                                ->warning()
+                                ->send();
+                        }),
+                    Actions\DeleteAction::make()
+                        ->label('Dzēst klientu pilnībā')
+                        ->modalHeading('Dzēst klientu pilnībā?')
+                        ->modalDescription('Klients un visi ar to saistītie CRM dati tiks neatgriezeniski dzēsti.')
+                        ->color('gray')
+                        ->using(fn (Client $record): ?bool => $record->forceDelete()),
+                ])->color('gray'),
             ])
             ->defaultSort('updated_at', 'desc');
     }

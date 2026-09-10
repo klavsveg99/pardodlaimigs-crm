@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\UserResource\Pages;
+use App\Filament\Forms\Components\AvatarEditor;
+use App\Filament\Forms\Components\PhoneInput;
 use App\Models\User;
+use App\Rules\Phone;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
@@ -71,11 +74,11 @@ class UserResource extends Resource
             ])->columns(2),
 
             Section::make('Aģenta publiskais profils')->schema([
-                \App\Filament\Forms\Components\AvatarEditor::make('avatar_path')
+                AvatarEditor::make('avatar_path')
                     ->label('Foto')
                     ->helperText('Kvadrātveida foto — 1:1, 1000×1000px, max 5MB. Izmanto redaktoru, lai apgrieztu un apvērstu.')
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('phone')->label('Tālrunis')->tel()->maxLength(32)->placeholder('+371 ...'),
+                PhoneInput::make('phone')->label('Tālrunis')->maxLength(20)->rule(new Phone),
                 Forms\Components\TextInput::make('position')->label('Amats')->maxLength(255)->placeholder('Aģents'),
                 Forms\Components\Textarea::make('description')->label('Apraksts')->rows(4)->maxLength(2000)->helperText('Rādās aģenta lapā un īpašuma kontaktblokā')->columnSpanFull(),
                 Forms\Components\TextInput::make('facebook_url')->label('Facebook URL')->url()->maxLength(500)->columnSpan(1),

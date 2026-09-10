@@ -45,6 +45,7 @@ class AdminPanelProvider extends PanelProvider
                 'info' => '#236D63',
             ])
             ->renderHook('panels::body.start', fn () => view('filament.brand-fonts'))
+            ->renderHook('panels::head.end', fn () => view('filament.phone-assets'))
             ->renderHook('panels::head.end', fn () => view('filament.calendar-assets'))
             ->renderHook('panels::styles.after', fn () => view('filament.page-animations'))
             ->renderHook('panels::styles.after', fn () => view('filament.filament-custom-inline'))

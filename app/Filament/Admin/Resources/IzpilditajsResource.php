@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\IzpilditajsResource\Pages;
+use App\Filament\Forms\Components\PhoneInput;
 use App\Models\Izpilditajs;
+use App\Rules\Phone;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
@@ -56,10 +58,10 @@ class IzpilditajsResource extends Resource
                     ->required()
                     ->email()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('phone')
+                PhoneInput::make('phone')
                     ->label('Tālrunis')
-                    ->tel()
-                    ->maxLength(64),
+                    ->maxLength(20)
+                    ->rule(new Phone),
                 Forms\Components\Textarea::make('notes_md')
                     ->label('Piezīmes')
                     ->rows(4)
