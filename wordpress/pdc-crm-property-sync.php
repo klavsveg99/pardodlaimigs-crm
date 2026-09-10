@@ -945,3 +945,170 @@ add_action('admin_menu', function () {
         }
     );
 });
+
+
+/*
+ * ============================================================
+ * WPForms → CRM JSON Feed (wp-json/crm/v1/wpforms)
+ *
+ * Exposes contact-form entries to the CRM which polls them with
+ * X-CRM-API-Key (same secret as WP_PDC_CRM_API_KEY in wp-config.php).
+ * ============================================================
+ */
+defined('ABSPATH') || exit;
+
+define(
+    'CRM_WPFORMS_API_KEY',
+    defined('WP_PDC_CRM_API_KEY') ? WP_PDC_CRM_API_KEY : ''
+);
+
+add_action('rest_api_init', function () {
+    register_rest_route('crm/v1', '/wpforms', [
+        'methods'             => 'GET',
+        'callback'            => 'crm_wpforms_feed',
+        'permission_callback' => 'crm_wpforms_authenticate',
+        'args' => [
+            'page' => ['default' => 1, 'sanitize_callback' => 'absint'],
+            'per_page' => ['default' => 100, 'sanitize_callback' => 'absint'],
+            'since' => ['default' => '', 'sanitize_callback' => 'sanitize_text_field'],
+        ],
+    ]);
+});
+
+function crm_wpforms_authenticate(WP_REST_Request $request)
+{
+    $provided_key = $request->get_header('X-CRM-API-Key');
+
+    if (empty($provided_key) || !hash_equals(CRM_WPFORMS_API_KEY, $provided_key)) {
+        return new WP_Error(
+            'crm_unauthorized',
+            'Invalid API key.',
+            ['status' => 401]
+        );
+    }
+
+    return true;
+}
+
+function crm_wpforms_feed(WP_REST_Request $request)
+{
+    if (!function_exists('wpforms') || !isset(wpforms()->entry)) {
+        return new WP_Error('wpforms_unavailable', 'WPForms entry system is unavailable.', ['status' => 500]);
+    }
+
+    $page = max(1, (int) $request->get_param('page'));
+    $per_page = min(100, max(1, (int) $request->get_param('per_page')));
+
+    $since_timestamp = 0;
+    if (!empty($request->get_param('since'))) {
+        $since_timestamp = strtotime($request->get_param('since'));
+    }
+
+    $forms = get_posts([
+        'post_type'      => 'wpforms',
+        'post_status'    => ['publish', 'draft'],
+        'posts_per_page' => -1,
+        'orderby'        => 'ID',
+        'order'          => 'ASC',
+    ]);
+
+    $all_entries = [];
+
+    foreach ($forms as $form) {
+        $form_id = (int) $form->ID;
+        $form_name = get_the_title($form_id);
+
+        $query_args = [
+            'form_id'  => $form_id,
+            'number'   => -1,
+            'orderby'  => 'date',
+            'order'    => 'DESC',
+            'cap'      => false,
+        ];
+
+        if ($since_timestamp) {
+            $query_args['date'] = ['date' => ['after' => gmdate('Y-m-d H:i:s', $since_timestamp)]];
+        }
+
+        $entries = wpforms()->entry->get_entries($query_args);
+
+        if (empty($entries)) {
+            continue;
+        }
+
+        foreach ($entries as $entry) {
+            if (is_object($entry)) {
+                $entry = (array) $entry;
+            }
+
+            $entry_id = isset($entry['entry_id'])
+                ? (int) $entry['entry_id']
+                : (int) ($entry['id'] ?? 0);
+
+            $created_at = !empty($entry['date']) ? $entry['date'] : '';
+            $updated_at = !empty($entry['modified']) ? $entry['modified'] : '';
+
+            $fields = [];
+            if (!empty($entry['fields'])) {
+                if (is_string($entry['fields'])) {
+                    $decoded = json_decode($entry['fields'], true);
+                    if (is_array($decoded)) {
+                        $fields = $decoded;
+                    }
+                } elseif (is_array($entry['fields'])) {
+                    $fields = $entry['fields'];
+                }
+            }
+
+            $clean_fields = [];
+            foreach ($fields as $field_id => $field) {
+                if (!is_array($field)) {
+                    continue;
+                }
+                $field_name = !empty($field['name']) ? $field['name'] : 'field_' . $field_id;
+
+                $clean_fields[] = [
+                    'id'    => (int) $field_id,
+                    'name'  => $field_name,
+                    'type'  => isset($field['type']) ? $field['type'] : '',
+                    'value' => isset($field['value']) ? $field['value'] : '',
+                ];
+            }
+
+            $all_entries[] = [
+                'external_id' => $form_id . ':' . $entry_id,
+                'entry_id'    => $entry_id,
+                'form_id'     => $form_id,
+                'form_name'   => $form_name,
+                'created_at'  => $created_at,
+                'updated_at'  => $updated_at,
+                'status'      => isset($entry['status']) ? $entry['status'] : '',
+                'viewed'      => isset($entry['viewed']) ? (bool) $entry['viewed'] : false,
+                'starred'     => isset($entry['starred']) ? (bool) $entry['starred'] : false,
+                'ip_address'  => isset($entry['ip_address']) ? $entry['ip_address'] : '',
+                'fields'      => $clean_fields,
+            ];
+        }
+    }
+
+    usort($all_entries, static function ($a, $b) {
+        return strcmp($b['created_at'], $a['created_at']);
+    });
+
+    $total = count($all_entries);
+    $total_pages = $total > 0 ? (int) ceil($total / $per_page) : 0;
+    $offset = ($page - 1) * $per_page;
+    $entries = array_slice($all_entries, $offset, $per_page);
+
+    return new WP_REST_Response([
+        'success'      => true,
+        'generated_at' => gmdate(DATE_ATOM),
+        'pagination'   => [
+            'page' => $page,
+            'per_page' => $per_page,
+            'total' => $total,
+            'total_pages' => $total_pages,
+        ],
+        'entries'      => $entries,
+    ], 200);
+}
