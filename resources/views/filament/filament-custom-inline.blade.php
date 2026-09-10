@@ -1157,6 +1157,16 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-section-content .rounded-xl { word-break: break-word !important; }
     /* Topbar user menu stays */
     .fi-topbar { padding-left: 1rem !important; padding-right: 1rem !important; }
+    /* WYSIWYG (Apraksts) toolbar: on narrow screens the widest button group
+       is wider than the editor, so it overflows/clips past the container.
+       Let groups wrap to multiple rows and shrink the buttons. */
+    .fi-fo-rich-editor { min-width: 0 !important; max-width: 100% !important; }
+    .fi-fo-rich-editor-toolbar { flex-wrap: wrap !important; gap: 0.375rem !important; padding: 0.5rem !important; }
+    .fi-fo-rich-editor-toolbar-group { flex-wrap: wrap !important; gap: 0.125rem !important; min-width: 0 !important; max-width: 100% !important; }
+    .fi-fo-rich-editor-toolbar .fi-fo-rich-editor-tool,
+    .fi-fo-rich-editor-toolbar .fi-fo-rich-editor-dropdown-tool-trigger { min-width: 0 !important; padding-left: 0.3rem !important; padding-right: 0.3rem !important; }
+    /* Toolbar dropdown menus (e.g. H2/H3, text color) must not run off-screen */
+    .fi-fo-rich-editor-dropdown-tool-menu { max-width: calc(100vw - 3rem) !important; }
     /* More bottom space on mobile so content doesn't sit on the screen edge */
     .fi-main { padding-bottom: 6rem !important; }
 }

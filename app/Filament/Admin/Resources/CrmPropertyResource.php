@@ -208,7 +208,6 @@ class CrmPropertyResource extends Resource
                         ->icon('heroicon-o-sparkles')
                         ->color('primary')
                         ->modalHeading('AI īpašuma apraksta ģenerators')
-                        ->modalDescription('Apraksts tiek veidots no CRM datos — "Papildu informācijā" ievadi tikai to, kas vēl NAV aizpildīts formas laukos.')
                         ->modalSubmitActionLabel('Ģenerēt aprakstu')
                         ->form([
                             Forms\Components\Placeholder::make('crm_info')
