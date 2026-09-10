@@ -186,15 +186,12 @@
                     <span x-show="loading" class="pdc-ai-spinner" aria-label="Ģenerē..."></span>
                     <span x-show="loading" class="text-xs text-gray-500">Ģenerē...</span>
                     <button type="button" class="pdc-ai-btn" :disabled="loading" @click="regenerate('full')">
-                        <span x-show="loading" class="pdc-ai-spinner" aria-hidden="true"></span>
                         <span>Ģenerēt vēlreiz</span>
                     </button>
                     <button type="button" class="pdc-ai-btn" :disabled="loading" @click="regenerate('shorten')">
-                        <span x-show="loading" class="pdc-ai-spinner" aria-hidden="true"></span>
                         <span>Saīsināt</span>
                     </button>
                     <button type="button" class="pdc-ai-btn" :disabled="loading" @click="regenerate('persuasive')">
-                        <span x-show="loading" class="pdc-ai-spinner" aria-hidden="true"></span>
                         <span>Padarīt pārliecinošāku</span>
                     </button>
                 </div>
