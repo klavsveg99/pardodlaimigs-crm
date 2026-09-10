@@ -5,14 +5,10 @@
  * Local dev: ./private/config.php
  * Hostinger: ~/private/config.php (home dir, outside public_html)
  */
-if (! is_file(dirname(__DIR__, 2).'/.env') && ! is_file(dirname(__DIR__).'/.env')) {
-    // Local dev path
-    $localPath = dirname(__DIR__).'/private/config.php';
-    // Hostinger: ~/domains/pardodlaimigs.lv/public_html/crm/bootstrap/private.php
-    // dirname(__DIR__,5) = /home/u976787655/
-    $hostingerPath = dirname(__DIR__, 5).'/private/config.php';
-
-    $configPath = is_file($localPath) ? $localPath : ($hostingerPath ?: null);
+// Always load private config (preferred over .env for credentials)
+$localPath = dirname(__DIR__).'/private/config.php';
+$hostingerPath = dirname(__DIR__, 5).'/private/config.php';
+$configPath = is_file($localPath) ? $localPath : ($hostingerPath ?: null);
 
     if ($configPath && is_file($configPath)) {
         $privateConfig = require $configPath;
@@ -24,4 +20,3 @@ if (! is_file(dirname(__DIR__, 2).'/.env') && ! is_file(dirname(__DIR__).'/.env'
             }
         }
     }
-}
