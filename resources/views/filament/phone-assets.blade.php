@@ -130,8 +130,16 @@
                     const input = this.$refs.tel;
 
                     if (isStatic) {
-                        // View pages: show the full stored value with prefix.
-                        input.value = String(this.$wire.get(statePath) ?? '');
+                        // View pages: show the full stored value with prefix,
+                        // e.g. "+37129396969" → "+371 29396969".
+                        if (typeof window.intlTelInput !== 'function') {
+                            this.$nextTick(() => this.init());
+                            return;
+                        }
+
+                        input.value = this.withDialSpace(
+                            String(this.$wire.get(statePath) ?? '').trim(),
+                        );
                         return;
                     }
 
@@ -214,6 +222,34 @@
                         this.error = iti.isValidNumber() === false;
                     }
                     input.classList.toggle('pdc-phone-invalid', this.error);
+                },
+                withDialSpace(value) {
+                    if (value === '' || !value.startsWith('+')) {
+                        return value;
+                    }
+
+                    let countries;
+                    try {
+                        countries = window.intlTelInput.getAllCountries();
+                    } catch (e) {
+                        return value;
+                    }
+
+                    // Longest matching dial code wins (e.g. +1 vs +1242).
+                    const digitPart = value.slice(1);
+                    let best = '';
+                    for (const c of countries) {
+                        const dial = String(c.dialCode);
+                        if (
+                            dial.length > best.length
+                            && dial.length < digitPart.length
+                            && digitPart.startsWith(dial)
+                        ) {
+                            best = dial;
+                        }
+                    }
+
+                    return best === '' ? value : '+' + best + ' ' + digitPart.slice(best.length);
                 },
             };
         });
