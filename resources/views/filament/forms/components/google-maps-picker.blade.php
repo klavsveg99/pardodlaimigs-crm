@@ -208,8 +208,8 @@
     ></div>
     <div class="pdc-map-help" style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
         <span x-show="lat && lng" x-text="'Lat: ' + lat + ', Lng: ' + lng"></span>
-        <span x-show="$wire.getError('data.{{ $latField }}') || $wire.getError('data.{{ $lngField }}')" style="display: none; color: #cf2e2e; font-size: 0.8125rem;">
-            <span x-text="$wire.getError('data.{{ $lngField }}') || $wire.getError('data.{{ $latField }}')"></span>
+        <span x-show="!lat || !lng" style="color: #cf2e2e; font-size: 0.8125rem;">
+            Iezīmējiet precīzu atrašanās vietu kartē.
         </span>
     </div>
 </div>
