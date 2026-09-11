@@ -35,7 +35,6 @@ trait PievienotKlientuRelationAction
             ->color('gray')
             ->icon('heroicon-o-user-plus')
             ->modalHeading('Pievienot klientu')
-            ->modalDescription('Piesaistiet esošu klientu īpašumam kā pārdevēju vai pircēju.')
             ->modalSubmitActionLabel('Pievienot')
             ->extraModalFooterActions([
                 Actions\Action::make('izveidot_jaunu_klientu')
