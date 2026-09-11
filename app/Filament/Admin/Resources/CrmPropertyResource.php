@@ -177,20 +177,23 @@ class CrmPropertyResource extends Resource
             ])->columnSpanFull(),
 
             Section::make('Atrašanās vieta')->columns(['default' => 1, 'md' => 2])->schema([
+                Forms\Components\TextInput::make('address')
+                    ->label('Adrese')
+                    ->maxLength(255)
+                    ->required()
+                    ->placeholder('Sāciet rakstīt un izvēlieties adresi no ieteikumiem')
+                    ->helperText('Ievadot adresi, izvēlieties precīzu pareizvariantu no Google ieteikumiem — koordinātas pāries uz karti.')
+                    ->extraInputAttributes(['id' => 'pdc-crm-address-input'])
+                    ->validationMessages([
+                        'required' => 'Adrese ir obligāts lauks.',
+                    ]),
+
                 Forms\Components\TextInput::make('city')
                     ->label('Pilsēta/rajons')
                     ->maxLength(128)
                     ->required()
                     ->validationMessages([
                         'required' => 'Pilsēta/rajons ir obligāts lauks.',
-                    ]),
-
-                Forms\Components\TextInput::make('address')
-                    ->label('Adrese')
-                    ->maxLength(255)
-                    ->required()
-                    ->validationMessages([
-                        'required' => 'Adrese ir obligāts lauks.',
                     ]),
 
                 Forms\Components\Hidden::make('lat')
@@ -209,6 +212,7 @@ class CrmPropertyResource extends Resource
                         'cityField' => 'city',
                         'addressField' => 'address',
                         'zipField' => 'zip',
+                        'addressInputId' => 'pdc-crm-address-input',
                     ]),
             ])->columnSpanFull(),
 

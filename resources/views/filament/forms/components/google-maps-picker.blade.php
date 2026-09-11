@@ -108,6 +108,29 @@
                 }
                 setPin(place.geometry.location, !place.formatted_address);
             });
+
+            // Pilnās adreses lauka Google ieteikumi: izvēloties adresi,
+            // pārnesam to uz karti (kartes meklēšana + pin + koordinātas).
+            const addressInput = document.getElementById('pdc-crm-address-input');
+            if (addressInput) {
+                const autocomplete2 = new google.maps.places.Autocomplete(addressInput, {
+                    types: ['address'],
+                    fields: ['address_components', 'geometry', 'formatted_address'],
+                });
+                autocomplete2.addListener('place_changed', () => {
+                    const place = autocomplete2.getPlace();
+                    if (!place.geometry || !place.geometry.location) return;
+                    if (place.formatted_address) {
+                        this.$wire.set('data.{{ $addressField }}', place.formatted_address);
+                        addressInput.value = place.formatted_address;
+                        this.$refs.searchBox.value = place.formatted_address;
+                    }
+                    this.fillFromPlace(place);
+                    this.map.setCenter(place.geometry.location);
+                    this.map.setZoom(17);
+                    setPin(place.geometry.location, false);
+                });
+            }
         },
         sync() {
             this.$wire.set('data.{{ $latField }}', this.lat);
