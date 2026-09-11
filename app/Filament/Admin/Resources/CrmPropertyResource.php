@@ -182,7 +182,6 @@ class CrmPropertyResource extends Resource
                     ->maxLength(255)
                     ->required()
                     ->placeholder('Sāciet rakstīt un izvēlieties adresi no ieteikumiem')
-                    ->helperText('Ievadot adresi, izvēlieties precīzu pareizvariantu no Google ieteikumiem — koordinātas pāries uz karti.')
                     ->extraInputAttributes(['id' => 'pdc-crm-address-input'])
                     ->validationMessages([
                         'required' => 'Adrese ir obligāts lauks.',
