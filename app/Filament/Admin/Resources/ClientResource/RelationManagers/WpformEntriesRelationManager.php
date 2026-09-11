@@ -27,15 +27,24 @@ class WpformEntriesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')
                     ->getStateUsing(fn ($record) => $record->fieldValue('E-pasts'))
-                    ->sortable(query: fn ($query, $direction) => $query->orderBy('fields->E-pasts', $direction))
+                    ->sortable(query: fn ($query, $direction) => $query->orderByRaw(
+                        "(SELECT json_extract(je.value, '$.value') FROM json_each(COALESCE(fields, '[]')) je WHERE json_extract(je.value, '$.name') = ? LIMIT 1) ".($direction === 'desc' ? 'DESC' : 'ASC'),
+                        ['E-pasts'],
+                    ))
                     ->placeholder('—'),
                 Tables\Columns\TextColumn::make('name')->label('Vārds')
                     ->getStateUsing(fn ($record) => $record->fieldValue('Jūsu vārds'))
-                    ->sortable(query: fn ($query, $direction) => $query->orderBy('fields->Jūsu vārds', $direction))
+                    ->sortable(query: fn ($query, $direction) => $query->orderByRaw(
+                        "(SELECT json_extract(je.value, '$.value') FROM json_each(COALESCE(fields, '[]')) je WHERE json_extract(je.value, '$.name') = ? LIMIT 1) ".($direction === 'desc' ? 'DESC' : 'ASC'),
+                        ['Jūsu vārds'],
+                    ))
                     ->placeholder('—'),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state))
                     ->getStateUsing(fn ($record) => $record->fieldValue('Telefona numurs'))
-                    ->sortable(query: fn ($query, $direction) => $query->orderBy('fields->Telefona numurs', $direction))
+                    ->sortable(query: fn ($query, $direction) => $query->orderByRaw(
+                        "(SELECT json_extract(je.value, '$.value') FROM json_each(COALESCE(fields, '[]')) je WHERE json_extract(je.value, '$.name') = ? LIMIT 1) ".($direction === 'desc' ? 'DESC' : 'ASC'),
+                        ['Telefona numurs'],
+                    ))
                     ->placeholder('—'),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()

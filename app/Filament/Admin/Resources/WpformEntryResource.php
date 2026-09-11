@@ -59,17 +59,28 @@ class WpformEntryResource extends Resource
                 Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('E-pasts'))
-                    ->sortable(query: fn ($query, $direction) => $query->orderBy('fields->E-pasts', $direction))
+                    // fields is a JSON array of {name, value} objects — sort
+                    // via json_each lookup, not a simple key path.
+                    ->sortable(query: fn ($query, $direction) => $query->orderByRaw(
+                        "(SELECT json_extract(je.value, '$.value') FROM json_each(COALESCE(fields, '[]')) je WHERE json_extract(je.value, '$.name') = ? LIMIT 1) ".($direction === 'desc' ? 'DESC' : 'ASC'),
+                        ['E-pasts'],
+                    ))
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%E-pasts%')->where('fields', 'like', "%{$search}%")),
                 Tables\Columns\TextColumn::make('name')->label('Vārds')
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('Jūsu vārds'))
-                    ->sortable(query: fn ($query, $direction) => $query->orderBy('fields->Jūsu vārds', $direction))
+                    ->sortable(query: fn ($query, $direction) => $query->orderByRaw(
+                        "(SELECT json_extract(je.value, '$.value') FROM json_each(COALESCE(fields, '[]')) je WHERE json_extract(je.value, '$.name') = ? LIMIT 1) ".($direction === 'desc' ? 'DESC' : 'ASC'),
+                        ['Jūsu vārds'],
+                    ))
                     ->wrap()
                     ->limit(30)
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Jūsu vārds%')->where('fields', 'like', "%{$search}%")),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state))
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('Telefona numurs'))
-                    ->sortable(query: fn ($query, $direction) => $query->orderBy('fields->Telefona numurs', $direction))
+                    ->sortable(query: fn ($query, $direction) => $query->orderByRaw(
+                        "(SELECT json_extract(je.value, '$.value') FROM json_each(COALESCE(fields, '[]')) je WHERE json_extract(je.value, '$.name') = ? LIMIT 1) ".($direction === 'desc' ? 'DESC' : 'ASC'),
+                        ['Telefona numurs'],
+                    ))
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Telefona numurs%')->where('fields', 'like', "%{$search}%")),
                 Tables\Columns\SelectColumn::make('status')->label('Statuss')
                     ->options(self::STATUSES)
