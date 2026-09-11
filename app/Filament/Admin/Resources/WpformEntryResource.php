@@ -59,14 +59,17 @@ class WpformEntryResource extends Resource
                 Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('E-pasts'))
+                    ->sortable(query: fn ($query, $direction) => $query->orderBy('fields->E-pasts', $direction))
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%E-pasts%')->where('fields', 'like', "%{$search}%")),
                 Tables\Columns\TextColumn::make('name')->label('Vārds')
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('Jūsu vārds'))
+                    ->sortable(query: fn ($query, $direction) => $query->orderBy('fields->Jūsu vārds', $direction))
                     ->wrap()
                     ->limit(30)
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Jūsu vārds%')->where('fields', 'like', "%{$search}%")),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state))
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('Telefona numurs'))
+                    ->sortable(query: fn ($query, $direction) => $query->orderBy('fields->Telefona numurs', $direction))
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Telefona numurs%')->where('fields', 'like', "%{$search}%")),
                 Tables\Columns\SelectColumn::make('status')->label('Statuss')
                     ->options(self::STATUSES)

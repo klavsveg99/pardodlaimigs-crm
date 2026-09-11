@@ -1170,4 +1170,11 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     /* More bottom space on mobile so content doesn't sit on the screen edge */
     .fi-main { padding-bottom: 6rem !important; }
 }
+
+/* Table sort caret: only show on the actively sorted column.
+   Filament renders a chevron on every sortable header (aria-sort="none")
+   — hide those, keep the caret for ascending/descending. */
+.fi-ta-header-cell[aria-sort='none'] .fi-ta-header-cell-sort-btn .fi-icon {
+    opacity: 0 !important;
+}
 </style>

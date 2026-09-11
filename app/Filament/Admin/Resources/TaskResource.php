@@ -106,6 +106,12 @@ class TaskResource extends Resource
                     ->url(fn ($record) => $record->client_id ? route('filament.admin.resources.clients.view', $record->client_id) : null),
                 Tables\Columns\TextColumn::make('property.selection_label')->label('Īpašums')->wrap()
                     ->placeholder('—')
+                    // selection_label is a computed accessor — sort by the
+                    // underlying property title via subquery.
+                    ->sortable(query: fn ($query, $direction) => $query->orderBy(
+                        CrmProperty::query()->select('title')->whereColumn('crm_properties.id', 'tasks.property_id'),
+                        $direction,
+                    ))
                     ->url(fn ($record) => $record->property ? route('filament.admin.resources.properties.view', $record->property) : null),
             ])
             ->filters([

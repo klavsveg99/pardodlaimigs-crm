@@ -515,7 +515,7 @@ class CrmPropertyResource extends Resource
                     ->placeholder(fn ($state) => $state ? null : '—')
                     ->icon(fn ($state) => $state ? null : 'heroicon-o-exclamation-triangle')
                     ->iconColor('warning'),
-                Tables\Columns\TextColumn::make('price_eur')->label('Cena')->money('EUR')->extraCellAttributes(['class' => 'pdc-nowrap']),
+                Tables\Columns\TextColumn::make('price_eur')->label('Cena')->money('EUR')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('owner.name')->label('Aģents')->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->sortable(),
             ])

@@ -27,12 +27,15 @@ class WpformEntriesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')
                     ->getStateUsing(fn ($record) => $record->fieldValue('E-pasts'))
+                    ->sortable(query: fn ($query, $direction) => $query->orderBy('fields->E-pasts', $direction))
                     ->placeholder('—'),
                 Tables\Columns\TextColumn::make('name')->label('Vārds')
                     ->getStateUsing(fn ($record) => $record->fieldValue('Jūsu vārds'))
+                    ->sortable(query: fn ($query, $direction) => $query->orderBy('fields->Jūsu vārds', $direction))
                     ->placeholder('—'),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state))
                     ->getStateUsing(fn ($record) => $record->fieldValue('Telefona numurs'))
+                    ->sortable(query: fn ($query, $direction) => $query->orderBy('fields->Telefona numurs', $direction))
                     ->placeholder('—'),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()

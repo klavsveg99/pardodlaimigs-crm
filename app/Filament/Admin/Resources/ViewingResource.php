@@ -129,7 +129,7 @@ class ViewingResource extends Resource
                         'no_show' => 'Neatnāca',
                         default => $state,
                     }),
-                Tables\Columns\TextColumn::make('duration_min')->label('Min')->alignCenter()->extraCellAttributes(['class' => 'pdc-nowrap']),
+                Tables\Columns\TextColumn::make('duration_min')->label('Min')->sortable()->alignCenter()->extraCellAttributes(['class' => 'pdc-nowrap']),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->options([
