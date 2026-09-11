@@ -23,7 +23,13 @@
                 setTimeout(() => this.initMap(), 200);
                 return;
             }
+            if (this.map) {
+                // Jau uzsākts (arī pēc Livewire morph) — neatkārtojam: pretējā
+                // gadījumā dubultos klikšķa listeneri un iespējams pin.
+                return;
+            }
 
+            this.geocoder = new google.maps.Geocoder();
             this.lat = this.$wire.get('data.{{ $latField }}');
             this.lng = this.$wire.get('data.{{ $lngField }}');
             const hasCoords = this.lat && this.lng;
@@ -31,24 +37,22 @@
                 ? { lat: parseFloat(this.lat), lng: parseFloat(this.lng) }
                 : { lat: 56.9496, lng: 24.1052 };
 
-            if (!this.map) {
-                this.map = new google.maps.Map(this.$refs.mapContainer, {
-                    center: center,
-                    zoom: hasCoords ? 15 : 6,
-                    mapTypeControl: false,
-                    streetViewControl: false,
-                });
-            }
+            this.map = new google.maps.Map(this.$refs.mapContainer, {
+                center: center,
+                zoom: hasCoords ? 15 : 6,
+                mapTypeControl: false,
+                streetViewControl: false,
+            });
 
             // Precīzi VIENS pin: marčējums glabāts ārpus reaktīvā objekta.
             const key = 'pdc-pin-{{ $latField }}-{{ $lngField }}';
             window.__pdcPins = window.__pdcPins || {};
             const self = this;
-            const setPin = (latLng, doGeocode = true) => {
+            let setPin = function setPin(latLng, doGeocode = true) {
                 if (!window.__pdcPins[key]) {
                     window.__pdcPins[key] = new google.maps.Marker({
                         position: latLng,
-                        map: self.map,
+                        map: this.map,
                         draggable: true,
                     });
                     window.__pdcPins[key].addListener('dragend', (e) => {
@@ -61,7 +65,7 @@
                     });
                 } else {
                     window.__pdcPins[key].setPosition(latLng);
-                    window.__pdcPins[key].setMap(self.map);
+                    window.__pdcPins[key].setMap(this.map);
                 }
 
                 self.lat = Math.round(latLng.lat() * 10000000) / 10000000;
@@ -74,14 +78,17 @@
                     });
                 }
             };
+            setPin = setPin.bind(this);
 
             this.setPin = setPin;
 
+            // Jauns īpašums BEZ saglabātām koordinātām — NAV nav sākotnējā
+            // pin; lietotājam jāuzliek pats (obligāts pirms saglabāsanās).
             if (hasCoords) {
                 setPin(new google.maps.LatLng(parseFloat(self.lat), parseFloat(self.lng)), false);
             }
 
-            // Klikšķis kartē pārvieto (vai izveido) vienu pin.
+            // Šo daļu reģistrējam TIKAI vienreiz — līdz ar Map izveidi.
             this.map.addListener('click', (e) => {
                 if (!e.latLng) return;
                 this.map.panTo(e.latLng);
@@ -201,6 +208,9 @@
     ></div>
     <div class="pdc-map-help" style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
         <span x-show="lat && lng" x-text="'Lat: ' + lat + ', Lng: ' + lng"></span>
+        <span x-show="$wire.getError('data.{{ $latField }}') || $wire.getError('data.{{ $lngField }}')" style="display: none; color: #cf2e2e; font-size: 0.8125rem;">
+            <span x-text="$wire.getError('data.{{ $lngField }}') || $wire.getError('data.{{ $latField }}')"></span>
+        </span>
     </div>
 </div>
 
