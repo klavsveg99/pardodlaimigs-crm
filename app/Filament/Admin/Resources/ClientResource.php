@@ -53,7 +53,6 @@ class ClientResource extends Resource
                     PersonasKodsInput::make('personas_kods')
                         ->label('Personas kods')
                         ->maxLength(12)
-                        ->helperText('Formāts: XXXXXX-XXXXX')
                         ->disabled(fn (string $operation) => $operation === 'view')
                         ->readonly(fn (Client $record) => Str::filled($record->personas_kods)),
                     Forms\Components\Select::make('source')
