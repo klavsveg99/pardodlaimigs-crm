@@ -158,7 +158,7 @@ class EditCrmProperty extends EditRecord
             $this->getAttachSellerAction(),
             $this->getAttachBuyerAction(),
             Actions\Action::make('open_site')
-                ->label('Skatīt')
+                ->label('Atvērt mājaslapā')
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->url(fn () => $this->record->public_url)
                 ->openUrlInNewTab(),

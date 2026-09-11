@@ -6,150 +6,164 @@
 @endphp
 
 <div
-    x-data="{
-        map: null,
-        marker: null,
-        geocoder: null,
-        lat: null,
-        lng: null,
-        initMap() {
-            if (!window.google || !window.google.maps) {
-                setTimeout(() => this.initMap(), 200);
-                return;
+    x-data="(() => {
+        // Stāvoklis slēgumā, nevis Alpine objektā: reaktīvais Proxy sabojā
+        // kartes instanču metodes (tāpat kā privāto klašu gadījumā ar
+        // intl-tel-input). Vienmēr VIENS pin — kartes klikšķis vai vilkšana
+        // pārvieto to, nekad neizveido otru.
+        let map = null;
+        let marker = null;
+        let geocoder = null;
+        let wire = null;
+        let lat = null;
+        let lng = null;
+
+        const round7 = (v) => Math.round(v * 10000000) / 10000000;
+        const getLat = () => wire ? wire.get('data.{{ $latField }}') : null;
+        const getLng = () => wire ? wire.get('data.{{ $lngField }}') : null;
+        const setLat = (v) => wire.set('data.{{ $latField }}', v);
+        const setLng = (v) => wire.set('data.{{ $lngField }}', v);
+
+        function placeMarker(latLng, doGeocode = true) {
+            // Precīzi VIENS pin: ja ir — pārvietojam; ja nav — izveidojam
+            // vienreiz un tālāk izmantojam isti šo instanci.
+            if (!marker) {
+                marker = new google.maps.Marker({
+                    position: latLng,
+                    map: map,
+                    draggable: true,
+                });
+                marker.addListener('dragend', (e) => {
+                    lat = round7(e.latLng.lat());
+                    lng = round7(e.latLng.lng());
+                    setLat(lat);
+                    setLng(lng);
+                    geocoder.geocode({ location: e.latLng }, (results, status) => {
+                        if (status === 'OK') fillFromGeocode(results);
+                    });
+                });
+            } else {
+                marker.setPosition(latLng);
+                marker.setMap(map);
             }
-            this.geocoder = new google.maps.Geocoder();
-            this.lat = $wire.get('data.{{ $latField }}');
-            this.lng = $wire.get('data.{{ $lngField }}');
-            const hasCoords = this.lat && this.lng;
-            const center = hasCoords ? { lat: parseFloat(this.lat), lng: parseFloat(this.lng) } : { lat: 56.9496, lng: 24.1052 };
-            this.map = new google.maps.Map($refs.mapContainer, {
-                center: center,
-                zoom: hasCoords ? 15 : 6,
-                mapTypeControl: false,
-                streetViewControl: false,
-            });
-            if (hasCoords) {
-                this.placeMarker(new google.maps.LatLng(parseFloat(this.lat), parseFloat(this.lng)), false);
+
+            lat = round7(latLng.lat());
+            lng = round7(latLng.lng());
+            setLat(lat);
+            setLng(lng);
+
+            if (doGeocode) {
+                geocoder.geocode({ location: latLng }, (results, status) => {
+                    if (status === 'OK') fillFromGeocode(results);
+                });
             }
-            // Klikšķis kartē pārvieto (vai izveido) vienu spraudīti.
-            this.map.addListener('click', (e) => {
-                if (!e.latLng) return;
-                this.map.panTo(e.latLng);
-                this.placeMarker(e.latLng, true);
-            });
-            const input = $refs.searchBox;
-            const autocomplete = new google.maps.places.Autocomplete(input);
-            autocomplete.bindTo('bounds', this.map);
-            autocomplete.addListener('place_changed', () => {
-                const place = autocomplete.getPlace();
-                if (!place.geometry || !place.geometry.location) return;
-                this.map.setCenter(place.geometry.location);
-                this.map.setZoom(17);
-                // Fill from place directly if available
-                if (place.formatted_address) {
-                    this.fillFromPlace(place);
-                }
-                this.placeMarker(place.geometry.location, !place.formatted_address);
-            });
-        },
-        fillFromPlace(place) {
-            // Extract city via locality or admin levels
+        }
+
+        function fillFromPlace(place) {
             let city = '';
-            let street = '';
             if (place.address_components) {
-                for (const comp of place.address_components) {
-                    const types = comp.types;
-                    if (types.includes('locality')) city = comp.long_name;
-                    else if (!city && types.includes('postal_town')) city = comp.long_name;
-                    else if (!city && types.includes('administrative_area_level_2')) city = comp.long_name;
-                    if (types.includes('route')) street = comp.long_name;
+                for (const compItem of place.address_components) {
+                    if (compItem.types.includes('locality')) { city = compItem.long_name; break; }
                 }
             }
-            // Prefer formatted_address for full address, but ensure city is locality not street
             const fullAddress = place.formatted_address || place.name || '';
             if (fullAddress) {
-                $wire.set('data.{{ $addressField }}', fullAddress);
-                // also update the input field value via Alpine? The TextInput is separate, Livewire will sync
+                wire.set('data.{{ $addressField }}', fullAddress);
             }
             if (city) {
-                // Only overwrite if city is empty or looks like street (contains 'iela' or number)
-                const current = $wire.get('data.{{ $cityField }}');
-                const looksLikeStreet = current && /iela|ceļš|gatve|prospekts|\d/.test(current);
-                if (!current || looksLikeStreet || current !== city) {
-                    $wire.set('data.{{ $cityField }}', city);
-                }
+                wire.set('data.{{ $cityField }}', city);
             } else if (place.vicinity) {
-                // fallback
-                $wire.set('data.{{ $cityField }}', place.vicinity);
+                wire.set('data.{{ $cityField }}', place.vicinity);
             }
-        },
-        fillFromGeocode(results) {
+        }
+
+        function fillFromGeocode(results) {
             if (!results || !results[0]) return;
             const result = results[0];
             const fullAddress = result.formatted_address || '';
             let city = '';
-            for (const comp of result.address_components || []) {
-                const types = comp.types;
-                if (types.includes('locality')) { city = comp.long_name; break; }
+            for (const compItem of result.address_components || []) {
+                if (compItem.types.includes('locality')) { city = compItem.long_name; break; }
             }
             if (!city) {
-                for (const comp of result.address_components || []) {
-                    if (comp.types.includes('postal_town')) { city = comp.long_name; break; }
+                for (const compItem of result.address_components || []) {
+                    if (compItem.types.includes('postal_town')) { city = compItem.long_name; break; }
                 }
             }
             if (!city) {
-                for (const comp of result.address_components || []) {
-                    if (comp.types.includes('administrative_area_level_2')) { city = comp.long_name; break; }
+                for (const compItem of result.address_components || []) {
+                    if (compItem.types.includes('administrative_area_level_2')) { city = compItem.long_name; break; }
                 }
             }
             if (!city) {
-                for (const comp of result.address_components || []) {
-                    if (comp.types.includes('administrative_area_level_1')) { city = comp.long_name; break; }
+                for (const compItem of result.address_components || []) {
+                    if (compItem.types.includes('administrative_area_level_1')) { city = compItem.long_name; break; }
                 }
             }
             if (fullAddress) {
-                $wire.set('data.{{ $addressField }}', fullAddress);
+                wire.set('data.{{ $addressField }}', fullAddress);
             }
             if (city) {
-                const current = $wire.get('data.{{ $cityField }}');
-                const looksLikeStreet = current && /iela|ceļš|gatve|prospekts/i.test(current);
-                // Always set city to locality if we have it, street should be in address
-                if (!current || looksLikeStreet || current !== city) {
-                    $wire.set('data.{{ $cityField }}', city);
-                }
+                wire.set('data.{{ $cityField }}', city);
             }
-        },
-        placeMarker(latLng, doGeocode = true) {
-            if (this.marker) { this.marker.setMap(null); this.marker = null; }
-            this.lat = Math.round(latLng.lat() * 10000000) / 10000000;
-            this.lng = Math.round(latLng.lng() * 10000000) / 10000000;
-            this.marker = new google.maps.Marker({
-                position: latLng,
-                map: this.map,
-                draggable: true,
-            });
-            this.marker.addListener('dragend', (e) => {
-                this.lat = Math.round(e.latLng.lat() * 10000000) / 10000000;
-                this.lng = Math.round(e.latLng.lng() * 10000000) / 10000000;
-                this.sync();
-                if (this.geocoder) {
-                    this.geocoder.geocode({ location: e.latLng }, (results, status) => {
-                        if (status === 'OK') this.fillFromGeocode(results);
-                    });
-                }
-            });
-            this.sync();
-            if (doGeocode && this.geocoder) {
-                this.geocoder.geocode({ location: latLng }, (results, status) => {
-                    if (status === 'OK') this.fillFromGeocode(results);
-                });
-            }
-        },
-        sync() {
-            this.$wire.set('data.{{ $latField }}', this.lat);
-            this.$wire.set('data.{{ $lngField }}', this.lng);
         }
-    }"
+
+        return {
+            get latValue() { return lat; },
+            get lngValue() { return lng; },
+            initMap() {
+                // Jau uzsākts (arī pēc Livewire morph) — neatkārtojam, citādi
+                // var parādīties otrs pin uz cita Map eksemplāra.
+                if (!wire) {
+                    wire = this.$wire;
+                }
+                if (map) return;
+                if (!window.google || !window.google.maps) {
+                    setTimeout(() => this.initMap(), 200);
+                    return;
+                }
+
+                geocoder = new google.maps.Geocoder();
+                lat = getLat();
+                lng = getLng();
+                const hasCoords = lat && lng;
+                const center = hasCoords
+                    ? { lat: parseFloat(lat), lng: parseFloat(lng) }
+                    : { lat: 56.9496, lng: 24.1052 };
+
+                map = new google.maps.Map(this.$refs.mapContainer, {
+                    center: center,
+                    zoom: hasCoords ? 15 : 6,
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                });
+
+                if (hasCoords) {
+                    placeMarker(new google.maps.LatLng(parseFloat(lat), parseFloat(lng)), false);
+                }
+
+                map.addListener('click', (e) => {
+                    if (!e.latLng) return;
+                    map.panTo(e.latLng);
+                    placeMarker(e.latLng, true);
+                });
+
+                const input = this.$refs.searchBox;
+                const autocomplete = new google.maps.places.Autocomplete(input);
+                autocomplete.bindTo('bounds', map);
+                autocomplete.addListener('place_changed', () => {
+                    const place = autocomplete.getPlace();
+                    if (!place.geometry || !place.geometry.location) return;
+                    map.setCenter(place.geometry.location);
+                    map.setZoom(17);
+                    if (place.formatted_address) {
+                        fillFromPlace(place);
+                    }
+                    placeMarker(place.geometry.location, !place.formatted_address);
+                });
+            },
+        };
+    })()"
     x-init="$nextTick(() => initMap())"
     wire:ignore.self
 >
@@ -180,7 +194,7 @@
         "
     ></div>
     <div class="pdc-map-help" style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
-        <span x-show="lat && lng" x-text="'Lat: ' + lat + ', Lng: ' + lng"></span>
+        <span x-show="latValue && lngValue" x-text="'Lat: ' + latValue + ', Lng: ' + lngValue"></span>
     </div>
 </div>
 

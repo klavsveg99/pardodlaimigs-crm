@@ -6,7 +6,6 @@
  * Version: 2.3.7
  * Author: Pārdod Laimīgs
  */
-
 if (! defined('ABSPATH')) {
     exit;
 }
@@ -16,8 +15,9 @@ define('PDC_CRM_API_KEY', defined('WP_PDC_CRM_API_KEY') ? WP_PDC_CRM_API_KEY : '
 define('PDC_CRM_AGENTS_URL', 'https://crm.pardodlaimigs.lv/api/crm/agents');
 define('PDC_SYNC_INTERVAL', 5 * MINUTE_IN_SECONDS);
 
-function pdc_log($msg) {
-    error_log('[PDC CRM] ' . $msg);
+function pdc_log($msg)
+{
+    error_log('[PDC CRM] '.$msg);
 }
 
 /**
@@ -28,12 +28,14 @@ function pdc_log($msg) {
  * the old gallery (the "text updated but images didn't" report). Purge the
  * post explicitly whenever the gallery or thumbnail actually changes.
  */
-function pdc_purge_post_cache($post_id) {
+function pdc_purge_post_cache($post_id)
+{
     clean_post_cache($post_id);
     do_action('litespeed_purge_post', $post_id);
 }
 
-function pdc_map_status($crm_status) {
+function pdc_map_status($crm_status)
+{
     switch ($crm_status) {
         case 'published': return 'publish';
         case 'draft':     return 'draft';
@@ -44,19 +46,24 @@ function pdc_map_status($crm_status) {
     }
 }
 
-function pdc_ensure_category($category_name) {
-    if (empty($category_name)) { return 0; }
+function pdc_ensure_category($category_name)
+{
+    if (empty($category_name)) {
+        return 0;
+    }
     $term = term_exists($category_name, 'property-status');
     if (! $term) {
         $term = wp_insert_term($category_name, 'property-status');
     }
+
     return is_wp_error($term) ? 0 : (int) $term['term_id'];
 }
 
-function pdc_find_existing_media($filename) {
+function pdc_find_existing_media($filename)
+{
     global $wpdb;
 
-    $like = '%' . $wpdb->esc_like($filename);
+    $like = '%'.$wpdb->esc_like($filename);
     $meta_id = $wpdb->get_var(
         $wpdb->prepare(
             "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND meta_value LIKE %s LIMIT 1",
@@ -85,11 +92,16 @@ function pdc_find_existing_media($filename) {
  * This avoids the cross-property contamination caused by matching on basename alone,
  * since different properties legitimately share generic filenames like "1.jpg".
  */
-function pdc_relative_upload_path($url) {
+function pdc_relative_upload_path($url)
+{
     $url = esc_url_raw($url);
-    if ($url === '') { return ''; }
+    if ($url === '') {
+        return '';
+    }
     $path = parse_url($url, PHP_URL_PATH);
-    if ($path === null) { return ''; }
+    if ($path === null) {
+        return '';
+    }
     $path = ltrim($path, '/');
     if (strpos($path, 'wp-content/uploads/') === 0) {
         return substr($path, strlen('wp-content/uploads/'));
@@ -98,26 +110,29 @@ function pdc_relative_upload_path($url) {
         // Use a deterministic, time-independent storage path so re-syncs match existing
         // attachments instead of orphaning them when the calendar month rolls over.
         // First sync: store under pdc-crm/attachments/<basename> — WP can serve it from there.
-        return 'pdc-crm/attachments/' . substr($path, strlen('storage/attachments/'));
+        return 'pdc-crm/attachments/'.substr($path, strlen('storage/attachments/'));
     }
     if (strpos($path, 'storage/avatars/') === 0) {
-        return 'pdc-crm/avatars/' . substr($path, strlen('storage/avatars/'));
+        return 'pdc-crm/avatars/'.substr($path, strlen('storage/avatars/'));
     }
     if (strpos($path, 'storage/') === 0) {
-        return 'pdc-crm/' . substr($path, strlen('storage/'));
+        return 'pdc-crm/'.substr($path, strlen('storage/'));
     }
+
     return $path;
 }
 
-function pdc_proxy_url($path) {
-    return 'https://crm.pardodlaimigs.lv/api/crm/attachment-proxy?path=' . rawurlencode($path) . '&_k=' . substr(hash_hmac('sha256', $path, PDC_CRM_API_KEY), 0, 16);
+function pdc_proxy_url($path)
+{
+    return 'https://crm.pardodlaimigs.lv/api/crm/attachment-proxy?path='.rawurlencode($path).'&_k='.substr(hash_hmac('sha256', $path, PDC_CRM_API_KEY), 0, 16);
 }
 
 /**
  * Build the download URL for a CRM attachment. CRM-hosted files go through the
  * HMAC-signed proxy so a signed URL stays valid regardless of route names.
  */
-function pdc_attachment_download_url($attachment) {
+function pdc_attachment_download_url($attachment)
+{
     $url = isset($attachment['url']) ? esc_url_raw($attachment['url']) : '';
     if ($url === '' || strpos($url, 'https://crm.pardodlaimigs.lv') !== 0) {
         return $url;
@@ -133,7 +148,8 @@ function pdc_attachment_download_url($attachment) {
     // Version the URL with the CRM file size so proxies/caches can never serve
     // a stale copy after the CRM re-optimises an image in place.
     $size = isset($attachment['size']) ? (int) $attachment['size'] : 0;
-    return $size > 0 ? $proxy . '&v=' . $size : $proxy;
+
+    return $size > 0 ? $proxy.'&v='.$size : $proxy;
 }
 
 /**
@@ -142,7 +158,8 @@ function pdc_attachment_download_url($attachment) {
  * reports the file size this short-circuits without a network call; otherwise
  * it falls back to a HEAD request rate-limited to once per hour.
  */
-function pdc_attachment_needs_refresh($media_id, $url, $declared_size) {
+function pdc_attachment_needs_refresh($media_id, $url, $declared_size)
+{
     $local = get_attached_file($media_id);
     if ($url === '' || $local === false || $local === '') {
         return false;
@@ -177,6 +194,7 @@ function pdc_attachment_needs_refresh($media_id, $url, $declared_size) {
 
     if ($local_size > 0 && $local_size === $remote_size) {
         update_post_meta($media_id, '_pdc_crm_attachment_size', $remote_size);
+
         return false;
     }
 
@@ -188,15 +206,17 @@ function pdc_attachment_needs_refresh($media_id, $url, $declared_size) {
  * regenerate its metadata + thumbnail sizes. Keeps the same media ID and URL so
  * galleries and references stay intact.
  */
-function pdc_refresh_attachment_file($media_id, $url, $name) {
+function pdc_refresh_attachment_file($media_id, $url, $name)
+{
     $local = get_attached_file($media_id);
     if ($url === '' || $local === false || $local === '' || ! is_dir(dirname($local))) {
         return false;
     }
 
-    $tmp = @download_url($url . '&_t=' . time(), 30);
+    $tmp = @download_url($url.'&_t='.time(), 30);
     if (is_wp_error($tmp)) {
-        pdc_log('refresh download failed: ' . $name . ': ' . $tmp->get_error_message());
+        pdc_log('refresh download failed: '.$name.': '.$tmp->get_error_message());
+
         return false;
     }
 
@@ -207,6 +227,7 @@ function pdc_refresh_attachment_file($media_id, $url, $name) {
     }
     if (! $ok) {
         @unlink($tmp);
+
         return false;
     }
 
@@ -219,27 +240,32 @@ function pdc_refresh_attachment_file($media_id, $url, $name) {
         wp_update_attachment_metadata($media_id, $meta);
     }
 
-    pdc_log('Refreshed attachment #' . $media_id . ' (' . $name . ')');
+    pdc_log('Refreshed attachment #'.$media_id.' ('.$name.')');
+
     return true;
 }
 
-function pdc_upload_to_subdir($subdir) {
+function pdc_upload_to_subdir($subdir)
+{
     add_filter('upload_dir', function ($upload) use ($subdir) {
         $upload['subdir'] = $subdir;
-        $upload['path'] = rtrim($upload['basedir'], '/') . '/' . trim($subdir, '/');
-        $upload['url']  = rtrim($upload['baseurl'], '/') . '/' . trim($subdir, '/');
+        $upload['path'] = rtrim($upload['basedir'], '/').'/'.trim($subdir, '/');
+        $upload['url'] = rtrim($upload['baseurl'], '/').'/'.trim($subdir, '/');
+
         return $upload;
     });
 }
 
-function pdc_clear_upload_dir_filter() {
+function pdc_clear_upload_dir_filter()
+{
     remove_all_filters('upload_dir');
 }
 
-function pdc_create_attachment_from_sideload($tmp_file, $name, $post_id, $subdir) {
-    require_once ABSPATH . 'wp-admin/includes/file.php';
-    require_once ABSPATH . 'wp-admin/includes/media.php';
-    require_once ABSPATH . 'wp-admin/includes/image.php';
+function pdc_create_attachment_from_sideload($tmp_file, $name, $post_id, $subdir)
+{
+    require_once ABSPATH.'wp-admin/includes/file.php';
+    require_once ABSPATH.'wp-admin/includes/media.php';
+    require_once ABSPATH.'wp-admin/includes/image.php';
 
     pdc_upload_to_subdir($subdir);
     try {
@@ -251,10 +277,12 @@ function pdc_create_attachment_from_sideload($tmp_file, $name, $post_id, $subdir
     } finally {
         pdc_clear_upload_dir_filter();
     }
+
     return $result;
 }
 
-function pdc_find_existing_media_by_path($path, $url = '') {
+function pdc_find_existing_media_by_path($path, $url = '')
+{
     global $wpdb;
     if ($path === '' && $url === '') {
         return 0;
@@ -291,7 +319,7 @@ function pdc_find_existing_media_by_path($path, $url = '') {
                 return (int) $by_url;
             }
             // Stale/contaminated stamp — ignore this match and fall through.
-            pdc_log('Ignoring stale URL stamp on #' . (int) $by_url . ' (' . $stored_file . ') for ' . $path);
+            pdc_log('Ignoring stale URL stamp on #'.(int) $by_url.' ('.$stored_file.') for '.$path);
         }
     }
 
@@ -317,12 +345,18 @@ function pdc_find_existing_media_by_path($path, $url = '') {
     // 2. Legacy path: previous version stored CRM attachments under the current
     //    YYYY/MM/<basename>. Probe the current and previous month only — this is
     //    enough to cover the rollover case without ballooning query count.
-    $current_year  = (int) gmdate('Y');
+    $current_year = (int) gmdate('Y');
     $current_month = (int) gmdate('m');
     $month_probes = [$current_month];
-    if ($current_month > 1)  { $month_probes[] = $current_month - 1; }
-    if ($current_month === 1) { $month_probes[] = 12; $year_candidates = [$current_year, $current_year - 1]; }
-    else                       { $year_candidates = [$current_year]; }
+    if ($current_month > 1) {
+        $month_probes[] = $current_month - 1;
+    }
+    if ($current_month === 1) {
+        $month_probes[] = 12;
+        $year_candidates = [$current_year, $current_year - 1];
+    } else {
+        $year_candidates = [$current_year];
+    }
     foreach ($year_candidates as $year) {
         foreach ($month_probes as $month) {
             $legacy = sprintf('%04d/%02d/%s', $year, $month, $basename);
@@ -334,6 +368,7 @@ function pdc_find_existing_media_by_path($path, $url = '') {
             );
             if ($legacy_id && (int) $legacy_id > 0) {
                 update_post_meta((int) $legacy_id, '_wp_attached_file', $path);
+
                 return (int) $legacy_id;
             }
         }
@@ -344,7 +379,7 @@ function pdc_find_existing_media_by_path($path, $url = '') {
     //    properties' "1.jpg"/"5.jpg"/"6.jpg" as featured images. A fallback hit
     //    must live in the expected directory; otherwise download fresh.
     $base = preg_replace('/-\d+$/', '', preg_replace('/\.[^.]+$/', '', $basename));
-    $ext  = pathinfo($basename, PATHINFO_EXTENSION);
+    $ext = pathinfo($basename, PATHINFO_EXTENSION);
     if ($base === '' || $ext === '') {
         return 0;
     }
@@ -354,7 +389,7 @@ function pdc_find_existing_media_by_path($path, $url = '') {
         return 0;
     }
 
-    $like = $wpdb->esc_like($dir . '/' . $base . '.') . '%';
+    $like = $wpdb->esc_like($dir.'/'.$base.'.').'%';
     $fallback = $wpdb->get_var(
         $wpdb->prepare(
             "SELECT post_id FROM {$wpdb->postmeta}
@@ -372,7 +407,8 @@ function pdc_find_existing_media_by_path($path, $url = '') {
 /**
  * Same uploads-relative directory? (e.g. "2025/10" vs "2025/09" → false)
  */
-function pdc_same_upload_dir($a, $b) {
+function pdc_same_upload_dir($a, $b)
+{
     return trim(dirname((string) $a), '/') === trim(dirname((string) $b), '/');
 }
 
@@ -383,23 +419,27 @@ function pdc_same_upload_dir($a, $b) {
  * tolerance those files miss the URL-stamp match and get re-downloaded on
  * every sync, churning duplicate attachments and slowing syncs to minutes.
  */
-function pdc_same_upload_basename($a, $b) {
+function pdc_same_upload_basename($a, $b)
+{
     $strip = function ($f) {
         $name = basename((string) $f);
         $name = preg_replace('/\.[^.]+$/', '', $name);
         $name = preg_replace('/-\d+$/', '', (string) $name);
+
         return preg_replace('/^[_-]+/', '', (string) $name);
     };
     $ea = pathinfo((string) $a, PATHINFO_EXTENSION);
     $eb = pathinfo((string) $b, PATHINFO_EXTENSION);
+
     return $strip($a) !== '' && strcasecmp($strip($a), $strip($b)) === 0
         && strcasecmp((string) $ea, (string) $eb) === 0;
 }
 
-function pdc_sync_attachments($post_id, $attachments) {
-    require_once ABSPATH . 'wp-admin/includes/file.php';
-    require_once ABSPATH . 'wp-admin/includes/media.php';
-    require_once ABSPATH . 'wp-admin/includes/image.php';
+function pdc_sync_attachments($post_id, $attachments)
+{
+    require_once ABSPATH.'wp-admin/includes/file.php';
+    require_once ABSPATH.'wp-admin/includes/media.php';
+    require_once ABSPATH.'wp-admin/includes/image.php';
 
     $previous_gallery = (string) get_post_meta($post_id, 'real_estate_property_images', true);
     $previous_thumb = (int) get_post_thumbnail_id($post_id);
@@ -413,6 +453,7 @@ function pdc_sync_attachments($post_id, $attachments) {
             delete_post_thumbnail($post_id);
             pdc_purge_post_cache($post_id);
         }
+
         return '';
     }
 
@@ -421,6 +462,7 @@ function pdc_sync_attachments($post_id, $attachments) {
         usort($attachments, function ($a, $b) {
             $sa = isset($a['sort_order']) ? (int) $a['sort_order'] : 0;
             $sb = isset($b['sort_order']) ? (int) $b['sort_order'] : 0;
+
             return $sa <=> $sb;
         });
     }
@@ -429,14 +471,22 @@ function pdc_sync_attachments($post_id, $attachments) {
     $unique = [];
     foreach ($attachments as $attachment) {
         $url = isset($attachment['url']) ? esc_url_raw($attachment['url']) : '';
-        if ($url === '') { continue; }
+        if ($url === '') {
+            continue;
+        }
         $raw_path = parse_url($url, PHP_URL_PATH);
         $raw_path = $raw_path ? ltrim($raw_path, '/') : '';
-        if ($raw_path === '') { continue; }
+        if ($raw_path === '') {
+            continue;
+        }
         $raw_path = preg_replace('#^storage/#', '', $raw_path, 1);
         $wp_path = pdc_relative_upload_path($url);
-        if ($wp_path === '') { continue; }
-        if (isset($seen[$wp_path])) { continue; }
+        if ($wp_path === '') {
+            continue;
+        }
+        if (isset($seen[$wp_path])) {
+            continue;
+        }
         $seen[$wp_path] = true;
         $attachment['url'] = $url;
         $attachment['path'] = $wp_path;
@@ -456,7 +506,7 @@ function pdc_sync_attachments($post_id, $attachments) {
     $downloaded = 0;
 
     foreach ($unique as $attachment) {
-        $url  = $attachment['url'];
+        $url = $attachment['url'];
         $path = $attachment['path'];
         $name = $attachment['name'];
         $mime = isset($attachment['mime_type']) ? $attachment['mime_type'] : '';
@@ -476,23 +526,26 @@ function pdc_sync_attachments($post_id, $attachments) {
                 pdc_refresh_attachment_file($media_id, $download_url, $name);
             }
             $image_ids[] = $media_id;
+
             continue;
         }
 
         if (str_starts_with($url, 'https://crm.pardodlaimigs.lv')) {
             if ($path === '') {
-                pdc_log('Skip CRM URL (no path): ' . $name);
+                pdc_log('Skip CRM URL (no path): '.$name);
+
                 continue;
             }
             $proxy_path = $attachment['raw_path'] ?? $path;
-            $download_url = pdc_proxy_url($proxy_path) . '&_t=' . time();
+            $download_url = pdc_proxy_url($proxy_path).'&_t='.time();
         } else {
             $download_url = $url;
         }
 
         $tmp = @download_url($download_url, 15);
         if (is_wp_error($tmp)) {
-            pdc_log('download failed: ' . $name . ': ' . $tmp->get_error_message());
+            pdc_log('download failed: '.$name.': '.$tmp->get_error_message());
+
             continue;
         }
 
@@ -503,7 +556,8 @@ function pdc_sync_attachments($post_id, $attachments) {
         @unlink($tmp);
         if (is_wp_error($media_id)) {
             @unlink($tmp);
-            pdc_log('sideload failed: ' . $name . ': ' . $media_id->get_error_message());
+            pdc_log('sideload failed: '.$name.': '.$media_id->get_error_message());
+
             continue;
         }
 
@@ -540,42 +594,50 @@ function pdc_sync_attachments($post_id, $attachments) {
         pdc_purge_post_cache($post_id);
     }
 
-    pdc_log('Post #' . $post_id . ': ' . count($image_ids) . ' images (' . $downloaded . ' downloaded)');
+    pdc_log('Post #'.$post_id.': '.count($image_ids).' images ('.$downloaded.' downloaded)');
+
     return $gallery;
 }
 
-function pdc_fetch_json($url) {
+function pdc_fetch_json($url)
+{
     $response = wp_remote_get($url, [
         'headers' => [
             'X-CRM-API-Key' => PDC_CRM_API_KEY,
-            'Accept'        => 'application/json',
+            'Accept' => 'application/json',
         ],
         'timeout' => 30,
     ]);
 
     if (is_wp_error($response)) {
-        pdc_log('Fetch failed for ' . $url . ': ' . $response->get_error_message());
+        pdc_log('Fetch failed for '.$url.': '.$response->get_error_message());
+
         return null;
     }
 
     $code = wp_remote_retrieve_response_code($response);
     if ($code !== 200) {
-        pdc_log('HTTP ' . $code . ' for ' . $url);
+        pdc_log('HTTP '.$code.' for '.$url);
+
         return null;
     }
 
     return json_decode(wp_remote_retrieve_body($response), true);
 }
 
-function pdc_sync_agent_avatar($post_id, $avatar_url) {
+function pdc_sync_agent_avatar($post_id, $avatar_url)
+{
     if (empty($avatar_url)) {
         delete_post_thumbnail($post_id);
+
         return;
     }
 
     $url = esc_url_raw($avatar_url);
     $filename = basename(parse_url($url, PHP_URL_PATH) ?: 'avatar.jpg');
-    if ($filename === '') { $filename = 'avatar.jpg'; }
+    if ($filename === '') {
+        $filename = 'avatar.jpg';
+    }
 
     global $wpdb;
     $existing_id = (int) $wpdb->get_var(
@@ -586,6 +648,7 @@ function pdc_sync_agent_avatar($post_id, $avatar_url) {
     );
     if ($existing_id > 0) {
         set_post_thumbnail($post_id, $existing_id);
+
         return;
     }
 
@@ -593,12 +656,14 @@ function pdc_sync_agent_avatar($post_id, $avatar_url) {
     if ($existing > 0) {
         update_post_meta($existing, '_pdc_crm_agent_avatar_url', $url);
         set_post_thumbnail($post_id, $existing);
+
         return;
     }
 
     $tmp = @download_url($url, 15);
     if (is_wp_error($tmp)) {
-        pdc_log('agent avatar download failed: ' . $filename . ': ' . $tmp->get_error_message() . ' url=' . $url);
+        pdc_log('agent avatar download failed: '.$filename.': '.$tmp->get_error_message().' url='.$url);
+
         return;
     }
 
@@ -607,18 +672,21 @@ function pdc_sync_agent_avatar($post_id, $avatar_url) {
     $media_id = pdc_create_attachment_from_sideload($tmp, $filename, $post_id, $subdir ?: 'pdc-crm/avatars');
     @unlink($tmp);
     if (is_wp_error($media_id)) {
-        pdc_log('agent avatar sideload failed: ' . $filename . ': ' . $media_id->get_error_message());
+        pdc_log('agent avatar sideload failed: '.$filename.': '.$media_id->get_error_message());
+
         return;
     }
     update_post_meta($media_id, '_pdc_crm_agent_avatar_url', $url);
     set_post_thumbnail($post_id, $media_id);
-    pdc_log('Agent #' . $post_id . ' avatar set to ' . $media_id);
+    pdc_log('Agent #'.$post_id.' avatar set to '.$media_id);
 }
 
-function pdc_sync_agents() {
+function pdc_sync_agents()
+{
     $data = pdc_fetch_json(PDC_CRM_AGENTS_URL);
     if (! $data || ! isset($data['agents'])) {
         pdc_log('No agents data from CRM');
+
         return [];
     }
 
@@ -635,12 +703,14 @@ function pdc_sync_agents() {
         $instagram_url = isset($agent['instagram_url']) ? $agent['instagram_url'] : '';
         $linkedin_url = isset($agent['linkedin_url']) ? $agent['linkedin_url'] : '';
         $website_url = isset($agent['website_url']) ? $agent['website_url'] : '';
-        if ($crm_id <= 0 || empty($name)) { continue; }
+        if ($crm_id <= 0 || empty($name)) {
+            continue;
+        }
 
         $existing = get_posts([
-            'post_type'   => 'agent',
-            'meta_key'    => '_pdc_crm_agent_id',
-            'meta_value'  => $crm_id,
+            'post_type' => 'agent',
+            'meta_key' => '_pdc_crm_agent_id',
+            'meta_value' => $crm_id,
             'numberposts' => 1,
             'post_status' => 'any',
         ]);
@@ -651,13 +721,14 @@ function pdc_sync_agents() {
             wp_update_post(['ID' => $post_id, 'post_title' => $name, 'post_content' => $description, 'post_status' => 'publish']);
         } else {
             $post_id = wp_insert_post([
-                'post_title'  => $name,
+                'post_title' => $name,
                 'post_content' => $description,
-                'post_type'   => 'agent',
+                'post_type' => 'agent',
                 'post_status' => 'publish',
             ], true);
             if (is_wp_error($post_id)) {
-                pdc_log('Agent insert failed: ' . $name . ': ' . $post_id->get_error_message());
+                pdc_log('Agent insert failed: '.$name.': '.$post_id->get_error_message());
+
                 continue;
             }
         }
@@ -676,39 +747,41 @@ function pdc_sync_agents() {
         pdc_sync_agent_avatar($post_id, $avatar_url);
 
         $agent_map[$name] = $post_id;
-        $agent_map['id:' . $crm_id] = $post_id;
+        $agent_map['id:'.$crm_id] = $post_id;
     }
 
-    pdc_log('Synced ' . count($agent_map) . ' agents');
+    pdc_log('Synced '.count($agent_map).' agents');
+
     return $agent_map;
 }
 
-function pdc_upsert_property($data, $agent_map = []) {
-    $crm_id   = isset($data['crm_id']) ? $data['crm_id'] : 0;
-    $title    = isset($data['title']) ? $data['title'] : '';
-    $slug     = isset($data['slug']) ? $data['slug'] : sanitize_title($title);
-    $content  = isset($data['description']) ? $data['description'] : '';
-    $price    = isset($data['price']) ? $data['price'] : 0;
+function pdc_upsert_property($data, $agent_map = [])
+{
+    $crm_id = isset($data['crm_id']) ? $data['crm_id'] : 0;
+    $title = isset($data['title']) ? $data['title'] : '';
+    $slug = isset($data['slug']) ? $data['slug'] : sanitize_title($title);
+    $content = isset($data['description']) ? $data['description'] : '';
+    $price = isset($data['price']) ? $data['price'] : 0;
     $currency = isset($data['currency']) ? $data['currency'] : 'EUR';
     $category = isset($data['category']) ? $data['category'] : '';
-    $status   = isset($data['status']) ? $data['status'] : 'draft';
-    $beds     = isset($data['beds']) ? $data['beds'] : null;
-    $baths    = isset($data['baths']) ? $data['baths'] : null;
-    $size_m2  = isset($data['size_m2']) ? $data['size_m2'] : null;
-    $land_m2  = isset($data['land_m2']) ? $data['land_m2'] : null;
+    $status = isset($data['status']) ? $data['status'] : 'draft';
+    $beds = isset($data['beds']) ? $data['beds'] : null;
+    $baths = isset($data['baths']) ? $data['baths'] : null;
+    $size_m2 = isset($data['size_m2']) ? $data['size_m2'] : null;
+    $land_m2 = isset($data['land_m2']) ? $data['land_m2'] : null;
     $kadastra = isset($data['kadastra_nr']) ? $data['kadastra_nr'] : '';
-    $city     = isset($data['city']) ? $data['city'] : '';
-    $address  = isset($data['address']) ? $data['address'] : '';
-    $lat      = isset($data['lat']) ? $data['lat'] : null;
-    $lng      = isset($data['lng']) ? $data['lng'] : null;
+    $city = isset($data['city']) ? $data['city'] : '';
+    $address = isset($data['address']) ? $data['address'] : '';
+    $lat = isset($data['lat']) ? $data['lat'] : null;
+    $lng = isset($data['lng']) ? $data['lng'] : null;
     $sort_order = isset($data['sort_order']) ? (int) $data['sort_order'] : 0;
     $agent_name = isset($data['agent']['name']) ? $data['agent']['name'] : '';
     $agent_crm_id = isset($data['agent']['id']) ? (int) $data['agent']['id'] : 0;
 
     $existing = get_posts([
-        'post_type'   => 'property',
-        'meta_key'    => '_pdc_crm_id',
-        'meta_value'  => $crm_id,
+        'post_type' => 'property',
+        'meta_key' => '_pdc_crm_id',
+        'meta_value' => $crm_id,
         'numberposts' => -1,
         'post_status' => 'any',
     ]);
@@ -726,12 +799,12 @@ function pdc_upsert_property($data, $agent_map = []) {
     $wp_status = pdc_map_status($status);
 
     $post_data = [
-        'post_title'   => $title,
-        'post_name'    => $slug,
+        'post_title' => $title,
+        'post_name' => $slug,
         'post_content' => $content,
-        'post_status'  => $wp_status,
-        'post_type'    => 'property',
-        'menu_order'   => $sort_order,
+        'post_status' => $wp_status,
+        'post_type' => 'property',
+        'menu_order' => $sort_order,
     ];
 
     if ($post_id) {
@@ -740,7 +813,8 @@ function pdc_upsert_property($data, $agent_map = []) {
     } else {
         $post_id = wp_insert_post($post_data, true);
         if (is_wp_error($post_id)) {
-            pdc_log('Insert failed for ' . $title . ': ' . $post_id->get_error_message());
+            pdc_log('Insert failed for '.$title.': '.$post_id->get_error_message());
+
             return 0;
         }
     }
@@ -764,15 +838,15 @@ function pdc_upsert_property($data, $agent_map = []) {
     // Must pass array directly — WP will serialize once. Passing serialize() causes double-serialization
     // (s:"a:2:{...}") which breaks ERE maps. Coords are critical for LV addresses that don't geocode reliably.
     update_post_meta($post_id, 'real_estate_property_location', [
-        'location' => ($lat && $lng) ? $lat . ',' . $lng : '',
-        'address'  => $address,
+        'location' => ($lat && $lng) ? $lat.','.$lng : '',
+        'address' => $address,
     ]);
 
     pdc_sync_attachments($post_id, isset($data['attachments']) ? $data['attachments'] : []);
 
     $assigned_agent_id = 0;
-    if ($agent_crm_id > 0 && isset($agent_map['id:' . $agent_crm_id])) {
-        $assigned_agent_id = (int) $agent_map['id:' . $agent_crm_id];
+    if ($agent_crm_id > 0 && isset($agent_map['id:'.$agent_crm_id])) {
+        $assigned_agent_id = (int) $agent_map['id:'.$agent_crm_id];
     } elseif (! empty($agent_name) && isset($agent_map[$agent_name])) {
         $assigned_agent_id = (int) $agent_map[$agent_name];
     }
@@ -786,6 +860,20 @@ function pdc_upsert_property($data, $agent_map = []) {
         if ($cat_id) {
             wp_set_object_terms($post_id, $cat_id, 'property-status');
         }
+    }
+
+    // Pilsēta/rajons no CRM → ERE "property-city" taksonomija (rādās
+    // augšā Address blokā kopā ar ierakstīto adresi).
+    if ($city) {
+        $term = term_exists($city, 'property-city');
+        if (! $term) {
+            $term = wp_insert_term($city, 'property-city');
+        }
+        if (! is_wp_error($term) && $term) {
+            wp_set_object_terms($post_id, (int) $term['term_id'], 'property-city');
+        }
+    } else {
+        wp_set_object_terms($post_id, [], 'property-city');
     }
 
     if ($city) {
@@ -806,7 +894,8 @@ function pdc_upsert_property($data, $agent_map = []) {
  * button always resolves to the real post (CRM stores it as wp_post_id).
  * Non-blocking; the CRM endpoint only writes when values differ.
  */
-function pdc_push_link_back($prop, $post_id) {
+function pdc_push_link_back($prop, $post_id)
+{
     $crm_id = isset($prop['crm_id']) ? (int) $prop['crm_id'] : 0;
     if ($crm_id <= 0 || (int) $post_id <= 0) {
         return;
@@ -828,7 +917,8 @@ function pdc_push_link_back($prop, $post_id) {
     ]);
 }
 
-function pdc_full_sync() {
+function pdc_full_sync()
+{
     ignore_user_abort(true);
     set_time_limit(0);
 
@@ -837,6 +927,7 @@ function pdc_full_sync() {
     // duplicate downloads and flip-flop galleries/thumbnails.
     if (get_transient('pdc_sync_running')) {
         pdc_log('Sync skipped: another sync is already running');
+
         return 0;
     }
     set_transient('pdc_sync_running', time(), 15 * MINUTE_IN_SECONDS);
@@ -846,58 +937,60 @@ function pdc_full_sync() {
 
     try {
 
-    // No system cron on the CRM host: trigger the Laravel scheduler remotely
-    // so SyncWpForms (contact form sync) and other scheduled jobs run.
-    wp_remote_get('https://crm.pardodlaimigs.lv/cron-schedule', [
-        'timeout' => 60,
-        'blocking' => false,
-        'headers' => ['X-CRM-API-Key' => PDC_CRM_API_KEY],
-    ]);
+        // No system cron on the CRM host: trigger the Laravel scheduler remotely
+        // so SyncWpForms (contact form sync) and other scheduled jobs run.
+        wp_remote_get('https://crm.pardodlaimigs.lv/cron-schedule', [
+            'timeout' => 60,
+            'blocking' => false,
+            'headers' => ['X-CRM-API-Key' => PDC_CRM_API_KEY],
+        ]);
 
-    $agent_map = pdc_sync_agents();
+        $agent_map = pdc_sync_agents();
 
-    $data = pdc_fetch_json(PDC_CRM_API_URL);
-    if (! $data || ! isset($data['properties'])) {
-        pdc_log('No properties data from CRM');
+        $data = pdc_fetch_json(PDC_CRM_API_URL);
+        if (! $data || ! isset($data['properties'])) {
+            pdc_log('No properties data from CRM');
+            delete_transient('pdc_sync_running');
+
+            return 0;
+        }
+
+        $properties = $data['properties'];
+        $synced = 0;
+
+        foreach ($properties as $prop) {
+            $result = pdc_upsert_property($prop, $agent_map);
+            if ($result > 0) {
+                $synced++;
+                pdc_push_link_back($prop, $result);
+            }
+        }
+
+        $crm_ids = [];
+        foreach ($properties as $prop) {
+            $crm_ids[] = isset($prop['crm_id']) ? $prop['crm_id'] : 0;
+        }
+
+        $orphan_posts = get_posts([
+            'post_type' => 'property',
+            'numberposts' => -1,
+            'post_status' => 'any',
+        ]);
+        foreach ($orphan_posts as $orphan) {
+            $orphan_crm_id = (int) get_post_meta($orphan->ID, '_pdc_crm_id', true);
+            if (! in_array($orphan_crm_id, $crm_ids, true)) {
+                wp_update_post(['ID' => $orphan->ID, 'post_status' => 'private']);
+            }
+        }
+
+        $elapsed = time() - $start;
+        pdc_log('Sync completed: '.$synced.' properties in '.$elapsed.'s');
+
+        update_option('pdc_last_sync', current_time('mysql'));
+        update_option('pdc_synced_count', $synced);
         delete_transient('pdc_sync_running');
-        return 0;
-    }
 
-    $properties = $data['properties'];
-    $synced = 0;
-
-    foreach ($properties as $prop) {
-        $result = pdc_upsert_property($prop, $agent_map);
-        if ($result > 0) {
-            $synced++;
-            pdc_push_link_back($prop, $result);
-        }
-    }
-
-    $crm_ids = [];
-    foreach ($properties as $prop) {
-        $crm_ids[] = isset($prop['crm_id']) ? $prop['crm_id'] : 0;
-    }
-
-    $orphan_posts = get_posts([
-        'post_type'   => 'property',
-        'numberposts' => -1,
-        'post_status' => 'any',
-    ]);
-    foreach ($orphan_posts as $orphan) {
-        $orphan_crm_id = (int) get_post_meta($orphan->ID, '_pdc_crm_id', true);
-        if (! in_array($orphan_crm_id, $crm_ids, true)) {
-            wp_update_post(['ID' => $orphan->ID, 'post_status' => 'private']);
-        }
-    }
-
-    $elapsed = time() - $start;
-    pdc_log('Sync completed: ' . $synced . ' properties in ' . $elapsed . 's');
-
-    update_option('pdc_last_sync', current_time('mysql'));
-    update_option('pdc_synced_count', $synced);
-    delete_transient('pdc_sync_running');
-    return $synced;
+        return $synced;
     } finally {
         // Always release the lock, even on fatal errors mid-sync.
         delete_transient('pdc_sync_running');
@@ -913,8 +1006,9 @@ add_action('init', function () {
 add_filter('cron_schedules', function ($schedules) {
     $schedules['pdc_five_minute'] = [
         'interval' => PDC_SYNC_INTERVAL,
-        'display'  => __('Every 5 Minutes (PDC CRM)'),
+        'display' => __('Every 5 Minutes (PDC CRM)'),
     ];
+
     return $schedules;
 });
 
@@ -929,13 +1023,13 @@ add_action('admin_menu', function () {
         function () {
             if (isset($_POST['pdc_sync_now']) && check_admin_referer('pdc_sync')) {
                 $count = pdc_full_sync();
-                echo '<div class="notice notice-success"><p>Synced ' . esc_html($count) . ' properties from CRM.</p></div>';
+                echo '<div class="notice notice-success"><p>Synced '.esc_html($count).' properties from CRM.</p></div>';
             }
             $last = get_option('pdc_last_sync', 'Never');
             $count = get_option('pdc_synced_count', 0);
             echo '<div class="wrap">';
             echo '<h1>CRM Property Sync</h1>';
-            echo '<p>Last sync: <strong>' . esc_html($last) . '</strong> &middot; Properties synced: <strong>' . esc_html($count) . '</strong></p>';
+            echo '<p>Last sync: <strong>'.esc_html($last).'</strong> &middot; Properties synced: <strong>'.esc_html($count).'</strong></p>';
             echo '<form method="post">';
             wp_nonce_field('pdc_sync');
             echo '<button type="submit" name="pdc_sync_now" class="button button-primary">Sync Now</button>';
@@ -945,7 +1039,6 @@ add_action('admin_menu', function () {
         }
     );
 });
-
 
 /*
  * ============================================================
@@ -964,8 +1057,8 @@ define(
 
 add_action('rest_api_init', function () {
     register_rest_route('crm/v1', '/wpforms', [
-        'methods'             => 'GET',
-        'callback'            => 'crm_wpforms_feed',
+        'methods' => 'GET',
+        'callback' => 'crm_wpforms_feed',
         'permission_callback' => 'crm_wpforms_authenticate',
         'args' => [
             'page' => ['default' => 1, 'sanitize_callback' => 'absint'],
@@ -979,7 +1072,7 @@ function crm_wpforms_authenticate(WP_REST_Request $request)
 {
     $provided_key = $request->get_header('X-CRM-API-Key');
 
-    if (empty($provided_key) || !hash_equals(CRM_WPFORMS_API_KEY, $provided_key)) {
+    if (empty($provided_key) || ! hash_equals(CRM_WPFORMS_API_KEY, $provided_key)) {
         return new WP_Error(
             'crm_unauthorized',
             'Invalid API key.',
@@ -992,7 +1085,7 @@ function crm_wpforms_authenticate(WP_REST_Request $request)
 
 function crm_wpforms_feed(WP_REST_Request $request)
 {
-    if (!function_exists('wpforms') || !isset(wpforms()->entry)) {
+    if (! function_exists('wpforms') || ! isset(wpforms()->entry)) {
         return new WP_Error('wpforms_unavailable', 'WPForms entry system is unavailable.', ['status' => 500]);
     }
 
@@ -1000,16 +1093,16 @@ function crm_wpforms_feed(WP_REST_Request $request)
     $per_page = min(100, max(1, (int) $request->get_param('per_page')));
 
     $since_timestamp = 0;
-    if (!empty($request->get_param('since'))) {
+    if (! empty($request->get_param('since'))) {
         $since_timestamp = strtotime($request->get_param('since'));
     }
 
     $forms = get_posts([
-        'post_type'      => 'wpforms',
-        'post_status'    => ['publish', 'draft'],
+        'post_type' => 'wpforms',
+        'post_status' => ['publish', 'draft'],
         'posts_per_page' => -1,
-        'orderby'        => 'ID',
-        'order'          => 'ASC',
+        'orderby' => 'ID',
+        'order' => 'ASC',
     ]);
 
     $all_entries = [];
@@ -1019,11 +1112,11 @@ function crm_wpforms_feed(WP_REST_Request $request)
         $form_name = get_the_title($form_id);
 
         $query_args = [
-            'form_id'  => $form_id,
-            'number'   => -1,
-            'orderby'  => 'date',
-            'order'    => 'DESC',
-            'cap'      => false,
+            'form_id' => $form_id,
+            'number' => -1,
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'cap' => false,
         ];
 
         if ($since_timestamp) {
@@ -1045,11 +1138,11 @@ function crm_wpforms_feed(WP_REST_Request $request)
                 ? (int) $entry['entry_id']
                 : (int) ($entry['id'] ?? 0);
 
-            $created_at = !empty($entry['date']) ? $entry['date'] : '';
-            $updated_at = !empty($entry['modified']) ? $entry['modified'] : '';
+            $created_at = ! empty($entry['date']) ? $entry['date'] : '';
+            $updated_at = ! empty($entry['modified']) ? $entry['modified'] : '';
 
             $fields = [];
-            if (!empty($entry['fields'])) {
+            if (! empty($entry['fields'])) {
                 if (is_string($entry['fields'])) {
                     $decoded = json_decode($entry['fields'], true);
                     if (is_array($decoded)) {
@@ -1062,31 +1155,31 @@ function crm_wpforms_feed(WP_REST_Request $request)
 
             $clean_fields = [];
             foreach ($fields as $field_id => $field) {
-                if (!is_array($field)) {
+                if (! is_array($field)) {
                     continue;
                 }
-                $field_name = !empty($field['name']) ? $field['name'] : 'field_' . $field_id;
+                $field_name = ! empty($field['name']) ? $field['name'] : 'field_'.$field_id;
 
                 $clean_fields[] = [
-                    'id'    => (int) $field_id,
-                    'name'  => $field_name,
-                    'type'  => isset($field['type']) ? $field['type'] : '',
+                    'id' => (int) $field_id,
+                    'name' => $field_name,
+                    'type' => isset($field['type']) ? $field['type'] : '',
                     'value' => isset($field['value']) ? $field['value'] : '',
                 ];
             }
 
             $all_entries[] = [
-                'external_id' => $form_id . ':' . $entry_id,
-                'entry_id'    => $entry_id,
-                'form_id'     => $form_id,
-                'form_name'   => $form_name,
-                'created_at'  => $created_at,
-                'updated_at'  => $updated_at,
-                'status'      => isset($entry['status']) ? $entry['status'] : '',
-                'viewed'      => isset($entry['viewed']) ? (bool) $entry['viewed'] : false,
-                'starred'     => isset($entry['starred']) ? (bool) $entry['starred'] : false,
-                'ip_address'  => isset($entry['ip_address']) ? $entry['ip_address'] : '',
-                'fields'      => $clean_fields,
+                'external_id' => $form_id.':'.$entry_id,
+                'entry_id' => $entry_id,
+                'form_id' => $form_id,
+                'form_name' => $form_name,
+                'created_at' => $created_at,
+                'updated_at' => $updated_at,
+                'status' => isset($entry['status']) ? $entry['status'] : '',
+                'viewed' => isset($entry['viewed']) ? (bool) $entry['viewed'] : false,
+                'starred' => isset($entry['starred']) ? (bool) $entry['starred'] : false,
+                'ip_address' => isset($entry['ip_address']) ? $entry['ip_address'] : '',
+                'fields' => $clean_fields,
             ];
         }
     }
@@ -1101,14 +1194,14 @@ function crm_wpforms_feed(WP_REST_Request $request)
     $entries = array_slice($all_entries, $offset, $per_page);
 
     return new WP_REST_Response([
-        'success'      => true,
+        'success' => true,
         'generated_at' => gmdate(DATE_ATOM),
-        'pagination'   => [
+        'pagination' => [
             'page' => $page,
             'per_page' => $per_page,
             'total' => $total,
             'total_pages' => $total_pages,
         ],
-        'entries'      => $entries,
+        'entries' => $entries,
     ], 200);
 }

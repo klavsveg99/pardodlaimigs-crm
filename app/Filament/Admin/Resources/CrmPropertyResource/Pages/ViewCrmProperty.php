@@ -7,6 +7,7 @@ namespace App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 use App\Filament\Admin\Resources\CrmPropertyResource;
 use App\Filament\Admin\Resources\Pages\Concerns\PievienotKlientuRelationAction;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewCrmProperty extends ViewRecord
@@ -23,7 +24,7 @@ class ViewCrmProperty extends ViewRecord
             $this->getPievienotKlientuAction(),
             Actions\EditAction::make()->label('Rediģēt'),
             Actions\Action::make('open_site')
-                ->label('Atvērt vietnē')
+                ->label('Atvērt mājaslapā')
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->url(fn () => $this->record->public_url)
                 ->openUrlInNewTab(),
@@ -38,7 +39,7 @@ class ViewCrmProperty extends ViewRecord
                 ->modalSubmitActionLabel('Atjaunot')
                 ->action(function (): void {
                     $this->record->update(['status' => 'draft']);
-                    \Filament\Notifications\Notification::make()
+                    Notification::make()
                         ->title('Īpašums atjaunots')
                         ->success()
                         ->send();

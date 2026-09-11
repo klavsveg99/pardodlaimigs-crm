@@ -520,6 +520,12 @@ class CrmPropertyResource extends Resource
             ->filtersFormColumns(3)
             ->actions([
                 Actions\ActionGroup::make([
+                    Actions\Action::make('open_site')
+                        ->label('Atvērt mājaslapā')
+                        ->icon('heroicon-o-arrow-top-right-on-square')
+                        ->color('gray')
+                        ->url(fn (CrmProperty $record): string => (string) $record->public_url)
+                        ->openUrlInNewTab(),
                     Actions\ViewAction::make()->label('Skatīt')->color('gray'),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),
                     // Mīkstā dzēšana (CRM 2.1, #1): statuss "Dzēsts" — dati,
