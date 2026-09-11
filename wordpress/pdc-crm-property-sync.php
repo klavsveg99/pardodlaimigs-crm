@@ -14,6 +14,8 @@ define('PDC_CRM_API_URL', 'https://crm.pardodlaimigs.lv/api/crm/properties');
 define('PDC_CRM_API_KEY', defined('WP_PDC_CRM_API_KEY') ? WP_PDC_CRM_API_KEY : '');
 define('PDC_CRM_AGENTS_URL', 'https://crm.pardodlaimigs.lv/api/crm/agents');
 define('PDC_SYNC_INTERVAL', 5 * MINUTE_IN_SECONDS);
+// Google key reverse geocode ZIP izgūšanai (tā pati atslēga kā CRM pusē).
+define('PDC_GOOGLE_MAPS_KEY', defined('WP_PDC_GOOGLE_MAPS_KEY') ? WP_PDC_GOOGLE_MAPS_KEY : 'AIzaSyBOU49EJvBKwG2hlMH-sNC0_nWBibOGhRo');
 
 function pdc_log($msg)
 {
@@ -32,6 +34,45 @@ function pdc_purge_post_cache($post_id)
 {
     clean_post_cache($post_id);
     do_action('litespeed_purge_post', $post_id);
+}
+
+/**
+ * Reverse geocode "lat,lng" → ZIP (Google Geocoding API). Rezultāts
+ * tiek kešots post meta (_pdc_zip_geo), lai sinhronizācija nesēž uz API
+ * ar katru piecu minūšu tikšķi. Atgriež '' ja nekas nav iegūts.
+ */
+function pdc_reverse_geocode_zip($lat, $lng, $post_id)
+{
+    if (empty(PDC_GOOGLE_MAPS_KEY) || empty($lat) || empty($lng)) {
+        return '';
+    }
+
+    $cached = get_post_meta($post_id, '_pdc_zip_geo', true);
+    if (is_array($cached) && ($cached['latlng'] ?? '') === $lat.','.$lng) {
+        return (string) ($cached['zip'] ?? '');
+    }
+
+    $url = 'https://maps.googleapis.com/maps/api/geocode/json'
+        .'?latlng='.rawurlencode($lat.','.$lng)
+        .'&key='.rawurlencode(PDC_GOOGLE_MAPS_KEY);
+    $resp = wp_remote_get($url, ['timeout' => 8]);
+    $zip = '';
+    if (! is_wp_error($resp) && (int) wp_remote_retrieve_response_code($resp) === 200) {
+        $body = json_decode(wp_remote_retrieve_body($resp), true);
+        $result = $body['results'][0] ?? null;
+        if ($result && ($body['status'] ?? '') === 'OK') {
+            foreach ($result['address_components'] ?? [] as $comp) {
+                if (in_array('postal_code', $comp['types'] ?? [], true)) {
+                    $zip = $comp['long_name'];
+                    break;
+                }
+            }
+        }
+    }
+
+    update_post_meta($post_id, '_pdc_zip_geo', ['latlng' => $lat.','.$lng, 'zip' => $zip]);
+
+    return $zip;
 }
 
 function pdc_map_status($crm_status)
@@ -834,13 +875,24 @@ function pdc_upsert_property($data, $agent_map = [])
     update_post_meta($post_id, 'real_estate_property_bathrooms', $baths);
     update_post_meta($post_id, 'real_estate_property_address', $address);
     update_post_meta($post_id, 'real_estate_property_country', 'LV');
-    // ERE expects property_location as array ['location' => 'lat,lng', 'address' => '...']
-    // Must pass array directly — WP will serialize once. Passing serialize() causes double-serialization
-    // (s:"a:2:{...}") which breaks ERE maps. Coords are critical for LV addresses that don't geocode reliably.
+
+    // ERE admin (smart-framework map lauks) atver pin no 'location' = "lat,lng",
+    // bet gsf-map-address ievadlaukā rāda 'address' vērtību. Tur jābūt
+    // KOORDINĀTĀM, lai redaktors vienmēr paliek precīzs — plain adrese laukiem
+    // ne ģeolokācējas. Cilvēkam lasāmā adrese turpini dzīvot
+    // real_estate_property_address (Address blokā virs mapes).
+    $precise = ($lat && $lng) ? $lat.','.$lng : '';
     update_post_meta($post_id, 'real_estate_property_location', [
-        'location' => ($lat && $lng) ? $lat.','.$lng : '',
-        'address' => $address,
+        'location' => $precise,
+        'address' => $precise !== '' ? $precise : $address,
     ]);
+
+    // ZIP no CRM (map picker geokodēšana); kritiskais fallback — servisa reverse geocode.
+    $zip = isset($data['zip']) ? preg_replace('/[^A-Za-z0-9\- ]/', '', (string) $data['zip']) : '';
+    if ($zip === '' && $precise !== '') {
+        $zip = pdc_reverse_geocode_zip($lat, $lng, $post_id);
+    }
+    update_post_meta($post_id, 'real_estate_property_zip', $zip);
 
     pdc_sync_attachments($post_id, isset($data['attachments']) ? $data['attachments'] : []);
 

@@ -193,8 +193,14 @@ class CrmPropertyResource extends Resource
                         'required' => 'Adrese ir obligāts lauks.',
                     ]),
 
-                Forms\Components\Hidden::make('lat'),
-                Forms\Components\Hidden::make('lng'),
+                Forms\Components\Hidden::make('lat')
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'Iezīmējiet precīzu atrašanās vietu kartē.',
+                    ]),
+                Forms\Components\Hidden::make('lng')
+                    ->required(),
+                Forms\Components\Hidden::make('zip'),
                 View::make('filament.forms.components.google-maps-picker')
                     ->columnSpanFull()
                     ->viewData([
@@ -202,6 +208,7 @@ class CrmPropertyResource extends Resource
                         'lngField' => 'lng',
                         'cityField' => 'city',
                         'addressField' => 'address',
+                        'zipField' => 'zip',
                     ]),
             ])->columnSpanFull(),
 
