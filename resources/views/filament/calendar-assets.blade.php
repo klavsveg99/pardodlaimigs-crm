@@ -250,15 +250,72 @@
     }
 
     @media (max-width: 768px) {
+        /* Inner container must sit inside the outer card, not merge with its border */
         .fc-calendar-wrapper {
-            padding: 0.4rem;
+            padding: 0.75rem !important;
             min-height: 0;
         }
 
-        /* Remove horizontal padding from the section that wraps the calendar on mobile */
         .fi-wi-calendar-viewings .fi-section .fi-section-content,
         .fi-wi-calendar-viewings .fi-section > .fi-section-content {
-            padding: 0 !important;
+            padding: 0.75rem !important;
+        }
+
+        /* Footer/header spacing so the heading and the calendar don't collide */
+        .fi-wi-calendar-viewings .fi-section .fi-section-header {
+            padding-bottom: 0.75rem !important;
+        }
+
+        /* Keep the toolbar rows centered instead of stretched edge-to-edge */
+        .fc .fc-toolbar {
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 0.5rem;
+        }
+
+        .fc .fc-toolbar-chunk {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            max-width: 100%;
+        }
+
+        /* Title on its own row, above the buttons */
+        .fc .fc-toolbar .fc-toolbar-chunk:nth-child(2) {
+            order: -1;
+        }
+
+        .fc .fc-toolbar-title {
+            font-size: 1rem !important;
+        }
+
+        .fc .fc-button {
+            flex: 0 0 auto !important;
+            padding: 0.45rem 0.75rem !important;
+            font-size: 0.75rem !important;
+            min-height: 2.4rem;
+            touch-action: manipulation;
+        }
+
+        /* Prev/next arrows: compact squares instead of stretched halves */
+        .fc .fc-prev-button,
+        .fc .fc-next-button {
+            width: 2.4rem !important;
+            padding-inline: 0 !important;
+            justify-content: center !important;
+        }
+
+        /* View switcher buttons share the remaining width evenly */
+        .fc .fc-button-group {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .fc .fc-button-group > .fc-button {
+            flex: 1 1 auto !important;
+            padding: 0.45rem 0.6rem !important;
         }
 
         .fc-calendar-wrapper .fc {
@@ -271,40 +328,6 @@
             max-width: 100%;
             min-width: 0;
             overflow-x: hidden !important;
-        }
-
-        .fc .fc-toolbar {
-            flex-direction: column !important;
-            align-items: stretch !important;
-            gap: 0.4rem;
-        }
-
-        .fc .fc-toolbar-chunk {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.3rem;
-            max-width: 100%;
-        }
-
-        /* Center the title on its own row */
-        .fc .fc-toolbar .fc-toolbar-chunk:nth-child(2) {
-            justify-content: center;
-            order: -1;
-            width: 100%;
-        }
-
-        .fc .fc-toolbar-title {
-            font-size: 1rem !important;
-        }
-
-        /* Buttons stretch and become easier to tap on touch screens */
-        .fc .fc-button {
-            flex: 1 1 auto;
-            padding: 0.55rem 0.4rem !important;
-            font-size: 0.75rem !important;
-            min-height: 2.4rem;
-            touch-action: manipulation;
         }
 
         /* Increase day-cell tap targets */

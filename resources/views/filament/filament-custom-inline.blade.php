@@ -1169,6 +1169,48 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-fo-rich-editor-dropdown-tool-menu { max-width: calc(100vw - 3rem) !important; }
     /* More bottom space on mobile so content doesn't sit on the screen edge */
     .fi-main { padding-bottom: 6rem !important; }
+
+    /* ── Stacked (mobile) tables ───────────────────────────────────── */
+    /* Center the sort selects of stacked tables */
+    .fi-ta-table-stacked-header-cell { justify-content: center !important; }
+    .fi-ta-table-stacked-sorting { flex: 0 1 auto !important; justify-content: center !important; gap: 0.5rem !important; }
+
+    /* Values stack in 2 columns where the cell grid allows it */
+    .fi-ta-table-stacked-on-mobile > tbody > tr {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        column-gap: 1rem !important;
+        row-gap: 0 !important;
+    }
+    /* Full-width cells: bulk select + row actions + long text (activity feed detail) */
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell,
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(> .fi-ta-actions),
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-detail { grid-column: 1 / -1 !important; }
+    /* Cells without labels (actions) keep their existing alignment */
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(> .fi-ta-actions) {
+        text-align: right !important;
+        padding-block: 0.25rem !important;
+    }
+
+    /* Force left-aligned values on mobile for columns whose alignment only
+       makes sense in the horizontal table layout (time/value columns). */
+    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-created-at,
+    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value { text-align: left !important; }
+    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-created-at .fi-ta-text,
+    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value .fi-ta-text,
+    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value .fi-ta-cell-content { text-align: left !important; justify-content: flex-start !important; }
+}
+
+/* ── Home stats: 2 columns from 350px up, 1 column on very small screens ── */
+@media (max-width: 767px) {
+    .fi-wi-stats-overview .fi-section-content.fi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+@media (max-width: 349px) {
+    .fi-wi-stats-overview .fi-section-content.fi-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 /* Table sort caret: only show on the actively sorted column.
