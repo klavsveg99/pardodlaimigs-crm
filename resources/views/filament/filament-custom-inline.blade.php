@@ -742,8 +742,58 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta-table { min-width: 720px !important; }
 }
 @media (max-width: 767px) {
-    .fi-ta-table { min-width: 0 !important; table-layout: fixed !important; }
     .fi-ta-content-ctn, .fi-ta-ctn { overflow-x: auto !important; }
+}
+/* Filament returns stacked tables to horizontal layout at its sm breakpoint
+   (640px), so everything that restyles stacked rows must stop at 639px —
+   otherwise 640–767px gets grid rows/fixed layout applied to a real table. */
+@media (max-width: 639px) {
+    .fi-ta-table { min-width: 0 !important; table-layout: fixed !important; }
+
+    /* ── Stacked (mobile) tables ───────────────────────────────────── */
+    /* Center the sort selects of stacked tables */
+    .fi-ta-table-stacked-header-cell { justify-content: center !important; }
+    .fi-ta-table-stacked-sorting { flex: 0 1 auto !important; justify-content: center !important; gap: 0.5rem !important; }
+
+    /* Values stack in 2 columns where the cell grid allows it */
+    .fi-ta-table-stacked-on-mobile > tbody > tr {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        column-gap: 1rem !important;
+        row-gap: 0 !important;
+    }
+    /* Full-width cells: bulk select + row actions + long text (activity feed detail) */
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell,
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(> .fi-ta-actions),
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-detail { grid-column: 1 / -1 !important; }
+    /* Cells without labels (actions) keep their existing alignment */
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(> .fi-ta-actions) {
+        text-align: right !important;
+        padding-block: 0.25rem !important;
+    }
+
+    /* Force left-aligned values on mobile for columns whose alignment only
+       makes sense in the horizontal table layout (time/value columns). */
+    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-created-at,
+    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value { text-align: left !important; }
+    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-created-at .fi-ta-text,
+    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value .fi-ta-text,
+    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value .fi-ta-cell-content { text-align: left !important; justify-content: flex-start !important; }
+
+    /* Properties list: vertically center the thumbnail against its neighbor */
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb {
+        align-self: center !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+    }
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb:not(:has(img)) { display: none !important; }
+
+    /* Status dropdown (SelectColumn, contact form submissions) gets its own full-width row */
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) { grid-column: 1 / -1 !important; }
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) select { width: 100% !important; }
+    /* Gap between the status dropdown row and the actions row below it */
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) + td:has(> .fi-ta-actions) { margin-top: 0.75rem !important; }
 }
 
 .fi-ta-table td {
@@ -1171,49 +1221,8 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-main { padding-bottom: 6rem !important; }
 
     /* ── Stacked (mobile) tables ───────────────────────────────────── */
-    /* Center the sort selects of stacked tables */
-    .fi-ta-table-stacked-header-cell { justify-content: center !important; }
-    .fi-ta-table-stacked-sorting { flex: 0 1 auto !important; justify-content: center !important; gap: 0.5rem !important; }
-
-    /* Values stack in 2 columns where the cell grid allows it */
-    .fi-ta-table-stacked-on-mobile > tbody > tr {
-        display: grid !important;
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        column-gap: 1rem !important;
-        row-gap: 0 !important;
-    }
-    /* Full-width cells: bulk select + row actions + long text (activity feed detail) */
-    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell,
-    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(> .fi-ta-actions),
-    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-detail { grid-column: 1 / -1 !important; }
-    /* Cells without labels (actions) keep their existing alignment */
-    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(> .fi-ta-actions) {
-        text-align: right !important;
-        padding-block: 0.25rem !important;
-    }
-
-    /* Force left-aligned values on mobile for columns whose alignment only
-       makes sense in the horizontal table layout (time/value columns). */
-    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-created-at,
-    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value { text-align: left !important; }
-    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-created-at .fi-ta-text,
-    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value .fi-ta-text,
-    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value .fi-ta-cell-content { text-align: left !important; justify-content: flex-start !important; }
-
-    /* Properties list: vertically center the thumbnail against its neighbor */
-    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb {
-        align-self: center !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-    }
-    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb:not(:has(img)) { display: none !important; }
-
-    /* Status dropdown (SelectColumn, contact form submissions) gets its own full-width row */
-    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) { grid-column: 1 / -1 !important; }
-    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) select { width: 100% !important; }
-    /* Gap between the status dropdown row and the actions row below it */
-    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) + td:has(> .fi-ta-actions) { margin-top: 0.75rem !important; }
+    /* NOTE: stacked rules live in the ≤639px block above — Filament returns
+       tables to horizontal layout at 640px (its sm breakpoint). */
 }
 
 /* Table sort caret: only show on the actively sorted column.
