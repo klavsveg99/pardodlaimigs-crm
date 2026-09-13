@@ -89,7 +89,7 @@ class TaskResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\IconColumn::make('is_overdue')
-                    ->label('')
+                    ->label('Nokavēts')
                     ->boolean()
                     ->getStateUsing(fn ($record) => $record->isOverdue())
                     ->trueIcon('heroicon-o-check-circle')

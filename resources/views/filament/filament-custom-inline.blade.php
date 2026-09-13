@@ -1199,18 +1199,19 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-ta-table-stacked-on-mobile td.fi-ta-cell-created-at .fi-ta-text,
     .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value .fi-ta-text,
     .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value .fi-ta-cell-content { text-align: left !important; justify-content: flex-start !important; }
-}
 
-/* ── Home stats: 2 columns from 350px up, 1 column on very small screens ── */
-@media (max-width: 767px) {
-    .fi-wi-stats-overview .fi-section-content.fi-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    /* Properties list: vertically center the thumbnail against its neighbor */
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb {
+        align-self: center !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
     }
-}
-@media (max-width: 349px) {
-    .fi-wi-stats-overview .fi-section-content.fi-grid {
-        grid-template-columns: 1fr !important;
-    }
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb:not(:has(img)) { display: none !important; }
+
+    /* Status dropdown (SelectColumn, contact form submissions) gets its own full-width row */
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) { grid-column: 1 / -1 !important; }
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) select { width: 100% !important; }
 }
 
 /* Table sort caret: only show on the actively sorted column.
