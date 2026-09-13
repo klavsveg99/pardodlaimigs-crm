@@ -66,7 +66,10 @@ class CrmPropertyResource extends Resource
                     Forms\Components\Select::make('status')
                         ->label('Statuss')
                         ->options(CrmProperty::STATUSES)
-                        ->default('draft')
+                        // Jauns īpašums sākas kā Pārdošanā (WP pusē tas
+                        // kartējas uz post_status 'publish' un ir redzams
+                        // mājaslapā); melnrakstu jāizvēlas manuāli.
+                        ->default('published')
                         ->required()
                         ->live(),
 

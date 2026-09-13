@@ -38,7 +38,11 @@ class TaskResource extends Resource
         return $schema->schema([
             Forms\Components\TextInput::make('title')->label('Nosaukums')->required()->columnSpanFull(),
             Forms\Components\Textarea::make('body')->label('Apraksts')->rows(3)->columnSpanFull(),
-            Forms\Components\DateTimePicker::make('due_at')->label('Līdz')->native(false)->required()->minDate(now()),
+            // "Nevēlāks kā tagad" tikai izveidojot — pretējā gadījumā veca
+            // (nokavēta) uzdevuma saglabāšana editā neizdodas.
+            Forms\Components\DateTimePicker::make('due_at')->label('Līdz')->native(false)
+                ->minDate(fn (string $operation) => $operation === 'create' ? now() : null)
+                ->required(),
             Forms\Components\Select::make('assigned_user_id')->label('Aģents')
                 ->relationship('assignedTo', 'name')->required()->searchable()->preload()->optionsLimit(20),
             Forms\Components\Select::make('izpilditajs_id')->label('Izpildītājs')
