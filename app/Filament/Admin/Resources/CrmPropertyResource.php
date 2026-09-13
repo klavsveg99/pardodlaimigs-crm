@@ -101,12 +101,14 @@ class CrmPropertyResource extends Resource
                             Forms\Components\TextInput::make('final_price_eur')
                                 ->label('Gala cena (€)')
                                 ->numeric()
+                                ->minValue(0)
                                 ->prefix('€')
                                 ->placeholder('Ievadi gala cenu')
                                 ->live(onBlur: false),
                             Forms\Components\TextInput::make('commission_eur')
                                 ->label('Komisijas summa (€)')
                                 ->numeric()
+                                ->minValue(0)
                                 ->prefix('€')
                                 ->placeholder('Ievadi komisiju')
                                 ->live(onBlur: false),
@@ -127,6 +129,7 @@ class CrmPropertyResource extends Resource
                     Forms\Components\TextInput::make('price_eur')
                         ->label('Cena (€)')
                         ->numeric()
+                        ->minValue(0)
                         ->prefix('€'),
 
                     Forms\Components\Select::make('owner_user_id')

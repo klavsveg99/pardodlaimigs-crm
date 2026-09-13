@@ -69,6 +69,11 @@ class CrmProperty extends Model
     protected static function booted(): void
     {
         static::saving(function (self $property) {
+            // Cena pēc noklusējuma 0 (shēma price_eur NOT NULL) — pretējā
+            // gadījumā "Cena (€)" tukšā forma izmet SQL 500, nevis validāciju.
+            if ($property->price_eur === null) {
+                $property->price_eur = 0;
+            }
             // Slug ir obligāts maršrutēšanai — ģenerējam no nosaukuma un
             // atjaunojam, kad nosaukums mainās, lai permalinki vienmēr
             // atspoguļo titulu.
