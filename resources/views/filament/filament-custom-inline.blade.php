@@ -1212,6 +1212,8 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     /* Status dropdown (SelectColumn, contact form submissions) gets its own full-width row */
     .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) { grid-column: 1 / -1 !important; }
     .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) select { width: 100% !important; }
+    /* Gap between the status dropdown row and the actions row below it */
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) + td:has(> .fi-ta-actions) { margin-top: 0.75rem !important; }
 }
 
 /* Table sort caret: only show on the actively sorted column.
