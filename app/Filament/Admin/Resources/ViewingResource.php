@@ -115,7 +115,7 @@ class ViewingResource extends Resource
                     ->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->color(fn ($record) => $record->status === 'scheduled' && $record->scheduled_at->isPast() ? 'danger' : null)
                     ->icon(fn ($record) => $record->status === 'scheduled' && $record->scheduled_at->isPast() ? 'heroicon-o-exclamation-triangle' : null)
-                    ->iconColor('danger'),
+                    ->iconColor('warning'),
                 Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40)->sortable()
                     ->url(fn ($record) => route('filament.admin.resources.viewings.edit', $record)),
                 Tables\Columns\TextColumn::make('client.name')->label('Klients')->searchable()->sortable()

@@ -88,21 +88,21 @@ class TaskResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\IconColumn::make('is_overdue')
-                    ->label('Nokavēts')
+                Tables\Columns\IconColumn::make('completed')
+                    ->label('Izpildīts')
                     ->boolean()
-                    ->getStateUsing(fn ($record) => $record->isOverdue())
+                    ->getStateUsing(fn ($record) => (bool) $record->completed_at)
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon(false)
-                    ->trueColor('warning')
-                    ->tooltip(fn ($record) => $record->isOverdue() ? 'Nokavēts' : null)
-                    ->sortable(query: fn ($query, $direction) => $query->orderBy('due_at', $direction)),
+                    ->trueColor('success')
+                    ->tooltip(fn ($record) => $record->completed_at ? 'Izpildīts' : null)
+                    ->sortable(query: fn ($query, $direction) => $query->orderBy('completed_at', $direction)),
                 Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable()->weight('bold')->wrap()
                     ->url(fn ($record) => route('filament.admin.resources.tasks.edit', $record)),
                 Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->color(fn ($record) => $record->isOverdue() ? 'danger' : null)
                     ->icon(fn ($record) => $record->isOverdue() ? 'heroicon-o-exclamation-triangle' : null)
-                    ->iconColor('danger'),
+                    ->iconColor('warning'),
                 Tables\Columns\TextColumn::make('assignedTo.name')->label('Aģents')->sortable()
                     ->url(fn ($record) => $record->assigned_user_id ? route('filament.admin.resources.users.edit', $record->assigned_user_id) : null),
                 Tables\Columns\TextColumn::make('izpilditajs.name')->label('Izpildītājs')->sortable()->placeholder('—'),
