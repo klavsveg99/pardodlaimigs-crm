@@ -58,6 +58,11 @@ class TasksRelationManager extends RelationManager
                         ->icon('heroicon-o-check')
                         ->visible(fn ($record) => ! $record->completed_at)
                         ->action(fn ($record) => $record->update(['completed_at' => now()])),
+                    Actions\Action::make('reopen')
+                        ->label('Atzīmēt kā neizpildītu')
+                        ->icon('heroicon-o-arrow-uturn-left')
+                        ->visible(fn ($record) => (bool) $record->completed_at)
+                        ->action(fn ($record) => $record->update(['completed_at' => null])),
                 ])->color('gray'),
             ]);
     }

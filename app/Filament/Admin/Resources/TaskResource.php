@@ -49,7 +49,6 @@ class TaskResource extends Resource
                 ->relationship('izpilditajs', 'name')
                 ->getOptionLabelUsing(fn ($value): ?string => Izpilditajs::find($value)?->display_label)
                 ->searchable()->preload()->optionsLimit(50)
-                ->helperText('Ja nepieciešams, izveido jaunu zem Sistēma > Izpildītāji')
                 ->columnSpanFull()
                 ->nullable(),
             Forms\Components\Select::make('client_id')->label('Klients')
@@ -137,6 +136,11 @@ class TaskResource extends Resource
                         ->icon('heroicon-o-check')
                         ->visible(fn ($record) => ! $record->completed_at)
                         ->action(fn ($record) => $record->update(['completed_at' => now()])),
+                    Actions\Action::make('reopen')
+                        ->label('Atzīmēt kā neizpildītu')
+                        ->icon('heroicon-o-arrow-uturn-left')
+                        ->visible(fn ($record) => (bool) $record->completed_at)
+                        ->action(fn ($record) => $record->update(['completed_at' => null])),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),
                 ])->color('gray'),
             ])
