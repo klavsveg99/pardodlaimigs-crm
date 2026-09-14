@@ -947,6 +947,19 @@ html.dark .rounded-xl .text-emerald-900 {
     padding: 1rem !important;
 }
 
+/* All stat-box descriptions share one neutral color regardless of the
+   box's semantic color (Filament colors them per stat). */
+.fi-wi-stats-overview-stat-description {
+    color: #6b7280 !important;
+}
+.fi-wi-stats-overview-stat-description .fi-icon {
+    color: #6b7280 !important;
+}
+.dark .fi-wi-stats-overview-stat-description,
+.dark .fi-wi-stats-overview-stat-description .fi-icon {
+    color: #9ca3af !important;
+}
+
 /* Home stats: on desktop the second row (Vid. pārdošanas cena +
    Kapitalizācija) stretches to 50%/50% instead of 33%/33%+empty.
    Cards 1-3 keep 1/3 width (span 2 of 6); cards 4+ span 3 of 6.
