@@ -178,7 +178,7 @@ class CrmProperty extends Model
             // kur ?p=ID bezprewiew vietnei 404. preview=true ļauj ielogotam
             // WP adminam apskatīt ierakstu; publicētam īpašumam paliek
             // tīra ?p= saite, kas kanoniski pārved uz pretty permalink.
-            $preview = $this->status !== 'published' ? '&preview=true' : '';
+            $preview = $this->status !== 'published' ? '&post_type=property&preview=true' : '';
 
             return $base.'/?p='.(int) $this->wp_post_id.$preview;
         }
