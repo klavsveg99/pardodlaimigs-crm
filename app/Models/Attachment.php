@@ -34,6 +34,35 @@ class Attachment extends Model
         return Storage::disk($this->disk)->url($this->path);
     }
 
+    /**
+     * URL of the small "thumb-" variant (400×300) when it exists, falling back
+     * to the original — used for small table/gallery thumbnails so we do not
+     * download full-resolution images for tiny previews.
+     */
+    public function thumbUrl(): string
+    {
+        if (str_starts_with($this->path, 'http://') || str_starts_with($this->path, 'https://')) {
+            return $this->cacheBustedUrl();
+        }
+
+        $dir = str_replace('\\', '/', dirname($this->path));
+        $thumbPath = ($dir === '/' || $dir === '.' ? '' : rtrim($dir, '/').'/').'thumb-'.basename($this->path);
+
+        try {
+            $disk = Storage::disk($this->disk);
+            if ($disk->exists($thumbPath)) {
+                $url = $disk->url($thumbPath);
+                $version = (int) $disk->lastModified($thumbPath);
+
+                return $url.($version > 0 ? '?v='.$version : '');
+            }
+        } catch (\Throwable $e) {
+            // fall back to the original below
+        }
+
+        return $this->cacheBustedUrl();
+    }
+
     public function cacheBustedUrl(): string
     {
         $url = $this->url;

@@ -503,7 +503,9 @@ class CrmPropertyResource extends Resource
                     ->getStateUsing(function (CrmProperty $record) {
                         $first = $record->attachments()->orderBy('sort_order')->first();
                         if ($first) {
-                            return $first->cacheBustedUrl();
+                            // serve the 400x300 thumb variant when available so the
+                            // table does not download full-resolution images
+                            return $first->thumbUrl();
                         }
                         $urls = $record->image_urls ?? [];
 
