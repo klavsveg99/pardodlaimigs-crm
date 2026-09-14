@@ -30,10 +30,15 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
             ->subject("Jauns uzdevums: {$task->title}")
             ->greeting('Sveiki!')
             ->line("Jums piešķirts jauns uzdevums: **{$task->title}**")
-            ->when((bool) $task->body, fn ($m) => $m->line((string) $task->body))
+            ->line('')
+            ->line("**Uzdevuma kopsavilkums**")
+            ->line('Nosaukums: '.$task->title)
+            ->when((bool) $task->body, fn ($m) => $m->line('Apraksts: '.(string) $task->body))
             ->line("Termiņš: {$due}")
-            ->when($task->client, fn ($m) => $m->line("Klients: {$task->client->name}"))
-            ->action('Atvērt uzdevumu', url("/tasks/{$task->id}/edit"))
+            ->when($task->assignedTo, fn ($m) => $m->line('Aģents: '.$task->assignedTo->name))
+            ->when($task->izpilditajs, fn ($m) => $m->line('Izpildītājs: '.$task->izpilditajs->name))
+            ->when($task->client, fn ($m) => $m->line('Klients: '.$task->client->name))
+            ->when($task->property, fn ($m) => $m->line('Īpašums: '.$task->property->title))
             ->salutation('Pārdod Laimīgs');
     }
 }
