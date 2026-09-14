@@ -43,7 +43,8 @@ class MyProfile extends Page
 
     public static function shouldRegisterNavigation(): bool
     {
-        return static::canAccess();
+        // Adminiem nav vajadzīgs — viņiem ir pilna Aģenti sadaļa.
+        return static::canAccess() && auth()->user()?->can('manage') === false;
     }
 
     public static function canAccess(): bool

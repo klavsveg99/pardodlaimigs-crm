@@ -54,7 +54,8 @@ class Viewing extends Model
 
     public function property(): BelongsTo
     {
-        return $this->belongsTo(PropertyCache::class, 'property_id');
+        // Apskates mērķē tikai uz CRM īpašumiem.
+        return $this->belongsTo(CrmProperty::class, 'property_id');
     }
 
     public function client(): BelongsTo

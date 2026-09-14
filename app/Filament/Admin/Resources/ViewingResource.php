@@ -6,7 +6,7 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\ViewingResource\Pages;
 use App\Models\Client;
-use App\Models\PropertyCache;
+use App\Models\CrmProperty;
 use App\Models\Viewing;
 use Filament\Actions;
 use Filament\Forms;
@@ -37,32 +37,17 @@ class ViewingResource extends Resource
         return $schema->schema([
             Forms\Components\Select::make('property_id')->label('Īpašums')
                 ->searchable()
-                ->getSearchResultsUsing(function (string $search) {
-                    return PropertyCache::query()
-                        ->where(function ($q) use ($search) {
-                            $q->where('title', 'like', "%{$search}%")
-                                ->orWhere('city', 'like', "%{$search}%")
-                                ->orWhere('kadastra_nr', 'like', "%{$search}%")
-                                ->orWhere('id', '=', $search);
-                        })
-                        ->orderBy('title')
-                        ->limit(20)
-                        ->get()
-                        ->mapWithKeys(fn (PropertyCache $p) => [$p->id => $p->selection_label])
-                        ->toArray();
-                })
-                ->getOptionLabelUsing(fn ($value): ?string => PropertyCache::find($value)?->selection_label)
                 ->options(function (mixed $state, Forms\Components\Select $component): array {
-                    $query = PropertyCache::query()
-                        ->where('status', 'publish')
-                        ->orderBy('title');
+                    $query = CrmProperty::query()
+                        ->where('status', '!=', 'deleted')
+                        ->orderByDesc('id')
+                        ->limit(100);
 
-                    if ($component->getRecord()?->property_id) {
-                        $query->orWhere('id', $component->getRecord()->property_id);
-                    }
-
-                    return $query->get()->mapWithKeys(fn (PropertyCache $property) => [$property->id => $property->selection_label])->all();
+                    return $query->get()
+                        ->mapWithKeys(fn (CrmProperty $p) => [$p->id => $p->selection_label])
+                        ->all();
                 })
+                ->getOptionLabelUsing(fn ($value): ?string => CrmProperty::find($value)?->selection_label)
                 ->required()
                 ->default(request()->query('property_id')),
             Forms\Components\Select::make('client_id')->label('Klients')

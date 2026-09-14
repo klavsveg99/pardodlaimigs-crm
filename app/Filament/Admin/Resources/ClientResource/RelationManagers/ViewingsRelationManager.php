@@ -43,16 +43,11 @@ class ViewingsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('scheduled_at')->label('Kad')->dateTime('d.m.Y H:i')->sortable()
                     ->url(fn ($record) => route('filament.admin.resources.viewings.edit', $record)),
                 Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40)->sortable()
-                    // Viewings reference the WP cache (properties_cache.id =
-                    // WP post ID) — resolve the actual CRM property via
-                    // wp_post_id. WP-only listings without a CRM match stay
-                    // plain text (no broken link).
+                    // Apskates mērķē uz CRM īpašumiem; bez īpašuma — teksts.
                     ->url(function ($record): ?string {
-                        $crm = $record->property_id
-                            ? CrmProperty::where('wp_post_id', $record->property_id)->first()
+                        return $record->property_id
+                            ? CrmPropertyResource::getUrl('view', ['record' => $record->property])
                             : null;
-
-                        return $crm ? CrmPropertyResource::getUrl('view', ['record' => $crm]) : null;
                     }),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')->badge()->sortable()
                     ->formatStateUsing(fn ($state) => [
