@@ -104,6 +104,8 @@
             background: #fff; color: #111827; resize: vertical;
         }
         .dark .pdc-ai-panel .pdc-ai-sec textarea { background: #0b0f14; color: #f3f4f6; border-color: #374151; }
+        /* ss.lv field starts at the same height as the "Pilnais apraksts" block */
+        .pdc-ai-panel .pdc-ai-sec textarea.pdc-ai-ss { min-height: 96px; }
         .pdc-ai-panel .pdc-ai-btn {
             display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
             white-space: nowrap;
@@ -123,7 +125,9 @@
         .pdc-ai-panel .pdc-ai-sec textarea:disabled { opacity: .6; cursor: not-allowed; }
         .pdc-ai-panel .pdc-ai-desc {
             border: 1px solid rgb(148 163 184 / 0.6); border-radius: .5rem;
-            padding: .7rem .8rem; min-height: 130px; max-height: 300px; overflow-y: auto;
+            padding: .7rem .8rem; height: 96px; min-height: 60px; max-height: 600px; overflow-y: auto;
+            /* fixed initial height + overflow != visible => resizable via the bottom-right handle */
+            resize: vertical;
             background: #fff; color: #111827; font-size: .85rem; line-height: 1.55;
         }
         .dark .pdc-ai-panel .pdc-ai-desc { background: #0b0f14; color: #f3f4f6; border-color: #374151; }
@@ -201,7 +205,7 @@
                             <span>ss.lv teksts</span>
                             <button type="button" class="pdc-ai-btn" @click="copy(result.description_ss)">Kopēt</button>
                         </div>
-                        <textarea x-model="result.description_ss" :disabled="loading" placeholder="ss.lv stila teksts"></textarea>
+                        <textarea x-model="result.description_ss" :disabled="loading" class="pdc-ai-ss" placeholder="ss.lv stila teksts"></textarea>
                     </div>
 
                     <div class="pdc-ai-sec">

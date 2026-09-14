@@ -275,8 +275,7 @@ class CrmPropertyResource extends Resource
                     Actions\Action::make('ai_saved_result')
                         ->visible(fn (?CrmProperty $record): bool => DescriptionGenerator::provider() !== null
                             && filled($record?->ai_result))
-                        ->label('AI teksti')
-                        ->icon('heroicon-o-sparkles')
+                        ->label('Sagatavotie teksti')
                         ->color('gray')
                         ->action(fn ($livewire) => $livewire->showSavedAiResult()),
                     // Rezerves šablona ģenerators — redzams tikai, ja nav
