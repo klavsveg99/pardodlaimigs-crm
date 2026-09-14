@@ -36,3 +36,6 @@ Thumbs.db
 # Local SQLite database
 /database/database.sqlite
 /database/database.sqlite-journal
+
+# npm lockfile not tracked in this repo
+/package-lock.json
