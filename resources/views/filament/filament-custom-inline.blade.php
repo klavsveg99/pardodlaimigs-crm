@@ -947,6 +947,22 @@ html.dark .rounded-xl .text-emerald-900 {
     padding: 1rem !important;
 }
 
+/* Home stats: on desktop the second row (Vid. pārdošanas cena +
+   Kapitalizācija) stretches to 50%/50% instead of 33%/33%+empty.
+   Cards 1-3 keep 1/3 width (span 2 of 6); cards 4+ span 3 of 6.
+   Mobile keeps the single column (base grid). */
+@media (min-width: 1024px) {
+    .fi-wi-stats-overview .fi-section-content {
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    }
+    .fi-wi-stats-overview .fi-section-content > * {
+        grid-column: span 2 !important;
+    }
+    .fi-wi-stats-overview .fi-section-content > *:nth-child(n + 4) {
+        grid-column: span 3 !important;
+    }
+}
+
 /* Form field & grid gaps are owned by Filament (fi-sc gap / fi-fo-field gap-y-2).
    Previous margin-bottom + gap overrides created double-spacing and inconsistency
    between resources. Remove them; keep Filament defaults uniform. */
