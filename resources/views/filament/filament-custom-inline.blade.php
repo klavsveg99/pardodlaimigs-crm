@@ -231,11 +231,16 @@ h1.fi-header-heading {
 .pdc-editor-modal,
 .pdc-editor-panel,
 .cropper-container,
-.cropper-modal,
 .fi-file-upload-image-editor,
 .fi-file-upload-image-editor .fi-modal {
     z-index: 2147483647 !important;
 }
+/* NOTE: .cropper-modal must NOT get a z-index here — in Cropper.js 1.x the
+   drag-box element carries the cropper-modal class (the 50% black overlay that
+   covers the image outside the crop box). Forcing it above the crop box
+   (z-index: 1) made the whole image, including the selected crop area, appear
+   darkened in the property attachments and agent photo editors. The
+   .cropper-container above already forms the top stacking context. */
 
 .fi-modal .fi-modal-overlay,
 .fi-modal .fi-modal-window,
