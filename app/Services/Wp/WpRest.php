@@ -8,24 +8,16 @@ use Illuminate\Support\Facades\Http;
 use Psr\Log\LoggerInterface;
 
 /**
- * Client for the WordPress CRM feed (wp-json/crm/v1/properties and /wpforms).
+ * Client for the WordPress CRM feed (wp-json/crm/v1/wpforms).
  *
- * The feed is the single source of truth for property and form-submission
- * data. Requests are authenticated with the X-CRM-API-Key header and
+ * The feed is the source of truth for form-submission data. Requests are
+ * authenticated with the X-CRM-API-Key header and
  * paginated via the `pagination.total_pages` envelope returned by the
  * endpoint.
  */
 class WpRest
 {
     public function __construct(private readonly LoggerInterface $log) {}
-
-    /**
-     * @return iterable<int, object>
-     */
-    public function eachProperty(int $perPage = 100): iterable
-    {
-        return $this->paginate('/properties', [], $perPage, 'properties');
-    }
 
     /**
      * Fetch WPForms entries, optionally only those created/updated after
