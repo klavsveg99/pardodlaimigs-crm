@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 2.3.7
+ * Version: 2.3.8
  * Author: Pārdod Laimīgs
  */
 if (! defined('ABSPATH')) {
@@ -479,7 +479,7 @@ function pdc_same_upload_basename($a, $b)
         && strcasecmp((string) $ea, (string) $eb) === 0;
 }
 
-function pdc_sync_attachments($post_id, $attachments)
+function pdc_sync_attachments($post_id, $attachments, $started_at = 0)
 {
     require_once ABSPATH.'wp-admin/includes/file.php';
     require_once ABSPATH.'wp-admin/includes/media.php';
@@ -549,7 +549,18 @@ function pdc_sync_attachments($post_id, $attachments)
     $image_ids = [];
     $downloaded = 0;
 
+    // Web PHP workers hard-kill long sync requests: if a run dies after the
+    // downloads but before the gallery/featured-image meta is written, the
+    // property keeps showing zero photos (a 81-photo gallery needs minutes per
+    // run — above the web max_execution_time). Budget the download phase so
+    // each run finishes gracefully: whatever exists so far is written
+    // gallery-wise and the rest resumes on the next sync tick.
+    $deferred = 0;
     foreach ($unique as $attachment) {
+        if ($started_at > 0 && (time() - $started_at) > 90) {
+            $deferred = count($unique) - count($image_ids);
+            break;
+        }
         $url = $attachment['url'];
         $path = $attachment['path'];
         $name = $attachment['name'];
@@ -638,7 +649,9 @@ function pdc_sync_attachments($post_id, $attachments)
         pdc_purge_post_cache($post_id);
     }
 
-    pdc_log('Post #'.$post_id.': '.count($image_ids).' images ('.$downloaded.' downloaded)');
+    pdc_log($deferred > 0
+        ? 'Post #'.$post_id.': '.count($image_ids).' images ('.$downloaded.' downloaded, '.$deferred.' deferred to next sync)'
+        : 'Post #'.$post_id.': '.count($image_ids).' images ('.$downloaded.' downloaded)');
 
     return $gallery;
 }
@@ -801,6 +814,7 @@ function pdc_sync_agents()
 
 function pdc_upsert_property($data, $agent_map = [])
 {
+    $upsert_started_at = time();
     $crm_id = isset($data['crm_id']) ? $data['crm_id'] : 0;
     $title = isset($data['title']) ? $data['title'] : '';
     $slug = isset($data['slug']) ? $data['slug'] : sanitize_title($title);
@@ -897,7 +911,7 @@ function pdc_upsert_property($data, $agent_map = [])
     }
     update_post_meta($post_id, 'real_estate_property_zip', $zip);
 
-    pdc_sync_attachments($post_id, isset($data['attachments']) ? $data['attachments'] : []);
+    pdc_sync_attachments($post_id, isset($data['attachments']) ? $data['attachments'] : [], $upsert_started_at);
 
     $assigned_agent_id = 0;
     if ($agent_crm_id > 0 && isset($agent_map['id:'.$agent_crm_id])) {
