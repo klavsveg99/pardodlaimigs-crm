@@ -50,7 +50,15 @@ class Task extends Model
             }
         });
 
-        static::deleted(fn ($t) => app(AuditLogger::class)->log('delete', 'task', $t->id, $t->toArray(), null));
+        static::deleted(function (self $t) {
+            app(AuditLogger::class)->log('delete', 'task', $t->id, $t->toArray(), null);
+
+            // Pielikumi bez saimnieka ir atkritumi — dzēšam arī failus.
+            $t->attachments()->get()->each(function ($attachment) {
+                \Illuminate\Support\Facades\Storage::disk($attachment->disk)->delete($attachment->path);
+                $attachment->delete();
+            });
+        });
     }
 
     public function assignedTo(): BelongsTo

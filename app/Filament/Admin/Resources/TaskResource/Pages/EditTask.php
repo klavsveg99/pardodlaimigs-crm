@@ -42,6 +42,14 @@ class EditTask extends EditRecord
                     Notification::make()->title('Uzdevums atzīmēts kā neizpildīts')->send();
                     $this->refresh();
                 }),
+            Actions\DeleteAction::make()
+                ->label('Dzēst uzdevumu')
+                ->icon('heroicon-o-trash')
+                ->color('danger')
+                ->requiresConfirmation()
+                ->modalHeading('Dzēst uzdevumu?')
+                ->modalDescription('Uzdevums un tā pielikumi tiks neatgriezeniski dzēsti.')
+                ->successRedirectUrl(TaskResource::getUrl('index')),
         ];
     }
 }

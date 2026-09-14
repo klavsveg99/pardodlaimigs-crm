@@ -142,6 +142,7 @@ class TaskResource extends Resource
                         ->visible(fn ($record) => (bool) $record->completed_at)
                         ->action(fn ($record) => $record->update(['completed_at' => null])),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),
+                    Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
                 ])->color('gray'),
             ])
             ->defaultSort('due_at')

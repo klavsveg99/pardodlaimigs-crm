@@ -42,6 +42,14 @@ class Viewing extends Model
             app(AuditLogger::class)->log('update', 'viewing', $v->id,
                 array_intersect_key($v->getOriginal(), $changes), $changes);
         });
+
+        static::deleted(function (self $viewing) {
+            // Pielikumu atkritumi — dzēšam arī failus (attachable = viewing).
+            $viewing->attachments()->get()->each(function ($attachment) {
+                \Illuminate\Support\Facades\Storage::disk($attachment->disk)->delete($attachment->path);
+                $attachment->delete();
+            });
+        });
     }
 
     public function property(): BelongsTo

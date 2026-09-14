@@ -147,6 +147,7 @@ class ViewingResource extends Resource
             ->actions([
                 Actions\ActionGroup::make([
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),
+                    Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
                 ])->color('gray'),
             ])
             ->defaultSort('scheduled_at');
