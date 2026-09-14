@@ -14,13 +14,9 @@ return [
     'APP_URL'     => 'https://crm.pardodlaimigs.lv',
     'APP_LOCALE'  => 'lv',
 
-    // ─── Database ───────────────────────────────────────────────
-    'DB_CONNECTION' => 'mysql',
-    'DB_HOST'       => 'localhost',
-    'DB_PORT'       => '3306',
-    'DB_DATABASE'   => 'u976787655_crm',
-    'DB_USERNAME'   => 'u976787655_crmuser',
-    'DB_PASSWORD'   => '',
+    // ─── Database (prod uses SQLite by default) ─────────────────
+    'DB_CONNECTION' => 'sqlite',
+    'DB_DATABASE'   => '/full/path/to/database.sqlite',
 
     // ─── WP Feed Auth ───────────────────────────────────────────
     'WP_CRM_API_KEY' => '',  // crm side mirror of WP_PDC_CRM_API_KEY define in prod wp-config.php
