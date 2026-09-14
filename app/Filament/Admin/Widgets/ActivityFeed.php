@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ActivityFeed extends BaseWidget
 {
-    protected static ?int $sort = 5;
+    protected static ?int $sort = 6;
 
     protected int|string|array $columnSpan = 'full';
 
@@ -95,8 +95,7 @@ class ActivityFeed extends BaseWidget
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Laiks')
                     ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->alignCenter(),
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('action')
                     ->label('Darbība')

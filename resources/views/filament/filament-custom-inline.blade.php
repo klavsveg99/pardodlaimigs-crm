@@ -885,10 +885,18 @@ html.dark .rounded-xl .text-emerald-900 {
     }
 }
 
-/* Standardized section spacing – keep Filament's grid for content containers;
-   previous display:block override broke StatsOverview 4-col (@xl/fi-grid) */
+/* ── Section spacing standard ─────────────────────────────────────
+   Vertical rhythm belongs to the grid row-gap (24px everywhere), not to
+   section margins — margin-bottom on sections stacked on top of the gaps
+   created double spacing on some pages and not on others.
+   Sections stay margin-free; the stats widget below is the single
+   exception: a slightly larger gap below the home stats boxes. */
 .fi-section {
-    margin-bottom: 1.5rem !important;
+    margin-bottom: 0 !important;
+}
+
+.fi-wi-stats-overview {
+    margin-bottom: 0.5rem !important;
 }
 
 /* Property form grid - stretch sections to fill row height */

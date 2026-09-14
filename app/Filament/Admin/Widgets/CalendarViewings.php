@@ -11,7 +11,7 @@ class CalendarViewings extends Widget
 {
     protected string $view = 'filament.admin.widgets.calendar-viewings';
 
-    protected static ?int $sort = 6;
+    protected static ?int $sort = 5;
 
     protected int|string|array $columnSpan = 'full';
 
