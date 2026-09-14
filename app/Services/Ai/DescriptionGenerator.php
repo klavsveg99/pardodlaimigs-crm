@@ -245,13 +245,13 @@ ESOŠAIS APRAKSTS (tikai saīsināšanas/pārliecinošāka režīmiem):
 Secība: Virsraksts (atsevišķā "title" laukā) → īss pārliecinošs ievads → Galvenie parametri (atsevišķs bloks) → Detalizēts apraksts → Telpas/aprīkojums ar aizzīmēm (<ul><li>) → Apkure un izmaksas (ja zināmas) → Konstrukcija/tehniskais stāvoklis (ja zināms) → Atrašanās vieta un apkārtne → Īpaši izdevīgi iegādes nosacījumi (TIKAI ja ievadīti) → Noslēguma pārdošanas arguments → Aicinājums sazināties/pieteikt apskati. Pēc LV daļas tāds pats EN tulkojums, balstīts TIKAI uz tiem pašiem faktiem: <p><strong>[LV]</strong><br>...</p> tad <p><strong>[EN]</strong><br>...</p>.
 
 4.4. SS.COM STRUKTŪRA ("description_ss" — vienkāršs teksts bez HTML, kompakts bet ar skaidriem blokiem):
-Īss uzmanību piesaistošs virsraksts (pirmā rinda) → 2–4 teikumu galvenais apraksts → Svarīgākie parametri katrs savā rindā → Galvenās priekšrocības ar aizzīmēm ("- " katras rindas sākumā) → Svarīgākie iegādes nosacījumi (ja attiecināms) → Atrašanās vietas priekšrocības → Īss aicinājums sazināties.
+Īss uzmanību piesaistošs virsraksts (pirmā rinda) → 2–4 teikumu galvenais apraksts → Svarīgākie parametri katrs savā rindā → Galvenās priekšrocības ar aizzīmēm ("- " katras rindas sākumā) → Svarīgākie iegādes nosacījumi (ja attiecināms) → Atrašanās vietas priekšrocības → Īss aicinājums sazināties. Pēc LV daļas tāds pats EN tulkojums, balstīts TIKAI uz tiem pašiem faktiem, atdalīts ar rindu "———— EN ————": LV bloks tad EN bloks (identiska struktūra angļu valodā).
 
 ATGRIEZT TIKAI JSON ar šādām atslēgām:
 - "description": WEB variants pēc 4.3. struktūras (HTML).
 - "description_ss": ss.com variants pēc 4.4. struktūras (tīrs teksts).
 - "title": īss sludinājuma virsraksta variants (maks. ~60 rakstzīmes, bez cenas, latviski).
-- "facebook": īss Facebook ieraksts (2-4 teikumi, draudzīgs tonis, emoji tikai ja der, bez izdomātiem faktiem).
+- "facebook": Facebook ieraksts (600–900 rakstzīmes); strukturēts: piesaistoša ievadrinda → 2–4 teikumi par īpašumu → bloks "Galvenie fakti:" ar 3–6 rindām (cena/platība/istabas/atradne — tikai aizpildītie dati) → noslēguma aicinājums pieteikt apskati un kontaktinformācijas akcents. Maksimums 2–3 emoji visā tekstā, tikai piemērotās vietās (piem. ievadrindā un aicinājumā). Bez izdomātiem faktiem.
 - "instagram": īss uzrunājošs Instagram/Reels apraksts (1-3 teikumi, 3-6 atbilstoši hashtag, piem. #nekustamieipasumi #pardodlaimigs).
 PROMPT;
     }

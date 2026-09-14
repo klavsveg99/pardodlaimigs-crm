@@ -29,6 +29,12 @@ class CreateCrmProperty extends CreateRecord
             $record->update(['ai_notes' => $aiNotes === [] ? null : $aiNotes]);
         }
 
+        // AI rezultāts tika ģenerēts pirms ieraksta izveides (Create lapā
+        // ieraksts vēl neeksistē) — saglabājam tiklīdz ieraksts ir.
+        if ($this->aiResult !== []) {
+            $record->update(['ai_result' => $this->aiResult]);
+        }
+
         return $record;
     }
 }

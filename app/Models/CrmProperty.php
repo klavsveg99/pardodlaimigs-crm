@@ -40,7 +40,7 @@ class CrmProperty extends Model
         'currency', 'category', 'status', 'lead_source', 'lead_owner', 'beds', 'baths',
         'size_m2', 'land_m2', 'kadastra_nr', 'city', 'address', 'zip',
         'lat', 'lng', 'owner_user_id', 'sort_order',
-        'final_price_eur', 'commission_eur', 'sold_at', 'ai_notes',
+        'final_price_eur', 'commission_eur', 'sold_at', 'ai_notes', 'ai_result',
     ];
 
     protected $casts = [
@@ -58,6 +58,7 @@ class CrmProperty extends Model
         'lng' => 'decimal:7',
         'sort_order' => 'integer',
         'ai_notes' => 'array',
+        'ai_result' => 'array',
     ];
 
     public function getRouteKeyName(): string

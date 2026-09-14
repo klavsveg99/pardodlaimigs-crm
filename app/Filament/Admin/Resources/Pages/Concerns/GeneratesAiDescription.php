@@ -6,8 +6,6 @@ namespace App\Filament\Admin\Resources\Pages\Concerns;
 
 use App\Services\Ai\DescriptionGenerator;
 use Filament\Notifications\Notification;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 
 /**
  * AI aprakstu ģenerators (CRM 2.1).
@@ -22,6 +20,60 @@ trait GeneratesAiDescription
     public array $aiResult = [];
 
     public bool $aiGenerating = false;
+
+    /** @return array<string, mixed> konteksts no pašreizējās formas datiem */
+    private function aiContext(): array
+    {
+        $data = $this->data ?? [];
+
+        return [
+            'title' => $data['title'] ?? null,
+            'category' => $data['category'] ?? null,
+            'status' => $data['status'] ?? null,
+            'price_eur' => $data['price_eur'] ?? null,
+            'beds' => $data['beds'] ?? null,
+            'baths' => $data['baths'] ?? null,
+            'size_m2' => $data['size_m2'] ?? null,
+            'land_m2' => $data['land_m2'] ?? null,
+            'kadastra_nr' => $data['kadastra_nr'] ?? null,
+            'city' => $data['city'] ?? null,
+            'address' => $data['address'] ?? null,
+        ];
+    }
+
+    /** Saglabā ģenerētos tekstus ierakstā, lai popup aizvēršana tos nezaudētu. */
+    protected function persistAiResult(): void
+    {
+        if ($this->record === null || $this->aiResult === []) {
+            return;
+        }
+
+        try {
+            $this->record->update(['ai_result' => $this->aiResult]);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
+    /** Atver rezultātu popup ar iepriekš saglabātajiem tekstiem (bez ģenerēšanas). */
+    public function showSavedAiResult(): void
+    {
+        if (! is_array($this->record?->ai_result) || $this->record->ai_result === []) {
+            return;
+        }
+
+        $this->aiResult = $this->record->ai_result;
+        $this->dispatch('ai-results-updated');
+    }
+
+    /**
+     * Popup aizvēršana: saglabā popup rediģētos tekstus ierakstā.
+     */
+    public function saveAiResult(array $texts): void
+    {
+        $this->aiResult = array_merge($this->aiResult, $texts);
+        $this->persistAiResult();
+    }
 
     /**
      * Izsauc "AI ģenerēt aprakstu" sekcijas darbība no formas (modala forma).
@@ -47,23 +99,8 @@ trait GeneratesAiDescription
         $this->aiGenerating = true;
 
         try {
-            $data = $this->data ?? [];
-
-            $context = [
-                'title' => $data['title'] ?? null,
-                'category' => $data['category'] ?? null,
-                'status' => $data['status'] ?? null,
-                'price_eur' => $data['price_eur'] ?? null,
-                'beds' => $data['beds'] ?? null,
-                'baths' => $data['baths'] ?? null,
-                'size_m2' => $data['size_m2'] ?? null,
-                'land_m2' => $data['land_m2'] ?? null,
-                'kadastra_nr' => $data['kadastra_nr'] ?? null,
-                'city' => $data['city'] ?? null,
-                'address' => $data['address'] ?? null,
-            ];
-
-            $this->aiResult = app(DescriptionGenerator::class)->generate($context, is_array($aiNotes) ? $aiNotes : []);
+            $this->aiResult = app(DescriptionGenerator::class)->generate($this->aiContext(), is_array($aiNotes) ? $aiNotes : []);
+            $this->persistAiResult();
             $this->dispatch('ai-results-updated');
         } catch (\Throwable $e) {
             report($e);
@@ -96,26 +133,11 @@ trait GeneratesAiDescription
         $this->aiGenerating = true;
 
         try {
-            $data = $this->data ?? [];
-
-            $context = [
-                'title' => $data['title'] ?? null,
-                'category' => $data['category'] ?? null,
-                'status' => $data['status'] ?? null,
-                'price_eur' => $data['price_eur'] ?? null,
-                'beds' => $data['beds'] ?? null,
-                'baths' => $data['baths'] ?? null,
-                'size_m2' => $data['size_m2'] ?? null,
-                'land_m2' => $data['land_m2'] ?? null,
-                'kadastra_nr' => $data['kadastra_nr'] ?? null,
-                'city' => $data['city'] ?? null,
-                'address' => $data['address'] ?? null,
-            ];
-
-            $notes = is_array($data['ai_notes'] ?? null) ? $data['ai_notes'] : [];
+            $notes = is_array($this->data['ai_notes'] ?? null) ? $this->data['ai_notes'] : [];
 
             $this->aiResult = app(DescriptionGenerator::class)
-                ->generate($context, $notes, $mode, $currentDescription);
+                ->generate($this->aiContext(), $notes, $mode, $currentDescription);
+            $this->persistAiResult();
             $this->dispatch('ai-results-updated');
         } catch (\Throwable $e) {
             report($e);

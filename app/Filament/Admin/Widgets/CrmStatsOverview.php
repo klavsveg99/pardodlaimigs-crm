@@ -6,8 +6,6 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Models\Client;
 use App\Models\CrmProperty;
-use App\Models\Task;
-use App\Models\Viewing;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -25,32 +23,35 @@ class CrmStatsOverview extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $todayStart = now()->startOfDay();
-        $todayEnd = now()->endOfDay();
+        $user = auth()->user();
+        $isAdmin = $user?->can('manage') ?? false;
+
         $monthStart = now()->startOfMonth();
         $monthEnd = now()->endOfMonth();
         $yearStart = now()->startOfYear();
         $yearEnd = now()->endOfYear();
 
-        $overdueTasks = Task::whereNull('completed_at')->where('due_at', '<', now())->count();
-        $lateViewings = Viewing::where('scheduled_at', '<', now())
-            ->where('status', '!=', 'done')
+        // "Aktīvie" = publicētie (Pārdošanā) visiem aģentiem kopā; apakšā
+        // parādās pašreizējā aģenta paša aktīvie īpašumi.
+        $activeProperties = CrmProperty::where('status', 'published')->count();
+        $myActiveProperties = CrmProperty::where('status', 'published')
+            ->where('owner_user_id', $user?->id)
             ->count();
-        // "Aktīvie" = publicētie (Pārdošanā) — saskaņā ar Īpašumu saraksta
-        // cilni: melnraksti, pārdotie un dzēstie netiek skaitīti.
-        $activeProperties = CrmProperty::whereNotIn('status', ['draft', 'sold', 'deleted'])->count();
-        $openTasks = Task::whereNull('completed_at')->count();
-        $totalClients = Client::count();
+
+
+        $totalClients = ($isAdmin ? Client::query() : Client::where('owner_user_id', $user?->id))->count();
+        $newClientsThisMonth = (($isAdmin ? Client::query() : Client::where('owner_user_id', $user?->id)))
+            ->whereBetween('created_at', [$monthStart, $monthEnd])
+            ->count();
 
         // Sold this month (portable: sold_at when present, else updated_at)
-        $soldThisMonth = $this->soldInRange($monthStart, $monthEnd);
+        $soldThisMonth = $this->soldInRange($monthStart, $monthEnd, $isAdmin);
 
         $monthCommission = (float) $soldThisMonth['commission'];
         $monthSoldCount = $soldThisMonth['count'];
 
         // Yearly sold for avg metrics
-        $soldThisYear = $this->soldInRange($yearStart, $yearEnd);
-        $yearCommission = round($soldThisYear['commission'], 2);
+        $soldThisYear = $this->soldInRange($yearStart, $yearEnd, $isAdmin);
         $yearCount = (int) $soldThisYear['count'];
         $yearFinalValue = round($soldThisYear['final_price'], 2);
 
@@ -58,19 +59,15 @@ class CrmStatsOverview extends StatsOverviewWidget
             ? round($soldThisYear['final_price'] / $yearCount, 2)
             : null;
 
-        // Average commission percent across sold properties (per-property, weighted)
-        $avgCommissionPercent = $this->averageCommissionPercent($yearStart, $yearEnd);
-
-        $avgSellDays = $this->averageSellDays($yearStart, $yearEnd);
-
         $stats = [
             Stat::make('Aktīvie īpašumi', $activeProperties)
+                ->description('Mani īpašumi: '.$myActiveProperties)
                 ->descriptionIcon('heroicon-o-home')
                 ->color('success')
                 ->url(\App\Filament\Admin\Resources\CrmPropertyResource::getUrl('index')),
 
-            Stat::make('Klienti (kopā)', $totalClients)
-                ->description('Jauni šomēnes: '.Client::whereBetween('created_at', [$monthStart, $monthEnd])->count())
+            Stat::make($isAdmin ? 'Aktīvie klienti' : 'Mani klienti', $totalClients)
+                ->description('Jauni šomēnes: '.$newClientsThisMonth)
                 ->descriptionIcon('heroicon-o-users')
                 ->color('info')
                 ->url(\App\Filament\Admin\Resources\ClientResource::getUrl('index')),
@@ -81,43 +78,49 @@ class CrmStatsOverview extends StatsOverviewWidget
                 ->color('primary')
                 ->url(\App\Filament\Admin\Resources\CrmPropertyResource::getUrl('index')),
 
-
         ];
 
-        $stats[] = Stat::make('Vid. pārdošanas cena (gads)', $avgDealValue !== null ? number_format($avgDealValue, 0, ',', ' ').' €' : '—')
-            ->description($avgDealValue !== null ? 'Kopā šogad: '.number_format($yearFinalValue, 0, ',', ' ').' € ('.$yearCount.' pārdoti)' : 'Nav pārdoto īpašumu šogad')
+        if ($isAdmin) {
+            $stats[] = Stat::make('Vid. pārdošanas cena (gads)', $avgDealValue !== null ? number_format($avgDealValue, 0, ',', ' ').' €' : '—')
+                ->description($avgDealValue !== null ? 'Kopā šogad: '.number_format($yearFinalValue, 0, ',', ' ').' € ('.$yearCount.' pārdoti)' : 'Nav pārdoto īpašumu šogad')
+                ->descriptionIcon('heroicon-o-banknotes')
+                ->color('secondary')
+                ->url(\App\Filament\Admin\Resources\CrmPropertyResource::getUrl('index'));
+        }
+
+        // Kapitalizācija = pašreizējā kopējā vērtība Pārdošanā esošajiem
+        // īpašumiem (aģentam — paša īpašumi, adminam — visi kopā).
+        $capitalization = ($isAdmin
+            ? CrmProperty::query()
+            : CrmProperty::query()->where('owner_user_id', $user?->id)
+        )
+            ->where('status', 'published')
+            ->sum('price_eur');
+
+        $stats[] = Stat::make('Kapitalizācija', number_format((float) $capitalization, 0, ',', ' ').' €')
             ->descriptionIcon('heroicon-o-banknotes')
-            ->color('secondary')
+            ->color('primary')
             ->url(\App\Filament\Admin\Resources\CrmPropertyResource::getUrl('index'));
-
-
-
-        $stats[] = Stat::make('Atvērtas apskates šodien', Viewing::whereBetween('scheduled_at', [$todayStart, $todayEnd])->count())
-            ->description($lateViewings > 0 ? 'Nokavētas: '.$lateViewings : null)
-            ->descriptionIcon($lateViewings > 0 ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-calendar-days')
-            ->color($lateViewings > 0 ? 'warning' : 'info')
-            ->url(\App\Filament\Admin\Resources\ViewingResource::getUrl('index'));
-
-        $stats[] = Stat::make('Atvērtie uzdevumi', $openTasks)
-            ->description($overdueTasks > 0 ? 'Nokavētas: '.$overdueTasks : null)
-            ->descriptionIcon($overdueTasks > 0 ? 'heroicon-o-exclamation-triangle' : null)
-            ->color($overdueTasks > 0 ? 'warning' : 'secondary')
-            ->url(\App\Filament\Admin\Resources\TaskResource::getUrl('index'));
 
         return $stats;
     }
 
-    protected function soldInRange($start, $end): array
+    protected function soldInRange($start, $end, bool $forAdminOnly = true): array
     {
-        $properties = CrmProperty::query()
+        $query = CrmProperty::query()
             ->where('status', 'sold')
             ->where(function ($q) use ($start, $end) {
                 $q->whereBetween('sold_at', [$start, $end])
                     ->orWhere(fn ($q2) => $q2
                         ->whereNull('sold_at')
                         ->whereBetween('updated_at', [$start, $end]));
-            })
-            ->get(['sold_at', 'updated_at', 'commission_eur', 'final_price_eur', 'lead_source']);
+            });
+
+        if (! $forAdminOnly) {
+            $query->where('owner_user_id', auth()->id());
+        }
+
+        $properties = $query->get(['sold_at', 'updated_at', 'commission_eur', 'final_price_eur', 'lead_source']);
 
         $commission = 0;
         $finalPrice = 0;
@@ -139,63 +142,4 @@ class CrmStatsOverview extends StatsOverviewWidget
         return ['commission' => round($commission, 2), 'final_price' => $finalPrice, 'count' => $count];
     }
 
-    protected function averageCommissionPercent($start, $end): ?float
-    {
-        $properties = CrmProperty::query()
-            ->where('status', 'sold')
-            ->where('final_price_eur', '>', 0)
-            ->where('commission_eur', '>', 0)
-            ->where(function ($q) use ($start, $end) {
-                $q->whereBetween('sold_at', [$start, $end])
-                    ->orWhere(fn ($q2) => $q2
-                        ->whereNull('sold_at')
-                        ->whereBetween('updated_at', [$start, $end]));
-            })
-            ->get(['commission_eur', 'final_price_eur']);
-
-        $totalComm = 0;
-        $totalFinal = 0;
-        foreach ($properties as $property) {
-            $totalComm += (float) $property->commission_eur;
-            $totalFinal += (float) $property->final_price_eur;
-        }
-
-        if ($totalFinal <= 0) {
-            return null;
-        }
-
-        return round($totalComm / $totalFinal * 100, 2);
-    }
-
-    protected function averageSellDays($start, $end): ?int
-    {
-        $properties = CrmProperty::query()
-            ->where('status', 'sold')
-            ->whereNotNull('created_at')
-            ->where(function ($q) use ($start, $end) {
-                $q->whereBetween('sold_at', [$start, $end])
-                    ->orWhere(fn ($q2) => $q2
-                        ->whereNull('sold_at')
-                        ->whereBetween('updated_at', [$start, $end]));
-            })
-            ->get(['created_at', 'sold_at', 'updated_at']);
-
-        $totalDays = 0;
-        $count = 0;
-        foreach ($properties as $property) {
-            $soldAt = $property->sold_at ?? $property->updated_at;
-            if (! $soldAt || ! $property->created_at) {
-                continue;
-            }
-            $days = (int) floor(abs($soldAt->getTimestamp() - $property->created_at->getTimestamp()) / 86400);
-            $totalDays += $days;
-            $count++;
-        }
-
-        if ($count === 0) {
-            return null;
-        }
-
-        return (int) round($totalDays / $count);
-    }
 }

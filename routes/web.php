@@ -21,6 +21,15 @@ Route::get('/cron-schedule', function () {
     }
     Artisan::call('schedule:run');
 
+    // Nav pastāvīga queue worker'a koplietotajā hostingā — iztukšojam rindu
+    // ar katru cron piezvaniem (maks 45s no request laika).
+    Artisan::call('queue:work', [
+        '--stop-when-empty' => true,
+        '--max-time' => 45,
+        '--tries' => 1,
+        '--sleep' => 1,
+    ]);
+
     return response()->json(['ok' => true, 'ran_at' => now()->toIso8601String()]);
 })->name('cron-schedule');
 

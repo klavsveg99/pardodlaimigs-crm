@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 class CategoryLeaders extends BaseWidget
 {
-    protected static ?int $sort = 7;
+    protected static ?int $sort = 3;
 
     protected int|string|array $columnSpan = 'full';
 

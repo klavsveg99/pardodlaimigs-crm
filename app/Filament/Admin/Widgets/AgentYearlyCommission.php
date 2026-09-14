@@ -13,9 +13,14 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 class AgentYearlyCommission extends BaseWidget
 {
-    protected static ?int $sort = 8;
+    protected static ?int $sort = 7;
 
     protected int|string|array $columnSpan = 'full';
+
+    public static function canView(): bool
+    {
+        return auth()->user()?->can('manage') ?? false;
+    }
 
     public function getTableRecordKey(EloquentModel|array $record): string
     {

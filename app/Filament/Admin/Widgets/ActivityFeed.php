@@ -17,9 +17,14 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ActivityFeed extends BaseWidget
 {
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 5;
 
     protected int|string|array $columnSpan = 'full';
+
+    public static function canView(): bool
+    {
+        return auth()->user()?->can('manage') ?? false;
+    }
 
     public const ACTION_LABELS = [
         'create' => 'Izveidots',

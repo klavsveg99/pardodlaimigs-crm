@@ -270,6 +270,15 @@ class CrmPropertyResource extends Resource
                             'extra' => $record?->ai_notes['extra'] ?? null,
                         ])
                         ->action(fn (array $data, $livewire) => $livewire->runAiGenerator($data)),
+                    // Rezultātu popup ar iepriekš ģenerētajiem un saglabātajiem
+                    // tekstiem (popup aizvēršana tos nesamazina).
+                    Actions\Action::make('ai_saved_result')
+                        ->visible(fn (?CrmProperty $record): bool => DescriptionGenerator::provider() !== null
+                            && filled($record?->ai_result))
+                        ->label('AI teksti')
+                        ->icon('heroicon-o-sparkles')
+                        ->color('gray')
+                        ->action(fn ($livewire) => $livewire->showSavedAiResult()),
                     // Rezerves šablona ģenerators — redzams tikai, ja nav
                     // konfigurēta neviena AI atslēga (GEMINI/OPENAI).
                     Actions\Action::make('ai_generate_description')

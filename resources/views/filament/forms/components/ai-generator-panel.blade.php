@@ -26,6 +26,29 @@
                 this.loading = false;
             }
         },
+        close() {
+            // Saglabā popup rediģētos tekstus ierakstā — aizvēršana nezaudē
+            // rezultātu.
+            this.$wire.saveAiResult({
+                title: this.result.title,
+                description: this.result.description,
+                description_ss: this.result.description_ss,
+                facebook: this.result.facebook,
+                instagram: this.result.instagram,
+            });
+            this.open = false;
+        },
+        reopenInput() {
+            // Atgriežas uz AI ievades modāli (piezīmēm), nevis ģenerē
+            // no jauna ar esošajiem noteikumiem. Filament mountAction
+            // no JS gribu preset params — tāpēc vienkārši nospiežam pašu
+            // sadaļas galvenes AI pogu (redzama vienmēr, kad AI nav tukš).
+            this.close();
+            const trigger = [...document.querySelectorAll('button')].find((b) => b.textContent.trim().includes('AI ģenerēt aprakstu'));
+            if (trigger) {
+                trigger.click();
+            }
+        },
         insert(field) {
             if (field === 'description') {
                 this.$wire.set('data.description', this.result.description);
@@ -131,11 +154,11 @@
     </style>
 
     <template x-if="open">
-        <div class="pdc-ai-modal" @click.self="open = false" @keydown.escape.window="open = false">
+        <div class="pdc-ai-modal" @click.self="close()" @keydown.escape.window="if (open) close()">
             <div class="pdc-ai-card" role="dialog" aria-modal="true">
                 <div class="pdc-ai-head">
                     <strong class="text-sm">AI ģenerētie teksti</strong>
-                    <button type="button" class="pdc-ai-btn" @click="open = false">Aizvērt</button>
+                    <button type="button" class="pdc-ai-btn" @click="close()">Aizvērt</button>
                 </div>
                 <div class="pdc-ai-body">
                     <div class="pdc-ai-sec">
@@ -200,7 +223,7 @@
                 <div class="pdc-ai-foot">
                     <span x-show="loading" class="pdc-ai-spinner" aria-label="Ģenerē..."></span>
                     <span x-show="loading" class="text-xs text-gray-500">Ģenerē...</span>
-                    <button type="button" class="pdc-ai-btn" :disabled="loading" @click="regenerate('full')">
+                    <button type="button" class="pdc-ai-btn" :disabled="loading" @click="reopenInput()">
                         <span>Ģenerēt vēlreiz</span>
                     </button>
                     <button type="button" class="pdc-ai-btn" :disabled="loading" @click="regenerate('shorten')">
