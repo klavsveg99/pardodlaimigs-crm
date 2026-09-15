@@ -60,7 +60,7 @@ class CrmStatsOverview extends StatsOverviewWidget
             : null;
 
         $stats = [
-            Stat::make('Aktīvie īpašumi', $activeProperties)
+            Stat::make('Īpašumi pārdošanā uzņēmumā', $activeProperties)
                 ->description('Mani īpašumi: '.$myActiveProperties)
                 ->descriptionIcon('heroicon-o-home')
                 ->color('success')

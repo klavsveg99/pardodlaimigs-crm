@@ -1204,12 +1204,14 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     /* Page header wrapper keeps Filament's 32px paddings on mobile, which reads
        as a large blank band between the topbar/heading and the table below */
     .fi-page-header-main-ctn { padding-top: 1rem !important; padding-bottom: 0.75rem !important; }
-    /* When header actions wrap below the heading, park them on the right.
-       The container must be shrinkable (overrides the global flex 0 0 auto),
+    /* When header actions wrap below the title (they don't fit beside it),
+       align them LEFT like the title above: no margin-left auto, and the
+       container must stay shrinkable (overrides the global flex 0 0 auto),
        otherwise multiple buttons (e.g. view property) overflow the screen
-       instead of wrapping into new rows. */
-    .fi-header-actions-ctn { margin-left: auto !important; flex: 1 1 auto !important; min-width: 0 !important; max-width: 100% !important; }
-    .fi-header-actions-ctn .fi-ac { justify-content: flex-end !important; }
+       instead of wrapping into new rows. When they DO fit beside the title,
+       the growing heading block (flex 1) still pushes them to the right
+       edge as before. */
+    .fi-header-actions-ctn { flex: 0 1 auto !important; min-width: 0 !important; max-width: 100% !important; }
     .fi-btn { white-space: normal !important; text-align: center !important; }
     /* Row action buttons (⋮ Darbības) align right at the end of each record card */
     .fi-ta-table td:has(> .fi-ta-actions) { text-align: right !important; }

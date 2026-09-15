@@ -93,6 +93,23 @@ class MyProfile extends Page
                         ->unique(table: User::class, ignoreRecord: true),
                 ])->columns(2),
 
+                Section::make('Parole')->schema([
+                    TextInput::make('password')
+                        ->label('Jauna parole')
+                        ->hint('Atstāj tukšu, ja nemainīt')
+                        ->password()
+                        ->revealable()
+                        ->dehydrated(fn ($state) => filled($state))
+                        ->maxLength(255)
+                        ->confirmed(),
+                    TextInput::make('password_confirmation')
+                        ->label('Jauna parole atkārtoti')
+                        ->password()
+                        ->revealable()
+                        ->dehydrated(false)
+                        ->maxLength(255),
+                ])->columns(2),
+
                 Section::make('Aģenta publiskais profils')->schema([
                     AvatarEditor::make('avatar_path')
                         ->label('Foto')
@@ -151,3 +168,4 @@ class MyProfile extends Page
             ->send();
     }
 }
+
