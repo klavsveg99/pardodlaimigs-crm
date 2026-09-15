@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources\Pages\Concerns;
 
+use App\Services\ImageOptimizer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
@@ -87,7 +88,7 @@ trait SyncsAttachments
                 continue;
             }
 
-            $record->attachments()->create([
+            $attachment = $record->attachments()->create([
                 'path' => $path,
                 'disk' => 'public',
                 'original_name' => $originalName,
@@ -95,6 +96,23 @@ trait SyncsAttachments
                 'size' => $disk->size($path),
                 'sort_order' => $i,
             ]);
+
+            // Newly attached local images are optimised immediately (max
+            // 1920px + re-encode + thumbnail). Property uploads are already
+            // optimised by the upload endpoint — skip when a thumb file
+            // already exists to avoid double re-encoding.
+            if (str_starts_with((string) $disk->mimeType($path), 'image/')) {
+                $absolute = $disk->path($path);
+
+                if (! is_file(dirname($absolute).DIRECTORY_SEPARATOR.'thumb-'.basename($absolute))) {
+                    try {
+                        $result = app(ImageOptimizer::class)->optimize($absolute);
+                        $attachment->update(['size' => $result['size']]);
+                    } catch (Throwable) {
+                        // Optimisation must never block saving the record.
+                    }
+                }
+            }
         }
     }
 }
