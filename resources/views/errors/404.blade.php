@@ -58,7 +58,7 @@
         <img class="logo" src="{{ asset('images/favicon-180x180.jpg') }}" alt="Pārdod Laimīgs CRM">
         <div class="code">404</div>
         <h1>Lapa nav atrasta</h1>
-        <p>Šī lapa neeksistē, tika izdzēsta vai jums nav piekļuves tai.</p>
+        <p>Šī lapa neeksistē, tika izdzēsta vai jums nav piekļuves.</p>
         <a class="btn" href="/">Uz CRM sākumu</a>
     </main>
 </body>
