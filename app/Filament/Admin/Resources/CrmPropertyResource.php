@@ -23,6 +23,7 @@ use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use UnitEnum;
@@ -46,6 +47,16 @@ class CrmPropertyResource extends Resource
     protected static ?string $pluralModelLabel = 'Īpašumi';
 
     protected static ?int $navigationSort = 20;
+
+    // Aģenti redz TIKAI savus īpašumus — arī atverot tiešu URL (edit/view
+    // maršrutu binding izmanto šo pašu vaicājumu).
+    public static function getEloquentQuery(): EloquentBuilder
+    {
+        return parent::getEloquentQuery()->when(
+            ! auth()->user()?->can('manage'),
+            fn ($query) => $query->where('owner_user_id', auth()->id()),
+        );
+    }
 
     public static function form(Schema $schema): Schema
     {

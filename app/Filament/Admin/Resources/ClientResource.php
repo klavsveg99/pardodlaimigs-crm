@@ -20,6 +20,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use UnitEnum;
@@ -41,6 +42,15 @@ class ClientResource extends Resource
     protected static ?string $recordRouteKeyName = 'slug';
 
     protected static ?int $navigationSort = 10;
+
+    // Aģenti redz tikai savus klientus — arī atverot tiešu URL.
+    public static function getEloquentQuery(): EloquentBuilder
+    {
+        return parent::getEloquentQuery()->when(
+            ! auth()->user()?->can('manage'),
+            fn ($query) => $query->where('owner_user_id', auth()->id()),
+        );
+    }
 
     public static function form(Schema $schema): Schema
     {

@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use UnitEnum;
 
 class TaskResource extends Resource
@@ -32,6 +33,16 @@ class TaskResource extends Resource
     protected static ?string $pluralModelLabel = 'Uzdevumi';
 
     protected static ?int $navigationSort = 20;
+
+    // Aģenti redz tikai savam aģentam piesaistītos uzdevumus — arī
+    // atverot tiešu URL.
+    public static function getEloquentQuery(): EloquentBuilder
+    {
+        return parent::getEloquentQuery()->when(
+            ! auth()->user()?->can('manage'),
+            fn ($query) => $query->where('assigned_user_id', auth()->id()),
+        );
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -151,7 +162,9 @@ class TaskResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = Task::whereNull('completed_at')->count();
+        $count = Task::query()->whereNull('completed_at')
+            ->when(! auth()->user()?->can('manage'), fn ($q) => $q->where('assigned_user_id', auth()->id()))
+            ->count();
 
         return $count > 0 ? (string) $count : null;
     }

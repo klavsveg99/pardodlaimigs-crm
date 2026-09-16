@@ -28,6 +28,7 @@ final class CalendarEvents
     {
         return Viewing::with(['property', 'client', 'agent'])
             ->whereNotNull('scheduled_at')
+            ->when(! auth()->user()?->can('manage'), fn ($q) => $q->where('agent_user_id', auth()->id()))
             ->get()
             ->map(fn (Viewing $viewing): array => [
                 'id' => 'viewing-'.$viewing->id,
@@ -54,6 +55,7 @@ final class CalendarEvents
     {
         return Task::with(['assignedTo', 'client'])
             ->whereNotNull('due_at')
+            ->when(! auth()->user()?->can('manage'), fn ($q) => $q->where('assigned_user_id', auth()->id()))
             ->get()
             ->map(fn (Task $task): array => [
                 'id' => 'task-'.$task->id,

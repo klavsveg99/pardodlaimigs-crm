@@ -102,9 +102,12 @@ class TodayPriorities extends BaseWidget
                 $records[] = $record;
             }
         } else {
+            $onlyMine = ! auth()->user()?->can('manage');
+
             // Tasks due today or overdue (not completed)
             Task::query()
                 ->whereNull('completed_at')
+                ->when($onlyMine, fn ($q) => $q->where('assigned_user_id', auth()->id()))
                 ->where(function ($q) use ($today) {
                     $q->whereDate('due_at', $today)
                       ->orWhere(function ($q2) {
@@ -135,6 +138,7 @@ class TodayPriorities extends BaseWidget
             // Viewings today
             Viewing::query()
                 ->whereDate('scheduled_at', $today)
+                ->when($onlyMine, fn ($q) => $q->where('agent_user_id', auth()->id()))
                 ->with(['agent', 'client', 'property'])
                 ->get()
                 ->each(function (Viewing $viewing) use (&$records) {

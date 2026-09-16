@@ -24,19 +24,32 @@ class ListCrmProperties extends ListRecords
 
     public function getTabs(): array
     {
+        // Aģentiem skaitītāji rāda tikai viņa paša īpašumus
+        $count = fn (array $conditions): int => self::agentScoped(CrmProperty::query())
+            ->where($conditions)
+            ->count();
+
         return [
             'active' => Tab::make('Aktīvie')
                 ->modifyQueryUsing(fn (Builder $query) => $query->whereNotIn('status', ['draft', 'deleted', 'sold']))
-                ->badge(CrmProperty::query()->whereNotIn('status', ['draft', 'deleted', 'sold'])->count()),
+                ->badge($count(fn ($q) => $q->whereNotIn('status', ['draft', 'deleted', 'sold']))),
             'draft' => Tab::make('Melnraksti')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'draft'))
-                ->badge(CrmProperty::query()->where('status', 'draft')->count()),
+                ->badge($count(fn ($q) => $q->where('status', 'draft'))),
             'sold' => Tab::make('Pārdotie')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'sold'))
-                ->badge(CrmProperty::query()->where('status', 'sold')->count()),
+                ->badge($count(fn ($q) => $q->where('status', 'sold'))),
             'deleted' => Tab::make('Dzēstie')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'deleted'))
-                ->badge(CrmProperty::query()->where('status', 'deleted')->count()),
+                ->badge($count(fn ($q) => $q->where('status', 'deleted'))),
         ];
+    }
+
+    private static function agentScoped(Builder $query): Builder
+    {
+        return $query->when(
+            ! auth()->user()?->can('manage'),
+            fn ($q) => $q->where('owner_user_id', auth()->id()),
+        );
     }
 }

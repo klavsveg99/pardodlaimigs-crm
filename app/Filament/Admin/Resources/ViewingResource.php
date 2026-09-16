@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use UnitEnum;
 
 class ViewingResource extends Resource
@@ -31,6 +32,15 @@ class ViewingResource extends Resource
     protected static ?string $pluralModelLabel = 'Apskates';
 
     protected static ?int $navigationSort = 30;
+
+    // Aģenti redz tikai savas apskates — arī atverot tiešu URL.
+    public static function getEloquentQuery(): EloquentBuilder
+    {
+        return parent::getEloquentQuery()->when(
+            ! auth()->user()?->can('manage'),
+            fn ($query) => $query->where('agent_user_id', auth()->id()),
+        );
+    }
 
     public static function form(Schema $schema): Schema
     {

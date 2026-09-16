@@ -51,6 +51,18 @@ class WpformEntryResource extends Resource
 
     protected static ?int $navigationSort = 30;
 
+    // Pieteikumi ir konfidenciāli — pieejami tikai administratoriem
+    // (slēpti arī navigācijā un klienta skatā).
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('manage') ?? false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return static::canAccess();
+    }
+
     public static function table(Table $table): Table
     {
         return $table

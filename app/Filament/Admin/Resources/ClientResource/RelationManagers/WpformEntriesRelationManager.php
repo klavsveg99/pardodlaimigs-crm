@@ -8,6 +8,7 @@ use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Tables\Table;
 
 class WpformEntriesRelationManager extends RelationManager
@@ -17,6 +18,12 @@ class WpformEntriesRelationManager extends RelationManager
     protected static ?string $title = 'Pieteikumi';
 
     protected static string|\BackedEnum|null $icon = 'heroicon-o-inbox-stack';
+
+    // Tikai administratoriem redzams cilnes bloks klienta lapā.
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return auth()->user()?->can('manage') ?? false;
+    }
 
     public function table(Table $table): Table
     {
