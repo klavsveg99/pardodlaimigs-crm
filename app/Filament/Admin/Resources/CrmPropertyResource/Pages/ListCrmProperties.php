@@ -25,15 +25,12 @@ class ListCrmProperties extends ListRecords
     public function getTabs(): array
     {
         // Aģentiem skaitītāji rāda tikai viņa paša īpašumus
-        $count = fn (array $conditions): int => self::agentScoped(CrmProperty::query())
-            ->where($conditions)
-            ->count();
+        $count = fn (callable $conditions): int => $conditions(self::agentScoped(CrmProperty::query()))->count();
 
         return [
             'active' => Tab::make('Aktīvie')
                 ->modifyQueryUsing(fn (Builder $query) => $query->whereNotIn('status', ['draft', 'deleted', 'sold']))
-                ->badge($count(fn ($q) => $q->whereNotIn('status', ['draft', 'deleted', 'sold']))),
-            'draft' => Tab::make('Melnraksti')
+                ->badge($count(fn ($q) => $q->whereNotIn('status', ['draft', 'deleted', 'sold']))),            'draft' => Tab::make('Melnraksti')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'draft'))
                 ->badge($count(fn ($q) => $q->where('status', 'draft'))),
             'sold' => Tab::make('Pārdotie')
