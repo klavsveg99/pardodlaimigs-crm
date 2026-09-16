@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Models\Concerns\HasSlug;
 use App\Services\AuditLogger;
 use Illuminate\Database\Eloquent\Model;
+use App\Support\PhoneFormat;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -32,6 +34,15 @@ class Client extends Model
         'marketing_consent' => 'boolean',
         'gdpr_erased_at' => 'datetime',
     ];
+
+    // Vārds vienmēr tiek normalizēts: tikai pirmie burti lielie
+    // ("VINETA IVANOVA" → "Vineta Ivanova").
+    protected function name(): Attribute
+    {
+        return Attribute::set(
+            fn ($value): ?string => filled($value) ? mb_convert_case(trim((string) $value), MB_CASE_TITLE, 'UTF-8') : $value,
+        );
+    }
 
     protected static function booted(): void
     {
