@@ -243,7 +243,7 @@
         sendSelected: [],        // attachment ids (clicked file pre-selected)
         sendTo: '',
         sendSubject: '',
-        sendFromName: @js(config('mail.from.name') ?: 'Pārdod Laimīgs'),
+        sendFromName: @js(auth()->user()?->name ?: (config('mail.from.name') ?: 'Pārdod Laimīgs')),
         initSend(file) {
             if (typeof file.id !== 'number') return;
             this.sendTarget = file;
@@ -425,8 +425,34 @@
             this.sync();
             $wire.$refresh && $wire.$refresh();
         },
-        removeFile(id) {
+        async removeFile(id) {
             if (!confirm('Dzēst šo failu?')) return;
+
+            // Client attachments are persisted immediately, so deleting must
+            // hit the server (works on both edit and view pages).
+            if (this.clientUpload && typeof id === 'number') {
+                try {
+                    const resp = await fetch('{{ route("clients.attachments.destroy", ["clientSlug" => ":slug", "attachment" => ":id"]) }}'
+                        .replace(':slug', String((this._root || this.$el).dataset.clientSlug))
+                        .replace(':id', String(id)), {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': this.csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                    if (!resp.ok) {
+                        const d = await resp.json().catch(() => ({}));
+                        alert(d.message || 'Neizdevās izdzēst failu.');
+                        return;
+                    }
+                } catch (e) {
+                    alert('Neizdevās izdzēst failu: ' + (e.message || ''));
+                    return;
+                }
+            }
+
             this.files = this.files.filter(f => f.id !== id);
             this.selected = this.selected.filter(s => s !== id);
             this.sync();
@@ -997,7 +1023,7 @@
                             <span>Nosūtīt</span>
                         </button>
                     @endif
-                    @if($isDeletable && !$isView)
+                    @if($isDeletable && ((!$isView) || $isSendable))
                         <button
                             type="button"
                             x-on:click.stop="removeFile(file.id)"
@@ -1011,7 +1037,7 @@
             </div>
         </template>
     </div>
-    @if(!$isView)
+    @if((!$isView) || $isSendable)
         <div style="margin-top: 0.5rem;">
             <button
                 type="button"
@@ -1057,7 +1083,7 @@
             <span>Nav pielikumu.</span>
         </div>
         <div style="margin-top: 0.75rem;">
-            @if(!$isView)
+            @if((!$isView) || $isSendable)
             <button
                 type="button"
                 x-on:click="pickFiles()"

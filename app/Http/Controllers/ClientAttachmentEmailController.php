@@ -95,6 +95,35 @@ class ClientAttachmentEmailController extends Controller
         ]);
     }
 
+    /**
+     * Delete a client attachment (file + record). Used by the attachment
+     * rows so removal works on the view page too, where Filament does not
+     * save form state.
+     */
+    public function destroy(Request $request, string $clientSlug, int $attachment): JsonResponse
+    {
+        /** @var \App\Models\Client|null $client */
+        $client = Client::query()->where('slug', $clientSlug)->first();
+        if (! $client) {
+            return response()->json(['message' => 'Klients nav atrasts.'], 404);
+        }
+
+        $user = $request->user();
+        if (! $user->can('manage') && $client->owner_user_id !== $user->id) {
+            return response()->json(['message' => 'Nav piekļuves.'], 403);
+        }
+
+        $record = $client->attachments()->whereKey($attachment)->first();
+        if (! $record) {
+            return response()->json(['message' => 'Fails nav atrasts.'], 404);
+        }
+
+        \Illuminate\Support\Facades\Storage::disk($record->disk)->delete($record->path);
+        $record->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
     public function send(Request $request, string $clientSlug): JsonResponse
     {
         /** @var \App\Models\Client $client */

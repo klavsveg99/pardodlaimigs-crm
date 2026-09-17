@@ -243,3 +243,7 @@ Route::post('/clients/{clientSlug}/attachments/upload',
 Route::post('/clients/{clientSlug}/attachments/send-email',
     [App\Http\Controllers\ClientAttachmentEmailController::class, 'send']
 )->middleware(['auth', 'web'])->name('clients.attachments.send-email');
+
+Route::delete('/clients/{clientSlug}/attachments/{attachment}',
+    [App\Http\Controllers\ClientAttachmentEmailController::class, 'destroy']
+)->middleware(['auth', 'web'])->name('clients.attachments.destroy');
