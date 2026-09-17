@@ -1394,9 +1394,9 @@ function pdc_frontend_enqueue()
         form.classList.add('pdc-filter-popup');
         var header = document.querySelector('.ere-property-wrap .ere-heading-style2');
         if (header && header.parentNode) {
-            header.insertBefore(trigger, header.nextSibling);
+            header.parentNode.insertBefore(trigger, header.nextSibling);
         } else {
-            form.parentNode.insertBefore(trigger, form.nextSibling);
+            form.parentNode.insertBefore(trigger, form);
         }
 
         // Click into the dimmed backdrop closes the popup.
@@ -1439,8 +1439,20 @@ function pdc_frontend_enqueue()
         jQuery(document).on('ere_single_property_page_loaded properties_page_loaded',
             function () { setTimeout(reapply, 50); });
     }
-    new MutationObserver(function () { setTimeout(reapply, 100); })
-        .observe(document.body, { childList: true, subtree: true });
+    // Reapply after AJAX/DOM updates (carousel re-inits, AJAX paging, etc.).
+    var boot = function () {
+        if (!document.body) {
+            return setTimeout(boot, 100);
+        }
+        new MutationObserver(function () { setTimeout(reapply, 100); })
+            .observe(document.body, { childList: true, subtree: true });
+        reapply();
+    };
+    if (document.readyState !== 'loading') {
+        boot();
+    } else {
+        document.addEventListener('DOMContentLoaded', boot);
+    }
 })();
 JS;
 
