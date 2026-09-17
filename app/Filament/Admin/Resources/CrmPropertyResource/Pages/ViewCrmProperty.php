@@ -6,9 +6,11 @@ namespace App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 
 use App\Filament\Admin\Resources\CrmPropertyResource;
 use App\Filament\Admin\Resources\Pages\Concerns\PievienotKlientuRelationAction;
+use App\Filament\Forms\Components\AttachmentsGrid;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Schema;
 
 class ViewCrmProperty extends ViewRecord
 {
@@ -17,6 +19,23 @@ class ViewCrmProperty extends ViewRecord
     protected static string $resource = CrmPropertyResource::class;
 
     protected string $view = 'filament.admin.resources.crm-property-resource.pages.view-crm-property';
+
+    /**
+     * The custom view blade renders the readable sections itself; the form
+     * only carries the documents grid so the view page gets the same
+     * attachment rows (send/remove) as the edit page and clients.
+     */
+    public function form(Schema $schema): Schema
+    {
+        return $schema->components([
+            AttachmentsGrid::make('attachments_documents')
+                ->reorderable(false)
+                ->multiselect(false)
+                ->deletable()
+                ->collection('documents')
+                ->propertySendable(),
+        ]);
+    }
 
     protected function getHeaderActions(): array
     {

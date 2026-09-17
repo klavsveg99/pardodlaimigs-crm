@@ -111,13 +111,6 @@
 
     @php
         $galleryAttachments = $record->attachments->where('collection', 'gallery')->sortBy('sort_order')->values();
-        $documentAttachments = $record->attachments->where('collection', 'documents')->sortBy('sort_order')->values();
-        $propertyMailClients = $record->clients->map(fn ($c) => [
-            'id' => $c->id,
-            'name' => (string) $c->name,
-            'email' => (string) ($c->email ?? ''),
-            'phone' => (string) ($c->phone ?? ''),
-        ])->values()->all();
     @endphp
 
     <x-filament::section heading="Galerija">
@@ -203,70 +196,7 @@
     </x-filament::section>
 
     <x-filament::section heading="Pielikumi">
-        @php
-            $docsPayload = $documentAttachments->map(fn ($a) => [
-                'id' => $a->id,
-                'name' => $a->original_name,
-                'size' => (int) $a->size,
-            ])->values();
-            $formatSize = function (int $bytes): string {
-                if ($bytes >= 1048576) {
-                    return number_format($bytes / 1048576, 1, ',', ' ').' MB';
-                }
-                if ($bytes >= 1024) {
-                    return number_format($bytes / 1024, 0, ',', ' ').' KB';
-                }
-
-                return $bytes.' B';
-            };
-        @endphp
-
-        @if ($documentAttachments->isNotEmpty())
-            <script>
-                window.pdcPropertyDocs = @js($docsPayload);
-                window.pdcOpenPropertyDoc = function (id) {
-                    const all = window.pdcPropertyDocs || [];
-                    const file = all.find(f => f.id === id);
-                    if (file) {
-                        window.dispatchEvent(new CustomEvent('pdc-open-send', { detail: { file, all } }));
-                    }
-                };
-            </script>
-            <div class="flex flex-col gap-2">
-                @foreach ($documentAttachments as $doc)
-                    <div class="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2 dark:border-[#27303a] dark:bg-[#0b0f14]">
-                        <svg class="text-gray-400" style="width:1.25rem;height:1.25rem;flex:none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
-                        </svg>
-                        <div class="min-w-0 flex-1">
-                            <p class="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $doc->original_name }}</p>
-                            <p class="text-xs text-gray-500">{{ $doc->created_at?->format('d.m.Y') }} · {{ $formatSize((int) $doc->size) }}</p>
-                        </div>
-                        <a href="{{ $doc->cacheBustedUrl() }}" target="_blank"
-                           class="fi-btn fi-size-sm fi-color fi-color-gray fi-outlined" style="text-decoration:none;">Atvērt</a>
-                        @if (count($propertyMailClients) > 0)
-                            <button type="button" onclick="pdcOpenPropertyDoc({{ $doc->id }})" title="Nosūtīt ar e-pastu"
-                                style="display:inline-flex; flex-direction:row; flex-wrap:nowrap; align-items:center; gap:0.35rem; white-space:nowrap; padding:0.4rem 0.7rem; border-radius:0.5rem; background:var(--pdc-primary); color:#fff; border:1px solid var(--pdc-primary); cursor:pointer; font-size:0.78rem; font-weight:600;">
-                                <svg style="width:0.9rem;height:0.9rem;flex:none;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
-                                <span>Nosūtīt</span>
-                            </button>
-                        @endif
-                    </div>
-                @endforeach
-            </div>
-        @else
-            <p class="text-sm text-gray-500">Pielikumu nav.</p>
-        @endif
-
-        @if (count($propertyMailClients) > 0)
-            @include('filament.partials.attachment-send-popup', [
-                'mode' => 'property',
-                'slug' => (string) ($record->slug ?? $record->getKey()),
-                'clients' => $propertyMailClients,
-                'defaultTo' => '',
-                'baseWa' => '',
-            ])
-        @endif
+        {{ $this->form }}
     </x-filament::section>
 
     <x-filament::section heading="Saistītie klienti">

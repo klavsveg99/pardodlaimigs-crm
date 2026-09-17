@@ -102,6 +102,27 @@ class PropertyAttachmentEmailController extends Controller
         ]);
     }
 
+    public function destroy(Request $request, string $propertySlug, int $attachment): JsonResponse
+    {
+        $property = CrmProperty::query()->where('slug', $propertySlug)->first();
+        if (! $property) {
+            return response()->json(['message' => 'Īpašums nav atrasts.'], 404);
+        }
+        if (! $this->authorizeProperty($request, $property)) {
+            return response()->json(['message' => 'Nav piekļuves.'], 403);
+        }
+
+        $record = $property->attachments()->whereKey($attachment)->first();
+        if (! $record) {
+            return response()->json(['message' => 'Fails nav atrasts.'], 404);
+        }
+
+        Storage::disk($record->disk)->delete($record->path);
+        $record->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
     public function send(Request $request, string $propertySlug): JsonResponse
     {
         $property = CrmProperty::query()->where('slug', $propertySlug)->first();

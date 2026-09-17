@@ -257,6 +257,10 @@ Route::post('/properties/{propertySlug}/attachments/send-email',
     [App\Http\Controllers\PropertyAttachmentEmailController::class, 'send']
 )->middleware(['auth', 'web'])->name('properties.attachments.send-email');
 
+Route::delete('/properties/{propertySlug}/attachments/{attachment}',
+    [App\Http\Controllers\PropertyAttachmentEmailController::class, 'destroy']
+)->middleware(['auth', 'web'])->name('properties.attachments.destroy');
+
 // ── Viewing / Task attachments (associated client recipient) ──
 foreach (['viewings' => 'Viewing', 'tasks' => 'Task'] as $segment => $suffix) {
     Route::post("/{$segment}/{id}/attachments/upload",

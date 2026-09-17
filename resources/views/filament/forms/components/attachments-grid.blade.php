@@ -122,7 +122,8 @@
             .'data-upload-url-client="'.e(route('clients.attachments.upload', ['clientSlug' => $record?->slug ?? $record?->getKey()])).'" '
             .'data-delete-url="'.e(route('clients.attachments.destroy', ['clientSlug' => $record?->slug ?? $record?->getKey(), 'attachment' => ':id'])).'"';
     } elseif ($isPropertySendable && $record) {
-        $sendDataAttrs = 'data-upload-url-property="'.e(route('properties.attachments.upload', ['propertySlug' => $record->slug ?? $record->getKey()])).'"';
+        $sendDataAttrs = 'data-upload-url-property="'.e(route('properties.attachments.upload', ['propertySlug' => $record->slug ?? $record->getKey()])).'" '
+            .'data-delete-url="'.e(route('properties.attachments.destroy', ['propertySlug' => $record->slug ?? $record->getKey(), 'attachment' => ':id'])).'"';
     } elseif ($recordSegment && $record) {
         $sendDataAttrs = 'data-upload-url-record="'.e(route($recordSegment.'.attachments.upload', ['id' => $record->getKey()])).'" '
             .'data-delete-url="'.e(route($recordSegment.'.attachments.destroy', ['id' => $record->getKey(), 'attachment' => ':id'])).'"';
@@ -1007,7 +1008,7 @@
                             <span>Nosūtīt</span>
                         </button>
                     @endif
-                    @if($isDeletable && ((!$isView) || $isSendable))
+                    @if($isDeletable && ((!$isView) || $isSendable || $isPropertySendable))
                         <button
                             type="button"
                             x-on:click.stop="removeFile(file.id)"
