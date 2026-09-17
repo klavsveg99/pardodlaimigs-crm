@@ -247,3 +247,12 @@ Route::post('/clients/{clientSlug}/attachments/send-email',
 Route::delete('/clients/{clientSlug}/attachments/{attachment}',
     [App\Http\Controllers\ClientAttachmentEmailController::class, 'destroy']
 )->middleware(['auth', 'web'])->name('clients.attachments.destroy');
+
+// ── Property attachments: upload + "Nosūtīt" email (associated client) ──
+Route::post('/properties/{propertySlug}/attachments/upload',
+    [App\Http\Controllers\PropertyAttachmentEmailController::class, 'upload']
+)->middleware(['auth', 'web'])->name('properties.attachments.upload');
+
+Route::post('/properties/{propertySlug}/attachments/send-email',
+    [App\Http\Controllers\PropertyAttachmentEmailController::class, 'send']
+)->middleware(['auth', 'web'])->name('properties.attachments.send-email');

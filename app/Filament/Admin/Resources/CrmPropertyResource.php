@@ -462,6 +462,7 @@ class CrmPropertyResource extends Resource
                     ->reorderable()
                     ->deletable()
                     ->multiselect()
+                    ->propertySendable()
                     ->columnSpanFull(),
 
                 Forms\Components\Hidden::make('attachment_original_names')

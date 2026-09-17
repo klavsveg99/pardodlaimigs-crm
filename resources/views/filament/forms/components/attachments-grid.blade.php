@@ -5,18 +5,36 @@
     $isDeletable = $isDeletable();
     $isMultiselect = $isMultiselect();
     $isSendable = $isSendable();
+    $isPropertySendable = $isPropertySendable();
     // ViewRecord publication renders the same field read-only.
     $isView = (fn () => $getContainer()->getOperation() === 'view')();
 
     $existingAttachments = $record?->attachments?->sortBy('sort_order')?->values() ?? collect();
 
-    // Mark files that were previously emailed to this client ("Nosūtīts
-    // klientam") from the audit activity log.
+    // Associated clients (properties only): the email recipient must be one
+    // of them, and with none associated the send buttons are not shown.
+    $propertyClients = ($isPropertySendable && $record instanceof \App\Models\CrmProperty)
+        ? $record->clients->map(fn ($c) => [
+            'id' => $c->id,
+            'name' => (string) $c->name,
+            'email' => (string) ($c->email ?? ''),
+            'phone' => (string) ($c->phone ?? ''),
+        ])->values()->all()
+        : [];
+    $canSend = ! $isPropertySendable || count($propertyClients) > 0;
+
+    // Mark files that were previously emailed ("Nosūtīts klientam") from the
+    // audit activity log — client-scoped for clients, property-scoped for
+    // properties.
     $sentAtByAttachment = [];
-    if ($record && $isSendable) {
+    if ($record && ($isSendable || $isPropertySendable)) {
         \App\Models\Activity::query()
             ->where('type', 'attachment_email_sent')
-            ->where('client_id', $record->id)
+            ->when(
+                $isPropertySendable,
+                fn ($q) => $q->where('property_id', $record->id),
+                fn ($q) => $q->where('client_id', $record->id),
+            )
             ->orderBy('created_at')
             ->get()
             ->each(function ($activity) use (&$sentAtByAttachment): void {
@@ -44,22 +62,33 @@
     $uploadUrl = route('filament.admin.property.upload-attachment');
     $proxyUrl = route('filament.admin.property.image-proxy');
 
-    // WhatsApp chat link from the client's phone ("+371 24248764", "24248764"…).
-    $waPhone = preg_replace('/\D+/', '', (string) ($record?->phone ?? ''));
-    if (strlen($waPhone) === 8) {
-        $waPhone = '371'.$waPhone;
-    }
-    $waLink = $waPhone !== '' ? 'https://wa.me/'.$waPhone : '';
+    // WhatsApp chat link from a phone ("+371 24248764", "24248764"…).
+    $waPhone = static function (?string $phone): string {
+        $digits = preg_replace('/\D+/', '', (string) $phone);
+        if (strlen($digits) === 8) {
+            $digits = '371'.$digits;
+        }
+
+        return $digits !== '' ? 'https://wa.me/'.$digits : '';
+    };
+    $waLink = $waPhone($record?->phone);
 
     // Blade @if inside an HTML tag breaks the tag when Livewire wraps the
     // directive in an HTML comment (the ">" terminates the tag early), so
     // conditional attributes are precomputed and echoed as plain markup.
-    $sendDataAttrs = $isSendable
-        ? 'data-client-slug="'.e($record?->slug ?? $record?->getKey()).'" '
+    $sendDataAttrs = '';
+    if ($isSendable) {
+        $sendDataAttrs = 'data-mail-mode="client" '
+            .'data-client-slug="'.e($record?->slug ?? $record?->getKey()).'" '
             .'data-default-to="'.e((string) ($record?->email ?? '')).'" '
             .'data-wa-link="'.e($waLink).'" '
-            .'data-upload-url-client="'.e(route('clients.attachments.upload', ['clientSlug' => $record?->slug ?? $record?->getKey()])).'"'
-        : '';
+            .'data-upload-url-client="'.e(route('clients.attachments.upload', ['clientSlug' => $record?->slug ?? $record?->getKey()])).'"';
+    } elseif ($isPropertySendable && $record) {
+        $sendDataAttrs = 'data-mail-mode="property" '
+            .'data-property-slug="'.e($record->slug ?? $record->getKey()).'" '
+            .'data-upload-url-property="'.e(route('properties.attachments.upload', ['propertySlug' => $record->slug ?? $record->getKey()])).'" '
+            .'data-mail-clients="'.e(json_encode($propertyClients, JSON_UNESCAPED_UNICODE)).'"';
+    }
 
     $cardDragAttrs = $isReorderable
         ? 'draggable="true" '
@@ -244,13 +273,22 @@
         sendTo: '',
         sendSubject: '',
         sendFromName: @js(auth()->user()?->name ?: (config('mail.from.name') ?: 'Pārdod Laimīgs')),
+        mailMode: 'client',
+        mailClients: [],
+        sendClientId: null,
         initSend(file) {
             if (typeof file.id !== 'number') return;
             this.sendTarget = file;
             this.sendSelected = [file.id];
-            this.sendTo = (this._root || this.$el).dataset.defaultTo || '';
             this.sendSubject = file.name;
             this.sendError = '';
+            if (this.mailMode === 'property') {
+                const first = this.mailClients.find(c => c.email) || this.mailClients[0] || null;
+                this.sendClientId = first ? first.id : null;
+                this.sendTo = first ? (first.email || '') : '';
+            } else {
+                this.sendTo = (this._root || this.$el).dataset.defaultTo || '';
+            }
             this.sendOpen = true;
             document.body.style.overflow = 'hidden';
             this.$nextTick(() => {
@@ -260,7 +298,19 @@
             });
         },
         // opens WhatsApp chat with the client's number (popup footer)
-        get waLink() { return this._waLink || ''; },
+        get waLink() {
+            if (this.mailMode === 'property') {
+                const c = this.sendClientId ? this.mailClients.find(x => x.id === this.sendClientId) : null;
+                const digits = String((c && c.phone) || '').replace(/\D+/g, '');
+                if (digits.length === 8) return 'https://wa.me/371' + digits;
+                return digits ? 'https://wa.me/' + digits : '';
+            }
+            return this._waLink || '';
+        },
+        onSendClientChange() {
+            const c = this.mailClients.find(x => x.id === this.sendClientId);
+            if (c && c.email) { this.sendTo = c.email; }
+        },
         closeSend() {
             if (this.sendSending) return;
             this.sendOpen = false;
@@ -290,7 +340,11 @@
             if (this.sendWarn()) { this.sendError = 'Pielikumi pārsniedz 18 MB — izvēlieties mazāk failu.'; return; }
             this.sendSending = true;
             try {
-                const resp = await fetch('{{ route("clients.attachments.send-email", ["clientSlug" => ":slug"]) }}'.replace(':slug', String((this._root || this.$el).dataset.clientSlug)), {
+                const root = this._root || this.$el;
+                const url = this.mailMode === 'property'
+                    ? '{{ route("properties.attachments.send-email", ["propertySlug" => ":slug"]) }}'.replace(':slug', String(root.dataset.propertySlug))
+                    : '{{ route("clients.attachments.send-email", ["clientSlug" => ":slug"]) }}'.replace(':slug', String(root.dataset.clientSlug));
+                const resp = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -302,6 +356,7 @@
                         to: this.sendTo,
                         subject: this.sendSubject,
                         from_name: this.sendFromName,
+                        client_id: this.sendClientId,
                         files: this.sendSelected,
                         body: this.$refs.sendEditor ? this.$refs.sendEditor.innerHTML : '',
                     }),
@@ -337,8 +392,10 @@
         },
         init() {
             try { this.files = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || []; } catch(e){ this.files=[]; }
-            this.uploadUrl = this.$el.dataset.uploadUrlClient || this.$el.dataset.uploadUrl;
+            this.uploadUrl = this.$el.dataset.uploadUrlClient || this.$el.dataset.uploadUrlProperty || this.$el.dataset.uploadUrl;
             this.clientUpload = !!this.$el.dataset.uploadUrlClient;
+            this.mailMode = this.$el.dataset.mailMode || 'client';
+            try { this.mailClients = JSON.parse(this.$el.dataset.mailClients || '[]') || []; } catch (e) { this.mailClients = []; }
             this.proxyUrl = this.$el.dataset.proxyUrl || null;
             this.csrfToken = document.querySelector('meta[name=&quot;csrf-token&quot;]')?.content || document.querySelector('meta[name=csrf-token]')?.content;
             this._waLink = this.$el.dataset.waLink || '';
@@ -430,7 +487,7 @@
 
             // Client attachments are persisted immediately, so deleting must
             // hit the server (works on both edit and view pages).
-            if (this.clientUpload && typeof id === 'number') {
+            if (this.mailMode === 'client' && this.clientUpload && typeof id === 'number') {
                 try {
                     const resp = await fetch('{{ route("clients.attachments.destroy", ["clientSlug" => ":slug", "attachment" => ":id"]) }}'
                         .replace(':slug', String((this._root || this.$el).dataset.clientSlug))
@@ -934,13 +991,13 @@
                     </button>
                 @endif
 
-                @if($isSendable)
+                @if($isSendable || ($isPropertySendable && $canSend))
                     <button
                         type="button"
-                        x-show="typeof file.id === 'number'"
+                        x-bind:style="{ display: typeof file.id === 'number' ? 'inline-flex' : 'none' }"
                         x-on:click.stop="initSend(file)"
                         title="Nosūtīt ar e-pastu"
-                        style="position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10; height: 1.7rem; padding: 0 0.55rem; border-radius: 0.4rem; background: var(--pdc-primary); color: white; display: flex; align-items: center; gap: 0.3rem; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; font-size: 0.72rem; font-weight: 600;"
+                        style="position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10; height: 1.7rem; padding: 0 0.55rem; border-radius: 0.4rem; background: var(--pdc-primary); color: white; display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.3rem; white-space: nowrap; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; font-size: 0.72rem; font-weight: 600;"
                     >
                         <svg style="width: 0.85rem; height: 0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
                         <span>Nosūtīt</span>
@@ -1187,8 +1244,8 @@
         </div>
     </template>
 
-    @if($isSendable)
-    <!-- Nosūtīt popup (opened only from a row's "Nosūtīt" button) -->
+    @if($isSendable || ($isPropertySendable && $canSend))
+    <!-- Nosūtīt popup (opened only from an attachment's "Nosūtīt" button) -->
     <template x-if="sendOpen">
         <div
             data-pdc-send-popup
@@ -1206,6 +1263,14 @@
 
                 <div style="padding: 1rem 1.1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
                     <div style="display: grid; gap: 0.65rem;">
+                        <label x-bind:style="{ display: (mailMode === 'property' && mailClients.length > 1) ? 'flex' : 'none' }" style="display: none; flex-direction: column; gap: 0.25rem;">
+                            <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Klients</span>
+                            <select x-model.number="sendClientId" x-on:change="onSendClientChange()" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;">
+                                <template x-for="c in mailClients" :key="c.id">
+                                    <option :value="c.id" x-text="c.name + (c.email ? ' · ' + c.email : '')"></option>
+                                </template>
+                            </select>
+                        </label>
                         <label style="display: flex; flex-direction: column; gap: 0.25rem;">
                             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Saņēmējs</span>
                             <input type="email" x-model="sendTo" placeholder="e-pasts" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;" />

@@ -18,6 +18,8 @@ class AttachmentsGrid extends Field
 
     public bool $sendable = false;
 
+    public bool $propertySendable = false;
+
     public static function make(?string $name = null): static
     {
         return parent::make($name);
@@ -49,6 +51,22 @@ class AttachmentsGrid extends Field
         $this->sendable = $sendable;
 
         return $this;
+    }
+
+    /**
+     * Property attachments: per-file "Nosūtīt" by email to one of the
+     * property's associated clients.
+     */
+    public function propertySendable(bool $propertySendable = true): static
+    {
+        $this->propertySendable = $propertySendable;
+
+        return $this;
+    }
+
+    public function isPropertySendable(): bool
+    {
+        return $this->propertySendable;
     }
 
     public function isReorderable(): bool
