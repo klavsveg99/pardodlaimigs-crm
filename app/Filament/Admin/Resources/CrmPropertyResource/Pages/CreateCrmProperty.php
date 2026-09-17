@@ -15,6 +15,15 @@ class CreateCrmProperty extends CreateRecord
     use GeneratesAiDescription;
     use SyncsAttachments;
 
+    /**
+     * Property attachments live in two collections: gallery images and
+     * separate "Pielikumi" documents.
+     */
+    protected function attachmentCollections(): array
+    {
+        return ['attachments' => 'gallery', 'attachments_documents' => 'documents'];
+    }
+
     protected static string $resource = CrmPropertyResource::class;
 
     protected function handleRecordCreation(array $data): Model

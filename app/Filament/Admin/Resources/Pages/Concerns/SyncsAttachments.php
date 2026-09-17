@@ -11,10 +11,25 @@ use Illuminate\Support\Facades\Storage;
 
 trait SyncsAttachments
 {
-    /** @var array<int, array{0: string, 1: string}> */
+    /**
+     * Attachment form fields on the page, mapped to their storage
+     * collection. Pages with several grids (property gallery + documents)
+     * override this.
+     *
+     * @var array<string, string>
+     */
     protected array $attachmentsToSync = [];
 
-    protected bool $attachmentsFieldPresent = false;
+    /** @var array<string, bool> */
+    protected array $attachmentsFieldPresent = [];
+
+    /**
+     * @return array<string, string> form field name => collection
+     */
+    protected function attachmentCollections(): array
+    {
+        return ['attachments' => 'gallery'];
+    }
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
@@ -32,10 +47,15 @@ trait SyncsAttachments
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $attachments = $this->getRecord()->attachments()->get();
+        foreach ($this->attachmentCollections() as $field => $collection) {
+            $attachments = $this->getRecord()->attachments()
+                ->where('collection', $collection)
+                ->orderBy('sort_order')
+                ->get();
 
-        $data['attachments'] = $attachments->pluck('path')->all();
-        $data['attachment_original_names'] = $attachments->pluck('original_name', 'path')->all();
+            $data[$field] = $attachments->pluck('path')->all();
+            $data[$this->attachmentNamesKey($field)] = $attachments->pluck('original_name', 'path')->all();
+        }
 
         return $data;
     }
@@ -52,89 +72,111 @@ trait SyncsAttachments
 
     protected function captureAttachments(array &$data): void
     {
-        // Only sync when the attachments field was actually part of the
-        // submitted data. A missing key (e.g. a save that never rendered the
-        // field) must never be treated as "delete everything".
-        $this->attachmentsFieldPresent = array_key_exists('attachments', $data);
+        $this->attachmentsToSync = [];
+        $this->attachmentsFieldPresent = [];
 
-        $names = $data['attachment_original_names'] ?? [];
+        foreach ($this->attachmentCollections() as $field => $collection) {
+            // Only sync when the field was actually part of the submitted
+            // data. A missing key (e.g. a save that never rendered the field)
+            // must never be treated as "delete everything".
+            $this->attachmentsFieldPresent[$field] = array_key_exists($field, $data);
 
-        $this->attachmentsToSync = array_map(
-            fn (string $path): array => [$path, $names[$path] ?? basename($path)],
-            array_values(array_filter(
-                $data['attachments'] ?? [],
-                fn ($path): bool => is_string($path) && $path !== ''
-            ))
-        );
+            $namesKey = $this->attachmentNamesKey($field);
+            $names = $data[$namesKey] ?? [];
 
-        unset($data['attachments'], $data['attachment_original_names']);
+            $this->attachmentsToSync[$field] = [
+                'collection' => $collection,
+                'items' => array_map(
+                    fn (string $path): array => [$path, $names[$path] ?? basename($path)],
+                    array_values(array_filter(
+                        $data[$field] ?? [],
+                        fn ($path): bool => is_string($path) && $path !== ''
+                    ))
+                ),
+            ];
+
+            unset($data[$field], $data[$namesKey]);
+        }
+    }
+
+    private function attachmentNamesKey(string $field): string
+    {
+        return str_replace('attachments', 'attachment_original_names', $field);
     }
 
     private function syncAttachments(Model $record): void
     {
-        if (! $this->attachmentsFieldPresent) {
-            return;
-        }
-
-        $paths = array_column($this->attachmentsToSync, 0);
-
-        $existing = $record->attachments()->get()->keyBy('path');
-
-        foreach ($existing as $attachment) {
-            if (! in_array($attachment->path, $paths, true)) {
-                Storage::disk($attachment->disk)->delete($attachment->path);
-                $attachment->delete();
-            }
-        }
-
         $disk = Storage::disk('public');
 
-        foreach ($this->attachmentsToSync as $i => [$path, $originalName]) {
-            $attachment = $existing[$path] ?? null;
-
-            if ($attachment) {
-                if ($attachment->sort_order !== $i) {
-                    $attachment->update(['sort_order' => $i]);
-                }
-
+        foreach ($this->attachmentsToSync as $field => $group) {
+            if (! ($this->attachmentsFieldPresent[$field] ?? false)) {
                 continue;
             }
 
-            $attachment = $record->attachments()->create([
-                'path' => $path,
-                'disk' => 'public',
-                'original_name' => $originalName,
-                'mime_type' => $disk->mimeType($path),
-                'size' => $disk->size($path),
-                'sort_order' => $i,
-            ]);
+            $collection = $group['collection'];
+            $items = $group['items'];
+            $paths = array_column($items, 0);
 
-            // Newly attached local files are optimised immediately.
-            // Images: max 1920px + re-encode + thumbnail (property uploads
-            // are already optimised by the upload endpoint — skip when a
-            // thumb file already exists to avoid double re-encoding).
-            // PDFs: Ghostscript re-compress, original kept on any failure.
-            // Any other document (docx etc.) is never touched.
-            $mime = (string) $disk->mimeType($path);
+            $existing = $record->attachments()
+                ->where('collection', $collection)
+                ->get()
+                ->keyBy('path');
 
-            if (str_starts_with($mime, 'image/') || $mime === 'application/pdf') {
-                $absolute = $disk->path($path);
-                $notThumb = dirname($absolute).DIRECTORY_SEPARATOR.'thumb-'.basename($absolute);
+            foreach ($existing as $attachment) {
+                if (! in_array($attachment->path, $paths, true)) {
+                    Storage::disk($attachment->disk)->delete($attachment->path);
+                    $attachment->delete();
+                }
+            }
 
-                try {
-                    if (str_starts_with($mime, 'image/')) {
-                        if (! is_file($notThumb)) {
-                            $result = app(ImageOptimizer::class)->optimize($absolute);
-                            $attachment->update(['size' => $result['size']]);
-                        }
-                    } else {
-                        $pdfSize = app(PdfOptimizer::class)->optimize($absolute);
-                        if ($pdfSize !== null) {
-                            $attachment->update(['size' => $pdfSize]);
-                        }
+            foreach ($items as $i => [$path, $originalName]) {
+                $attachment = $existing[$path] ?? null;
+
+                if ($attachment) {
+                    if ($attachment->sort_order !== $i) {
+                        $attachment->update(['sort_order' => $i]);
                     }
-                } catch (Throwable) {
-                    // Optimisation must never block saving the record.
+
+                    continue;
+                }
+
+                $attachment = $record->attachments()->create([
+                    'collection' => $collection,
+                    'path' => $path,
+                    'disk' => 'public',
+                    'original_name' => $originalName,
+                    'mime_type' => $disk->mimeType($path),
+                    'size' => $disk->size($path),
+                    'sort_order' => $i,
+                ]);
+
+                // Newly attached local files are optimised immediately.
+                // Images: max 1920px + re-encode + thumbnail (property uploads
+                // are already optimised by the upload endpoint — skip when a
+                // thumb file already exists to avoid double re-encoding).
+                // PDFs: Ghostscript re-compress, original kept on any failure.
+                // Any other document (docx etc.) is never touched.
+                $mime = (string) $disk->mimeType($path);
+
+                if (str_starts_with($mime, 'image/') || $mime === 'application/pdf') {
+                    $absolute = $disk->path($path);
+                    $notThumb = dirname($absolute).DIRECTORY_SEPARATOR.'thumb-'.basename($absolute);
+
+                    try {
+                        if (str_starts_with($mime, 'image/')) {
+                            if (! is_file($notThumb)) {
+                                $result = app(ImageOptimizer::class)->optimize($absolute);
+                                $attachment->update(['size' => $result['size']]);
+                            }
+                        } else {
+                            $pdfSize = app(PdfOptimizer::class)->optimize($absolute);
+                            if ($pdfSize !== null) {
+                                $attachment->update(['size' => $pdfSize]);
+                            }
+                        }
+                    } catch (Throwable) {
+                        // Optimisation must never block saving the record.
+                    }
                 }
             }
         }

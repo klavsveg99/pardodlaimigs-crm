@@ -77,6 +77,7 @@ class ClientAttachmentEmailController extends Controller
         }
 
         $attachment = $client->attachments()->create([
+            'collection' => 'gallery',
             'path' => $path,
             'disk' => 'public',
             'original_name' => $originalName,

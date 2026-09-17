@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 class Attachment extends Model
 {
     protected $fillable = [
-        'attachable_type', 'attachable_id', 'disk', 'path',
+        'attachable_type', 'attachable_id', 'collection', 'disk', 'path',
         'original_name', 'mime_type', 'size', 'sort_order',
     ];
 

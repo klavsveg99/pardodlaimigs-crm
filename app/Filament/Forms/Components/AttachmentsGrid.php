@@ -20,9 +20,23 @@ class AttachmentsGrid extends Field
 
     public bool $propertySendable = false;
 
+    public string $collection = 'gallery';
+
     public static function make(?string $name = null): static
     {
         return parent::make($name);
+    }
+
+    public function collection(string $collection): static
+    {
+        $this->collection = $collection;
+
+        return $this;
+    }
+
+    public function getCollection(): string
+    {
+        return $this->collection;
     }
 
     public function reorderable(bool $reorderable = true): static

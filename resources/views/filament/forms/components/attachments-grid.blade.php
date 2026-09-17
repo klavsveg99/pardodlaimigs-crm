@@ -9,7 +9,11 @@
     // ViewRecord publication renders the same field read-only.
     $isView = (fn () => $getContainer()->getOperation() === 'view')();
 
-    $existingAttachments = $record?->attachments?->sortBy('sort_order')?->values() ?? collect();
+    $collection = $getCollection();
+    $existingAttachments = collect($record?->attachments ?? [])
+        ->where('collection', $collection)
+        ->sortBy('sort_order')
+        ->values();
 
     // Associated clients (properties only): the email recipient must be one
     // of them, and with none associated the send buttons are not shown.
@@ -78,16 +82,10 @@
     // conditional attributes are precomputed and echoed as plain markup.
     $sendDataAttrs = '';
     if ($isSendable) {
-        $sendDataAttrs = 'data-mail-mode="client" '
-            .'data-client-slug="'.e($record?->slug ?? $record?->getKey()).'" '
-            .'data-default-to="'.e((string) ($record?->email ?? '')).'" '
-            .'data-wa-link="'.e($waLink).'" '
+        $sendDataAttrs = 'data-client-slug="'.e($record?->slug ?? $record?->getKey()).'" '
             .'data-upload-url-client="'.e(route('clients.attachments.upload', ['clientSlug' => $record?->slug ?? $record?->getKey()])).'"';
     } elseif ($isPropertySendable && $record) {
-        $sendDataAttrs = 'data-mail-mode="property" '
-            .'data-property-slug="'.e($record->slug ?? $record->getKey()).'" '
-            .'data-upload-url-property="'.e(route('properties.attachments.upload', ['propertySlug' => $record->slug ?? $record->getKey()])).'" '
-            .'data-mail-clients="'.e(json_encode($propertyClients, JSON_UNESCAPED_UNICODE)).'"';
+        $sendDataAttrs = 'data-upload-url-property="'.e(route('properties.attachments.upload', ['propertySlug' => $record->slug ?? $record->getKey()])).'"';
     }
 
     $cardDragAttrs = $isReorderable
@@ -264,138 +262,28 @@
         editorAspectRatio: null,
         scaleX: 1,
         scaleY: 1,
-        // Email popup state
-        sendOpen: false,
-        sendSending: false,
-        sendError: '',
-        sendTarget: null,        // the clicked attachment row
-        sendSelected: [],        // attachment ids (clicked file pre-selected)
-        sendTo: '',
-        sendSubject: '',
-        sendFromName: @js(auth()->user()?->name ?: (config('mail.from.name') ?: 'Pārdod Laimīgs')),
-        mailMode: 'client',
-        mailClients: [],
-        sendClientId: null,
-        initSend(file) {
-            if (typeof file.id !== 'number') return;
-            this.sendTarget = file;
-            this.sendSelected = [file.id];
-            this.sendSubject = file.name;
-            this.sendError = '';
-            if (this.mailMode === 'property') {
-                const first = this.mailClients.find(c => c.email) || this.mailClients[0] || null;
-                this.sendClientId = first ? first.id : null;
-                this.sendTo = first ? (first.email || '') : '';
-            } else {
-                this.sendTo = (this._root || this.$el).dataset.defaultTo || '';
-            }
-            this.sendOpen = true;
-            document.body.style.overflow = 'hidden';
-            this.$nextTick(() => {
-                if (this.$refs.sendEditor && ! this.$refs.sendEditor.innerHTML.trim()) {
-                    this.$refs.sendEditor.innerHTML = '<p>Sveiki,</p><p>pievienoju saistītos failus.</p><p>Ar cieņu,<br>Pārdod Laimīgs</p>';
-                }
+        // Opens the shared send popup (partial) with this file preselected.
+        sendFile(file) {
+            if (!file || typeof file.id !== 'number') return;
+            const all = this.files
+                .filter(f => typeof f.id === 'number')
+                .map(f => ({ id: f.id, name: f.name, size: f.size }));
+            window.dispatchEvent(new CustomEvent('pdc-open-send', {
+                detail: { file: { id: file.id, name: file.name }, all },
+            }));
+        },
+        // Marks files as sent (green Nosūtīts klientam badge) after the popup sends.
+        markSent(detail) {
+            if (!detail) return;
+            (detail.marked || []).forEach(id => {
+                const f = this.files.find(x => x.id === id);
+                if (f) { f.sentAt = detail.sentAt || ''; }
             });
-        },
-        // opens WhatsApp chat with the client's number (popup footer)
-        get waLink() {
-            if (this.mailMode === 'property') {
-                const c = this.sendClientId ? this.mailClients.find(x => x.id === this.sendClientId) : null;
-                const digits = String((c && c.phone) || '').replace(/\D+/g, '');
-                if (digits.length === 8) return 'https://wa.me/371' + digits;
-                return digits ? 'https://wa.me/' + digits : '';
-            }
-            return this._waLink || '';
-        },
-        onSendClientChange() {
-            const c = this.mailClients.find(x => x.id === this.sendClientId);
-            if (c && c.email) { this.sendTo = c.email; }
-        },
-        closeSend() {
-            if (this.sendSending) return;
-            this.sendOpen = false;
-            this.sendTarget = null;
-            document.body.style.overflow = '';
-        },
-        get sendAttachments() { return this.files.filter(f => typeof f.id === 'number'); },
-        get sendTotalSelected() {
-            const byId = {};
-            this.files.forEach(f => { byId[f.id] = f; });
-            return (this.sendSelected || []).reduce((sum, id) => sum + ((byId[id] || {}).size || 0), 0);
-        },
-        toggleSendFile(id) {
-            const i = this.sendSelected.indexOf(id);
-            if (i === -1) { this.sendSelected.push(id); }
-            else if (this.sendSelected.length > 1) { this.sendSelected.splice(i, 1); }
-        },
-        sendWarn() {
-            return this.sendTotalSelected > 18 * 1024 * 1024;
-        },
-        async submitSend() {
-            if (this.sendSending || !this.sendTarget) return;
-            this.sendError = '';
-            if (!this.sendTo || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(this.sendTo)) { this.sendError = 'Norādiet derīgu e-pasta adresi.'; return; }
-            if (!this.sendSelected.length) { this.sendError = 'Izvēlieties vismaz vienu failu.'; return; }
-            if (!this.sendSubject.trim()) { this.sendError = 'Norādiet tematu.'; return; }
-            if (this.sendWarn()) { this.sendError = 'Pielikumi pārsniedz 18 MB — izvēlieties mazāk failu.'; return; }
-            this.sendSending = true;
-            try {
-                const root = this._root || this.$el;
-                const url = this.mailMode === 'property'
-                    ? '{{ route("properties.attachments.send-email", ["propertySlug" => ":slug"]) }}'.replace(':slug', String(root.dataset.propertySlug))
-                    : '{{ route("clients.attachments.send-email", ["clientSlug" => ":slug"]) }}'.replace(':slug', String(root.dataset.clientSlug));
-                const resp = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': this.csrfToken,
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                    body: JSON.stringify({
-                        to: this.sendTo,
-                        subject: this.sendSubject,
-                        from_name: this.sendFromName,
-                        client_id: this.sendClientId,
-                        files: this.sendSelected,
-                        body: this.$refs.sendEditor ? this.$refs.sendEditor.innerHTML : '',
-                    }),
-                });
-                const data = await resp.json().catch(() => ({}));
-                if (!resp.ok || !data.ok) {
-                    this.sendError = data.message || 'Nosūtīšana neizdevās. Pārbaudiet saņēmēja adresi un failu izmēru.';
-                    return;
-                }
-                // Mark the sent files locally (green Nosūtīts klientam check).
-                const sentAt = data.sentAt || '';
-                (data.marked || []).forEach(id => {
-                    const f = this.files.find(x => x.id === id);
-                    if (f) { f.sentAt = sentAt; }
-                });
-                this.sendOpen = false;
-                this.sendTarget = null;
-                document.body.style.overflow = '';
-                const note = document.createElement('div');
-                note.textContent = 'E-pasts nosūtīts uz ' + this.sendTo;
-                note.setAttribute('style', 'position:fixed;top:1rem;right:1rem;z-index:2147483647;background:#16a34a;color:#fff;padding:0.6rem 1rem;border-radius:0.5rem;font-weight:600;font-size:0.85rem;box-shadow:0 8px 24px rgba(0,0,0,0.25);');
-                document.body.appendChild(note);
-                setTimeout(() => note.remove(), 4000);
-            } catch (e) {
-                this.sendError = 'Kļūda: ' + (e.message || 'unknown');
-            } finally {
-                this.sendSending = false;
-            }
-        },
-        execCmd(cmd, value) {
-            this.$refs.sendEditor?.focus();
-            document.execCommand(cmd, false, value || null);
         },
         init() {
             try { this.files = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || []; } catch(e){ this.files=[]; }
             this.uploadUrl = this.$el.dataset.uploadUrlClient || this.$el.dataset.uploadUrlProperty || this.$el.dataset.uploadUrl;
             this.clientUpload = !!this.$el.dataset.uploadUrlClient;
-            this.mailMode = this.$el.dataset.mailMode || 'client';
-            try { this.mailClients = JSON.parse(this.$el.dataset.mailClients || '[]') || []; } catch (e) { this.mailClients = []; }
             this.proxyUrl = this.$el.dataset.proxyUrl || null;
             this.csrfToken = document.querySelector('meta[name=&quot;csrf-token&quot;]')?.content || document.querySelector('meta[name=csrf-token]')?.content;
             this._waLink = this.$el.dataset.waLink || '';
@@ -487,7 +375,7 @@
 
             // Client attachments are persisted immediately, so deleting must
             // hit the server (works on both edit and view pages).
-            if (this.mailMode === 'client' && this.clientUpload && typeof id === 'number') {
+            if (this.clientUpload && typeof id === 'number') {
                 try {
                     const resp = await fetch('{{ route("clients.attachments.destroy", ["clientSlug" => ":slug", "attachment" => ":id"]) }}'
                         .replace(':slug', String((this._root || this.$el).dataset.clientSlug))
@@ -860,6 +748,7 @@
     data-upload-url="{{ $uploadUrl }}"
     data-proxy-url="{{ $proxyUrl }}"
     {!! $sendDataAttrs !!}
+    x-on:pdc-attachment-sent.window="markSent($event.detail)"
     x-on:keydown.escape.window="if(lightboxOpen) closeLightbox(); if(editorOpen) closeEditor()"
     x-on:keydown.arrow-left.window="if(lightboxOpen) lightboxPrev()"
     x-on:keydown.arrow-right.window="if(lightboxOpen) lightboxNext()"
@@ -922,7 +811,7 @@
         </div>
     </div>
 
-    @if(! $isSendable)
+    @if(! ($isSendable || $isPropertySendable))
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <template x-for="(file, index) in files" :key="file.id">
             <div
@@ -995,7 +884,7 @@
                     <button
                         type="button"
                         x-bind:style="{ display: typeof file.id === 'number' ? 'inline-flex' : 'none' }"
-                        x-on:click.stop="initSend(file)"
+                        x-on:click.stop="sendFile(file)"
                         title="Nosūtīt ar e-pastu"
                         style="position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10; height: 1.7rem; padding: 0 0.55rem; border-radius: 0.4rem; background: var(--pdc-primary); color: white; display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.3rem; white-space: nowrap; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; font-size: 0.72rem; font-weight: 600;"
                     >
@@ -1058,7 +947,7 @@
                         <span x-show="file.created" x-text="file.created"></span>
                         <span x-show="file.created && sizeLabel(file.size)">·</span>
                         <span x-show="sizeLabel(file.size)" x-text="sizeLabel(file.size)"></span>
-                        @if($isSendable)
+                        @if($isSendable || $isPropertySendable)
                         <span x-bind:style="{ display: file.sentAt ? 'inline-flex' : 'none' }" class="fi-badge fi-color-success fi-color" style="display: inline-flex; align-items: center; gap: 0.25rem;" title="Nosūtīts klientam" x-cloak>
                             <svg style="width: 0.8rem; height: 0.8rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                             <span>Nosūtīts klientam</span>
@@ -1068,11 +957,11 @@
                 </div>
 
                 <div style="flex: none; display: flex; align-items: center; gap: 0.4rem;">
-                    @if($isSendable)
+                    @if(($isSendable || $isPropertySendable) && $canSend)
                         <button
                             type="button"
                             x-bind:style="{ display: typeof file.id === 'number' ? 'inline-flex' : 'none' }"
-                            x-on:click.stop="initSend(file)"
+                            x-on:click.stop="sendFile(file)"
                             title="Nosūtīt ar e-pastu"
                             style="display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.35rem; white-space: nowrap; padding: 0.4rem 0.7rem; border-radius: 0.5rem; background: var(--pdc-primary); color: white; font-size: 0.78rem; font-weight: 600; border: 1px solid var(--pdc-primary-darker, var(--pdc-primary)); cursor: pointer; line-height: 1.2;"
                         >
@@ -1244,99 +1133,13 @@
         </div>
     </template>
 
-    @if($isSendable || ($isPropertySendable && $canSend))
-    <!-- Nosūtīt popup (opened only from an attachment's "Nosūtīt" button) -->
-    <template x-if="sendOpen">
-        <div
-            data-pdc-send-popup
-            x-on:keydown.escape.window="closeSend()"
-            style="position: fixed; inset: 0; z-index: 2147483647; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); padding: 1rem;"
-            x-on:click.self="closeSend()"
-        >
-            <div style="background: #ffffff; border-radius: 0.75rem; width: 100%; max-width: 640px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.35);">
-                <div style="padding: 0.9rem 1.1rem; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
-                    <span style="font-weight: 700; color: #111827; font-size: 0.95rem;">Nosūtīt failus ar e-pastu</span>
-                    <button type="button" x-on:click="closeSend()" title="Aizvērt" style="height: 2rem; width: 2rem; border-radius: 9999px; background: rgba(255,255,255,0.08); color: #374151; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 0;">
-                        <svg style="width: 1rem; height: 1rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
-                </div>
-
-                <div style="padding: 1rem 1.1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
-                    <div style="display: grid; gap: 0.65rem;">
-                        <label x-bind:style="{ display: (mailMode === 'property' && mailClients.length > 1) ? 'flex' : 'none' }" style="display: none; flex-direction: column; gap: 0.25rem;">
-                            <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Klients</span>
-                            <select x-model.number="sendClientId" x-on:change="onSendClientChange()" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;">
-                                <template x-for="c in mailClients" :key="c.id">
-                                    <option :value="c.id" x-text="c.name + (c.email ? ' · ' + c.email : '')"></option>
-                                </template>
-                            </select>
-                        </label>
-                        <label style="display: flex; flex-direction: column; gap: 0.25rem;">
-                            <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Saņēmējs</span>
-                            <input type="email" x-model="sendTo" placeholder="e-pasts" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;" />
-                        </label>
-                        <label style="display: flex; flex-direction: column; gap: 0.25rem;">
-                            <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Sūtītāja vārds</span>
-                            <div style="display: flex; align-items: stretch; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; background: #fff;">
-                                <input type="text" x-model="sendFromName" style="border: 0; padding: 0.45rem 0.6rem; font-size: 0.875rem; flex: 1 1 auto; min-width: 0; background: transparent; color: #111827; outline: none;" />
-                                <span style="display: inline-flex; align-items: center; padding: 0 0.6rem; font-size: 0.78rem; color: #6b7280; background: #f9fafb; border-left: 1px solid #e5e7eb; white-space: nowrap;">info@pardodlaimigs.lv</span>
-                            </div>
-                        </label>
-                        <label style="display: flex; flex-direction: column; gap: 0.25rem;">
-                            <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Temats</span>
-                            <input type="text" x-model="sendSubject" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;" />
-                        </label>
-                    </div>
-
-                    <div>
-                        <span style="font-size: 0.8rem; font-weight: 600; color: #374151; display: block; margin-bottom: 0.35rem;">Faili <span style="color: #6b7280; font-weight: 500;" x-text="'(kopā ' + sizeLabel(sendTotalSelected) + ')'"></span></span>
-                        <div style="display: flex; flex-direction: column; gap: 0.35rem; border: 1px solid #e5e7eb; border-radius: 0.6rem; padding: 0.65rem; max-height: 170px; overflow-y: auto;">
-                            <template x-for="f in sendAttachments" :key="f.id">
-                                <label style="display: flex; align-items: center; gap: 0.55rem; cursor: pointer; padding: 0.25rem 0.15rem; border-radius: 0.35rem;">
-                                    <input type="checkbox" x-show="true" x-bind:checked="sendSelected.includes(f.id)" x-on:change="toggleSendFile(f.id)" style="accent-color: var(--pdc-primary, #285854); height: 1rem; width: 1rem; cursor: pointer;" />
-                                    <span style="font-size: 0.82rem; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="f.name"></span>
-                                    <span style="font-size: 0.72rem; color: #6b7280;" x-text="sizeLabel(f.size)"></span>
-                                </label>
-                            </template>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div style="display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 0.5rem 0.5rem 0 0; padding: 0.35rem 0.5rem; background: #f9fafb;">
-                            <button type="button" x-on:click="execCmd('bold')" title="Treknraksts" style="border: 0; background: transparent; cursor: pointer; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-weight: 700; color: #374151; font-size: 0.82rem;">B</button>
-                            <button type="button" x-on:click="execCmd('italic')" title="Slīpraksts" style="border: 0; background: transparent; cursor: pointer; color: #374151; font-size: 0.82rem; font-style: italic; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-family: Georgia, serif;">I</button>
-                            <button type="button" x-on:click="execCmd('underline')" title="Pasvītrojums" style="border: 0; background: transparent; cursor: pointer; color: #374151; text-decoration: underline; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem;">U</button>
-                            <button type="button" x-on:click="execCmd('strikeThrough')" title="Pārsvītrojums" style="border: 0; background: transparent; cursor: pointer; color: #374151; text-decoration: line-through; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem;">S</button>
-                            <button type="button" x-on:click="execCmd('insertUnorderedList')" title="Nenumurēts saraksts" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.85rem;">•</button>
-                            <button type="button" x-on:click="execCmd('insertOrderedList')" title="Numurēts saraksts" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.8rem;">1.</button>
-                            <button type="button" x-on:click="execCmd('insertHorizontalRule')" title="Horizontāla līnija" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem;">—</button>
-                            <button type="button" x-on:click="execCmd('formatBlock','<blockquote>')" title=" Citāts" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem; font-family: Georgia, serif;">„ ”</button>
-                        </div>
-                        <div x-ref="sendEditor" contenteditable="true"
-                            style="min-height: 7rem; padding: 0.7rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0 0 0.5rem 0.5rem; font-size: 0.85rem; line-height: 1.55; overflow-y: auto; max-height: 16rem; background: #fff; color: #1f2937; outline: none;"></div>
-                        <div style="margin-top: 0.3rem; font-size: 0.7rem; color: #9ca3af; line-height: 1.4;">Nosūtītāja e-pasts: info@pardodlaimigs.lv · pielikumu limits 18 MB</div>
-                    </div>
-
-                    <div x-show="sendError" x-cloak style="background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 0.5rem 0.7rem; border-radius: 0.45rem; font-size: 0.8rem;" x-text="sendError"></div>
-                </div>
-
-                <div style="padding: 0.9rem 1.1rem; border-top: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; background: #ffffff;">
-                    <a x-bind:style="{ display: waLink ? 'inline-flex' : 'none' }" :href="waLink" target="_blank" rel="noopener"
-                        style="display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.4rem; white-space: nowrap; color: #1da851; text-decoration: none; font-weight: 600; font-size: 0.82rem; padding: 0.45rem 0.75rem; border: 1px solid #bbe7c8; border-radius: 0.5rem;">
-                        <svg style="width: 1.05rem; height: 1.05rem; flex: none;" fill="currentColor" viewBox="0 0 448 512" aria-hidden="true"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
-                        <span>Atvērt WhatsApp čatu</span>
-                    </a>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <button type="button" x-on:click="closeSend()" style="padding: 0.45rem 0.75rem; border-radius: 0.5rem; background: transparent; color: #374151; border: 1px solid #e5e7eb; cursor: pointer; font-size: 0.82rem; font-weight: 600;">Atcelt</button>
-                        <button type="button" x-on:click="submitSend()" :disabled="sendSending"
-                            style="display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.4rem; white-space: nowrap; padding: 0.5rem 0.95rem; border-radius: 0.5rem; background: var(--pdc-primary, #285854); color: #fff; border: 1px solid var(--pdc-primary-darker, #285854); cursor: pointer; font-weight: 600; font-size: 0.84rem; opacity: sendSending ? 0.7 : 1;">
-                            <svg style="width: 0.9rem; height: 0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
-                            <span x-text="sendSending ? 'Nosūta...' : 'Nosūtīt'"></span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </template>
+    @if(($isSendable && $canSend) || ($isPropertySendable && $canSend))
+        @include('filament.partials.attachment-send-popup', [
+            'mode' => $isSendable ? 'client' : 'property',
+            'slug' => (string) ($record?->slug ?? $record?->getKey()),
+            'clients' => $propertyClients,
+            'defaultTo' => (string) ($record?->email ?? ''),
+            'baseWa' => $waLink,
+        ])
     @endif
 </div>

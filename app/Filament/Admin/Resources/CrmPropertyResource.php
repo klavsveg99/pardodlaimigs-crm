@@ -456,16 +456,31 @@ class CrmPropertyResource extends Resource
                         ->columnSpanFull(),
                 ])->columnSpanFull(),
 
-            Section::make('Pielikumi')->columnSpanFull()->schema([
+            Section::make('Galerija')->columnSpanFull()->schema([
                 AttachmentsGrid::make('attachments')
                     ->label('Fotogrāfijas un plānojumi')
                     ->reorderable()
                     ->deletable()
                     ->multiselect()
-                    ->propertySendable()
+                    ->collection('gallery')
                     ->columnSpanFull(),
 
                 Forms\Components\Hidden::make('attachment_original_names')
+                    ->default([]),
+            ])->columnSpanFull(),
+
+            Section::make('Pielikumi')->columnSpanFull()->schema([
+                AttachmentsGrid::make('attachments_documents')
+                    ->label('Dokumenti')
+                    ->helperText('Pases kopijas, zemesgrāmatas, līgumi, pilnvaras u.c. · var nosūtīt arī ar e-pastu saistītajam klientam.')
+                    ->reorderable(false)
+                    ->multiselect(false)
+                    ->deletable()
+                    ->collection('documents')
+                    ->propertySendable()
+                    ->columnSpanFull(),
+
+                Forms\Components\Hidden::make('attachment_original_names_documents')
                     ->default([]),
             ])->columnSpanFull(),
         ]);

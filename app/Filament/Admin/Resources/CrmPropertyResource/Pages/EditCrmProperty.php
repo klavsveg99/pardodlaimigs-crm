@@ -26,6 +26,15 @@ class EditCrmProperty extends EditRecord
     use GeneratesAiDescription;
     use SyncsAttachments;
 
+    /**
+     * Property attachments live in two collections: gallery images and
+     * separate "Pielikumi" documents.
+     */
+    protected function attachmentCollections(): array
+    {
+        return ['attachments' => 'gallery', 'attachments_documents' => 'documents'];
+    }
+
     protected static string $resource = CrmPropertyResource::class;
 
     public function getTitle(): string

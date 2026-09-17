@@ -83,6 +83,7 @@ class PropertyAttachmentEmailController extends Controller
         }
 
         $attachment = $property->attachments()->create([
+            'collection' => 'documents',
             'path' => $path,
             'disk' => 'public',
             'original_name' => $originalName,
