@@ -16,6 +16,85 @@ use Illuminate\Support\Facades\Validator;
  */
 class ClientAttachmentEmailController extends Controller
 {
+    /**
+     * Upload endpoint for client attachments. Creates the Attachment record
+     * immediately (files are never just "pending"), so the UI can offer
+     * actions like "Nosūtīt" right away and nothing can be lost on reload.
+     */
+    public function upload(Request $request, string $clientSlug): JsonResponse
+    {
+        /** @var \App\Models\Client $client */
+        $client = Client::query()->where('slug', $clientSlug)->first();
+        if (! $client) {
+            return response()->json(['message' => 'Klients nav atrasts.'], 404);
+        }
+
+        $user = $request->user();
+        if (! $user->can('manage') && $client->owner_user_id !== $user->id) {
+            return response()->json(['message' => 'Nav piekļuves.'], 403);
+        }
+
+        $file = $request->file('file');
+        if (! $file) {
+            return response()->json(['message' => 'Nav faila.'], 422);
+        }
+
+        $acceptedTypes = config('attachments.accepted_file_types', []);
+        $maxSize = (int) config('attachments.max_size_kb', 25600);
+
+        if (! empty($acceptedTypes) && ! in_array($file->getMimeType(), $acceptedTypes, true)) {
+            return response()->json(['message' => 'Šāda faila tipa augšupielāde nav atļauta.'], 422);
+        }
+        if ($file->getSize() > $maxSize * 1024) {
+            return response()->json(['message' => 'Fails ir pārāk liels.'], 422);
+        }
+
+        $originalName = $file->getClientOriginalName();
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $base = pathinfo($originalName, PATHINFO_FILENAME);
+        $ext = pathinfo($originalName, PATHINFO_EXTENSION);
+
+        $candidate = 'attachments/'.$originalName;
+        if ($disk->exists($candidate)) {
+            $i = 1;
+            do {
+                $candidate = 'attachments/'.$base.'-'.$i.($ext ? '.'.$ext : '');
+                $i++;
+            } while ($disk->exists($candidate));
+        }
+        $path = $file->storeAs('attachments', basename($candidate), 'public');
+
+        $size = (int) $disk->size($path);
+
+        try {
+            $abs = $disk->path($path);
+            if (is_file($abs) && str_starts_with((string) $file->getMimeType(), 'image/')) {
+                $result = app(\App\Services\ImageOptimizer::class)->optimize($abs);
+                $size = (int) ($result['size'] ?? $size);
+            }
+        } catch (\Throwable) {
+            // Optimisation must never block the upload.
+        }
+
+        $attachment = $client->attachments()->create([
+            'path' => $path,
+            'disk' => 'public',
+            'original_name' => $originalName,
+            'mime_type' => $file->getMimeType(),
+            'size' => $size,
+            'sort_order' => (int) $client->attachments()->max('sort_order') + 1,
+        ]);
+
+        return response()->json([
+            'id' => $attachment->id,
+            'path' => $path,
+            'url' => $disk->url($path),
+            'name' => $originalName,
+            'size' => $size,
+            'created' => $attachment->created_at?->format('d.m.Y'),
+        ]);
+    }
+
     public function send(Request $request, string $clientSlug): JsonResponse
     {
         /** @var \App\Models\Client $client */

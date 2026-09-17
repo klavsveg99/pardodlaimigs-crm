@@ -235,7 +235,11 @@ Route::post('/property/upload-attachment', function () {    $file = request()->f
     ]);
 })->middleware(['auth', 'web'])->name('filament.admin.property.upload-attachment');
 
-// ── Client attachments "Nosūtīt" email popup ─────────────────
+// ── Client attachments: upload + "Nosūtīt" email popup ────────
+Route::post('/clients/{clientSlug}/attachments/upload',
+    [App\Http\Controllers\ClientAttachmentEmailController::class, 'upload']
+)->middleware(['auth', 'web'])->name('clients.attachments.upload');
+
 Route::post('/clients/{clientSlug}/attachments/send-email',
     [App\Http\Controllers\ClientAttachmentEmailController::class, 'send']
 )->middleware(['auth', 'web'])->name('clients.attachments.send-email');

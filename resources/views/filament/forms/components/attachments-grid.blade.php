@@ -57,7 +57,8 @@
     $sendDataAttrs = $isSendable
         ? 'data-client-slug="'.e($record?->slug ?? $record?->getKey()).'" '
             .'data-default-to="'.e((string) ($record?->email ?? '')).'" '
-            .'data-wa-link="'.e($waLink).'"'
+            .'data-wa-link="'.e($waLink).'" '
+            .'data-upload-url-client="'.e(route('clients.attachments.upload', ['clientSlug' => $record?->slug ?? $record?->getKey()])).'"'
         : '';
 
     $cardDragAttrs = $isReorderable
@@ -336,7 +337,8 @@
         },
         init() {
             try { this.files = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || []; } catch(e){ this.files=[]; }
-            this.uploadUrl = this.$el.dataset.uploadUrl;
+            this.uploadUrl = this.$el.dataset.uploadUrlClient || this.$el.dataset.uploadUrl;
+            this.clientUpload = !!this.$el.dataset.uploadUrlClient;
             this.proxyUrl = this.$el.dataset.proxyUrl || null;
             this.csrfToken = document.querySelector('meta[name=&quot;csrf-token&quot;]')?.content || document.querySelector('meta[name=csrf-token]')?.content;
             this._waLink = this.$el.dataset.waLink || '';
@@ -741,13 +743,13 @@
                         const r = JSON.parse(xhr.responseText);
                         if (r.path) {
                             this.files.push({
-                                id: 'new-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+                                id: (r.id !== undefined ? r.id : 'new-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)),
                                 path: r.path,
                                 url: r.url,
                                 name: r.name || file.name,
                                 mime: file.type || '',
-                                size: file.size,
-                                created: new Date().toLocaleDateString('lv-LV'),
+                                size: r.size || file.size,
+                                created: r.created || (() => { const d = new Date(); return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear(); })(),
                             });
                             this.sync();
                         } else {
