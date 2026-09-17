@@ -150,6 +150,26 @@ class WpformEntryResource extends Resource
                                 ->success()
                                 ->send();
                         }),
+                    Action::make('force_delete')
+                        ->label('Izdzēst neatgriezeniski')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->visible(fn (WpformEntry $record): bool => $record->status === 'deleted'
+                            && (auth()->user()?->can('manage') ?? false))
+                        ->requiresConfirmation()
+                        ->modalHeading('Vai tiešām neatgriezeniski dzēst šo pieteikumu?')
+                        ->modalDescription('Ieraksts tiks pilnībā izņemts no CRM, un to vairs nevarēs atjaunot.')
+                        ->modalSubmitActionLabel('Izdzēst neatgriezeniski')
+                        ->action(function (WpformEntry $record): void {
+                            // The `deleted` hook keeps the sync tombstone, so
+                            // WordPress can never re-import it afterwards.
+                            $record->delete();
+
+                            Notification::make()
+                                ->title('Pieteikums neatgriezeniski izdzēsts')
+                                ->success()
+                                ->send();
+                        }),
                 ])->color('gray'),
             ])
             ->bulkActions([
