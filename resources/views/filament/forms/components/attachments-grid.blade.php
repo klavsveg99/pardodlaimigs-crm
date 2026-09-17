@@ -989,7 +989,7 @@
         </template>
     </div>
     @if(!$isView)
-        <div style="margin-top: 0.5rem;">
+        <div x-show="files.length > 0" style="margin-top: 0.5rem;">
             <label
                 for="{{ $uid }}-upload"
                 class="fi-btn fi-size-sm fi-color fi-color-gray fi-outlined"
