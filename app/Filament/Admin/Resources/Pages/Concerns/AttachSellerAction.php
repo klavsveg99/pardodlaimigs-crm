@@ -19,6 +19,8 @@ trait AttachSellerAction
             ->label('Piesaistīt pārdevēju')
             ->icon('heroicon-o-user-plus')
             ->color('gray')
+            // Tikai ja pārdevējs vēl nav piesaistīts.
+            ->visible(fn (): bool => ! $this->record->clients()->wherePivot('relation', 'seller')->exists())
             ->modalSubmitActionLabel('Pievienot')
             ->extraModalFooterActions([
                 Actions\Action::make('izveidot_jaunu_klientu')
@@ -64,7 +66,10 @@ trait AttachSellerAction
             ->label('Piesaistīt pircēju')
             ->icon('heroicon-o-user-plus')
             ->color('gray')
-            ->visible(fn () => ($this->record->status ?? null) === 'sold')
+            // Pircēju drīkst piesaistīt tikai pārdotam īpašumam, un tikai
+            // ja pircējs vēl nav piesaistīts.
+            ->visible(fn (): bool => ($this->record->status ?? null) === 'sold'
+                && ! $this->record->clients()->wherePivot('relation', 'buyer')->exists())
             ->modalSubmitActionLabel('Pievienot')
             ->extraModalFooterActions([
                 Actions\Action::make('izveidot_jaunu_klientu')
@@ -87,12 +92,12 @@ trait AttachSellerAction
                         ->all())
                     ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name)
                     ->required(),
-                Forms\Components\Textarea::make('notes_md')
-                    ->label('Piezīmes')
-                    ->rows(2)
-                    ->maxLength(1000),
             ])
             ->action(function (array $data): void {
+                if (($this->record->status ?? null) !== 'sold') {
+                    Notification::make()->title('Pircēju var piesaistīt tikai pārdotam īpašumam')->warning()->send();
+                    return;
+                }
                 if (DB::table('client_crm_properties')
                     ->where('crm_property_id', $this->record->id)
                     ->where('relation', 'buyer')
@@ -101,7 +106,7 @@ trait AttachSellerAction
                     Notification::make()->title('Pircējs jau ir piesaistīts')->warning()->send();
                     return;
                 }
-                $this->record->clients()->attach($data['client_id'], ['relation' => 'buyer', 'notes_md' => $data['notes_md'] ?? null]);
+                $this->record->clients()->attach($data['client_id'], ['relation' => 'buyer']);
                 Notification::make()->title('Pircējs piesaistīts')->success()->send();
             });
     }
