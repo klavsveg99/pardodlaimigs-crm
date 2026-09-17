@@ -6,6 +6,7 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\ClientResource\Pages;
 use App\Filament\Admin\Resources\ClientResource\RelationManagers;
+use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Filament\Forms\Components\PersonasKodsInput;
 use App\Filament\Forms\Components\PhoneInput;
 use App\Models\Client;
@@ -104,20 +105,17 @@ class ClientResource extends Resource
                 ]),
                 Grid::make(1)->columnSpan(1)->schema([
                     Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(8),
-                    Forms\Components\FileUpload::make('attachments')
+                    // Proven property pattern: files upload instantly to permanent
+                    // storage through the upload endpoint, so they can never be lost
+                    // the way the plain FileUpload + autosave combo did.
+                    AttachmentsGrid::make('attachments')
                         ->label('Pielikumi')
                         ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
                             .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
-                        ->multiple()
-                        ->reorderable()
+                        ->reorderable(false)
+                        ->multiselect(false)
                         ->deletable()
-                        ->previewable()
-                        ->openable()
-                        ->storeFileNamesIn('attachment_original_names')
-                        ->acceptedFileTypes(config('attachments.accepted_file_types'))
-                        ->maxSize((int) config('attachments.max_size_kb'))
-                        ->disk('public')
-                        ->directory('attachments'),
+                        ->sendable(),
                 ]),
             ]),
         ]);

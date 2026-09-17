@@ -16,6 +16,8 @@ class AttachmentsGrid extends Field
 
     public bool $multiselect = true;
 
+    public bool $sendable = false;
+
     public static function make(?string $name = null): static
     {
         return parent::make($name);
@@ -42,6 +44,13 @@ class AttachmentsGrid extends Field
         return $this;
     }
 
+    public function sendable(bool $sendable = true): static
+    {
+        $this->sendable = $sendable;
+
+        return $this;
+    }
+
     public function isReorderable(): bool
     {
         return $this->reorderable;
@@ -55,5 +64,10 @@ class AttachmentsGrid extends Field
     public function isMultiselect(): bool
     {
         return $this->multiselect;
+    }
+
+    public function isSendable(): bool
+    {
+        return $this->sendable;
     }
 }

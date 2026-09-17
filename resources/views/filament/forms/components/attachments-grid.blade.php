@@ -4,6 +4,9 @@
     $isReorderable = $isReorderable();
     $isDeletable = $isDeletable();
     $isMultiselect = $isMultiselect();
+    $isSendable = $isSendable();
+    // ViewRecord publication renders the same field read-only.
+    $isView = (fn () => $getContainer()->getOperation() === 'view')();
 
     $existingAttachments = $record?->attachments?->sortBy('sort_order')?->values() ?? collect();
     $attachmentsJson = $existingAttachments->map(fn ($a) => [
@@ -11,6 +14,8 @@
         'path' => $a->path,
         'url' => $a->cacheBustedUrl(),
         'name' => $a->original_name,
+        'mime' => $a->mime_type,
+        'size' => $a->size,
     ])->values()->toJson();
 
     $originalNamesPath = preg_replace('/attachments$/', 'attachment_original_names', $statePath);
@@ -230,10 +235,28 @@
             this.files.forEach(f => { map[f.path] = f.name; });
             return map;
         },
+        isImage(file) {
+            return file && (file.mime || '').startsWith('image/');
+        },
+        sizeLabel(bytes) {
+            if (!bytes || bytes < 1024) return '';
+            if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1).replace('.0', '') + ' MB';
+        },
+        sendFile(file) {
+            if (typeof file.id !== 'number') return; // not persisted yet
+            $wire.dispatch('pdc-attachment-send', { id: file.id });
+        },
         sync() {
             $wire.set('{{ $statePath }}', this.paths, false);
             $wire.set('{{ $originalNamesPath }}', this.names, false);
+            // Make sure the change reaches the record promptly: pages using
+            // AutosavesForm listen for this event (others ignore it harmlessly).
+            clearTimeout(window.__pdcAttSyncTimer);
             this.$nextTick(() => { $wire.$refresh && $wire.$refresh(); });
+            window.__pdcAttSyncTimer = setTimeout(() => {
+                $wire.dispatch && $wire.dispatch('pdc-autosave-tick');
+            }, 400);
         },
         toggleSelect(id) {
             const idx = this.selected.indexOf(id);
@@ -571,6 +594,8 @@
                                 path: r.path,
                                 url: r.url,
                                 name: r.name || file.name,
+                                mime: file.type || '',
+                                size: file.size,
                             });
                             this.sync();
                         } else {
@@ -611,7 +636,7 @@
     />
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
         <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-            @if($isMultiselect)
+            @if($isMultiselect && !$isView)
                 <template x-if="files.length > 0">
                     <button
                         type="button"
@@ -678,19 +703,29 @@
                 title="Velc, lai pārkārtotu • Klikšķini, lai apskatītu"
                 style="touch-action: none;"
             >
-                <img
-                    :src="thumbUrl(file)"
-                    :alt="file.name"
-                    loading="lazy"
-                    decoding="async"
-                    width="400"
-                    height="300"
-                    x-on:error="onImgError($event, file)"
-                    style="width: 100%; height: 100%; object-fit: cover; pointer-events: none; background: #f3f4f6;"
-                    draggable="false"
-                />
+                <template x-if="isImage(file)">
+                    <img
+                        :src="thumbUrl(file)"
+                        :alt="file.name"
+                        loading="lazy"
+                        decoding="async"
+                        width="400"
+                        height="300"
+                        x-on:error="onImgError($event, file)"
+                        style="width: 100%; height: 100%; object-fit: cover; pointer-events: none; background: #f3f4f6;"
+                        draggable="false"
+                    />
+                </template>
+                <template x-if="!isImage(file)">
+                    <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; pointer-events: none; color: #6b7280;">
+                        <svg style="width: 2rem; height: 2rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                        </svg>
+                        <span style="font-size: 0.7rem; text-align: center; padding: 0 0.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;" x-text="file.name"></span>
+                    </div>
+                </template>
 
-                @if($isMultiselect)
+                @if($isMultiselect && !$isView)
                     <button
                         type="button"
                         x-on:click.stop="toggleSelect(file.id)"
@@ -703,22 +738,37 @@
                     </button>
                 @endif
 
-                <button
-                    type="button"
-                    x-on:click.stop="openEditor(index)"
-                    style="position: absolute; top: 0.5rem; right: 2.7rem; z-index: 10; height: 1.6rem; width: 1.6rem; border-radius: 0.35rem; background: rgba(0,0,0,0.62); color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.22); cursor: pointer; backdrop-filter: blur(2px);"
-                    title="Rediģēt attēlu"
-                >
-                    <svg style="width: 0.85rem; height: 0.85rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.83 15.83a2 2 0 01-1.415.586H9a1 1 0 01-1-1v-1.415a2 2 0 01.586-1.414l9-9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 5l4 4"/></svg>
-                </button>
+                @if(!$isView)
+                    <button
+                        type="button"
+                        x-on:click.stop="openEditor(index)"
+                        style="position: absolute; top: 0.5rem; right: 2.7rem; z-index: 10; height: 1.6rem; width: 1.6rem; border-radius: 0.35rem; background: rgba(0,0,0,0.62); color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.22); cursor: pointer; backdrop-filter: blur(2px);"
+                        title="Rediģēt attēlu"
+                    >
+                        <svg style="width: 0.85rem; height: 0.85rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.83 15.83a2 2 0 01-1.415.586H9a1 1 0 01-1-1v-1.415a2 2 0 01.586-1.414l9-9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 5l4 4"/></svg>
+                    </button>
+                @endif
 
-                @if($isDeletable)
+                @if($isDeletable && !$isView)
                     <button
                         type="button"
                         x-on:click.stop="removeFile(file.id)"
                         style="position: absolute; top: 0.5rem; right: 0.5rem; z-index: 10; height: 1.6rem; width: 1.6rem; border-radius: 9999px; background: rgba(0,0,0,0.55); color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; backdrop-filter: blur(2px);"
                     >
                         <svg style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd"/></svg>
+                    </button>
+                @endif
+
+                @if($isSendable)
+                    <button
+                        type="button"
+                        x-show="typeof file.id === 'number'"
+                        x-on:click.stop="sendFile(file)"
+                        title="Nosūtīt ar e-pastu"
+                        style="position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10; height: 1.7rem; padding: 0 0.55rem; border-radius: 0.4rem; background: var(--pdc-primary); color: white; display: flex; align-items: center; gap: 0.3rem; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; font-size: 0.72rem; font-weight: 600;"
+                    >
+                        <svg style="width: 0.85rem; height: 0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+                        <span>Nosūtīt</span>
                     </button>
                 @endif
 
@@ -765,6 +815,7 @@
             <span>Nav pielikumu.</span>
         </div>
         <div style="margin-top: 0.75rem;">
+            @if(!$isView)
             <label
                 for="{{ $uid }}-upload"
                 style="cursor: pointer;"
@@ -773,6 +824,7 @@
                 <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
                 <span>Pievienot failus</span>
             </label>
+            @endif
         </div>
     </div>
 
@@ -841,11 +893,26 @@
             <svg style="width:1.4rem;height:1.4rem; display:block; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </button>
         <div style="max-width: 90vw; max-height: 90vh; display:flex; flex-direction: column; align-items:center; gap: 0.75rem;">
-            <img :src="lightboxFile?.url" :alt="lightboxFile?.name" style="max-width: 90vw; max-height: 78vh; object-fit: contain; border-radius: 0.5rem; box-shadow: 0 8px 32px rgba(0,0,0,0.5);"/>
+            <template x-if="isImage(lightboxFile || {})">
+                <img :src="lightboxFile?.url" :alt="lightboxFile?.name" style="max-width: 90vw; max-height: 78vh; object-fit: contain; border-radius: 0.5rem; box-shadow: 0 8px 32px rgba(0,0,0,0.5);"/>
+            </template>
+            <template x-if="!isImage(lightboxFile || {})">
+                <a x-bind:href="lightboxFile?.url" target="_blank"
+                   style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 2.5rem 4rem; text-decoration: none; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 0.75rem; color: white; font-weight: 600;">
+                    <svg style="width: 2.5rem; height: 2.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                    </svg>
+                    <span style="font-size: 0.95rem;">Atvērt failu</span>
+                </a>
+            </template>
             <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap: wrap; justify-content:center;">
                 <span style="background: var(--pdc-primary); color:white; font-size:0.78rem; font-weight:600; padding:0.3rem 0.7rem; border-radius:9999px;" x-text="(lightboxIndex+1) + ' / ' + files.length"></span>
                 <span style="background: var(--pdc-primary); color:white; font-size:0.78rem; font-weight:600; padding:0.3rem 0.7rem; border-radius:0.5rem; max-width: 60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" x-text="lightboxFile?.name"></span>
-                <span x-show="lightboxIndex===0" style="background: var(--pdc-primary); color:white; font-size:0.7rem; font-weight:700; padding:0.3rem 0.6rem; border-radius:0.4rem; letter-spacing:0.04em;">GALVENĀ</span>
+                <a x-bind:href="lightboxFile?.url" target="_blank"
+                   style="display: inline-flex; align-items: center; gap: 0.3rem; color: white; font-size: 0.8rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 9999px; background: var(--pdc-primary); text-decoration: none; border: 1px solid rgba(255,255,255,0.3);">
+                    <svg style="width: 0.9rem; height: 0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2m-16-5l8 8 8-8m-16 0V4h16v10"/></svg>
+                    <span>Lejupielādēt</span>
+                </a>
             </div>
         </div>
         </div>

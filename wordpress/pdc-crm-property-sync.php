@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 2.3.8
+ * Version: 2.4.0
  * Author: Pārdod Laimīgs
  */
 if (! defined('ABSPATH')) {
@@ -792,7 +792,10 @@ function pdc_sync_agents()
 
         update_post_meta($post_id, '_pdc_crm_agent_id', $crm_id);
         update_post_meta($post_id, 'real_estate_agent_email', $email);
-        update_post_meta($post_id, 'real_estate_agent_mobile_number', $phone);
+        if (function_exists('pdc_format_phone_lv')) {
+        $phone = pdc_format_phone_lv($phone);
+    }
+    update_post_meta($post_id, 'real_estate_agent_mobile_number', $phone);
         update_post_meta($post_id, 'real_estate_agent_position', $position);
         update_post_meta($post_id, 'real_estate_agent_description', $description);
         update_post_meta($post_id, 'real_estate_agent_facebook_url', $facebook_url);
@@ -1274,3 +1277,291 @@ function crm_wpforms_feed(WP_REST_Request $request)
         'entries' => $entries,
     ], 200);
 }
+
+/*
+ * ============================================================
+ * Frontend UX fixes (fetched from CRM listing pages)
+ *
+ * 1. Phone numbers are displayed as "+371 xxx xxx" everywhere ERE
+ *    renders agent/mobile phone output.
+ * 2. "0 Istaba" info tiles are hidden on property cards and the
+ *    single-property page (land properties have no rooms — showing
+ *    a zero rooms tile reads like an error).
+ * 3. On mobile (max-width 767px) the property search/filters block
+ *    becomes a proper popup modal with a close button (the inline
+ *    filter block overflows horizontally on small screens).
+ * ============================================================
+ */
+defined('ABSPATH') || exit;
+
+function pdc_frontend_enqueue()
+{
+    if (! is_post_type_archive('property')
+        && ! is_singular('property')
+        && ! is_post_type_archive('agent')) {
+        return;
+    }
+
+    $js = <<<'JS'
+(function () {
+    /* ── 1. Phone number formatting ─────────────────────────── */
+    function formatLvPhone(text) {
+        var digits = text.replace(/[^0-9+]/g, '');
+        var national = null;
+        if (/^\+371\d{6,}$/.test(digits)) {
+            national = digits.slice(4);
+        } else if (/^371\d{8}$/.test(digits)) {
+            national = digits.slice(3);
+        } else if (/^2\d{7}$/.test(digits)) {
+            national = digits;
+        }
+        if (national === null) {
+            return null;
+        }
+        // "+371 xxx xxx" — 3-digit groups from the left, trailing remainder kept.
+        var groups = [];
+        for (var i = 0; i < national.length; i += 3) {
+            groups.push(national.slice(i, i + 3));
+        }
+        return '+371 ' + groups.join(' ');
+    }
+
+    function reformatPhoneNodes(root) {
+        var walker = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT);
+        var node;
+        while ((node = walker.nextNode())) {
+            if (!node.nodeValue || node.nodeValue.length > 25) {
+                continue;
+            }
+            var formatted = formatLvPhone(node.nodeValue.trim());
+            if (formatted) {
+                node.nodeValue = formatted;
+            }
+        }
+    }
+
+    /* ── 2. Hide "0 istabas" tiles ──────────────────────────── */
+    function hideEmptyRooms(root) {
+        var tiles = document.querySelectorAll('.ere__loop-property-info-item.property-bedrooms, .property-info-item.property-bedrooms');
+        tiles.forEach(function (tile) {
+            var valueEl = tile.querySelector('.ere__lpi-value');
+            var value = (valueEl ? valueEl.textContent : tile.textContent).trim();
+            // "0" minus possible thousands separators
+            if (value.replace(/[\s.,]/g, '') === '0') {
+                tile.style.display = 'none';
+            }
+        });
+    }
+
+    /* ── 3. Mobile filter popup ─────────────────────────────── */
+    var MQ = window.matchMedia('(max-width: 767px)');
+
+    function isMobile() { return MQ.matches; }
+
+    function buildFilterPopup() {
+        var form = document.querySelector('.ere-property-advanced-search');
+        if (!form || form.dataset.pdcPopupReady) {
+            return;
+        }
+        form.dataset.pdcPopupReady = '1';
+
+        var closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'pdc-filter-close';
+        closeBtn.setAttribute('aria-label', 'Aizvērt filtrus');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.addEventListener('click', function () {
+            form.classList.remove('pdc-filter-open');
+            document.body.classList.remove('pdc-filter-popup-open');
+        });
+        form.appendChild(closeBtn);
+
+        var trigger = document.createElement('button');
+        trigger.type = 'button';
+        trigger.className = 'pdc-filter-trigger';
+        trigger.innerHTML =
+            '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M7 12h10m-7 6h4"/>' +
+            '</svg> Filtri';
+        trigger.addEventListener('click', function () {
+            form.classList.add('pdc-filter-open');
+            document.body.classList.add('pdc-filter-popup-open');
+        });
+        closeBtn.addEventListener('click', function () {
+            document.body.classList.remove('pdc-filter-popup-open');
+        });
+
+        form.classList.add('pdc-filter-popup');
+        var header = document.querySelector('.ere-property-wrap .ere-heading-style2');
+        if (header && header.parentNode) {
+            header.insertBefore(trigger, header.nextSibling);
+        } else {
+            form.parentNode.insertBefore(trigger, form.nextSibling);
+        }
+
+        // Click into the dimmed backdrop closes the popup.
+        form.addEventListener('click', function (e) {
+            if (e.target === form) {
+                closeBtn.click();
+            }
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && form.classList.contains('pdc-filter-open')) {
+                closeBtn.click();
+            }
+        });
+
+        if (isMobile()) {
+            form.classList.add('pdc-filter-mobile');
+        }
+        MQ.addEventListener('change', function (e) {
+            form.classList.toggle('pdc-filter-mobile', e.matches);
+            if (!e.matches) {
+                form.classList.remove('pdc-filter-open');
+                document.body.classList.remove('pdc-filter-popup-open');
+            }
+        });
+    }
+
+    // Search results are AJAX-refreshed — reapply SPA-side fixes after each.
+    var reapply = function () {
+        buildFilterPopup();
+        reformatPhoneNodes();
+        hideEmptyRooms();
+    };
+
+    if (document.readyState !== 'loading') {
+        reapply();
+    } else {
+        document.addEventListener('DOMContentLoaded', reapply);
+    }
+    if (window.jQuery) {
+        jQuery(document).on('ere_single_property_page_loaded properties_page_loaded',
+            function () { setTimeout(reapply, 50); });
+    }
+    new MutationObserver(function () { setTimeout(reapply, 100); })
+        .observe(document.body, { childList: true, subtree: true });
+})();
+JS;
+
+    wp_register_style('pdf-pdc-frontend-fixes', false, [], '1.0');
+    wp_enqueue_style('pdf-pdc-frontend-fixes');
+    wp_add_inline_style('pdf-pdc-frontend-fixes', <<<'CSS'
+/* Fix horizontal overflow of inline search filters on mobile */
+@media (max-width: 767px) {
+    body { overflow-x: hidden; }
+    .ere-property-advanced-search .form-search-wrap { max-width: 100%; }
+
+    /* The filter block itself becomes a full-screen popup */
+    .ere-property-advanced-search {
+        display: none;
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        max-width: 100%;
+        background: rgba(20, 25, 25, 0.82);
+        padding: 1.5rem;
+        z-index: 99990;
+    }
+    .ere-property-advanced-search.pdc-filter-open {
+        display: block;
+    }
+    .ere-property-advanced-search > .form-search-wrap {
+        background: #fff;
+        margin: 0 auto;
+        max-width: 480px;
+        max-height: 100%;
+        overflow-y: auto;
+        padding: 1.25rem;
+        border-radius: 12px;
+        position: relative;
+    }
+    .ere-property-advanced-search .row { overflow: hidden; }
+    .ere-property-advanced-search select,
+    .ere-property-advanced-search input {
+        max-width: 100%;
+    }
+
+    .pdc-filter-close {
+        position: absolute;
+        right: auto;
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 9999px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        background: rgba(30, 40, 40, 0.9);
+        color: #fff;
+        font-size: 1.6rem;
+        line-height: 1;
+        cursor: pointer;
+        pointer-events: auto;
+    }
+    .ere-property-advanced-search > .pdc-filter-close {
+        right: 1rem;
+        top: 1rem;
+    }
+
+    .pdc-filter-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: #285854;
+        color: #fff;
+        border: 1px solid #285854;
+        border-radius: 10px;
+        padding: 0.65rem 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 1rem;
+    }
+}
+@media (min-width: 768px) {
+    .pdc-filter-trigger { display: none; }
+    .ere-property-advanced-search > .pdc-filter-close { display: none; }
+}
+CSS);
+
+    wp_register_script('pdc-frontend-fixes', false, [], '1.0', true);
+    wp_enqueue_script('pdc-frontend-fixes');
+    wp_add_inline_script('pdc-frontend-fixes', $js);
+}
+
+add_action('wp_enqueue_scripts', 'pdc_frontend_enqueue');
+
+/**
+ * Agents are synced from CRM every 5 minutes — normalise the stored phone
+ * meta so ERE renders "+371 xxx xxx" everywhere (display only; mobile_links
+ * and other consumers of the raw value are unaffected).
+ */
+function pdc_format_phone_lv($phone)
+{
+    $phone = trim((string) $phone);
+
+    if ($phone === '') {
+        return '';
+    }
+
+    $digits = preg_replace('/[^\d+]/', '', $phone);
+    if ($digits === '' || strpos($digits, '+') !== 0) {
+        return $phone;
+    }
+
+    $national = null;
+    if (strpos($digits, '+371') === 0) {
+        $national = substr($digits, 4);
+    } elseif (strpos($digits, '371') === 0) {
+        $national = substr($digits, 3);
+    }
+
+    if ($national === null) {
+        return $phone;
+    }
+
+    $groups = [];
+    for ($i = 0, $len = strlen($national); $i < $len; $i += 3) {
+        $groups[] = substr($national, $i, 3);
+    }
+
+    return '+371 '.implode(' ', $groups);
+}
+
