@@ -1068,19 +1068,19 @@
             </svg>
             <span>Nav pielikumu.</span>
         </div>
-        <div style="margin-top: 0.75rem;">
-            @if(!$isView)
-            <button
-                type="button"
-                x-on:click="pickFiles()"
-                style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; flex-direction: row; white-space: nowrap;"
-                class="fi-btn fi-size-sm fi-color fi-color-primary"
-            >
-                <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
-                <span>Pievienot failus</span>
-            </button>
-            @endif
-        </div>
+        @if(!$isView)
+            <div style="margin-top: 0.75rem;">
+                <button
+                    type="button"
+                    x-on:click="pickFiles()"
+                    style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; flex-direction: row; white-space: nowrap;"
+                    class="fi-btn fi-size-sm fi-color fi-color-primary"
+                >
+                    <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
+                    <span>Pievienot failus</span>
+                </button>
+            </div>
+        @endif
     </div>
 
     <!-- Editor Modal -->
