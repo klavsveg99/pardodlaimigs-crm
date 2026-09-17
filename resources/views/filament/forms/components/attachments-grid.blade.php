@@ -1094,7 +1094,7 @@
             </div>
         </template>
     </div>
-    @if((!$isView) || $isSendable)
+    @if(!$isView)
         <div style="margin-top: 0.5rem;">
             <button
                 type="button"
@@ -1140,7 +1140,7 @@
             <span>Nav pielikumu.</span>
         </div>
         <div style="margin-top: 0.75rem;">
-            @if((!$isView) || $isSendable)
+            @if(!$isView)
             <button
                 type="button"
                 x-on:click="pickFiles()"
