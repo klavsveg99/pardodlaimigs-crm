@@ -1105,7 +1105,7 @@ html.dark .rounded-xl .text-emerald-900 {
 .fi-section-content .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
 .fi-section-content .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 @media (min-width: 768px) { .fi-section-content .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } .fi-section-content .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } .fi-section-content .md\:h-36 { height: 9rem !important; } }
-@media (min-width: 1024px) { .fi-section-content .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; } .fi-section-content .lg\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; } }
+@media (min-width: 1024px) { .fi-section-content .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } .fi-section-content .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; } .fi-section-content .lg\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; } }
 
 /* Forms: label above input for proper width at all sizes (keep checkbox inline) */
 .fi-fo-field:not(:has(.fi-checkbox-input)) { display: flex !important; flex-direction: column !important; gap: 0.35rem !important; align-items: stretch !important; }
