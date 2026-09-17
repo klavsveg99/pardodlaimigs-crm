@@ -144,8 +144,14 @@
                             class="group relative block overflow-hidden rounded-xl border bg-gray-50 dark:bg-[#0b0f14] text-left transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-zoom-in {{ $idx === 0 ? 'border-[var(--pdc-primary)] ring-2 ring-[var(--pdc-primary)]/20' : 'border-gray-200 dark:border-[#27303a]' }}"
                             title="Atvērt galerijā • {{ $attachment->original_name }}"
                         >
-                            <img src="{{ $attachment->cacheBustedUrl() }}"
+                            {{-- Grid shows the 400×300 thumb; the full-size image is
+                                 only requested when the lightbox opens. --}}
+                            <img src="{{ $attachment->thumbUrl() }}"
                                  alt="{{ $attachment->original_name }}"
+                                 loading="lazy"
+                                 decoding="async"
+                                 width="400"
+                                 height="300"
                                  class="h-32 w-full object-cover md:h-36 pointer-events-none">
                             @if($idx === 0)
                                 <span style="position:absolute; left:0.5rem; top:0.5rem; background:var(--pdc-primary); color:white; font-size:0.68rem; font-weight:700; padding:0.28rem 0.55rem; border-radius:0.4rem; letter-spacing:0.04em; box-shadow:0 2px 8px rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.2); line-height:1;">GALVENĀ</span>
