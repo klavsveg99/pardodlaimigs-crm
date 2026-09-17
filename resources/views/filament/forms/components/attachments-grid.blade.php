@@ -242,6 +242,7 @@
         sendSelected: [],        // attachment ids (clicked file pre-selected)
         sendTo: '',
         sendSubject: '',
+        sendFromName: @js(config('mail.from.name') ?: 'Pārdod Laimīgs'),
         initSend(file) {
             if (typeof file.id !== 'number') return;
             this.sendTarget = file;
@@ -299,6 +300,7 @@
                     body: JSON.stringify({
                         to: this.sendTo,
                         subject: this.sendSubject,
+                        from_name: this.sendFromName,
                         files: this.sendSelected,
                         body: this.$refs.sendEditor ? this.$refs.sendEditor.innerHTML : '',
                     }),
@@ -709,6 +711,9 @@
                 xhr.send(formData);
             }, mime, 0.92);
         },
+        pickFiles() {
+            this.$refs.fileInput && this.$refs.fileInput.click();
+        },
         async handleUpload(e) {
             const input = e.target || e;
             const newFiles = Array.from(input.files || []);
@@ -777,6 +782,7 @@
     <input
         type="file"
         id="{{ $uid }}-upload"
+        x-ref="fileInput"
         multiple
         accept="{{ implode(',', config('attachments.accepted_file_types', ['image/*'])) }}"
         style="display: none;"
@@ -797,14 +803,15 @@
                     </button>
                 </template>
                 <template x-if="files.length > 0">
-                    <label
-                        for="{{ $uid }}-upload"
+                    <button
+                        type="button"
+                        x-on:click="pickFiles()"
                         class="fi-btn fi-size-sm fi-color fi-color-primary"
-                        style="cursor: pointer;"
+                        style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; flex-direction: row; white-space: nowrap;"
                     >
                         <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
                         <span>Pievienot failus</span>
-                    </label>
+                    </button>
                 </template>
                 <template x-if="hasSelection">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -967,7 +974,7 @@
                         <span x-show="file.created && sizeLabel(file.size)">·</span>
                         <span x-show="sizeLabel(file.size)" x-text="sizeLabel(file.size)"></span>
                         @if($isSendable)
-                        <span x-show="file.sentAt" class="fi-badge fi-color-success fi-color" style="display: inline-flex; align-items: center; gap: 0.25rem;" title="Nosūtīts klientam" x-cloak>
+                        <span x-bind:style="{ display: file.sentAt ? 'inline-flex' : 'none' }" class="fi-badge fi-color-success fi-color" style="display: inline-flex; align-items: center; gap: 0.25rem;" title="Nosūtīts klientam" x-cloak>
                             <svg style="width: 0.8rem; height: 0.8rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                             <span>Nosūtīts klientam</span>
                         </span>
@@ -979,10 +986,10 @@
                     @if($isSendable)
                         <button
                             type="button"
-                            x-show="typeof file.id === 'number'"
+                            x-bind:style="{ display: typeof file.id === 'number' ? 'inline-flex' : 'none' }"
                             x-on:click.stop="initSend(file)"
                             title="Nosūtīt ar e-pastu"
-                            style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.7rem; border-radius: 0.5rem; background: var(--pdc-primary); color: white; font-size: 0.78rem; font-weight: 600; border: 1px solid var(--pdc-primary-darker, var(--pdc-primary)); cursor: pointer; line-height: 1.2;"
+                            style="display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.35rem; white-space: nowrap; padding: 0.4rem 0.7rem; border-radius: 0.5rem; background: var(--pdc-primary); color: white; font-size: 0.78rem; font-weight: 600; border: 1px solid var(--pdc-primary-darker, var(--pdc-primary)); cursor: pointer; line-height: 1.2;"
                         >
                             <svg style="width: 0.9rem; height: 0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
                             <span>Nosūtīt</span>
@@ -1003,15 +1010,16 @@
         </template>
     </div>
     @if(!$isView)
-        <div x-show="files.length > 0" style="margin-top: 0.5rem;">
-            <label
-                for="{{ $uid }}-upload"
+        <div style="margin-top: 0.5rem;">
+            <button
+                type="button"
+                x-on:click="pickFiles()"
                 class="fi-btn fi-size-sm fi-color fi-color-gray fi-outlined"
-                style="cursor: pointer;"
+                style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; flex-direction: row; white-space: nowrap;"
             >
                 <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
                 <span>Pievienot failus</span>
-            </label>
+            </button>
         </div>
     @endif
     @endif
@@ -1048,14 +1056,15 @@
         </div>
         <div style="margin-top: 0.75rem;">
             @if(!$isView)
-            <label
-                for="{{ $uid }}-upload"
-                style="cursor: pointer;"
+            <button
+                type="button"
+                x-on:click="pickFiles()"
+                style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; flex-direction: row; white-space: nowrap;"
                 class="fi-btn fi-size-sm fi-color fi-color-primary"
             >
                 <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
                 <span>Pievienot failus</span>
-            </label>
+            </button>
             @endif
         </div>
     </div>
@@ -1154,6 +1163,7 @@
     <!-- Nosūtīt popup (opened only from a row's "Nosūtīt" button) -->
     <template x-if="sendOpen">
         <div
+            data-pdc-send-popup
             x-on:keydown.escape.window="closeSend()"
             style="position: fixed; inset: 0; z-index: 2147483647; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); padding: 1rem;"
             x-on:click.self="closeSend()"
@@ -1171,6 +1181,13 @@
                         <label style="display: flex; flex-direction: column; gap: 0.25rem;">
                             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Saņēmējs</span>
                             <input type="email" x-model="sendTo" placeholder="e-pasts" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;" />
+                        </label>
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Sūtītāja vārds</span>
+                            <div style="display: flex; align-items: stretch; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; background: #fff;">
+                                <input type="text" x-model="sendFromName" style="border: 0; padding: 0.45rem 0.6rem; font-size: 0.875rem; flex: 1 1 auto; min-width: 0; background: transparent; color: #111827; outline: none;" />
+                                <span style="display: inline-flex; align-items: center; padding: 0 0.6rem; font-size: 0.78rem; color: #6b7280; background: #f9fafb; border-left: 1px solid #e5e7eb; white-space: nowrap;">info@pardodlaimigs.lv</span>
+                            </div>
                         </label>
                         <label style="display: flex; flex-direction: column; gap: 0.25rem;">
                             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Temats</span>
@@ -1204,22 +1221,22 @@
                         </div>
                         <div x-ref="sendEditor" contenteditable="true"
                             style="min-height: 7rem; padding: 0.7rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0 0 0.5rem 0.5rem; font-size: 0.85rem; line-height: 1.55; overflow-y: auto; max-height: 16rem; background: #fff; color: #1f2937; outline: none;"></div>
-                        <div style="margin-top: 0.25rem; border: 1px solid #d1fae5; background: #f0fdf4; border-radius: 0.4rem; padding: 0.35rem 0.55rem; font-size: 0.7rem; color: #065f46; display: inline-block;">Nosūta no info@pardodlaimigs.lv · pielikumu limits 18 MB</div>
+                        <div style="margin-top: 0.3rem; font-size: 0.7rem; color: #9ca3af; line-height: 1.4;">Nosūtītāja e-pasts: info@pardodlaimigs.lv · pielikumu limits 18 MB</div>
                     </div>
 
                     <div x-show="sendError" x-cloak style="background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 0.5rem 0.7rem; border-radius: 0.45rem; font-size: 0.8rem;" x-text="sendError"></div>
                 </div>
 
                 <div style="padding: 0.9rem 1.1rem; border-top: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; background: #ffffff;">
-                    <a x-show="waLink" :href="waLink" target="_blank" rel="noopener"
-                        style="display: inline-flex; align-items: center; gap: 0.4rem; color: #16a34a; text-decoration: none; font-weight: 600; font-size: 0.82rem; padding: 0.45rem 0.75rem; border: 1px solid #bbe7c8; border-radius: 0.5rem;">
+                    <a x-bind:style="{ display: waLink ? 'inline-flex' : 'none' }" :href="waLink" target="_blank" rel="noopener"
+                        style="display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.4rem; white-space: nowrap; color: #16a34a; text-decoration: none; font-weight: 600; font-size: 0.82rem; padding: 0.45rem 0.75rem; border: 1px solid #bbe7c8; border-radius: 0.5rem;">
                         <svg style="width: 0.95rem; height: 0.95rem;" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-4.033-4.172-.866 1.908-.702 1.521-.79.674-.105.471-.223.875-.333a.312.312 0 01.23-.079c.297.149.272.967 2.03.681 1.239.68 6.036 3.162 6.036 3.162z" opacity="0" /><path fill-rule="evenodd" d="M12 0C5.373 0 0 5.372 0 12c0 2.625.846 5.059 2.284 8.105L0 24l5.25-1.694c2.133 1.146 4.572 1.776 6.75 1.776 6.627 0 12-5.372 12-12S18.627 0 12 0zm6.407 17.08c-.297.836-1.47 1.585-2.35 1.754-.618.12-1.443.171-2.06.114-.744-.068-2 .318-4.797-1.206-2.798-1.523-4.525-4.395-4.664-4.595-.139-.2-1.135-1.514-1.135-2.89 0-1.376.72-2.052 1.404-2.321.345-.135.72-.128 1-.132.295-.005.387-.015.564.43.208.519.72 1.801.783 1.933.063.131.105.285.005.461-.099.176-.205.358-.33.568-.11.181-.23.334-.058.633.147.254.652 1.077 1.4 1.745.962.863 1.609 1.139 1.918 1.75.29.38.663.427.928.263.266-.163 1.165-.82 1.442-.946.277-.127.502-.06.926.232.424.293 1.159 1.243 1.354 1.75.098.253.12.378.075.57-.05.219-.25.55-.524.794-.248.223-.373.221-.53.303z" clip-rule="evenodd"/></svg>
-                        <span>WhatsApp čats</span>
+                        <span>Atvērt WhatsApp čatu</span>
                     </a>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button type="button" x-on:click="closeSend()" style="padding: 0.45rem 0.75rem; border-radius: 0.5rem; background: transparent; color: #374151; border: 1px solid #e5e7eb; cursor: pointer; font-size: 0.82rem; font-weight: 600;">Atcelt</button>
                         <button type="button" x-on:click="submitSend()" :disabled="sendSending"
-                            style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.95rem; border-radius: 0.5rem; background: var(--pdc-primary, #285854); color: #fff; border: 1px solid var(--pdc-primary-darker, #285854); cursor: pointer; font-weight: 600; font-size: 0.84rem; opacity: sendSending ? 0.7 : 1;">
+                            style="display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.4rem; white-space: nowrap; padding: 0.5rem 0.95rem; border-radius: 0.5rem; background: var(--pdc-primary, #285854); color: #fff; border: 1px solid var(--pdc-primary-darker, #285854); cursor: pointer; font-weight: 600; font-size: 0.84rem; opacity: sendSending ? 0.7 : 1;">
                             <svg style="width: 0.9rem; height: 0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
                             <span x-text="sendSending ? 'Nosūta...' : 'Nosūtīt'"></span>
                         </button>

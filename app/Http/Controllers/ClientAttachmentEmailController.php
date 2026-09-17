@@ -32,6 +32,7 @@ class ClientAttachmentEmailController extends Controller
         $data = Validator::make($request->all(), [
             'to' => ['required', 'email'],
             'subject' => ['required', 'string', 'max:255'],
+            'from_name' => ['nullable', 'string', 'max:100'],
             'files' => ['required', 'array', 'min:1'],
             'files.*' => ['integer', 'exists:attachments,id'],
             'body' => ['required', 'string', 'max:100000'],
@@ -59,12 +60,17 @@ class ClientAttachmentEmailController extends Controller
         $html = self::renderEmailHtml($data['body']);
         $to = trim($data['to']);
         $subject = trim($data['subject']);
+        // Sender name is editable; the address always stays the configured
+        // CRM mailbox (info@pardodlaimigs.lv).
+        $fromName = trim((string) ($data['from_name'] ?? '')) ?: (string) config('mail.from.name');
 
         try {
             $disk = \Illuminate\Support\Facades\Storage::disk('public');
 
-            Mail::html($html, function ($message) use ($to, $subject, $selected, $disk) {
-                $message->subject($subject)->to($to);
+            Mail::html($html, function ($message) use ($to, $subject, $fromName, $selected, $disk) {
+                $message->from((string) config('mail.from.address'), $fromName)
+                    ->subject($subject)
+                    ->to($to);
 
                 foreach ($selected as $file) {
                     $message->attach($disk->path($file->path), [
@@ -83,6 +89,7 @@ class ClientAttachmentEmailController extends Controller
             'client_id' => $client->id,
             'to' => $to,
             'subject' => $subject,
+            'from_name' => $fromName,
             'files' => $selected->pluck('id')->all(),
         ]);
 

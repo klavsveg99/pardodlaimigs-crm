@@ -37,6 +37,11 @@
         if (target.closest('.fi-topbar, .fi-sidebar, [data-filament-topbar], [data-filament-sidebar]')) {
             return false;
         }
+        // Custom modals (attachment send popup) hold unsaved Alpine state;
+        // autosaving mid-popup re-renders the component and wipes the editor.
+        if (target.closest('[data-pdc-send-popup]')) {
+            return false;
+        }
         var form = target.closest('main form');
         if (!form) {
             return false;

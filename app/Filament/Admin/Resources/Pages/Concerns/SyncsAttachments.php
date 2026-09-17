@@ -14,6 +14,8 @@ trait SyncsAttachments
     /** @var array<int, array{0: string, 1: string}> */
     protected array $attachmentsToSync = [];
 
+    protected bool $attachmentsFieldPresent = false;
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $this->captureAttachments($data);
@@ -50,6 +52,11 @@ trait SyncsAttachments
 
     protected function captureAttachments(array &$data): void
     {
+        // Only sync when the attachments field was actually part of the
+        // submitted data. A missing key (e.g. a save that never rendered the
+        // field) must never be treated as "delete everything".
+        $this->attachmentsFieldPresent = array_key_exists('attachments', $data);
+
         $names = $data['attachment_original_names'] ?? [];
 
         $this->attachmentsToSync = array_map(
@@ -65,6 +72,10 @@ trait SyncsAttachments
 
     private function syncAttachments(Model $record): void
     {
+        if (! $this->attachmentsFieldPresent) {
+            return;
+        }
+
         $paths = array_column($this->attachmentsToSync, 0);
 
         $existing = $record->attachments()->get()->keyBy('path');
