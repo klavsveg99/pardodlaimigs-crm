@@ -984,7 +984,7 @@
         </template>
     </div>
     @if(!$isView)
-        <div style="margin-top: 0.5rem;">
+        <div x-show="files.length > 0" style="margin-top: 0.5rem;">
             <button
                 type="button"
                 x-on:click="pickFiles()"
