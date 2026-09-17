@@ -115,14 +115,10 @@
     background-color: var(--pdc-primary) !important;
 }
 
-/* Marketing consent – bottom align with flex */
-.fi-sc-component:has(#form\.marketing_consent) {
-    display: flex !important;
-    align-items: end !important;
-    align-self: end !important;
-    height: 100% !important;
-}
-.fi-sc-component:has(#form\.marketing_consent) .fi-fo-field,
+/* Marketing consent – bottom align its own field only.
+   NOTE: do NOT target `.fi-sc-component:has(#form.marketing_consent)` — that
+   also matches every ancestor (including the whole section wrapper) and
+   bottom-aligns the form columns. */
 .fi-fo-field:has(#form\.marketing_consent) {
     display: flex !important;
     align-items: end !important;

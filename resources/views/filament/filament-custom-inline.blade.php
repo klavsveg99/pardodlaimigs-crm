@@ -7,13 +7,10 @@
     --teal-50: var(--pdc-primary) !important; --teal-100: var(--pdc-primary) !important; --teal-200: var(--pdc-primary) !important; --teal-300: var(--pdc-primary) !important; --teal-400: var(--pdc-primary) !important; --teal-500: var(--pdc-primary) !important; --teal-600: var(--pdc-primary-darker) !important; --teal-700: var(--pdc-primary-darker) !important; --teal-800: var(--pdc-primary-darker) !important; --teal-900: var(--pdc-primary-darker) !important; --teal-950: var(--pdc-primary-darker) !important;
 }
 
-/* Marketing consent checkbox – true bottom alignment (flex, not pt-6) */
-.fi-sc-component:has(#form\.marketing_consent) {
-    display: flex !important;
-    align-items: end !important;
-    align-self: end !important;
-}
-.fi-sc-component:has(#form\.marketing_consent) .fi-fo-field,
+/* Marketing consent checkbox – bottom-align its own field only.
+   NOTE: never target `.fi-sc-component:has(#form.marketing_consent)` — that
+   matches every ancestor (incl. the whole section wrapper) and bottom-aligns
+   the form columns. */
 .fi-fo-field:has(#form\.marketing_consent) {
     display: flex !important;
     align-items: end !important;
