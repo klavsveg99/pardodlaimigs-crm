@@ -55,7 +55,7 @@
     </x-filament::section>
 
     <x-filament::section heading="Īpašuma dati">
-        <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-5">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Istabas</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->beds ?: '—' }}</dd>
@@ -72,7 +72,7 @@
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Zemes platība (m²)</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->land_m2 ?: '—' }}</dd>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14] md:col-span-2 lg:col-span-2">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14] md:col-span-2">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kadastra nr.</dt>
                 <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">{{ $record->kadastra_nr ?: '—' }}</dd>
             </div>
