@@ -8,8 +8,9 @@ use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Illuminate\Database\Eloquent\Model;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class WpformEntriesRelationManager extends RelationManager
 {
@@ -29,6 +30,10 @@ class WpformEntriesRelationManager extends RelationManager
     {
         return $table
             ->heading('Pieteikumi')
+            // CRM-deleted submissions live in the "Dzēstie" tab on the main
+            // Pieteikumi page; they must not reappear here.
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query
+                ->where(fn (Builder $q): Builder => $q->whereNull('status')->orWhere('status', '!=', 'deleted')))
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')->label('Iesniegts')->dateTime('d.m.Y H:i')->sortable(),
                 Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->sortable(),

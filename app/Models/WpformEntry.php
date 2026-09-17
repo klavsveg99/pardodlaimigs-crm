@@ -31,32 +31,61 @@ class WpformEntry extends Model
 
     protected static function booted(): void
     {
-        // Deletions made in the CRM are authoritative: persist BOTH a
-        // tombstone (so the periodic WordPress sync never re-creates the
-        // entry) and a full archived snapshot of the record (so the data
-        // survives locally even after the row is gone).
+        // Hard deletes are authoritative: persist a tombstone (so the
+        // periodic WordPress sync never re-creates the entry) plus a full
+        // archived snapshot (so the data survives even after the row is gone).
         static::deleted(function (WpformEntry $entry): void {
-            if ($entry->external_id === null || $entry->external_id === '') {
-                return;
-            }
-
-            $now = now();
-
-            DB::table('wpform_entry_deletions')->updateOrInsert(
-                ['external_id' => (string) $entry->external_id],
-                [
-                    'deleted_at' => $now,
-                    'entry_id' => $entry->entry_id,
-                    'form_id' => $entry->form_id,
-                    'form_name' => $entry->form_name,
-                    'client_id' => $entry->client_id,
-                    'fields' => $entry->fields !== null
-                        ? json_encode($entry->fields, JSON_UNESCAPED_UNICODE)
-                        : null,
-                    'entry_created_at' => $entry->created_at,
-                ],
-            );
+            static::tombstone($entry);
         });
+    }
+
+    /**
+     * Records the entry as deleted so the periodic WordPress sync never
+     * re-creates/resurrects it, and archives the payload locally.
+     */
+    public static function tombstone(WpformEntry $entry): void
+    {
+        if ($entry->external_id === null || $entry->external_id === '') {
+            return;
+        }
+
+        DB::table('wpform_entry_deletions')->updateOrInsert(
+            ['external_id' => (string) $entry->external_id],
+            [
+                'deleted_at' => now(),
+                'entry_id' => $entry->entry_id,
+                'form_id' => $entry->form_id,
+                'form_name' => $entry->form_name,
+                'client_id' => $entry->client_id,
+                'fields' => $entry->fields !== null
+                    ? json_encode($entry->fields, JSON_UNESCAPED_UNICODE)
+                    : null,
+                'entry_created_at' => $entry->created_at,
+            ],
+        );
+    }
+
+    public static function untombstone(string $externalId): void
+    {
+        DB::table('wpform_entry_deletions')->where('external_id', $externalId)->delete();
+    }
+
+    /**
+     * CRM-side "delete": keep the row (so it stays viewable/restorable) but
+     * move it to the "Dzēstie" tab and freeze it against WP re-sync.
+     */
+    public function moveToTrash(): void
+    {
+        static::tombstone($this);
+
+        $this->update(['status' => 'deleted']);
+    }
+
+    public function restoreFromTrash(): void
+    {
+        static::untombstone((string) $this->external_id);
+
+        $this->update(['status' => 'new']);
     }
 
     public function client(): BelongsTo

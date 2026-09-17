@@ -7,14 +7,16 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\WpformEntryResource\Pages;
 use App\Models\WpformEntry;
 use App\Support\PhoneFormat;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Collection;
 use UnitEnum;
 
 class WpformEntryResource extends Resource
@@ -26,6 +28,7 @@ class WpformEntryResource extends Resource
         'spam' => 'Mēstule',
         'archived' => 'Arhivēts',
         'klients_pievienots' => 'Klients pievienots',
+        'deleted' => 'Dzēsts',
     ];
 
     public const STATUS_COLORS = [
@@ -35,6 +38,7 @@ class WpformEntryResource extends Resource
         'spam' => 'danger',
         'archived' => 'gray',
         'klients_pievienots' => 'success',
+        'deleted' => 'gray',
     ];
 
     protected static ?string $model = WpformEntry::class;
@@ -96,6 +100,9 @@ class WpformEntryResource extends Resource
                     ->searchable(query: fn ($query, $search) => $query->where('fields', 'like', '%Telefona numurs%')->where('fields', 'like', "%{$search}%")),
                 Tables\Columns\SelectColumn::make('status')->label('Statuss')
                     ->options(self::STATUSES)
+                    // Deleted entries are restored via the row action (which
+                    // also clears the sync tombstone), never inline.
+                    ->disabled(fn (WpformEntry $record): bool => $record->status === 'deleted')
                     ->sortable(),
             ])
             ->filters([
@@ -109,12 +116,68 @@ class WpformEntryResource extends Resource
             ->actions([
                 ActionGroup::make([
                     ViewAction::make()->label('Skatīt')->color('gray'),
-                    DeleteAction::make()->label('Dzēst')->color('gray'),
+                    Action::make('trash')
+                        ->label('Dzēst')
+                        ->icon('heroicon-o-trash')
+                        ->color('gray')
+                        ->visible(fn (WpformEntry $record): bool => $record->status !== 'deleted')
+                        ->requiresConfirmation()
+                        ->modalHeading('Pārvietot pieteikumu uz "Dzēstie"?')
+                        ->modalDescription('Ieraksts pazudīs no aktīvā saraksta, bet paliks sadaļā "Dzēstie" un būs atjaunojams.')
+                        ->modalSubmitActionLabel('Dzēst')
+                        ->action(function (WpformEntry $record): void {
+                            $record->moveToTrash();
+
+                            Notification::make()
+                                ->title('Pieteikums pārvietots uz "Dzēstie"')
+                                ->success()
+                                ->send();
+                        }),
+                    Action::make('restore')
+                        ->label('Atjaunot')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('gray')
+                        ->visible(fn (WpformEntry $record): bool => $record->status === 'deleted')
+                        ->requiresConfirmation()
+                        ->modalHeading('Atjaunot pieteikumu?')
+                        ->modalDescription('Ieraksts atgriezīsies aktīvajā sarakstā.')
+                        ->modalSubmitActionLabel('Atjaunot')
+                        ->action(function (WpformEntry $record): void {
+                            $record->restoreFromTrash();
+
+                            Notification::make()
+                                ->title('Pieteikums atjaunots')
+                                ->success()
+                                ->send();
+                        }),
                 ])->color('gray'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->label('Dzēst izvēlētos')->color('gray'),
+                    BulkAction::make('trash_selected')
+                        ->label('Dzēst izvēlētos')
+                        ->icon('heroicon-o-trash')
+                        ->color('gray')
+                        ->requiresConfirmation()
+                        ->modalHeading('Pārvietot izvēlētos pieteikumus uz "Dzēstie"?')
+                        ->modalDescription('Ieraksti paliks sadaļā "Dzēstie" un būs atjaunojami.')
+                        ->modalSubmitActionLabel('Dzēst')
+                        ->action(function (Collection $records): void {
+                            $moved = 0;
+
+                            foreach ($records as $record) {
+                                if ($record->status !== 'deleted') {
+                                    $record->moveToTrash();
+                                    $moved++;
+                                }
+                            }
+
+                            Notification::make()
+                                ->title($moved.' pieteikumi pārvietoti uz "Dzēstie"')
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ])
             ->paginated([25, 50, 100])
