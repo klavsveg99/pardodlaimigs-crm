@@ -6,6 +6,8 @@
     $isMultiselect = $isMultiselect();
     $isSendable = $isSendable();
     $isPropertySendable = $isPropertySendable();
+    $isRecordSendable = $isRecordSendable();
+    $isRowMode = $isSendable || $isPropertySendable || $isRecordSendable;
     // ViewRecord publication renders the same field read-only.
     $isView = (fn () => $getContainer()->getOperation() === 'view')();
 
@@ -25,23 +27,35 @@
             'phone' => (string) ($c->phone ?? ''),
         ])->values()->all()
         : [];
-    $canSend = ! $isPropertySendable || count($propertyClients) > 0;
+    // Records owned by a client (viewings/tasks): recipient from the
+    // associated client; no send buttons without one.
+    $recordClient = $isRecordSendable ? $record?->client : null;
+    $canSend = $isPropertySendable
+        ? count($propertyClients) > 0
+        : ($isRecordSendable ? (bool) $recordClient : true);
 
     // Mark files that were previously emailed ("Nosūtīts klientam") from the
     // audit activity log — client-scoped for clients, property-scoped for
-    // properties.
+    // properties, owner-scoped for viewings/tasks.
+    $recordOwnerKey = $isRecordSendable && $record
+        ? (($record instanceof \App\Models\Viewing ? 'viewing' : 'task').':'.$record->getKey())
+        : null;
+
     $sentAtByAttachment = [];
-    if ($record && ($isSendable || $isPropertySendable)) {
+    if ($record && ($isSendable || $isPropertySendable || $isRecordSendable)) {
         \App\Models\Activity::query()
             ->where('type', 'attachment_email_sent')
             ->when(
                 $isPropertySendable,
                 fn ($q) => $q->where('property_id', $record->id),
-                fn ($q) => $q->where('client_id', $record->id),
+                fn ($q) => $q->where('client_id', $isRecordSendable ? $recordClient?->id : $record->id),
             )
             ->orderBy('created_at')
             ->get()
-            ->each(function ($activity) use (&$sentAtByAttachment): void {
+            ->each(function ($activity) use (&$sentAtByAttachment, $isRecordSendable, $recordOwnerKey): void {
+                if ($isRecordSendable && ($activity->payload['owner'] ?? null) !== $recordOwnerKey) {
+                    return;
+                }
                 foreach ((array) ($activity->payload['files'] ?? []) as $attachmentId) {
                     if (is_int($attachmentId)) {
                         $sentAtByAttachment[$attachmentId] = $activity->created_at?->format('d.m.Y H:i');
@@ -77,15 +91,41 @@
     };
     $waLink = $waPhone($record?->phone);
 
+    // Endpoints / recipient defaults per context. The popup itself is a
+    // shared partial (resources/views/filament/partials/attachment-send-popup).
+    $recordSegment = null;
+    if ($isRecordSendable && $record) {
+        $recordSegment = $record instanceof \App\Models\Viewing ? 'viewings' : 'tasks';
+    }
+
+    $mailSendUrl = null;
+    $mailDefaultTo = '';
+    $mailBaseWa = '';
+    if ($isSendable) {
+        $mailSendUrl = route('clients.attachments.send-email', ['clientSlug' => $record?->slug ?? $record?->getKey()]);
+        $mailDefaultTo = (string) ($record?->email ?? '');
+        $mailBaseWa = $waLink;
+    } elseif ($isPropertySendable && $record) {
+        $mailSendUrl = route('properties.attachments.send-email', ['propertySlug' => $record->slug ?? $record->getKey()]);
+    } elseif ($recordSegment && $record) {
+        $mailSendUrl = route($recordSegment.'.attachments.send-email', ['id' => $record->getKey()]);
+        $mailDefaultTo = (string) ($recordClient?->email ?? '');
+        $mailBaseWa = $waPhone($recordClient?->phone);
+    }
+
     // Blade @if inside an HTML tag breaks the tag when Livewire wraps the
     // directive in an HTML comment (the ">" terminates the tag early), so
     // conditional attributes are precomputed and echoed as plain markup.
     $sendDataAttrs = '';
     if ($isSendable) {
         $sendDataAttrs = 'data-client-slug="'.e($record?->slug ?? $record?->getKey()).'" '
-            .'data-upload-url-client="'.e(route('clients.attachments.upload', ['clientSlug' => $record?->slug ?? $record?->getKey()])).'"';
+            .'data-upload-url-client="'.e(route('clients.attachments.upload', ['clientSlug' => $record?->slug ?? $record?->getKey()])).'" '
+            .'data-delete-url="'.e(route('clients.attachments.destroy', ['clientSlug' => $record?->slug ?? $record?->getKey(), 'attachment' => ':id'])).'"';
     } elseif ($isPropertySendable && $record) {
         $sendDataAttrs = 'data-upload-url-property="'.e(route('properties.attachments.upload', ['propertySlug' => $record->slug ?? $record->getKey()])).'"';
+    } elseif ($recordSegment && $record) {
+        $sendDataAttrs = 'data-upload-url-record="'.e(route($recordSegment.'.attachments.upload', ['id' => $record->getKey()])).'" '
+            .'data-delete-url="'.e(route($recordSegment.'.attachments.destroy', ['id' => $record->getKey(), 'attachment' => ':id'])).'"';
     }
 
     $cardDragAttrs = $isReorderable
@@ -282,8 +322,8 @@
         },
         init() {
             try { this.files = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || []; } catch(e){ this.files=[]; }
-            this.uploadUrl = this.$el.dataset.uploadUrlClient || this.$el.dataset.uploadUrlProperty || this.$el.dataset.uploadUrl;
-            this.clientUpload = !!this.$el.dataset.uploadUrlClient;
+            this.uploadUrl = this.$el.dataset.uploadUrlClient || this.$el.dataset.uploadUrlProperty || this.$el.dataset.uploadUrlRecord || this.$el.dataset.uploadUrl;
+            this.deleteUrl = this.$el.dataset.deleteUrl || '';
             this.proxyUrl = this.$el.dataset.proxyUrl || null;
             this.csrfToken = document.querySelector('meta[name=&quot;csrf-token&quot;]')?.content || document.querySelector('meta[name=csrf-token]')?.content;
             this._waLink = this.$el.dataset.waLink || '';
@@ -373,13 +413,11 @@
         async removeFile(id) {
             if (!confirm('Dzēst šo failu?')) return;
 
-            // Client attachments are persisted immediately, so deleting must
-            // hit the server (works on both edit and view pages).
-            if (this.clientUpload && typeof id === 'number') {
+            // Client / viewing / task attachments are persisted immediately,
+            // so deleting must hit the server (works on edit and view pages).
+            if (this.deleteUrl && typeof id === 'number') {
                 try {
-                    const resp = await fetch('{{ route("clients.attachments.destroy", ["clientSlug" => ":slug", "attachment" => ":id"]) }}'
-                        .replace(':slug', String((this._root || this.$el).dataset.clientSlug))
-                        .replace(':id', String(id)), {
+                    const resp = await fetch(this.deleteUrl.replace(':id', String(id)), {
                         method: 'DELETE',
                         headers: {
                             'Accept': 'application/json',
@@ -811,7 +849,7 @@
         </div>
     </div>
 
-    @if(! ($isSendable || $isPropertySendable))
+    @if(! $isRowMode)
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <template x-for="(file, index) in files" :key="file.id">
             <div
@@ -947,7 +985,7 @@
                         <span x-show="file.created" x-text="file.created"></span>
                         <span x-show="file.created && sizeLabel(file.size)">·</span>
                         <span x-show="sizeLabel(file.size)" x-text="sizeLabel(file.size)"></span>
-                        @if($isSendable || $isPropertySendable)
+                        @if($isRowMode)
                         <span x-bind:style="{ display: file.sentAt ? 'inline-flex' : 'none' }" class="fi-badge fi-color-success fi-color" style="display: inline-flex; align-items: center; gap: 0.25rem;" title="Nosūtīts klientam" x-cloak>
                             <svg style="width: 0.8rem; height: 0.8rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                             <span>Nosūtīts klientam</span>
@@ -957,7 +995,7 @@
                 </div>
 
                 <div style="flex: none; display: flex; align-items: center; gap: 0.4rem;">
-                    @if(($isSendable || $isPropertySendable) && $canSend)
+                    @if($isRowMode && $canSend)
                         <button
                             type="button"
                             x-bind:style="{ display: typeof file.id === 'number' ? 'inline-flex' : 'none' }"
@@ -1133,13 +1171,12 @@
         </div>
     </template>
 
-    @if(($isSendable && $canSend) || ($isPropertySendable && $canSend))
+    @if($isRowMode && $canSend && $mailSendUrl)
         @include('filament.partials.attachment-send-popup', [
-            'mode' => $isSendable ? 'client' : 'property',
-            'slug' => (string) ($record?->slug ?? $record?->getKey()),
+            'sendUrl' => $mailSendUrl,
             'clients' => $propertyClients,
-            'defaultTo' => (string) ($record?->email ?? ''),
-            'baseWa' => $waLink,
+            'defaultTo' => $mailDefaultTo,
+            'baseWa' => $mailBaseWa,
         ])
     @endif
 </div>

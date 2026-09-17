@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources;
 
+use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Filament\Admin\Resources\TaskResource\Pages;
 use App\Models\Client;
 use App\Models\CrmProperty;
@@ -76,20 +77,15 @@ class TaskResource extends Resource
                     ->mapWithKeys(fn ($p) => [$p->id => $p->selection_label])
                     ->toArray())
                 ->getOptionLabelUsing(fn ($value): ?string => CrmProperty::find($value)?->selection_label),
-            Forms\Components\FileUpload::make('attachments')
+            AttachmentsGrid::make('attachments')
                 ->label('Pielikumi')
-                ->helperText('Atļauti failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
+                ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
                     .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
-                ->multiple()
-                ->reorderable()
+                ->reorderable(false)
+                ->multiselect(false)
                 ->deletable()
-                ->previewable()
-                ->openable()
-                ->storeFileNamesIn('attachment_original_names')
-                ->acceptedFileTypes(config('attachments.accepted_file_types'))
-                ->maxSize((int) config('attachments.max_size_kb'))
-                ->disk('public')
-                ->directory('attachments')
+                ->collection('gallery')
+                ->recordSendable()
                 ->columnSpanFull(),
         ])->columns(2);
     }

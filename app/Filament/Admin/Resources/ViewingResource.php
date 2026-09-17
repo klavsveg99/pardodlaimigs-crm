@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources;
 
+use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Filament\Admin\Resources\ViewingResource\Pages;
 use App\Models\Client;
 use App\Models\CrmProperty;
@@ -80,20 +81,15 @@ class ViewingResource extends Resource
                 'no_show' => 'Neatnāca',
             ])->default('scheduled'),
             Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3)->columnSpanFull(),
-            Forms\Components\FileUpload::make('attachments')
+            AttachmentsGrid::make('attachments')
                 ->label('Pielikumi')
-                ->helperText('Atļauti failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
+                ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
                     .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
-                ->multiple()
-                ->reorderable()
+                ->reorderable(false)
+                ->multiselect(false)
                 ->deletable()
-                ->previewable()
-                ->openable()
-                ->storeFileNamesIn('attachment_original_names')
-                ->acceptedFileTypes(config('attachments.accepted_file_types'))
-                ->maxSize((int) config('attachments.max_size_kb'))
-                ->disk('public')
-                ->directory('attachments')
+                ->collection('gallery')
+                ->recordSendable()
                 ->columnSpanFull(),
         ])->columns(2);
     }

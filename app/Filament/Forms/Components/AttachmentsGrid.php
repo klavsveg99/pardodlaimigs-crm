@@ -20,6 +20,8 @@ class AttachmentsGrid extends Field
 
     public bool $propertySendable = false;
 
+    public bool $recordSendable = false;
+
     public string $collection = 'gallery';
 
     public static function make(?string $name = null): static
@@ -81,6 +83,22 @@ class AttachmentsGrid extends Field
     public function isPropertySendable(): bool
     {
         return $this->propertySendable;
+    }
+
+    /**
+     * Records that belong to a client (viewings, tasks): per-file
+     * "Nosūtīt" with the associated client as recipient.
+     */
+    public function recordSendable(bool $recordSendable = true): static
+    {
+        $this->recordSendable = $recordSendable;
+
+        return $this;
+    }
+
+    public function isRecordSendable(): bool
+    {
+        return $this->recordSendable;
     }
 
     public function isReorderable(): bool

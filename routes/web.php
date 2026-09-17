@@ -256,3 +256,18 @@ Route::post('/properties/{propertySlug}/attachments/upload',
 Route::post('/properties/{propertySlug}/attachments/send-email',
     [App\Http\Controllers\PropertyAttachmentEmailController::class, 'send']
 )->middleware(['auth', 'web'])->name('properties.attachments.send-email');
+
+// ── Viewing / Task attachments (associated client recipient) ──
+foreach (['viewings' => 'Viewing', 'tasks' => 'Task'] as $segment => $suffix) {
+    Route::post("/{$segment}/{id}/attachments/upload",
+        [App\Http\Controllers\RecordAttachmentEmailController::class, "upload{$suffix}"]
+    )->middleware(['auth', 'web'])->name("{$segment}.attachments.upload");
+
+    Route::delete("/{$segment}/{id}/attachments/{attachment}",
+        [App\Http\Controllers\RecordAttachmentEmailController::class, "destroy{$suffix}"]
+    )->middleware(['auth', 'web'])->name("{$segment}.attachments.destroy");
+
+    Route::post("/{$segment}/{id}/attachments/send-email",
+        [App\Http\Controllers\RecordAttachmentEmailController::class, "send{$suffix}"]
+    )->middleware(['auth', 'web'])->name("{$segment}.attachments.send-email");
+}

@@ -1,15 +1,15 @@
 @php
     // Self-contained attachment email popup. Opened via the window event
     // `pdc-open-send` with detail { file: {id,name}, all: [{id,name,size}] }.
-    $mode = $mode ?? 'client';
-    $slug = (string) ($slug ?? '');
     $clients = $clients ?? [];
     $defaultTo = (string) ($defaultTo ?? '');
     $baseWa = (string) ($baseWa ?? '');
     $fromName = $fromName ?? (auth()->user()?->name ?: (config('mail.from.name') ?: 'Pārdod Laimīgs'));
-    $sendUrl = $mode === 'property'
-        ? route('properties.attachments.send-email', ['propertySlug' => $slug])
-        : route('clients.attachments.send-email', ['clientSlug' => $slug]);
+    // Explicit endpoint; legacy fallback from mode/slug kept for the
+    // property view page include.
+    $sendUrl = $sendUrl ?? ($mode === 'property'
+        ? route('properties.attachments.send-email', ['propertySlug' => $slug ?? ''])
+        : route('clients.attachments.send-email', ['clientSlug' => $slug ?? '']));
     $defaultBody = '<p>Sveiki,</p><p>pievienoju saistītos failus.</p><p>Ar cieņu,<br>Pārdod Laimīgs</p>';
 @endphp
 
@@ -19,7 +19,6 @@
         open: false,
         sending: false,
         error: '',
-        mode: @js($mode),
         sendUrl: @js($sendUrl),
         clients: @js($clients),
         defaultTo: @js($defaultTo),
@@ -39,11 +38,12 @@
             this.selected = [detail.file.id];
             this.subject = detail.file.name || '';
             this.error = '';
-            if (this.mode === 'property') {
+            if (this.clients.length > 0) {
                 const first = this.clients.find(c => c.email) || this.clients[0] || null;
                 this.clientId = first ? first.id : null;
                 this.to = first ? (first.email || '') : '';
             } else {
+                this.clientId = null;
                 this.to = this.defaultTo;
             }
             this.open = true;
@@ -78,7 +78,7 @@
                 .reduce((sum, c) => sum + (c.size || 0), 0);
         },
         get waLink() {
-            if (this.mode === 'property') {
+            if (this.clients.length > 0) {
                 const c = this.clientId ? this.clients.find(x => x.id === this.clientId) : null;
                 const digits = String((c && c.phone) || '').replace(/\D+/g, '');
                 if (digits.length === 8) return 'https://wa.me/371' + digits;
@@ -162,7 +162,7 @@
 
                 <div style="padding: 1rem 1.1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
                     <div style="display: grid; gap: 0.65rem;">
-                        <label x-bind:style="{ display: (mode === 'property' && clients.length > 1) ? 'flex' : 'none' }" style="display: none; flex-direction: column; gap: 0.25rem;">
+                        <label x-bind:style="{ display: (clients.length > 1) ? 'flex' : 'none' }" style="display: none; flex-direction: column; gap: 0.25rem;">
                             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Klients</span>
                             <select x-model.number="clientId" x-on:change="clientChanged()" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;">
                                 <template x-for="c in clients" :key="c.id">
