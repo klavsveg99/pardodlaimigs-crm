@@ -230,6 +230,11 @@
             this.sendError = '';
             this.sendOpen = true;
             document.body.style.overflow = 'hidden';
+            this.$nextTick(() => {
+                if (this.$refs.sendEditor && ! this.$refs.sendEditor.innerHTML.trim()) {
+                    this.$refs.sendEditor.innerHTML = '<p>Sveiki,</p><p>pievienoju saistītos failus.</p><p>Ar cieņu,<br>Pārdod Laimīgs</p>';
+                }
+            });
         },
         // opens WhatsApp chat with the client's number (popup footer)
         get waLink() { return this._waLink || ''; },
@@ -278,8 +283,8 @@
                     }),
                 });
                 const data = await resp.json().catch(() => ({}));
-                if (!resp.ok) {
-                    this.sendError = data.message || 'Nosūtīšana neizdevās.';
+                if (!resp.ok || !data.ok) {
+                    this.sendError = data.message || 'Nosūtīšana neizdevās. Pārbaudiet saņēmēja adresi un failu izmēru.';
                     return;
                 }
                 // Mark the sent files locally (green Nosūtīts klientam check).
@@ -716,6 +721,7 @@
                                 name: r.name || file.name,
                                 mime: file.type || '',
                                 size: file.size,
+                                created: new Date().toLocaleDateString('lv-LV'),
                             });
                             this.sync();
                         } else {
