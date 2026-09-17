@@ -36,12 +36,20 @@
         'mime' => $a->mime_type,
         'size' => $a->size,
         'sentAt' => $sentAtByAttachment[$a->id] ?? null,
+        'created' => $a->created_at?->format('d.m.Y'),
     ])->values()->toJson();
 
     $originalNamesPath = preg_replace('/attachments$/', 'attachment_original_names', $statePath);
     $uid = 'att-' . str_replace('.', '-', $statePath);
     $uploadUrl = route('filament.admin.property.upload-attachment');
     $proxyUrl = route('filament.admin.property.image-proxy');
+
+    // WhatsApp chat link from the client's phone ("+371 24248764", "24248764"…).
+    $waPhone = preg_replace('/\D+/', '', (string) ($record?->phone ?? ''));
+    if (strlen($waPhone) === 8) {
+        $waPhone = '371'.$waPhone;
+    }
+    $waLink = $waPhone !== '' ? 'https://wa.me/'.$waPhone : '';
 @endphp
 
 <script type="application/json" id="{{ $uid }}-data">{!! $attachmentsJson !!}</script>
@@ -205,11 +213,106 @@
         editorAspectRatio: null,
         scaleX: 1,
         scaleY: 1,
+        // Email popup state
+        sendOpen: false,
+        sendSending: false,
+        sendError: '',
+        sendTarget: null,        // the clicked attachment row
+        sendSelected: [],        // attachment ids (clicked file pre-selected)
+        sendTo: '',
+        sendSubject: '',
+        initSend(file) {
+            if (typeof file.id !== 'number') return;
+            this.sendTarget = file;
+            this.sendSelected = [file.id];
+            this.sendTo = (this._root || this.$el).dataset.defaultTo || '';
+            this.sendSubject = file.name;
+            this.sendError = '';
+            this.sendOpen = true;
+            document.body.style.overflow = 'hidden';
+        },
+        // opens WhatsApp chat with the client's number (popup footer)
+        get waLink() { return this._waLink || ''; },
+        closeSend() {
+            if (this.sendSending) return;
+            this.sendOpen = false;
+            this.sendTarget = null;
+            document.body.style.overflow = '';
+        },
+        get sendAttachments() { return this.files.filter(f => typeof f.id === 'number'); },
+        get sendTotalSelected() {
+            const byId = {};
+            this.files.forEach(f => { byId[f.id] = f; });
+            return (this.sendSelected || []).reduce((sum, id) => sum + ((byId[id] || {}).size || 0), 0);
+        },
+        toggleSendFile(id) {
+            const i = this.sendSelected.indexOf(id);
+            if (i === -1) { this.sendSelected.push(id); }
+            else if (this.sendSelected.length > 1) { this.sendSelected.splice(i, 1); }
+        },
+        sendWarn() {
+            return this.sendTotalSelected > 18 * 1024 * 1024;
+        },
+        async submitSend() {
+            if (this.sendSending || !this.sendTarget) return;
+            this.sendError = '';
+            if (!this.sendTo || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(this.sendTo)) { this.sendError = 'Norādiet derīgu e-pasta adresi.'; return; }
+            if (!this.sendSelected.length) { this.sendError = 'Izvēlieties vismaz vienu failu.'; return; }
+            if (!this.sendSubject.trim()) { this.sendError = 'Norādiet tematu.'; return; }
+            if (this.sendWarn()) { this.sendError = 'Pielikumi pārsniedz 18 MB — izvēlieties mazāk failu.'; return; }
+            this.sendSending = true;
+            try {
+                const resp = await fetch('{{ route("clients.attachments.send-email", ["clientSlug" => ":slug"]) }}'.replace(':slug', String((this._root || this.$el).dataset.clientSlug)), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({
+                        to: this.sendTo,
+                        subject: this.sendSubject,
+                        files: this.sendSelected,
+                        body: this.$refs.sendEditor ? this.$refs.sendEditor.innerHTML : '',
+                    }),
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    this.sendError = data.message || 'Nosūtīšana neizdevās.';
+                    return;
+                }
+                // Mark the sent files locally (green Nosūtīts klientam check).
+                const sentAt = data.sentAt || '';
+                (data.marked || []).forEach(id => {
+                    const f = this.files.find(x => x.id === id);
+                    if (f) { f.sentAt = sentAt; }
+                });
+                this.sendOpen = false;
+                this.sendTarget = null;
+                document.body.style.overflow = '';
+                const note = document.createElement('div');
+                note.textContent = 'E-pasts nosūtīts uz ' + this.sendTo;
+                note.setAttribute('style', 'position:fixed;top:1rem;right:1rem;z-index:2147483647;background:#16a34a;color:#fff;padding:0.6rem 1rem;border-radius:0.5rem;font-weight:600;font-size:0.85rem;box-shadow:0 8px 24px rgba(0,0,0,0.25);');
+                document.body.appendChild(note);
+                setTimeout(() => note.remove(), 4000);
+            } catch (e) {
+                this.sendError = 'Kļūda: ' + (e.message || 'unknown');
+            } finally {
+                this.sendSending = false;
+            }
+        },
+        execCmd(cmd, value) {
+            this.$refs.sendEditor?.focus();
+            document.execCommand(cmd, false, value || null);
+        },
         init() {
             try { this.files = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || []; } catch(e){ this.files=[]; }
             this.uploadUrl = this.$el.dataset.uploadUrl;
             this.proxyUrl = this.$el.dataset.proxyUrl || null;
             this.csrfToken = document.querySelector('meta[name=&quot;csrf-token&quot;]')?.content || document.querySelector('meta[name=csrf-token]')?.content;
+            this._waLink = this.$el.dataset.waLink || '';
+            this._root = this.$el;
             window.__pdcAttachments = this;
             // Load cropper.js if not already loaded
             if (!window.Cropper && !document.querySelector('script[data-cropper]')) {
@@ -259,13 +362,10 @@
             return file && (file.mime || '').startsWith('image/');
         },
         sizeLabel(bytes) {
-            if (!bytes || bytes < 1024) return '';
+            if (!bytes) return '';
+            if (bytes < 1024) return bytes + ' B';
             if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
             return (bytes / (1024 * 1024)).toFixed(1).replace('.0', '') + ' MB';
-        },
-        sendFile(file) {
-            if (typeof file.id !== 'number') return; // not persisted yet
-            $wire.dispatch('pdc-attachment-send', { id: file.id });
         },
         sync() {
             $wire.set('{{ $statePath }}', this.paths, false);
@@ -642,6 +742,11 @@
     wire:ignore.self
     data-upload-url="{{ $uploadUrl }}"
     data-proxy-url="{{ $proxyUrl }}"
+    @if($isSendable)
+      data-client-slug="{{ $record?->slug ?? $record?->getKey() }}"
+      data-default-to="{{ (string) ($record?->email ?? '') }}"
+      data-wa-link="{{ $waLink }}"
+    @endif
     x-on:keydown.escape.window="if(lightboxOpen) closeLightbox(); if(editorOpen) closeEditor()"
     x-on:keydown.arrow-left.window="if(lightboxOpen) lightboxPrev()"
     x-on:keydown.arrow-right.window="if(lightboxOpen) lightboxNext()"
@@ -702,6 +807,7 @@
         </div>
     </div>
 
+    @if(! $isSendable)
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <template x-for="(file, index) in files" :key="file.id">
             <div
@@ -783,7 +889,7 @@
                     <button
                         type="button"
                         x-show="typeof file.id === 'number'"
-                        x-on:click.stop="sendFile(file)"
+                        x-on:click.stop="initSend(file)"
                         title="Nosūtīt ar e-pastu"
                         style="position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10; height: 1.7rem; padding: 0 0.55rem; border-radius: 0.4rem; background: var(--pdc-primary); color: white; display: flex; align-items: center; gap: 0.3rem; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; font-size: 0.72rem; font-weight: 600;"
                     >
@@ -809,6 +915,92 @@
             </div>
         </template>
     </div>
+    @else
+    {{-- Row list mode (client attachments): filename, added date, filesize, send/remove actions --}}
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <template x-for="(file, index) in files" :key="file.id">
+            <div
+                data-attach-row
+                style="display: flex; align-items: center; gap: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.65rem; padding: 0.5rem 0.75rem; background: #ffffff; transition: border-color 0.15s ease;"
+                :style="{ borderColor: file.sentAt ? '#16a34a' : '#e5e7eb' }"
+            >
+                <button
+                    type="button"
+                    x-on:click="file ? openLightbox(index) : null"
+                    title="Atvērt"
+                    style="flex: none; height: 3rem; width: 3rem; border-radius: 0.55rem; overflow: hidden; border: 1px solid #e5e7eb; background: #f9fafb; padding: 0; cursor: zoom-in; display: flex; align-items: center; justify-content: center;"
+                >
+                    <template x-if="isImage(file)">
+                        <img
+                            :src="thumbUrl(file)"
+                            :alt="file.name"
+                            loading="lazy"
+                            x-on:error="onImgError($event, file)"
+                            style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;"
+                        />
+                    </template>
+                    <template x-if="!isImage(file)">
+                        <svg style="width: 1.5rem; height: 1.5rem; color: #6b7280; pointer-events: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                        </svg>
+                    </template>
+                </button>
+
+                <div style="flex: 1 1 auto; min-width: 0; cursor: pointer;" x-on:click="openLightbox(index)">
+                    <div style="font-size: 0.875rem; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="file.name"></div>
+                    <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.15rem; font-size: 0.75rem; color: #6b7280;">
+                        <span x-show="file.created" x-text="file.created"></span>
+                        <span x-show="file.created && sizeLabel(file.size)">·</span>
+                        <span x-show="sizeLabel(file.size)" x-text="sizeLabel(file.size)"></span>
+                        @if($isSendable)
+                        <span x-show="file.sentAt" class="fi-badge fi-color-success fi-color" style="display: inline-flex; align-items: center; gap: 0.25rem;" title="Nosūtīts klientam" x-cloak>
+                            <svg style="width: 0.8rem; height: 0.8rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                            <span>Nosūtīts klientam</span>
+                        </span>
+                        @endif
+                    </div>
+                </div>
+
+                <div style="flex: none; display: flex; align-items: center; gap: 0.4rem;">
+                    @if($isSendable)
+                        <button
+                            type="button"
+                            x-show="typeof file.id === 'number'"
+                            x-on:click.stop="initSend(file)"
+                            title="Nosūtīt ar e-pastu"
+                            style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.7rem; border-radius: 0.5rem; background: var(--pdc-primary); color: white; font-size: 0.78rem; font-weight: 600; border: 1px solid var(--pdc-primary-darker, var(--pdc-primary)); cursor: pointer; line-height: 1.2;"
+                        >
+                            <svg style="width: 0.9rem; height: 0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+                            <span>Nosūtīt</span>
+                        </button>
+                    @endif
+                    @if($isDeletable && !$isView)
+                        <button
+                            type="button"
+                            x-on:click.stop="removeFile(file.id)"
+                            title="Dzēst"
+                            style="display: inline-flex; align-items: center; justify-content: center; height: 2rem; width: 2rem; border-radius: 0.5rem; background: transparent; color: #6b7280; border: 1px solid #e5e7eb; cursor: pointer;"
+                        >
+                            <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                        </button>
+                    @endif
+                </div>
+            </div>
+        </template>
+    </div>
+    @if(!$isView)
+        <div style="margin-top: 0.5rem;">
+            <label
+                for="{{ $uid }}-upload"
+                class="fi-btn fi-size-sm fi-color fi-color-gray fi-outlined"
+                style="cursor: pointer;"
+            >
+                <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
+                <span>Pievienot failus</span>
+            </label>
+        </div>
+    @endif
+    @endif
 
     <template x-if="uploading.length > 0">
         <div style="margin-top: 1rem; padding: 1rem 1.25rem; border: 1px solid #bfdbfe; background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); border-radius: 0.65rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -943,4 +1135,84 @@
         </div>
         </div>
     </template>
+
+    @if($isSendable)
+    <!-- Nosūtīt popup (opened only from a row's "Nosūtīt" button) -->
+    <template x-if="sendOpen">
+        <div
+            x-on:keydown.escape.window="closeSend()"
+            style="position: fixed; inset: 0; z-index: 2147483647; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); padding: 1rem;"
+            x-on:click.self="closeSend()"
+        >
+            <div style="background: #ffffff; border-radius: 0.75rem; width: 100%; max-width: 640px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.35);">
+                <div style="padding: 0.9rem 1.1rem; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+                    <span style="font-weight: 700; color: #111827; font-size: 0.95rem;">Nosūtīt failus ar e-pastu</span>
+                    <button type="button" x-on:click="closeSend()" title="Aizvērt" style="height: 2rem; width: 2rem; border-radius: 9999px; background: rgba(255,255,255,0.08); color: #374151; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 0;">
+                        <svg style="width: 1rem; height: 1rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <div style="padding: 1rem 1.1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: grid; gap: 0.65rem;">
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Saņēmējs</span>
+                            <input type="email" x-model="sendTo" placeholder="e-pasts" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;" />
+                        </label>
+                        <label style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Temats</span>
+                            <input type="text" x-model="sendSubject" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;" />
+                        </label>
+                    </div>
+
+                    <div>
+                        <span style="font-size: 0.8rem; font-weight: 600; color: #374151; display: block; margin-bottom: 0.35rem;">Faili <span style="color: #6b7280; font-weight: 500;" x-text="'(kopā ' + sizeLabel(sendTotalSelected) + ')'"></span></span>
+                        <div style="display: flex; flex-direction: column; gap: 0.35rem; border: 1px solid #e5e7eb; border-radius: 0.6rem; padding: 0.65rem; max-height: 170px; overflow-y: auto;">
+                            <template x-for="f in sendAttachments" :key="f.id">
+                                <label style="display: flex; align-items: center; gap: 0.55rem; cursor: pointer; padding: 0.25rem 0.15rem; border-radius: 0.35rem;">
+                                    <input type="checkbox" x-show="true" x-bind:checked="sendSelected.includes(f.id)" x-on:change="toggleSendFile(f.id)" style="accent-color: var(--pdc-primary, #285854); height: 1rem; width: 1rem; cursor: pointer;" />
+                                    <span style="font-size: 0.82rem; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="f.name"></span>
+                                    <span style="font-size: 0.72rem; color: #6b7280;" x-text="sizeLabel(f.size)"></span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 0.5rem 0.5rem 0 0; padding: 0.35rem 0.5rem; background: #f9fafb;">
+                            <button type="button" x-on:click="execCmd('bold')" title="Treknraksts" style="border: 0; background: transparent; cursor: pointer; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-weight: 700; color: #374151; font-size: 0.82rem;">B</button>
+                            <button type="button" x-on:click="execCmd('italic')" title="Slīpraksts" style="border: 0; background: transparent; cursor: pointer; color: #374151; font-size: 0.82rem; font-style: italic; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-family: Georgia, serif;">I</button>
+                            <button type="button" x-on:click="execCmd('underline')" title="Pasvītrojums" style="border: 0; background: transparent; cursor: pointer; color: #374151; text-decoration: underline; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem;">U</button>
+                            <button type="button" x-on:click="execCmd('strikeThrough')" title="Pārsvītrojums" style="border: 0; background: transparent; cursor: pointer; color: #374151; text-decoration: line-through; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem;">S</button>
+                            <button type="button" x-on:click="execCmd('insertUnorderedList')" title="Nenumurēts saraksts" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.85rem;">•</button>
+                            <button type="button" x-on:click="execCmd('insertOrderedList')" title="Numurēts saraksts" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.8rem;">1.</button>
+                            <button type="button" x-on:click="execCmd('insertHorizontalRule')" title="Horizontāla līnija" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem;">—</button>
+                            <button type="button" x-on:click="execCmd('formatBlock','<blockquote>')" title=" Citāts" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem; font-family: Georgia, serif;">„ ”</button>
+                        </div>
+                        <div x-ref="sendEditor" contenteditable="true"
+                            style="min-height: 7rem; padding: 0.7rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0 0 0.5rem 0.5rem; font-size: 0.85rem; line-height: 1.55; overflow-y: auto; max-height: 16rem; background: #fff; color: #1f2937; outline: none;"></div>
+                        <div style="margin-top: 0.25rem; border: 1px solid #d1fae5; background: #f0fdf4; border-radius: 0.4rem; padding: 0.35rem 0.55rem; font-size: 0.7rem; color: #065f46; display: inline-block;">Nosūta no info@pardodlaimigs.lv · pielikumu limits 18 MB</div>
+                    </div>
+
+                    <div x-show="sendError" x-cloak style="background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 0.5rem 0.7rem; border-radius: 0.45rem; font-size: 0.8rem;" x-text="sendError"></div>
+                </div>
+
+                <div style="padding: 0.9rem 1.1rem; border-top: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; background: #ffffff;">
+                    <a x-show="waLink" :href="waLink" target="_blank" rel="noopener"
+                        style="display: inline-flex; align-items: center; gap: 0.4rem; color: #16a34a; text-decoration: none; font-weight: 600; font-size: 0.82rem; padding: 0.45rem 0.75rem; border: 1px solid #bbe7c8; border-radius: 0.5rem;">
+                        <svg style="width: 0.95rem; height: 0.95rem;" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-4.033-4.172-.866 1.908-.702 1.521-.79.674-.105.471-.223.875-.333a.312.312 0 01.23-.079c.297.149.272.967 2.03.681 1.239.68 6.036 3.162 6.036 3.162z" opacity="0" /><path fill-rule="evenodd" d="M12 0C5.373 0 0 5.372 0 12c0 2.625.846 5.059 2.284 8.105L0 24l5.25-1.694c2.133 1.146 4.572 1.776 6.75 1.776 6.627 0 12-5.372 12-12S18.627 0 12 0zm6.407 17.08c-.297.836-1.47 1.585-2.35 1.754-.618.12-1.443.171-2.06.114-.744-.068-2 .318-4.797-1.206-2.798-1.523-4.525-4.395-4.664-4.595-.139-.2-1.135-1.514-1.135-2.89 0-1.376.72-2.052 1.404-2.321.345-.135.72-.128 1-.132.295-.005.387-.015.564.43.208.519.72 1.801.783 1.933.063.131.105.285.005.461-.099.176-.205.358-.33.568-.11.181-.23.334-.058.633.147.254.652 1.077 1.4 1.745.962.863 1.609 1.139 1.918 1.75.29.38.663.427.928.263.266-.163 1.165-.82 1.442-.946.277-.127.502-.06.926.232.424.293 1.159 1.243 1.354 1.75.098.253.12.378.075.57-.05.219-.25.55-.524.794-.248.223-.373.221-.53.303z" clip-rule="evenodd"/></svg>
+                        <span>WhatsApp čats</span>
+                    </a>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button type="button" x-on:click="closeSend()" style="padding: 0.45rem 0.75rem; border-radius: 0.5rem; background: transparent; color: #374151; border: 1px solid #e5e7eb; cursor: pointer; font-size: 0.82rem; font-weight: 600;">Atcelt</button>
+                        <button type="button" x-on:click="submitSend()" :disabled="sendSending"
+                            style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.95rem; border-radius: 0.5rem; background: var(--pdc-primary, #285854); color: #fff; border: 1px solid var(--pdc-primary-darker, #285854); cursor: pointer; font-weight: 600; font-size: 0.84rem; opacity: sendSending ? 0.7 : 1;">
+                            <svg style="width: 0.9rem; height: 0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                            <span x-text="sendSending ? 'Nosūta...' : 'Nosūtīt'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    @endif
 </div>

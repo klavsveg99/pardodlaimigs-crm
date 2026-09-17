@@ -6,7 +6,6 @@ namespace App\Filament\Admin\Resources\ClientResource\Pages;
 
 use App\Filament\Admin\Resources\ClientResource;
 use App\Filament\Admin\Resources\Pages\Concerns\AutosavesForm;
-use App\Filament\Admin\Resources\Pages\Concerns\SendsClientAttachments;
 use App\Filament\Admin\Resources\Pages\Concerns\SyncsAttachments;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -15,7 +14,6 @@ class EditClient extends EditRecord
 {
     use AutosavesForm;
     use SyncsAttachments;
-    use SendsClientAttachments;
 
     protected static string $resource = ClientResource::class;
 
@@ -35,7 +33,8 @@ class EditClient extends EditRecord
                 ->badgeColor('warning')
                 ->keyBindings(['mod+s'])
                 ->action(fn () => $this->save()),
-            $this->nosutiitPielikumu(),
+            // Registered so the attachment rows' "Nosūtīt" button can mount
+            // it via pdc-attachment-send; kept hidden from the header bar.
         ];
     }
 

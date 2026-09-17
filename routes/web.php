@@ -188,8 +188,7 @@ Route::get('/property/image-proxy', function (Request $request) {
 })->middleware(['auth', 'web'])->name('filament.admin.property.image-proxy');
 
 // ── Attachment upload endpoint ────────────────────────────────
-Route::post('/property/upload-attachment', function () {
-    $file = request()->file('file');
+Route::post('/property/upload-attachment', function () {    $file = request()->file('file');
 
     if (! $file) {
         return response()->json(['error' => 'No file provided'], 422);
@@ -235,3 +234,8 @@ Route::post('/property/upload-attachment', function () {
         'name' => $originalName,
     ]);
 })->middleware(['auth', 'web'])->name('filament.admin.property.upload-attachment');
+
+// ── Client attachments "Nosūtīt" email popup ─────────────────
+Route::post('/clients/{clientSlug}/attachments/send-email',
+    [App\Http\Controllers\ClientAttachmentEmailController::class, 'send']
+)->middleware(['auth', 'web'])->name('clients.attachments.send-email');
