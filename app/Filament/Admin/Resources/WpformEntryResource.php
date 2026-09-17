@@ -69,6 +69,62 @@ class WpformEntryResource extends Resource
 
     public static function table(Table $table): Table
     {
+        // Bulk deletion depends on the active tab: on "Dzēstie" the rows are
+        // already soft-deleted, so the only meaningful mass action is a
+        // permanent delete (soft-deleting them again would do nothing).
+        $trashSelected = BulkAction::make('trash_selected')
+            ->label('Dzēst izvēlētos')
+            ->icon('heroicon-o-trash')
+            ->color('gray')
+            ->requiresConfirmation()
+            ->modalHeading('Pārvietot izvēlētos pieteikumus uz "Dzēstie"?')
+            ->modalDescription('Ieraksti paliks sadaļā "Dzēstie" un būs atjaunojami.')
+            ->modalSubmitActionLabel('Dzēst')
+            ->action(function (Collection $records): void {
+                $moved = 0;
+
+                foreach ($records as $record) {
+                    if ($record->status !== 'deleted') {
+                        $record->moveToTrash();
+                        $moved++;
+                    }
+                }
+
+                Notification::make()
+                    ->title($moved.' pieteikumi pārvietoti uz "Dzēstie"')
+                    ->success()
+                    ->send();
+            })
+            ->deselectRecordsAfterCompletion();
+        $trashSelected->visible(fn (): bool => ($trashSelected->getLivewire()?->activeTab ?? 'active') !== 'deleted');
+
+        $forceDeleteSelected = BulkAction::make('force_delete_selected')
+            ->label('Izdzēst neatgriezeniski')
+            ->icon('heroicon-o-trash')
+            ->color('danger')
+            ->requiresConfirmation()
+            ->modalHeading('Vai tiešām neatgriezeniski dzēst izvēlētos pieteikumus?')
+            ->modalDescription('Ieraksti tiks pilnībā izņemti no CRM, un tos vairs nevarēs atjaunot.')
+            ->modalSubmitActionLabel('Izdzēst neatgriezeniski')
+            ->action(function (Collection $records): void {
+                $deleted = 0;
+
+                foreach ($records as $record) {
+                    if ($record->status === 'deleted') {
+                        $record->delete();
+                        $deleted++;
+                    }
+                }
+
+                Notification::make()
+                    ->title($deleted.' pieteikumi neatgriezeniski izdzēsti')
+                    ->success()
+                    ->send();
+            })
+            ->deselectRecordsAfterCompletion();
+        $forceDeleteSelected->visible(fn (): bool => ($forceDeleteSelected->getLivewire()?->activeTab ?? 'active') === 'deleted'
+            && (auth()->user()?->can('manage') ?? false));
+
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')->label('Iesniegts')->dateTime('d.m.Y H:i')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
@@ -174,30 +230,8 @@ class WpformEntryResource extends Resource
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    BulkAction::make('trash_selected')
-                        ->label('Dzēst izvēlētos')
-                        ->icon('heroicon-o-trash')
-                        ->color('gray')
-                        ->requiresConfirmation()
-                        ->modalHeading('Pārvietot izvēlētos pieteikumus uz "Dzēstie"?')
-                        ->modalDescription('Ieraksti paliks sadaļā "Dzēstie" un būs atjaunojami.')
-                        ->modalSubmitActionLabel('Dzēst')
-                        ->action(function (Collection $records): void {
-                            $moved = 0;
-
-                            foreach ($records as $record) {
-                                if ($record->status !== 'deleted') {
-                                    $record->moveToTrash();
-                                    $moved++;
-                                }
-                            }
-
-                            Notification::make()
-                                ->title($moved.' pieteikumi pārvietoti uz "Dzēstie"')
-                                ->success()
-                                ->send();
-                        })
-                        ->deselectRecordsAfterCompletion(),
+                    $trashSelected,
+                    $forceDeleteSelected,
                 ]),
             ])
             ->paginated([25, 50, 100])
