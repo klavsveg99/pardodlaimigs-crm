@@ -9,6 +9,25 @@
     $isView = (fn () => $getContainer()->getOperation() === 'view')();
 
     $existingAttachments = $record?->attachments?->sortBy('sort_order')?->values() ?? collect();
+
+    // Mark files that were previously emailed to this client ("Nosūtīts
+    // klientam") from the audit activity log.
+    $sentAtByAttachment = [];
+    if ($record && $isSendable) {
+        \App\Models\Activity::query()
+            ->where('type', 'attachment_email_sent')
+            ->where('client_id', $record->id)
+            ->orderBy('created_at')
+            ->get()
+            ->each(function ($activity) use (&$sentAtByAttachment): void {
+                foreach ((array) ($activity->payload['files'] ?? []) as $attachmentId) {
+                    if (is_int($attachmentId)) {
+                        $sentAtByAttachment[$attachmentId] = $activity->created_at?->format('d.m.Y H:i');
+                    }
+                }
+            });
+    }
+
     $attachmentsJson = $existingAttachments->map(fn ($a) => [
         'id' => $a->id,
         'path' => $a->path,
@@ -16,6 +35,7 @@
         'name' => $a->original_name,
         'mime' => $a->mime_type,
         'size' => $a->size,
+        'sentAt' => $sentAtByAttachment[$a->id] ?? null,
     ])->values()->toJson();
 
     $originalNamesPath = preg_replace('/attachments$/', 'attachment_original_names', $statePath);
@@ -775,6 +795,12 @@
                 <!-- Title on hover - accent container -->
                 <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 45%); opacity: 0; display: flex; align-items: flex-end; padding: 0.6rem; transition: opacity 0.2s; pointer-events: none;" class="group-hover:opacity-100" x-bind:style="'opacity: ' + (selected.includes(file.id) ? '1' : '')">
                     <span style="background: var(--pdc-primary); color: white; font-size: 0.72rem; font-weight: 600; padding: 0.22rem 0.5rem; border-radius: 0.35rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; max-width: 100%; box-shadow: 0 1px 4px rgba(0,0,0,0.25);" x-text="file.name"></span>
+                </div>
+
+                <div x-show="file.sentAt" title="Nosūtīts klientam"
+                    style="position: absolute; bottom: 0.5rem; left: 0.5rem; z-index: 11; height: 1.6rem; width: 1.6rem; border-radius: 9999px; background: #16a34a; color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.35); box-shadow: 0 1px 4px rgba(0,0,0,0.3);"
+                    x-cloak>
+                    <svg x-show="file.sentAt" style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                 </div>
 
                 @if($isReorderable)
