@@ -50,6 +50,27 @@
         $waPhone = '371'.$waPhone;
     }
     $waLink = $waPhone !== '' ? 'https://wa.me/'.$waPhone : '';
+
+    // Blade @if inside an HTML tag breaks the tag when Livewire wraps the
+    // directive in an HTML comment (the ">" terminates the tag early), so
+    // conditional attributes are precomputed and echoed as plain markup.
+    $sendDataAttrs = $isSendable
+        ? 'data-client-slug="'.e($record?->slug ?? $record?->getKey()).'" '
+            .'data-default-to="'.e((string) ($record?->email ?? '')).'" '
+            .'data-wa-link="'.e($waLink).'"'
+        : '';
+
+    $cardDragAttrs = $isReorderable
+        ? 'draggable="true" '
+            .'x-on:dragstart="onDragStart($event, index)" '
+            .'x-on:dragover="onDragOver($event, index)" '
+            .'x-on:dragleave="onDragLeave($event)" '
+            .'x-on:drop="onDrop($event, index)" '
+            .'x-on:dragend="onDragEnd($event)" '
+            .'x-on:touchstart.passive="onTouchStart($event, index)" '
+            .'x-on:touchmove="onTouchMove($event)" '
+            .'x-on:touchend="onTouchEnd($event, index)"'
+        : '';
 @endphp
 
 <script type="application/json" id="{{ $uid }}-data">{!! $attachmentsJson !!}</script>
@@ -748,11 +769,7 @@
     wire:ignore.self
     data-upload-url="{{ $uploadUrl }}"
     data-proxy-url="{{ $proxyUrl }}"
-    @if($isSendable)
-      data-client-slug="{{ $record?->slug ?? $record?->getKey() }}"
-      data-default-to="{{ (string) ($record?->email ?? '') }}"
-      data-wa-link="{{ $waLink }}"
-    @endif
+    {!! $sendDataAttrs !!}
     x-on:keydown.escape.window="if(lightboxOpen) closeLightbox(); if(editorOpen) closeEditor()"
     x-on:keydown.arrow-left.window="if(lightboxOpen) lightboxPrev()"
     x-on:keydown.arrow-right.window="if(lightboxOpen) lightboxNext()"
@@ -821,16 +838,7 @@
                 class="group"
                 style="position: relative; border-radius: 0.75rem; overflow: hidden; aspect-ratio: 16/9; background: #f9fafb; transition: all 0.2s ease; cursor: grab; border: 1px solid #e5e7eb;"
                 :style="{ border: selected.includes(file.id) ? '2px solid var(--pdc-primary)' : '1px solid #e5e7eb', boxShadow: selected.includes(file.id) ? '0 0 0 3px rgba(40,88,84,0.2)' : 'none' }"
-                @if($isReorderable) draggable="true"
-                x-on:dragstart="onDragStart($event, index)"
-                x-on:dragover="onDragOver($event, index)"
-                x-on:dragleave="onDragLeave($event)"
-                x-on:drop="onDrop($event, index)"
-                x-on:dragend="onDragEnd($event)"
-                x-on:touchstart.passive="onTouchStart($event, index)"
-                x-on:touchmove="onTouchMove($event)"
-                x-on:touchend="onTouchEnd($event, index)"
-                @endif
+                {!! $cardDragAttrs !!}
                 x-on:click="if (! $event.target.closest('button')) openLightbox(index)"
                 title="Velc, lai pārkārtotu • Klikšķini, lai apskatītu"
                 style="touch-action: none;"
