@@ -28,10 +28,11 @@
         ])->values()->all()
         : [];
     // Records owned by a client (viewings/tasks): recipient from the
-    // associated client; no send buttons without one.
+    // associated client; no send buttons without one. Property sending is an
+    // edit-page action only — the property view page shows a read-only list.
     $recordClient = $isRecordSendable ? $record?->client : null;
     $canSend = $isPropertySendable
-        ? count($propertyClients) > 0
+        ? (count($propertyClients) > 0 && ! $isView)
         : ($isRecordSendable ? (bool) $recordClient : true);
 
     // Mark files that were previously emailed ("Nosūtīts klientam") from the
@@ -1008,7 +1009,7 @@
                             <span>Nosūtīt</span>
                         </button>
                     @endif
-                    @if($isDeletable && ((!$isView) || $isSendable || $isPropertySendable))
+                    @if($isDeletable && ((!$isView) || $isSendable))
                         <button
                             type="button"
                             x-on:click.stop="removeFile(file.id)"

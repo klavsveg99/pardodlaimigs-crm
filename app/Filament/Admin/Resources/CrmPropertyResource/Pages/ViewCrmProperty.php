@@ -33,7 +33,8 @@ class ViewCrmProperty extends ViewRecord
                 ->multiselect(false)
                 ->deletable()
                 ->collection('documents')
-                ->propertySendable(),
+                ->propertySendable()
+                ->columnSpanFull(),
         ]);
     }
 
