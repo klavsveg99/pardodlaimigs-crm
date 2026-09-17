@@ -1472,7 +1472,7 @@ JS;
         width: 100%;
         max-width: 100%;
         background: rgba(20, 25, 25, 0.82);
-        padding: 1.5rem;
+        padding: 4rem 1.5rem 1.5rem;
         z-index: 99990;
     }
     .ere-property-advanced-search.pdc-filter-open {
