@@ -93,7 +93,6 @@ class TaskResource extends Resource
             // Paziņojumi netiek sūtīti automātiski — tos izsūta tikai ar
             // pogām. Bloks redzams tikai esošam ierakstam.
             Section::make('Nosūtīt paziņojumu')
-                ->description('Nosūtīt uzdevuma paziņojumu pa e-pastu. Paziņojumi netiek sūtīti automātiski.')
                 ->columnSpanFull()
                 ->visible(fn (string $operation): bool => $operation === 'edit')
                 ->schema([
