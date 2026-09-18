@@ -9,11 +9,16 @@
     $izpilditajsEmail = $izpilditajsEmail ?? null;
     $result = session('task_notify_result');
     $csrf = csrf_token();
+    // Show the checkmark only on the row that was actually sent to, and only
+    // when the send succeeded.
+    $agentSent = $result !== null && $result['ok'] && ($result['recipient'] ?? null) === 'agent';
+    $izpilditajsSent = $result !== null && $result['ok'] && ($result['recipient'] ?? null) === 'izpilditajs';
+    $failed = $result !== null && ! $result['ok'];
 @endphp
 
 <div class="pdc-task-notify">
-    @if($result)
-        <div class="pdc-task-notify-result" style="background: {{ $result['ok'] ? '#f0fdf4' : '#fef2f2' }}; border-color: {{ $result['ok'] ? '#86efac' : '#fca5a5' }}; color: {{ $result['ok'] ? '#166534' : '#b91c1c' }};">
+    @if($failed)
+        <div class="pdc-task-notify-result" style="background: #fef2f2; border-color: #fca5a5; color: #b91c1c;">
             {{ $result['message'] }}
         </div>
     @endif
@@ -29,7 +34,12 @@
                     Nav piešķirts
                 @endif
             </div>
-            @if($agentName && $agentEmail && $sendUrlAgent)
+            @if($agentSent)
+                <div class="pdc-task-notify-sent" title="Nosūtīts">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                    <span>Nosūtīts</span>
+                </div>
+            @elseif($agentName && $agentEmail && $sendUrlAgent)
                 <button type="button"
                     class="pdc-task-notify-btn"
                     data-pdc-notify-url="{{ $sendUrlAgent }}"
@@ -51,7 +61,12 @@
                     Nav piesaistīts
                 @endif
             </div>
-            @if($izpilditajsName && $izpilditajsEmail && $sendUrlIzpilditajs)
+            @if($izpilditajsSent)
+                <div class="pdc-task-notify-sent" title="Nosūtīts">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                    <span>Nosūtīts</span>
+                </div>
+            @elseif($izpilditajsName && $izpilditajsEmail && $sendUrlIzpilditajs)
                 <button type="button"
                     class="pdc-task-notify-btn"
                     data-pdc-notify-url="{{ $sendUrlIzpilditajs }}"
@@ -151,6 +166,37 @@
     .pdc-task-notify-btn:disabled {
         opacity: 0.6;
         cursor: default;
+    }
+
+    .pdc-task-notify-sent {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        height: 2.1rem;
+        padding: 0 0.9rem;
+        border-radius: 0.5rem;
+        background: #f0fdf4;
+        color: #16a34a;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid #86efac;
+    }
+
+    .pdc-task-notify-sent svg {
+        width: 0.9rem;
+        height: 0.9rem;
+        flex: none;
+        color: #9ca3af;
+    }
+
+    .dark .pdc-task-notify-sent {
+        background: rgba(22, 163, 74, 0.12);
+        border-color: rgba(134, 239, 172, 0.35);
+        color: #4ade80;
+    }
+
+    .dark .pdc-task-notify-sent svg {
+        color: #71717a;
     }
 
     .pdc-task-notify-btn svg {

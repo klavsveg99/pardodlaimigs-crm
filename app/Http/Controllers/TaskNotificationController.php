@@ -49,6 +49,7 @@ class TaskNotificationController extends Controller
             ->route('filament.admin.resources.tasks.edit', ['record' => $task->getKey()])
             ->with('task_notify_result', [
                 'ok' => $error === null,
+                'recipient' => $recipient,
                 'message' => $error ?? 'Paziņojums nosūtīts uz '.$to.'.',
             ]);
     }
