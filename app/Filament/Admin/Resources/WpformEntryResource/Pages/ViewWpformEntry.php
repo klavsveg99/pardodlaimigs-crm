@@ -29,10 +29,13 @@ class ViewWpformEntry extends ViewRecord
                 ->label(fn () => 'Statuss: '.(WpformEntryResource::STATUSES[$this->record->status] ?? $this->record->status ?? '—'))
                 ->icon('heroicon-o-arrow-path')
                 ->color('gray')
+                // Deleted entries go back through the restore action (which
+                // clears the tombstone), never a raw status change.
+                ->visible(fn (): bool => $this->record->status !== 'deleted')
                 ->form([
                     Select::make('status')
                         ->label('Statuss')
-                        ->options(WpformEntryResource::STATUSES)
+                        ->options(WpformEntryResource::SELECTABLE_STATUSES)
                         ->default(fn () => $this->record->status)
                         ->required(),
                 ])

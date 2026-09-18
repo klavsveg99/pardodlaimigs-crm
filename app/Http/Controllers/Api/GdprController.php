@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
-use App\Models\PropertyCache;
 use App\Models\Task;
 use App\Models\Viewing;
 use App\Services\AuditLogger;
@@ -37,18 +36,19 @@ class GdprController extends Controller
             abort(403);
         }
 
+        $clients = Client::withTrashed()->where('email', $email)->get();
+        $clientIds = $clients->pluck('id');
+
         $payload = [
-            'client' => Client::withTrashed()->where('email', $email)->get(),
-            'viewings' => Viewing::whereIn('client_id',
-                Client::where('email', $email)->pluck('id'))->get(),
-            'tasks' => Task::whereIn('client_id',
-                Client::where('email', $email)->pluck('id'))->get(),
-            'properties' => PropertyCache::whereIn('id',
-                \DB::table('client_properties')
-                    ->join('clients', 'clients.id', '=', 'client_properties.client_id')
-                    ->where('clients.email', $email)
-                    ->pluck('client_properties.property_id')
-            )->get(),
+            'client' => $clients,
+            'viewings' => Viewing::whereIn('client_id', $clientIds)->get(),
+            'tasks' => Task::whereIn('client_id', $clientIds)->get(),
+            // CRM properties the client is linked to (relation in the pivot),
+            // not the legacy WordPress property cache which is no longer used.
+            'properties' => $clients
+                ->flatMap(fn (Client $c) => $c->crmProperties)
+                ->unique('id')
+                ->values(),
         ];
 
         $this->audit->log('export', 'client', null, null, ['email' => $email, 'size' => strlen(json_encode($payload))]);

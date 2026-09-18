@@ -41,6 +41,18 @@ class WpformEntryResource extends Resource
         'deleted' => 'gray',
     ];
 
+    // "deleted" is reached only through the trash action, which also writes
+    // the WordPress re-sync tombstone. Never expose it as a plain status
+    // choice — a raw status update would leave the entry resurrectable.
+    public const SELECTABLE_STATUSES = [
+        'new' => 'Jauns',
+        'review' => 'Izvērtēts',
+        'replied' => 'Atbildēts',
+        'spam' => 'Mēstule',
+        'archived' => 'Arhivēts',
+        'klients_pievienots' => 'Klients pievienots',
+    ];
+
     protected static ?string $model = WpformEntry::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-inbox-stack';
@@ -159,6 +171,18 @@ class WpformEntryResource extends Resource
                     // Deleted entries are restored via the row action (which
                     // also clears the sync tombstone), never inline.
                     ->disabled(fn (WpformEntry $record): bool => $record->status === 'deleted')
+                    // Choosing "Dzēsts" inline must run the same trash flow as
+                    // the row action (moving status + writing the WordPress
+                    // re-sync tombstone); a raw update would be resurrectable.
+                    ->updateStateUsing(function (WpformEntry $record, mixed $state): string {
+                        if ($state === 'deleted') {
+                            $record->moveToTrash();
+                        } else {
+                            $record->update(['status' => $state]);
+                        }
+
+                        return (string) $record->status;
+                    })
                     ->sortable(),
             ])
             ->filters([
