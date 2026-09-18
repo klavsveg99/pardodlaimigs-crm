@@ -188,7 +188,7 @@ class TaskResource extends Resource
                     Actions\BulkAction::make('complete')
                         ->label('Pabeigt')
                         ->icon('heroicon-o-check')
-                        ->color('success')
+                        ->color('gray')
                         ->action(function (Collection $records): void {
                             $records->each(fn (Task $record) => $record->whereKey($record->getKey())
                                 ->whereNull('completed_at')

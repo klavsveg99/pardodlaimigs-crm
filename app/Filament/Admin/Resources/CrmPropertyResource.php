@@ -654,65 +654,21 @@ class CrmPropertyResource extends Resource
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([
-                    Actions\BulkAction::make('delete_property')
-                        ->label('Dzēst')
-                        ->icon('heroicon-o-trash')
-                        ->color('danger')
-                        ->requiresConfirmation()
-                        ->modalHeading('Pārvietot izvēlētos īpašumus uz "Dzēstie"?')
-                        ->modalDescription('Īpašumi tiks noņemti no mājaslapas un pārvietoti uz "Dzēstie". Datus varēs atjaunot.')
-                        ->modalSubmitActionLabel('Dzēst')
-                        ->action(function (Collection $records): void {
-                            $records->each->update(['status' => 'deleted']);
-
-                            Notification::make()
-                                ->title($records->count().' īpašumi pārvietoti uz "Dzēstie"')
-                                ->success()
-                                ->send();
-                        })
-                        ->deselectRecordsAfterCompletion(),
-                    Actions\BulkAction::make('restore_property')
-                        ->label('Atjaunot')
+                    Actions\BulkAction::make('set_status')
+                        ->label('Mainīt statusu')
                         ->icon('heroicon-o-arrow-path')
                         ->color('gray')
-                        ->requiresConfirmation()
-                        ->modalHeading('Atjaunot izvēlētos īpašumus?')
-                        ->modalDescription('Īpašumi atgriezīsies kā melnraksti.')
-                        ->modalSubmitActionLabel('Atjaunot')
-                        ->action(function (Collection $records): void {
-                            $records->each(fn (CrmProperty $record) => $record->update([
-                                'status' => $record->status === 'deleted' ? 'draft' : $record->status,
-                            ]));
+                        ->form([
+                            Forms\Components\Select::make('status')
+                                ->label('Statuss')
+                                ->options(CrmProperty::STATUSES)
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data): void {
+                            $records->each->update(['status' => $data['status']]);
 
                             Notification::make()
-                                ->title($records->count().' īpašumi atjaunoti')
-                                ->success()
-                                ->send();
-                        })
-                        ->deselectRecordsAfterCompletion(),
-                    Actions\BulkAction::make('force_delete_property')
-                        ->label('Izdzēst neatgriezeniski')
-                        ->icon('heroicon-o-trash')
-                        ->color('danger')
-                        ->visible(fn (): bool => auth()->user()?->can('manage') ?? false)
-                        ->requiresConfirmation()
-                        ->modalHeading('Vai tiešām neatgriezeniski dzēst izvēlētos īpašumus?')
-                        ->modalDescription('Īpašumi un visi saistītie dati tiks pilnībā izņemti no CRM. Tos vairs nevarēs atjaunot.')
-                        ->modalSubmitActionLabel('Izdzēst neatgriezeniski')
-                        ->action(function (Collection $records): void {
-                            $records->each(function (CrmProperty $record): void {
-                                foreach ($record->attachments()->get() as $attachment) {
-                                    if (str_starts_with($attachment->path, 'http://') || str_starts_with($attachment->path, 'https://')) {
-                                        continue;
-                                    }
-                                    Storage::disk($attachment->disk)->delete($attachment->path);
-                                }
-                                $record->attachments()->delete();
-                                $record->delete();
-                            });
-
-                            Notification::make()
-                                ->title($records->count().' īpašumi neatgriezeniski izdzēsti')
+                                ->title($records->count().' īpašumi atjaunināti')
                                 ->success()
                                 ->send();
                         })
