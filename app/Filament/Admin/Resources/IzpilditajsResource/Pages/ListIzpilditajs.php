@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Resources\IzpilditajsResource\Pages;
 
 use App\Filament\Admin\Resources\IzpilditajsResource;
+use App\Models\Izpilditajs;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListIzpilditajs extends ListRecords
 {
@@ -16,6 +19,17 @@ class ListIzpilditajs extends ListRecords
     {
         return [
             Actions\CreateAction::make()->label('Jauns izpildītājs')->color('gray'),
+        ];
+    }
+
+    public function getTabs(): array
+    {
+        return [
+            'active' => Tab::make('Aktīvie')
+                ->badge(Izpilditajs::query()->count()),
+            'deleted' => Tab::make('Dzēstie')
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->onlyTrashed())
+                ->badge(Izpilditajs::onlyTrashed()->count()),
         ];
     }
 }

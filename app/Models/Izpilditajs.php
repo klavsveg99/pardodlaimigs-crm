@@ -7,12 +7,14 @@ namespace App\Models;
 use App\Models\Concerns\HasSlug;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 
 class Izpilditajs extends Model
 {
     use HasSlug;
     use Notifiable;
+    use SoftDeletes;
 
     public const CATEGORIES = [
         'Notārs' => 'Notārs',

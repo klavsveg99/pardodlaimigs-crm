@@ -82,6 +82,29 @@ class IzpilditajsResource extends Resource
 
     public static function table(Table $table): Table
     {
+        // Bulk delete depends on the active tab: on "Dzēstie" the rows are
+        // already trashed, so only a permanent delete makes sense.
+        $trashSelected = Actions\DeleteBulkAction::make('trash_selected')
+            ->label('Dzēst')
+            ->color('gray')
+            ->requiresConfirmation()
+            ->modalHeading('Pārvietot izvēlētos izpildītājus uz "Dzēstie"?')
+            ->modalDescription('Izpildītāji paliks sadaļā "Dzēstie" un būs atjaunojami.')
+            ->modalSubmitActionLabel('Dzēst')
+            ->deselectRecordsAfterCompletion();
+        $trashSelected->visible(fn (): bool => ($trashSelected->getLivewire()?->activeTab ?? 'active') !== 'deleted');
+
+        $forceDeleteSelected = Actions\ForceDeleteBulkAction::make('force_delete_selected')
+            ->label('Izdzēst neatgriezeniski')
+            ->color('danger')
+            ->requiresConfirmation()
+            ->modalHeading('Vai tiešām neatgriezeniski dzēst izvēlētos izpildītājus?')
+            ->modalDescription('Ieraksti tiks pilnībā izņemti no CRM, un tos vairs nevarēs atjaunot.')
+            ->modalSubmitActionLabel('Izdzēst neatgriezeniski')
+            ->deselectRecordsAfterCompletion();
+        $forceDeleteSelected->visible(fn (): bool => ($forceDeleteSelected->getLivewire()?->activeTab ?? 'active') === 'deleted'
+            && (auth()->user()?->can('manage') ?? false));
+
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('#')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
@@ -108,16 +131,34 @@ class IzpilditajsResource extends Resource
             ])
             ->actions([
                 Actions\ActionGroup::make([
-                    Actions\ViewAction::make()->label('Skatīt')->color('gray'),
-                    Actions\EditAction::make()->label('Rediģēt')->color('gray'),
-                    Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
+                    Actions\ViewAction::make()->label('Skatīt')->color('gray')
+                        ->visible(fn (Izpilditajs $record): bool => ! $record->trashed()),
+                    Actions\EditAction::make()->label('Rediģēt')->color('gray')
+                        ->visible(fn (Izpilditajs $record): bool => ! $record->trashed()),
+                    Actions\DeleteAction::make()->label('Dzēst')->color('gray')
+                        ->visible(fn (Izpilditajs $record): bool => ! $record->trashed())
+                        ->modalHeading('Pārvietot izpildītāju uz "Dzēstie"?')
+                        ->modalDescription('Izpildītājs pazudīs no aktīvā saraksta, bet paliks sadaļā "Dzēstie" un būs atjaunojams.')
+                        ->modalSubmitActionLabel('Dzēst'),
+                    Actions\RestoreAction::make()->label('Atjaunot')->color('gray')
+                        ->visible(fn (Izpilditajs $record): bool => $record->trashed())
+                        ->modalHeading('Atjaunot izpildītāju?')
+                        ->modalDescription('Izpildītājs atgriezīsies aktīvajā sarakstā.')
+                        ->modalSubmitActionLabel('Atjaunot'),
+                    Actions\ForceDeleteAction::make()->label('Izdzēst neatgriezeniski')->color('danger')
+                        ->visible(fn (Izpilditajs $record): bool => $record->trashed() && (auth()->user()?->can('manage') ?? false))
+                        ->modalHeading('Vai tiešām neatgriezeniski dzēst šo izpildītāju?')
+                        ->modalDescription('Izpildītājs tiks pilnībā izņemts no CRM. To vairs nevarēs atjaunot.')
+                        ->modalSubmitActionLabel('Izdzēst neatgriezeniski'),
                 ])->color('gray'),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([
-                    Actions\DeleteBulkAction::make()->label('Dzēst')->color('gray'),
+                    $trashSelected,
+                    $forceDeleteSelected,
                 ]),
             ])
+            ->recordUrl(fn (Izpilditajs $record): ?string => $record->trashed() ? null : static::getUrl('view', ['record' => $record]))
             ->defaultSort('name');
     }
 

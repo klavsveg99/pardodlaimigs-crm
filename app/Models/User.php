@@ -3,12 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\HasSlug;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
@@ -18,7 +20,7 @@ use Illuminate\Support\Facades\Storage;
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use \App\Models\Concerns\HasSlug, HasFactory, Notifiable;
+    use HasFactory, HasSlug, Notifiable, SoftDeletes;
 
     protected static function booted(): void
     {
@@ -29,6 +31,16 @@ class User extends Authenticatable implements FilamentUser
             // Ensure role defaults to aģents for new agents via UI
             if (empty($user->role)) {
                 $user->role = 'aģents';
+            }
+        });
+
+        // crm_properties.owner_user_id has no ON DELETE rule, so detach owned
+        // properties before the row is removed; the avatar file goes too.
+        static::forceDeleting(function (self $user): void {
+            CrmProperty::where('owner_user_id', $user->id)->update(['owner_user_id' => null]);
+
+            if ($user->avatar_path) {
+                Storage::disk('public')->delete($user->avatar_path);
             }
         });
     }

@@ -123,10 +123,33 @@ class ClientResource extends Resource
 
     public static function table(Table $table): Table
     {
+        // Bulk delete depends on the active tab: on "Dzēstie" the rows are
+        // already trashed, so only a permanent delete makes sense.
+        $trashSelected = Actions\DeleteBulkAction::make('trash_selected')
+            ->label('Dzēst')
+            ->color('gray')
+            ->requiresConfirmation()
+            ->modalHeading('Pārvietot izvēlētos klientus uz "Dzēstie"?')
+            ->modalDescription('Klienti paliks sadaļā "Dzēstie" un būs atjaunojami.')
+            ->modalSubmitActionLabel('Dzēst')
+            ->deselectRecordsAfterCompletion();
+        $trashSelected->visible(fn (): bool => ($trashSelected->getLivewire()?->activeTab ?? 'active') !== 'deleted');
+
+        $forceDeleteSelected = Actions\ForceDeleteBulkAction::make('force_delete_selected')
+            ->label('Izdzēst neatgriezeniski')
+            ->color('danger')
+            ->requiresConfirmation()
+            ->modalHeading('Vai tiešām neatgriezeniski dzēst izvēlētos klientus?')
+            ->modalDescription('Ieraksti tiks pilnībā izņemti no CRM, un tos vairs nevarēs atjaunot.')
+            ->modalSubmitActionLabel('Izdzēst neatgriezeniski')
+            ->deselectRecordsAfterCompletion();
+        $forceDeleteSelected->visible(fn (): bool => ($forceDeleteSelected->getLivewire()?->activeTab ?? 'active') === 'deleted'
+            && (auth()->user()?->can('manage') ?? false));
+
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable()->weight('bold')
-                    ->url(fn (Client $record) => static::getUrl('view', ['record' => $record])),
+                    ->url(fn (Client $record) => $record->trashed() ? null : static::getUrl('view', ['record' => $record])),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable()->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable()->sortable(),
                 Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->sortable()->placeholder('—'),
@@ -141,7 +164,6 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->sortable(),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\Filter::make('gdpr_pending')->label('Bez GDPR piekrišanas')->query(
                     fn ($query) => $query->whereNull('gdpr_consent_at')->whereNull('gdpr_erased_at')
                 ),
@@ -150,11 +172,12 @@ class ClientResource extends Resource
             ])
             ->actions([
                 Actions\ActionGroup::make([
-                    Actions\ViewAction::make()->label('Skatīt')->color('gray'),
+                    Actions\ViewAction::make()->label('Skatīt')->color('gray')
+                        ->visible(fn (Client $record): bool => ! $record->trashed()),
                     Actions\Action::make('export_personal_data')
                         ->label('Eksportēt personas datus')
                         ->icon('heroicon-o-arrow-down-tray')
-                        ->visible(fn () => auth()->user()?->can('manage'))
+                        ->visible(fn (Client $record): bool => ! $record->trashed() && (auth()->user()?->can('manage') ?? false))
                         ->action(function (Client $record) {
                             $url = URL::signedRoute(
                                 'gdpr.export',
@@ -171,7 +194,7 @@ class ClientResource extends Resource
                         ->icon('heroicon-o-trash')
                         ->color('gray')
                         ->requiresConfirmation()
-                        ->visible(fn (Client $record) => ! $record->gdpr_erased_at)
+                        ->visible(fn (Client $record): bool => ! $record->trashed() && ! $record->gdpr_erased_at)
                         ->action(function (Client $record) {
                             $record->update([
                                 'name' => '—',
@@ -187,13 +210,35 @@ class ClientResource extends Resource
                                 ->send();
                         }),
                     Actions\DeleteAction::make()
-                        ->label('Dzēst klientu pilnībā')
-                        ->modalHeading('Dzēst klientu pilnībā?')
-                        ->modalDescription('Klients un visi ar to saistītie CRM dati tiks neatgriezeniski dzēsti.')
+                        ->label('Dzēst')
                         ->color('gray')
-                        ->using(fn (Client $record): ?bool => $record->forceDelete()),
+                        ->visible(fn (Client $record): bool => ! $record->trashed())
+                        ->modalHeading('Pārvietot klientu uz "Dzēstie"?')
+                        ->modalDescription('Klients pazudīs no aktīvā saraksta, bet paliks sadaļā "Dzēstie" un būs atjaunojams.')
+                        ->modalSubmitActionLabel('Dzēst'),
+                    Actions\RestoreAction::make()
+                        ->label('Atjaunot')
+                        ->color('gray')
+                        ->visible(fn (Client $record): bool => $record->trashed())
+                        ->modalHeading('Atjaunot klientu?')
+                        ->modalDescription('Klients atgriezīsies aktīvajā sarakstā.')
+                        ->modalSubmitActionLabel('Atjaunot'),
+                    Actions\ForceDeleteAction::make()
+                        ->label('Izdzēst neatgriezeniski')
+                        ->color('danger')
+                        ->visible(fn (Client $record): bool => $record->trashed() && (auth()->user()?->can('manage') ?? false))
+                        ->modalHeading('Vai tiešām neatgriezeniski dzēst šo klientu?')
+                        ->modalDescription('Klients un visi ar to saistītie CRM dati tiks pilnībā izņemti no CRM. To vairs nevarēs atjaunot.')
+                        ->modalSubmitActionLabel('Izdzēst neatgriezeniski'),
                 ])->color('gray'),
             ])
+            ->bulkActions([
+                Actions\BulkActionGroup::make([
+                    $trashSelected,
+                    $forceDeleteSelected,
+                ]),
+            ])
+            ->recordUrl(fn (Client $record): ?string => $record->trashed() ? null : static::getUrl('view', ['record' => $record]))
             ->defaultSort('updated_at', 'desc');
     }
 
