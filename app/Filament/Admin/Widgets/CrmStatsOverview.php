@@ -78,15 +78,14 @@ class CrmStatsOverview extends StatsOverviewWidget
                 ->color('primary')
                 ->url(\App\Filament\Admin\Resources\CrmPropertyResource::getUrl('index')),
 
-        ];
-
-        if ($isAdmin) {
-            $stats[] = Stat::make('Vid. pārdošanas cena (gads)', $avgDealValue !== null ? number_format($avgDealValue, 0, ',', ' ').' €' : '—')
+            // Adminam — visi pārdotie; aģentam — tikai paša (soldInRange jau
+            // filtrē pēc owner_user_id, kad $isAdmin ir false).
+            Stat::make('Vid. pārdošanas cena (gads)', $avgDealValue !== null ? number_format($avgDealValue, 0, ',', ' ').' €' : '—')
                 ->description($avgDealValue !== null ? 'Kopā šogad: '.number_format($yearFinalValue, 0, ',', ' ').' € ('.$yearCount.' pārdoti)' : 'Nav pārdoto īpašumu šogad')
                 ->descriptionIcon('heroicon-o-banknotes')
                 ->color('secondary')
-                ->url(\App\Filament\Admin\Resources\CrmPropertyResource::getUrl('index'));
-        }
+                ->url(\App\Filament\Admin\Resources\CrmPropertyResource::getUrl('index')),
+        ];
 
         // Kapitalizācija = pašreizējā kopējā vērtība Pārdošanā esošajiem
         // īpašumiem (aģentam — paša īpašumi, adminam — visi kopā).
