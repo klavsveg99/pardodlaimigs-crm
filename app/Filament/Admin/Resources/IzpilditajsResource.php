@@ -71,8 +71,11 @@ class IzpilditajsResource extends Resource
                     ->columnSpanFull(),
             ])->columns(2),
 
+            // Only meaningful once the izpildītājs exists (nothing to list on
+            // the create page).
             Section::make('Saistītie uzdevumi')
                 ->columnSpanFull()
+                ->visible(fn (string $operation): bool => $operation !== 'create')
                 ->schema([
                     View::make('filament.forms.izpilditajs-tasks-preview')
                         ->columnSpanFull(),
