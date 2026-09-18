@@ -26,6 +26,19 @@ class CreateCrmProperty extends CreateRecord
 
     protected static string $resource = CrmPropertyResource::class;
 
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        // Agents only see their own properties, so default the owner to the
+        // creator when none is chosen.
+        if (blank($data['owner_user_id'] ?? null) && ! auth()->user()?->can('manage')) {
+            $data['owner_user_id'] = auth()->id();
+        }
+
+        $this->captureAttachments($data);
+
+        return $data;
+    }
+
     protected function handleRecordCreation(array $data): Model
     {
         $record = parent::handleRecordCreation($data);

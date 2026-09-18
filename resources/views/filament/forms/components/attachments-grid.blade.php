@@ -7,6 +7,14 @@
     $isSendable = $isSendable();
     $isPropertySendable = $isPropertySendable();
     $isRecordSendable = $isRecordSendable();
+    // Sending needs a persisted owner to build upload/send URLs; on the
+    // create page there is no record yet, so the grid stays in plain
+    // upload mode and its files are attached after the record is created.
+    if (! $record) {
+        $isSendable = false;
+        $isPropertySendable = false;
+        $isRecordSendable = false;
+    }
     $isRowMode = $isSendable || $isPropertySendable || $isRecordSendable;
     // ViewRecord publication renders the same field read-only.
     $isView = (fn () => $getContainer()->getOperation() === 'view')();

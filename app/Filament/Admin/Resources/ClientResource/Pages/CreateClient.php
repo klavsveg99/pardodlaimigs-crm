@@ -20,6 +20,13 @@ class CreateClient extends CreateRecord
 
         unset($data['source_other']);
 
+        // Agents only see their own clients, so a client they create must be
+        // owned by them; otherwise it vanishes from their list (and the
+        // post-create redirect to the view page 404s).
+        if (blank($data['owner_user_id'] ?? null) && ! auth()->user()?->can('manage')) {
+            $data['owner_user_id'] = auth()->id();
+        }
+
         $this->captureAttachments($data);
 
         return $data;
