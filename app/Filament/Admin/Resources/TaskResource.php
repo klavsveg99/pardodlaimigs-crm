@@ -12,6 +12,7 @@ use App\Models\Izpilditajs;
 use App\Models\Task;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\View;
@@ -19,6 +20,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Support\Collection;
 use UnitEnum;
 
 class TaskResource extends Resource
@@ -180,6 +182,39 @@ class TaskResource extends Resource
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),
                     Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
                 ])->color('gray'),
+            ])
+            ->bulkActions([
+                Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('complete')
+                        ->label('Pabeigt')
+                        ->icon('heroicon-o-check')
+                        ->color('success')
+                        ->action(function (Collection $records): void {
+                            $records->each(fn (Task $record) => $record->whereKey($record->getKey())
+                                ->whereNull('completed_at')
+                                ->update(['completed_at' => now()]));
+
+                            Notification::make()
+                                ->title($records->count().' uzdevumi atzīmēti kā izpildīti')
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                    Actions\BulkAction::make('reopen')
+                        ->label('Atzīmēt kā neizpildītu')
+                        ->icon('heroicon-o-arrow-uturn-left')
+                        ->color('gray')
+                        ->action(function (Collection $records): void {
+                            $records->each(fn (Task $record) => $record->whereKey($record->getKey())
+                                ->update(['completed_at' => null]));
+
+                            Notification::make()
+                                ->title($records->count().' uzdevumi atzīmēti kā neizpildīti')
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                    Actions\DeleteBulkAction::make()->label('Dzēst')->color('gray'),
+                ]),
             ])
             ->defaultSort('due_at')
             ->poll('60s');

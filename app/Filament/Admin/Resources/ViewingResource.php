@@ -11,11 +11,13 @@ use App\Models\CrmProperty;
 use App\Models\Viewing;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Support\Collection;
 use UnitEnum;
 
 class ViewingResource extends Resource
@@ -138,6 +140,35 @@ class ViewingResource extends Resource
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),
                     Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
                 ])->color('gray'),
+            ])
+            ->bulkActions([
+                Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('set_status')
+                        ->label('Mainīt statusu')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('gray')
+                        ->form([
+                            Forms\Components\Select::make('status')
+                                ->label('Statuss')
+                                ->options([
+                                    'scheduled' => 'Ieplānota',
+                                    'done' => 'Notikusi',
+                                    'cancelled' => 'Atcelta',
+                                    'no_show' => 'Neatnāca',
+                                ])
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data): void {
+                            $records->each->update(['status' => $data['status']]);
+
+                            Notification::make()
+                                ->title($records->count().' apskates atjauninātas')
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                    Actions\DeleteBulkAction::make()->label('Dzēst')->color('gray'),
+                ]),
             ])
             ->defaultSort('scheduled_at');
     }
