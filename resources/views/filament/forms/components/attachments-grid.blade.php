@@ -4,18 +4,23 @@
     $isReorderable = $isReorderable();
     $isDeletable = $isDeletable();
     $isMultiselect = $isMultiselect();
+    // The layout follows the field configuration (client/viewing/task and
+    // property-document grids use rows), independent of whether send actions
+    // are currently possible — on the create page the files should already
+    // render as rows, exactly like they will after the record is saved.
+    $isRowMode = $isSendable() || $isPropertySendable() || $isRecordSendable();
+
     $isSendable = $isSendable();
     $isPropertySendable = $isPropertySendable();
     $isRecordSendable = $isRecordSendable();
     // Sending needs a persisted owner to build upload/send URLs; on the
-    // create page there is no record yet, so the grid stays in plain
-    // upload mode and its files are attached after the record is created.
+    // create page there is no record yet, so the send actions stay off while
+    // files are uploaded generically and attached after the record is created.
     if (! $record) {
         $isSendable = false;
         $isPropertySendable = false;
         $isRecordSendable = false;
     }
-    $isRowMode = $isSendable || $isPropertySendable || $isRecordSendable;
     // ViewRecord publication renders the same field read-only.
     $isView = (fn () => $getContainer()->getOperation() === 'view')();
 
@@ -41,7 +46,7 @@
     $recordClient = $isRecordSendable ? $record?->client : null;
     $canSend = $isPropertySendable
         ? (count($propertyClients) > 0 && ! $isView)
-        : ($isRecordSendable ? (bool) $recordClient : true);
+        : ($isRecordSendable ? (bool) $recordClient : $isSendable);
 
     // Mark files that were previously emailed ("Nosūtīts klientam") from the
     // audit activity log — client-scoped for clients, property-scoped for
