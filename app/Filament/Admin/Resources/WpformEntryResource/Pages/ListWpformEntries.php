@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources\WpformEntryResource\Pages;
 
+use App\Filament\Admin\Resources\Pages\Concerns\RefreshesTabBadges;
 use App\Filament\Admin\Resources\WpformEntryResource;
 use App\Models\WpformEntry;
 use Filament\Resources\Pages\ListRecords;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ListWpformEntries extends ListRecords
 {
+    use RefreshesTabBadges;
+
     protected static string $resource = WpformEntryResource::class;
 
     public function getTabs(): array

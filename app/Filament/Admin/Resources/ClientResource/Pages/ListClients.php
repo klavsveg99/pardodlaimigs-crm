@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\ClientResource\Pages;
 
 use App\Filament\Admin\Resources\ClientResource;
+use App\Filament\Admin\Resources\Pages\Concerns\RefreshesTabBadges;
 use App\Models\Client;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ListClients extends ListRecords
 {
+    use RefreshesTabBadges;
+
     protected static string $resource = ClientResource::class;
 
     protected function getHeaderActions(): array
