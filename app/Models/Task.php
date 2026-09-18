@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Notifications\TaskAssignedNotification;
 use App\Services\AuditLogger;
+use App\Services\Mail\EmailSender;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -30,7 +30,6 @@ class Task extends Model
     {
         static::created(function (self $t) {
             app(AuditLogger::class)->log('create', 'task', $t->id, null, $t->toArray());
-            $t->dispatchAssignmentNotifications();
         });
 
         static::updated(function (self $t) {
@@ -38,15 +37,6 @@ class Task extends Model
             $meaningful = array_diff_key($changes, ['updated_at' => true]);
             if ($meaningful !== []) {
                 app(AuditLogger::class)->log('update', 'task', $t->id, array_intersect_key($t->getOriginal(), $changes), $changes);
-            }
-
-            $assignmentChanged = array_key_exists('assigned_user_id', $changes) || array_key_exists('izpilditajs_id', $changes);
-            $elapsed = $t->updated_at && $t->created_at
-                ? $t->updated_at->getTimestamp() - $t->created_at->getTimestamp()
-                : 0;
-
-            if ($assignmentChanged && $elapsed > 5) {
-                $t->dispatchAssignmentNotifications();
             }
         });
 
@@ -93,28 +83,78 @@ class Task extends Model
         return $this->morphMany(Attachment::class, 'attachable')->orderBy('sort_order');
     }
 
-    public function dispatchAssignmentNotifications(): void
+    /**
+     * Send the assignment email to the task's agent. Returns null on success,
+     * otherwise a user-facing error message. Never sent automatically — the
+     * "Nosūtīt paziņojumu" section on the task page triggers it.
+     */
+    public function sendAssignmentNotificationToAgent(): ?string
     {
-        if ($this->assigned_user_id) {
-            try {
-                $assignee = $this->assignedTo;
-                if ($assignee) {
-                    $assignee->notify(new TaskAssignedNotification($this));
-                }
-            } catch (\Throwable $e) {
-                Log::warning('TaskAssignedNotification to user failed', ['task' => $this->id, 'error' => $e->getMessage()]);
-            }
+        $user = $this->assignedTo;
+        if (! $user) {
+            return 'Uzdevumam nav piešķirts aģents.';
+        }
+        if (blank($user->email)) {
+            return 'Aģentam nav norādīts e-pasts.';
         }
 
-        if ($this->izpilditajs_id) {
-            try {
-                $sub = $this->izpilditajs;
-                if ($sub && $sub->email) {
-                    $sub->notify(new TaskAssignedNotification($this));
-                }
-            } catch (\Throwable $e) {
-                Log::warning('TaskAssignedNotification to izpilditajs failed', ['task' => $this->id, 'error' => $e->getMessage()]);
-            }
+        return $this->sendAssignmentEmail($user->email, 'Aģents: '.$user->name);
+    }
+
+    /**
+     * Send the assignment email to the task's izpildītājs. Returns null on
+     * success, otherwise a user-facing error message.
+     */
+    public function sendAssignmentNotificationToIzpilditajs(): ?string
+    {
+        $sub = $this->izpilditajs;
+        if (! $sub) {
+            return 'Uzdevumam nav piesaistīts izpildītājs.';
         }
+        if (blank($sub->email)) {
+            return 'Izpildītājam nav norādīts e-pasts.';
+        }
+
+        return $this->sendAssignmentEmail($sub->email, 'Izpildītājs: '.$sub->name);
+    }
+
+    /**
+     * Shared assignment email body. Uses the project-wide EmailSender so the
+     * template matches every other outgoing email. Attachments of the task are
+     * included.
+     */
+    private function sendAssignmentEmail(string $to, string $recipientLabel): ?string
+    {
+        $due = $this->due_at?->locale('lv')->translatedFormat('d.m.Y H:i') ?? '—';
+
+        $rows = ['<p>Jums piešķirts jauns uzdevums: <strong>'.$this->title.'</strong></p>'];
+
+        if (filled($this->body)) {
+            $rows[] = '<p>'.nl2br(e((string) $this->body)).'</p>';
+        }
+
+        $rows[] = '<p><strong>Termiņš:</strong> '.e($due).'</p>';
+        $rows[] = '<p><strong>'.$recipientLabel.'</strong></p>';
+        $rows[] = $this->assignedTo ? '<p><strong>Aģents:</strong> '.e($this->assignedTo->name).'</p>' : '';
+        $rows[] = $this->izpilditajs ? '<p><strong>Izpildītājs:</strong> '.e($this->izpilditajs->name).'</p>' : '';
+        $rows[] = $this->client ? '<p><strong>Klients:</strong> '.e($this->client->name).'</p>' : '';
+        $rows[] = $this->property ? '<p><strong>Īpašums:</strong> '.e($this->property->title).'</p>' : '';
+
+        $body = implode('', array_filter($rows));
+
+        try {
+            app(EmailSender::class)->send(
+                to: $to,
+                subject: 'Jauns uzdevums: '.$this->title,
+                body: $body,
+                attachments: $this->attachments()->get(),
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Task assignment email failed', ['task' => $this->id, 'error' => $e->getMessage()]);
+
+            return 'Paziņojumu neizdevās nosūtīt.';
+        }
+
+        return null;
     }
 }

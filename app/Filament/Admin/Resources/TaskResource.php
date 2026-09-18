@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources;
 
-use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Filament\Admin\Resources\TaskResource\Pages;
+use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Models\Client;
 use App\Models\CrmProperty;
 use App\Models\Izpilditajs;
@@ -13,6 +13,8 @@ use App\Models\Task;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -87,6 +89,29 @@ class TaskResource extends Resource
                 ->collection('gallery')
                 ->recordSendable()
                 ->columnSpanFull(),
+
+            // Paziņojumi netiek sūtīti automātiski — tos izsūta tikai ar
+            // pogām. Bloks redzams tikai esošam ierakstam.
+            Section::make('Nosūtīt paziņojumu')
+                ->description('Nosūtīt uzdevuma paziņojumu pa e-pastu. Paziņojumi netiek sūtīti automātiski.')
+                ->columnSpanFull()
+                ->visible(fn (string $operation): bool => $operation === 'edit')
+                ->schema([
+                    View::make('filament.forms.task-notify-buttons')
+                        ->viewData(fn (): array => [
+                            'sendUrlAgent' => $schema->getRecord()?->getKey()
+                                ? route('tasks.notify.agent', ['id' => $schema->getRecord()->getKey()])
+                                : null,
+                            'sendUrlIzpilditajs' => $schema->getRecord()?->getKey()
+                                ? route('tasks.notify.izpilditajs', ['id' => $schema->getRecord()->getKey()])
+                                : null,
+                            'agentName' => $schema->getRecord()?->assignedTo?->name,
+                            'agentEmail' => $schema->getRecord()?->assignedTo?->email,
+                            'izpilditajsName' => $schema->getRecord()?->izpilditajs?->name,
+                            'izpilditajsEmail' => $schema->getRecord()?->izpilditajs?->email,
+                        ])
+                        ->columnSpanFull(),
+                ]),
         ])->columns(2);
     }
 

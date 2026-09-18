@@ -6,10 +6,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\Viewing;
+use App\Services\Mail\EmailSender;
+use App\Services\Mail\EmailTooLargeException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -210,36 +211,14 @@ class RecordAttachmentEmailController extends Controller
             return response()->json(['message' => 'Faili netika atrasti.'], 422);
         }
 
-        // Total attachment size guard: shared SMTP + recipient limits
-        // (base64 inflates payloads by ~37% over the raw size).
-        $totalSize = $selected->sum('size');
-        if ($totalSize > 18 * 1024 * 1024) {
-            return response()->json([
-                'message' => 'Pielikumi pārsniedz 18 MB (izvēlēti '
-                    .sprintf('%.1f', $totalSize / (1024 * 1024)).' MB). Sūtiet mazāk failu vienā e-pastā.',
-            ], 422);
-        }
-
-        $html = ClientAttachmentEmailController::renderEmailHtml($data['body']);
         $to = trim($data['to']);
         $subject = trim($data['subject']);
-        $fromName = trim((string) ($data['from_name'] ?? '')) ?: (string) config('mail.from.name');
+        $fromName = trim((string) ($data['from_name'] ?? '')) ?: null;
 
         try {
-            $disk = Storage::disk('public');
-
-            Mail::html($html, function ($message) use ($to, $subject, $fromName, $selected, $disk) {
-                $message->from((string) config('mail.from.address'), $fromName)
-                    ->subject($subject)
-                    ->to($to);
-
-                foreach ($selected as $file) {
-                    $message->attach($disk->path($file->path), [
-                        'as' => $file->original_name,
-                        'mime' => $file->mime_type,
-                    ]);
-                }
-            });
+            app(EmailSender::class)->send($to, $subject, $data['body'], $selected, $fromName);
+        } catch (EmailTooLargeException $e) {
+            return response()->json(['message' => $e->userMessage()], 422);
         } catch (\Throwable $e) {
             report($e);
 

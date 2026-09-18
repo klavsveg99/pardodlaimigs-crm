@@ -275,3 +275,12 @@ foreach (['viewings' => 'Viewing', 'tasks' => 'Task'] as $segment => $suffix) {
         [App\Http\Controllers\RecordAttachmentEmailController::class, "send{$suffix}"]
     )->middleware(['auth', 'web'])->name("{$segment}.attachments.send-email");
 }
+
+// ── Task assignment notification (manual, from the task page section) ──
+Route::post('/tasks/{id}/notify/agent',
+    [App\Http\Controllers\TaskNotificationController::class, 'agent']
+)->middleware(['auth', 'web'])->name('tasks.notify.agent');
+
+Route::post('/tasks/{id}/notify/izpilditajs',
+    [App\Http\Controllers\TaskNotificationController::class, 'izpilditajs']
+)->middleware(['auth', 'web'])->name('tasks.notify.izpilditajs');
