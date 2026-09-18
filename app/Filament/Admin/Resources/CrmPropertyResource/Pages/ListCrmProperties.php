@@ -30,12 +30,13 @@ class ListCrmProperties extends ListRecords
         return [
             'active' => Tab::make('Aktīvie')
                 ->modifyQueryUsing(fn (Builder $query) => $query->whereNotIn('status', ['draft', 'deleted', 'sold']))
-                ->badge($count(fn ($q) => $q->whereNotIn('status', ['draft', 'deleted', 'sold']))),            'draft' => Tab::make('Melnraksti')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'draft'))
-                ->badge($count(fn ($q) => $q->where('status', 'draft'))),
+                ->badge($count(fn ($q) => $q->whereNotIn('status', ['draft', 'deleted', 'sold']))),
             'sold' => Tab::make('Pārdotie')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'sold'))
                 ->badge($count(fn ($q) => $q->where('status', 'sold'))),
+            'draft' => Tab::make('Melnraksti')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'draft'))
+                ->badge($count(fn ($q) => $q->where('status', 'draft'))),
             'deleted' => Tab::make('Dzēstie')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'deleted'))
                 ->badge($count(fn ($q) => $q->where('status', 'deleted'))),
