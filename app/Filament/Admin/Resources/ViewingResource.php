@@ -113,17 +113,15 @@ class ViewingResource extends Resource
                     ->url(fn ($record) => $record->client_id ? route('filament.admin.resources.clients.view', $record->client_id) : null),
                 Tables\Columns\TextColumn::make('agent.name')->label('Aģents')->sortable()
                     ->url(fn ($record) => $record->agent_user_id ? route('filament.admin.resources.users.edit', $record->agent_user_id) : null),
-                Tables\Columns\TextColumn::make('status')
+                Tables\Columns\SelectColumn::make('status')
                     ->label('Statuss')
-                    ->badge()
-                    ->sortable()
-                    ->formatStateUsing(fn ($state) => match ($state) {
+                    ->options([
                         'scheduled' => 'Ieplānota',
                         'done' => 'Notikusi',
                         'cancelled' => 'Atcelta',
                         'no_show' => 'Neatnāca',
-                        default => $state,
-                    }),
+                    ])
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('duration_min')->label('Min')->sortable()->alignCenter()->extraCellAttributes(['class' => 'pdc-nowrap']),
             ])
             ->filters([

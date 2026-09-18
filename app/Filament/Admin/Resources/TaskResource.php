@@ -99,8 +99,13 @@ class TaskResource extends Resource
                     ->boolean()
                     ->getStateUsing(fn ($record) => (bool) $record->completed_at)
                     ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon(false)
+                    ->falseIcon('heroicon-o-check-circle')
                     ->trueColor('success')
+                    ->falseColor('gray')
+                    // The global "all table icons are primary" CSS rule would
+                    // paint the gray checkmark teal; this class lets the
+                    // uncompleted state keep a muted gray.
+                    ->extraCellAttributes(fn ($record): array => ['class' => $record->completed_at ? 'pdc-task-completed' : 'pdc-task-uncompleted'])
                     ->tooltip(fn ($record) => $record->completed_at ? 'Izpildīts' : null)
                     ->sortable(query: fn ($query, $direction) => $query->orderBy('completed_at', $direction)),
                 Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable()->weight('bold')->wrap()

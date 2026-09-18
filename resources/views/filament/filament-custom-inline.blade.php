@@ -105,6 +105,15 @@
     color: #ffffff !important;
 }
 
+/* Uncompleted task checkmark: muted gray instead of the global primary icon
+   color, so it reads as "not done" next to the completed check. */
+.fi-ta-table .pdc-task-uncompleted .fi-icon {
+    color: #9ca3af !important;
+}
+.dark .fi-ta-table .pdc-task-uncompleted .fi-icon {
+    color: #71717a !important;
+}
+
 /* Sidebar icons stay as-is — excluded from global icon rules. */
 .fi-sidebar .fi-icon {
     color: inherit !important;
