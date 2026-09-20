@@ -630,22 +630,22 @@ input[type="checkbox"][checked] {
 }
 
 /* Clickable table rows (record URL / row action): visible hover, click and
-   tap feedback. Filament paints the hover on the <tr>, but the dark td
-   background rule that used to live here covered it, so rows never lit up.
-   Paint the cells directly instead. */
+   tap feedback. Paint the <tr> itself, not the cells — on the stacked mobile
+   layout the row is a grid with gaps between cells, and cell backgrounds
+   leave that whitespace uncolored. */
 .fi-ta-table .fi-ta-row.fi-clickable {
     cursor: pointer;
 }
-.fi-ta-table .fi-ta-row.fi-clickable:hover > td {
+.fi-ta-table .fi-ta-row.fi-clickable:hover {
     background: #f3f4f6 !important;
 }
-.fi-ta-table .fi-ta-row.fi-clickable:active > td {
+.fi-ta-table .fi-ta-row.fi-clickable:active {
     background: #e5e7eb !important;
 }
-.dark .fi-ta-table .fi-ta-row.fi-clickable:hover > td {
+.dark .fi-ta-table .fi-ta-row.fi-clickable:hover {
     background: #161d26 !important;
 }
-.dark .fi-ta-table .fi-ta-row.fi-clickable:active > td {
+.dark .fi-ta-table .fi-ta-row.fi-clickable:active {
     background: #1f2733 !important;
 }
 
