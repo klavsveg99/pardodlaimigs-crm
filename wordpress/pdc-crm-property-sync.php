@@ -891,8 +891,11 @@ function pdc_upsert_property($data, $agent_map = [])
     // Size may be NULL for land-only properties (e.g., Zeme) — store 0 so ERE size slider (0-3000) doesn't exclude them via meta_query
     update_post_meta($post_id, 'real_estate_property_size', $size_m2 !== null && $size_m2 !== '' ? $size_m2 : 0);
     update_post_meta($post_id, 'real_estate_property_land', $land_m2 ? round($land_m2 / 10000, 2) : '');
-    update_post_meta($post_id, 'real_estate_property_bedrooms', $beds);
-    update_post_meta($post_id, 'real_estate_property_bathrooms', $baths);
+    // ERE only omits the overview/tile field when its meta is an empty string.
+    // The CRM sends 0 for "unset", which rendered as "Istabas 0" — store '' so
+    // the theme skips the field entirely.
+    update_post_meta($post_id, 'real_estate_property_bedrooms', (int) $beds > 0 ? (int) $beds : '');
+    update_post_meta($post_id, 'real_estate_property_bathrooms', (int) $baths > 0 ? (int) $baths : '');
     update_post_meta($post_id, 'real_estate_property_address', $address);
     update_post_meta($post_id, 'real_estate_property_country', 'LV');
 
@@ -1349,6 +1352,16 @@ function pdc_frontend_enqueue()
             // "0" minus possible thousands separators
             if (value.replace(/[\s.,]/g, '') === '0') {
                 tile.style.display = 'none';
+            }
+        });
+        // Same "0" in the Informācija overview list — hide the whole row.
+        document.querySelectorAll('.ere__property-bedrooms, .ere__property-bathrooms').forEach(function (el) {
+            var value = (el.textContent || '').trim();
+            if (value.replace(/[\s.,]/g, '') === '0') {
+                var row = el.closest('li');
+                if (row) {
+                    row.style.display = 'none';
+                }
             }
         });
     }
