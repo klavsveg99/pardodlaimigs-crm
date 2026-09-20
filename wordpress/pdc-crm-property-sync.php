@@ -1590,3 +1590,32 @@ function pdc_format_phone_lv($phone)
     return '+371 '.implode(' ', $groups);
 }
 
+/**
+ * ERE map popups prefer `real_estate_property_location['address']`, which we
+ * keep as raw coordinates so the admin map editor stays precise. Frontend
+ * popups then showed "56.6757412,22.5682925" instead of the real address.
+ * Swap in the human-readable address for frontend reads only — the coordinates
+ * that position the marker live in ['location'] and are left untouched.
+ */
+function pdc_frontend_map_location_address($value, $object_id, $meta_key, $single)
+{
+    if ($meta_key !== 'real_estate_property_location' || is_admin()) {
+        return $value;
+    }
+
+    // Read the real meta without re-entering this filter.
+    remove_filter('get_post_metadata', 'pdc_frontend_map_location_address', 10);
+    $location = get_post_meta($object_id, $meta_key, true);
+    add_filter('get_post_metadata', 'pdc_frontend_map_location_address', 10, 4);
+
+    if (is_array($location) && array_key_exists('address', $location)) {
+        $address = get_post_meta($object_id, 'real_estate_property_address', true);
+        $location['address'] = (is_string($address) && $address !== '') ? $address : '';
+    }
+
+    // get_metadata_raw() unwraps $check[0] when $single is true, so this shape
+    // is correct for both single and multiple reads.
+    return array($location);
+}
+add_filter('get_post_metadata', 'pdc_frontend_map_location_address', 10, 4);
+
