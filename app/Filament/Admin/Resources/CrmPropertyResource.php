@@ -587,7 +587,7 @@ class CrmPropertyResource extends Resource
                     // noņem īpašumu no mājaslapas (deleted → draft).
                     Actions\Action::make('delete_property')
                         ->label('Dzēst')
-                        ->icon('heroicon-o-trash')
+                        ->icon('heroicon-s-trash')
                         ->color('danger')
                         ->visible(fn (CrmProperty $record): bool => $record->status !== 'deleted')
                         ->requiresConfirmation()
