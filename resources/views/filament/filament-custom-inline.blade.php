@@ -629,8 +629,24 @@ input[type="checkbox"][checked] {
     color: #f3f4f6 !important;
 }
 
-.dark .fi-ta-table tr:hover td {
-    background: #0b0f14 !important;
+/* Clickable table rows (record URL / row action): visible hover, click and
+   tap feedback. Filament paints the hover on the <tr>, but the dark td
+   background rule that used to live here covered it, so rows never lit up.
+   Paint the cells directly instead. */
+.fi-ta-table .fi-ta-row.fi-clickable {
+    cursor: pointer;
+}
+.fi-ta-table .fi-ta-row.fi-clickable:hover > td {
+    background: #f3f4f6 !important;
+}
+.fi-ta-table .fi-ta-row.fi-clickable:active > td {
+    background: #e5e7eb !important;
+}
+.dark .fi-ta-table .fi-ta-row.fi-clickable:hover > td {
+    background: #161d26 !important;
+}
+.dark .fi-ta-table .fi-ta-row.fi-clickable:active > td {
+    background: #1f2733 !important;
 }
 
 /* Table action dropdown/menu */
