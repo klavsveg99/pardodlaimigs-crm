@@ -99,7 +99,7 @@ class UserResource extends Resource
         // already trashed, so only a permanent delete makes sense.
         $trashSelected = Actions\DeleteBulkAction::make('trash_selected')
             ->label('Dzēst')
-            ->color('gray')
+            ->color('danger')
             ->requiresConfirmation()
             ->modalHeading('Pārvietot izvēlētos aģentus uz "Dzēstie"?')
             ->modalDescription('Aģenti paliks sadaļā "Dzēstie" un būs atjaunojami.')
@@ -144,7 +144,7 @@ class UserResource extends Resource
                 Actions\ActionGroup::make([
                     Actions\EditAction::make()->label('Rediģēt')->color('gray')
                         ->visible(fn (User $record): bool => ! $record->trashed()),
-                    Actions\DeleteAction::make()->label('Dzēst')->color('gray')
+                    Actions\DeleteAction::make()->label('Dzēst')->color('danger')
                         ->visible(fn (User $record): bool => ! $record->trashed() && $record->id !== auth()->id())
                         ->modalHeading('Pārvietot aģentu uz "Dzēstie"?')
                         ->modalDescription('Aģents pazudīs no aktīvā saraksta, bet paliks sadaļā "Dzēstie" un būs atjaunojams.')

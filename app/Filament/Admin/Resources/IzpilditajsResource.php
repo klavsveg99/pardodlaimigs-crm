@@ -89,7 +89,7 @@ class IzpilditajsResource extends Resource
         // already trashed, so only a permanent delete makes sense.
         $trashSelected = Actions\DeleteBulkAction::make('trash_selected')
             ->label('Dzēst')
-            ->color('gray')
+            ->color('danger')
             ->requiresConfirmation()
             ->modalHeading('Pārvietot izvēlētos izpildītājus uz "Dzēstie"?')
             ->modalDescription('Izpildītāji paliks sadaļā "Dzēstie" un būs atjaunojami.')
@@ -138,7 +138,7 @@ class IzpilditajsResource extends Resource
                         ->visible(fn (Izpilditajs $record): bool => ! $record->trashed()),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray')
                         ->visible(fn (Izpilditajs $record): bool => ! $record->trashed()),
-                    Actions\DeleteAction::make()->label('Dzēst')->color('gray')
+                    Actions\DeleteAction::make()->label('Dzēst')->color('danger')
                         ->visible(fn (Izpilditajs $record): bool => ! $record->trashed())
                         ->modalHeading('Pārvietot izpildītāju uz "Dzēstie"?')
                         ->modalDescription('Izpildītājs pazudīs no aktīvā saraksta, bet paliks sadaļā "Dzēstie" un būs atjaunojams.')

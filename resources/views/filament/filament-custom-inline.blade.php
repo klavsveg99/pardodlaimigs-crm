@@ -305,41 +305,6 @@ div[style*="z-index:999999"], div[style*="z-index: 999999"], div[style*="z-index
     color: #ffffff !important;
 }
 
-/* Bulk-action menu entries are neutral by default (label + icon), matching
-   the standard gray table actions. Only permanent delete keeps the danger
-   accent. Everything else is forced to the normal muted text color so a
-   colored Filament action (success/primary/etc.) never stands out. */
-.fi-dropdown-list-item.fi-ac-grouped-action {
-    color: #374151 !important;
-}
-.fi-dropdown-list-item.fi-ac-grouped-action .fi-icon {
-    color: #6b7280 !important;
-}
-.dark .fi-dropdown-list-item.fi-ac-grouped-action {
-    color: #d4d4d8 !important;
-}
-.dark .fi-dropdown-list-item.fi-ac-grouped-action .fi-icon {
-    color: #9ca3af !important;
-}
-.fi-dropdown-list-item.fi-ac-grouped-action:hover {
-    color: #111827 !important;
-}
-.dark .fi-dropdown-list-item.fi-ac-grouped-action:hover {
-    color: #f4f4f5 !important;
-}
-/* Permanent delete keeps the red accent. */
-.fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger,
-.fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger .fi-icon,
-.fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger:hover,
-.fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger .fi-dropdown-list-item-label {
-    color: #cf2e2e !important;
-}
-.dark .fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger,
-.dark .fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger .fi-icon,
-.dark .fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger:hover {
-    color: #f87171 !important;
-}
-
 /* Outlined danger (Dzēst atlasītos) must be red on transparent, not white-on-white */
 .fi-btn.fi-color-danger.fi-btn-type-outlined {
     background-color: transparent !important;
@@ -789,6 +754,65 @@ html.dark .rounded-xl .text-emerald-900 {
 .dark .fi-ta-table .fi-dropdown-panel .fi-btn:hover,
 .dark .fi-table .fi-dropdown-panel .fi-btn:hover {
     background: #374151 !important;
+}
+
+/* ── Table action buttons ────────────────────────────────────────
+   Every action in a table shares one neutral text+icon color: the row
+   action and bulk action triggers, their dropdown menu items and the
+   header toolbar action buttons. This overrides Filament's per-action
+   colors (success/primary/etc.) so no single action stands out. Delete
+   actions (soft + permanent) keep the red accent instead. */
+.fi-ta-actions .fi-btn,
+.fi-ta-actions .fi-icon-btn,
+.fi-ta-actions .fi-icon,
+.fi-ta-header-toolbar .fi-ac-btn-action,
+.fi-ta-header-toolbar .fi-ac-icon-btn-action,
+.fi-ta-header-toolbar .fi-ac-btn-group,
+.fi-ta-header-toolbar .fi-ac-btn-action .fi-icon,
+.fi-ta-header-toolbar .fi-ac-icon-btn-action .fi-icon,
+.fi-ta-header-toolbar .fi-ac-btn-group .fi-icon,
+.fi-dropdown-list-item.fi-ac-grouped-action,
+.fi-dropdown-list-item.fi-ac-grouped-action .fi-icon {
+    color: #374151 !important;
+}
+.dark .fi-ta-actions .fi-btn,
+.dark .fi-ta-actions .fi-icon-btn,
+.dark .fi-ta-actions .fi-icon,
+.dark .fi-ta-header-toolbar .fi-ac-btn-action,
+.dark .fi-ta-header-toolbar .fi-ac-icon-btn-action,
+.dark .fi-ta-header-toolbar .fi-ac-btn-group,
+.dark .fi-ta-header-toolbar .fi-ac-btn-action .fi-icon,
+.dark .fi-ta-header-toolbar .fi-ac-icon-btn-action .fi-icon,
+.dark .fi-ta-header-toolbar .fi-ac-btn-group .fi-icon,
+.dark .fi-dropdown-list-item.fi-ac-grouped-action,
+.dark .fi-dropdown-list-item.fi-ac-grouped-action .fi-icon {
+    color: #d4d4d8 !important;
+}
+.fi-dropdown-list-item.fi-ac-grouped-action:hover {
+    color: #111827 !important;
+}
+.dark .fi-dropdown-list-item.fi-ac-grouped-action:hover {
+    color: #f4f4f5 !important;
+}
+/* Delete actions (soft + permanent) keep the red accent. */
+.fi-ta-actions .fi-color-danger,
+.fi-ta-actions .fi-color-danger .fi-icon,
+.fi-ta-header-toolbar .fi-color-danger,
+.fi-ta-header-toolbar .fi-color-danger .fi-icon,
+.fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger,
+.fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger .fi-icon,
+.fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger:hover,
+.fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger .fi-dropdown-list-item-label {
+    color: #cf2e2e !important;
+}
+.dark .fi-ta-actions .fi-color-danger,
+.dark .fi-ta-actions .fi-color-danger .fi-icon,
+.dark .fi-ta-header-toolbar .fi-color-danger,
+.dark .fi-ta-header-toolbar .fi-color-danger .fi-icon,
+.dark .fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger,
+.dark .fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger .fi-icon,
+.dark .fi-dropdown-list-item.fi-ac-grouped-action.fi-color-danger:hover {
+    color: #f87171 !important;
 }
 
 .fi-ta-content-ctn {

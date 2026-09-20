@@ -180,7 +180,7 @@ class TaskResource extends Resource
                         ->visible(fn ($record) => (bool) $record->completed_at)
                         ->action(fn ($record) => $record->update(['completed_at' => null])),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),
-                    Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
+                    Actions\DeleteAction::make()->label('Dzēst')->color('danger'),
                 ])->color('gray'),
             ])
             ->bulkActions([
@@ -213,7 +213,7 @@ class TaskResource extends Resource
                                 ->send();
                         })
                         ->deselectRecordsAfterCompletion(),
-                    Actions\DeleteBulkAction::make()->label('Dzēst')->color('gray'),
+                    Actions\DeleteBulkAction::make()->label('Dzēst')->color('danger'),
                 ]),
             ])
             ->defaultSort('due_at')

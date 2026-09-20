@@ -138,7 +138,7 @@ class ViewingResource extends Resource
             ->actions([
                 Actions\ActionGroup::make([
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),
-                    Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
+                    Actions\DeleteAction::make()->label('Dzēst')->color('danger'),
                 ])->color('gray'),
             ])
             ->bulkActions([
@@ -167,7 +167,7 @@ class ViewingResource extends Resource
                                 ->send();
                         })
                         ->deselectRecordsAfterCompletion(),
-                    Actions\DeleteBulkAction::make()->label('Dzēst')->color('gray'),
+                    Actions\DeleteBulkAction::make()->label('Dzēst')->color('danger'),
                 ]),
             ])
             ->defaultSort('scheduled_at');

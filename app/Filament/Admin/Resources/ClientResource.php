@@ -127,7 +127,7 @@ class ClientResource extends Resource
         // already trashed, so only a permanent delete makes sense.
         $trashSelected = Actions\DeleteBulkAction::make('trash_selected')
             ->label('Dzēst')
-            ->color('gray')
+            ->color('danger')
             ->requiresConfirmation()
             ->modalHeading('Pārvietot izvēlētos klientus uz "Dzēstie"?')
             ->modalDescription('Klienti paliks sadaļā "Dzēstie" un būs atjaunojami.')
@@ -192,7 +192,7 @@ class ClientResource extends Resource
                     Actions\Action::make('erase_personal_data')
                         ->label('Dzēst personas datus')
                         ->icon('heroicon-o-trash')
-                        ->color('gray')
+                        ->color('danger')
                         ->requiresConfirmation()
                         ->visible(fn (Client $record): bool => ! $record->trashed() && ! $record->gdpr_erased_at)
                         ->action(function (Client $record) {
@@ -211,7 +211,7 @@ class ClientResource extends Resource
                         }),
                     Actions\DeleteAction::make()
                         ->label('Dzēst')
-                        ->color('gray')
+                        ->color('danger')
                         ->visible(fn (Client $record): bool => ! $record->trashed())
                         ->modalHeading('Pārvietot klientu uz "Dzēstie"?')
                         ->modalDescription('Klients pazudīs no aktīvā saraksta, bet paliks sadaļā "Dzēstie" un būs atjaunojams.')
