@@ -1321,10 +1321,10 @@ function pdc_frontend_enqueue()
         if (national === null) {
             return null;
         }
-        // "+371 xxx xxx" — 3-digit groups from the left, trailing remainder kept.
+        // "+371 xxxx xxxx" — 4-digit groups from the left, trailing remainder kept.
         var groups = [];
-        for (var i = 0; i < national.length; i += 3) {
-            groups.push(national.slice(i, i + 3));
+        for (var i = 0; i < national.length; i += 4) {
+            groups.push(national.slice(i, i + 4));
         }
         return '+371 ' + groups.join(' ');
     }
@@ -1343,7 +1343,55 @@ function pdc_frontend_enqueue()
         }
     }
 
-    /* ── 2. Hide "0 istabas" tiles ──────────────────────────── */
+    /* ── 2. Clickable agent phone & email ───────────────────── */
+    // Cloudflare rewrites the email to a /cdn-cgi/l/email-protection link at
+    // the edge; decode its data-cfemail back to the real address.
+    function decodeCfEmail(encoded) {
+        var email = '';
+        var key = parseInt(encoded.substr(0, 2), 16);
+        for (var i = 2; i < encoded.length; i += 2) {
+            email += String.fromCharCode(parseInt(encoded.substr(i, 2), 16) ^ key);
+        }
+        return email;
+    }
+
+    function linkifyAgentContacts() {
+        document.querySelectorAll('.ere__mobile span').forEach(function (el) {
+            var link = el.querySelector('a[href]');
+            if (link && link.getAttribute('href').indexOf('tel:') === 0) {
+                return;
+            }
+            var text = (el.textContent || '').trim();
+            var phone = text.replace(/[^0-9+]/g, '');
+            if (phone.replace(/[^0-9]/g, '').length < 6) {
+                return;
+            }
+            var a = document.createElement('a');
+            a.href = 'tel:' + phone;
+            a.textContent = text;
+            el.textContent = '';
+            el.appendChild(a);
+        });
+
+        document.querySelectorAll('.ere__email span').forEach(function (el) {
+            var link = el.querySelector('a[href]');
+            if (link && link.getAttribute('href').indexOf('mailto:') === 0) {
+                return;
+            }
+            var cf = el.querySelector('[data-cfemail]');
+            var email = cf ? decodeCfEmail(cf.getAttribute('data-cfemail')) : (el.textContent || '').trim();
+            if (email.indexOf('@') === -1) {
+                return;
+            }
+            var a = document.createElement('a');
+            a.href = 'mailto:' + email;
+            a.textContent = email;
+            el.textContent = '';
+            el.appendChild(a);
+        });
+    }
+
+    /* ── 3. Hide "0 istabas" tiles ──────────────────────────── */
     function hideEmptyRooms(root) {
         var tiles = document.querySelectorAll('.ere__loop-property-info-item.property-bedrooms, .property-info-item.property-bedrooms');
         tiles.forEach(function (tile) {
@@ -1366,7 +1414,7 @@ function pdc_frontend_enqueue()
         });
     }
 
-    /* ── 3. Mobile filter popup ─────────────────────────────── */
+    /* ── 4. Mobile filter popup ─────────────────────────────── */
     var MQ = window.matchMedia('(max-width: 767px)');
 
     function isMobile() { return MQ.matches; }
@@ -1440,6 +1488,7 @@ function pdc_frontend_enqueue()
     var reapply = function () {
         buildFilterPopup();
         reformatPhoneNodes();
+        linkifyAgentContacts();
         hideEmptyRooms();
     };
 
@@ -1472,6 +1521,17 @@ JS;
     wp_register_style('pdf-pdc-frontend-fixes', false, [], '1.0');
     wp_enqueue_style('pdf-pdc-frontend-fixes');
     wp_add_inline_style('pdf-pdc-frontend-fixes', <<<'CSS'
+/* Agent phone/email links keep the original text look until hover. */
+.ere__mobile a,
+.ere__email a {
+    color: inherit;
+    text-decoration: none;
+}
+.ere__mobile a:hover,
+.ere__email a:hover {
+    text-decoration: underline;
+}
+
 /* Fix horizontal overflow of inline search filters on mobile */
 @media (max-width: 767px) {
     body { overflow-x: hidden; }
@@ -1555,7 +1615,7 @@ add_action('wp_enqueue_scripts', 'pdc_frontend_enqueue');
 
 /**
  * Agents are synced from CRM every 5 minutes — normalise the stored phone
- * meta so ERE renders "+371 xxx xxx" everywhere (display only; mobile_links
+ * meta so ERE renders "+371 xxxx xxxx" everywhere (display only; mobile_links
  * and other consumers of the raw value are unaffected).
  */
 function pdc_format_phone_lv($phone)
@@ -1583,8 +1643,8 @@ function pdc_format_phone_lv($phone)
     }
 
     $groups = [];
-    for ($i = 0, $len = strlen($national); $i < $len; $i += 3) {
-        $groups[] = substr($national, $i, 3);
+    for ($i = 0, $len = strlen($national); $i < $len; $i += 4) {
+        $groups[] = substr($national, $i, 4);
     }
 
     return '+371 '.implode(' ', $groups);
