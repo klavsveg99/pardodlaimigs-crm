@@ -28,6 +28,11 @@ use UnitEnum;
 
 class ClientResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return ! auth()->user()?->isPhoto();
+    }
+
     protected static ?string $model = Client::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';

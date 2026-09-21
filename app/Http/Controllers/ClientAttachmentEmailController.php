@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Services\AuditLogger;
+use App\Services\ImageOptimizer;
 use App\Services\Mail\EmailSender;
 use App\Services\Mail\EmailTooLargeException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 /**
@@ -24,7 +27,7 @@ class ClientAttachmentEmailController extends Controller
      */
     public function upload(Request $request, string $clientSlug): JsonResponse
     {
-        /** @var \App\Models\Client $client */
+        /** @var Client $client */
         $client = Client::query()->where('slug', $clientSlug)->first();
         if (! $client) {
             return response()->json(['message' => 'Klients nav atrasts.'], 404);
@@ -51,7 +54,7 @@ class ClientAttachmentEmailController extends Controller
         }
 
         $originalName = $file->getClientOriginalName();
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $disk = Storage::disk('public');
         $base = pathinfo($originalName, PATHINFO_FILENAME);
         $ext = pathinfo($originalName, PATHINFO_EXTENSION);
 
@@ -70,7 +73,7 @@ class ClientAttachmentEmailController extends Controller
         try {
             $abs = $disk->path($path);
             if (is_file($abs) && str_starts_with((string) $file->getMimeType(), 'image/')) {
-                $result = app(\App\Services\ImageOptimizer::class)->optimize($abs);
+                $result = app(ImageOptimizer::class)->optimize($abs);
                 $size = (int) ($result['size'] ?? $size);
             }
         } catch (\Throwable) {
@@ -104,7 +107,7 @@ class ClientAttachmentEmailController extends Controller
      */
     public function destroy(Request $request, string $clientSlug, int $attachment): JsonResponse
     {
-        /** @var \App\Models\Client|null $client */
+        /** @var Client|null $client */
         $client = Client::query()->where('slug', $clientSlug)->first();
         if (! $client) {
             return response()->json(['message' => 'Klients nav atrasts.'], 404);
@@ -120,7 +123,7 @@ class ClientAttachmentEmailController extends Controller
             return response()->json(['message' => 'Fails nav atrasts.'], 404);
         }
 
-        \Illuminate\Support\Facades\Storage::disk($record->disk)->delete($record->path);
+        Storage::disk($record->disk)->delete($record->path);
         $record->delete();
 
         return response()->json(['ok' => true]);
@@ -128,7 +131,7 @@ class ClientAttachmentEmailController extends Controller
 
     public function send(Request $request, string $clientSlug): JsonResponse
     {
-        /** @var \App\Models\Client $client */
+        /** @var Client $client */
         $client = Client::query()->where('slug', $clientSlug)->first();
         if (! $client) {
             return response()->json(['message' => 'Klients nav atrasts.'], 404);
@@ -142,7 +145,6 @@ class ClientAttachmentEmailController extends Controller
         $data = Validator::make($request->all(), [
             'to' => ['required', 'email'],
             'subject' => ['required', 'string', 'max:255'],
-            'from_name' => ['nullable', 'string', 'max:100'],
             'files' => ['required', 'array', 'min:1'],
             'files.*' => ['integer', 'exists:attachments,id'],
             'body' => ['required', 'string', 'max:100000'],
@@ -159,7 +161,7 @@ class ClientAttachmentEmailController extends Controller
 
         $to = trim($data['to']);
         $subject = trim($data['subject']);
-        $fromName = trim((string) ($data['from_name'] ?? '')) ?: null;
+        $fromName = (string) ($request->user()?->name ?? '');
 
         try {
             app(EmailSender::class)->send($to, $subject, $data['body'], $selected, $fromName);
@@ -171,7 +173,7 @@ class ClientAttachmentEmailController extends Controller
             return response()->json(['message' => 'Nosūtīšana neizdevās — '.$e->getMessage()], 500);
         }
 
-        app(\App\Services\AuditLogger::class)->activity('attachment_email_sent', [
+        app(AuditLogger::class)->activity('attachment_email_sent', [
             'client_id' => $client->id,
             'to' => $to,
             'subject' => $subject,

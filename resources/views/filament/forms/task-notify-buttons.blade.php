@@ -7,12 +7,14 @@
     $agentEmail = $agentEmail ?? null;
     $izpilditajsName = $izpilditajsName ?? null;
     $izpilditajsEmail = $izpilditajsEmail ?? null;
+    $agentNotifiedAt = $agentNotifiedAt ?? null;
+    $izpilditajsNotifiedAt = $izpilditajsNotifiedAt ?? null;
     $result = session('task_notify_result');
     $csrf = csrf_token();
-    // Show the checkmark only on the row that was actually sent to, and only
-    // when the send succeeded.
-    $agentSent = $result !== null && $result['ok'] && ($result['recipient'] ?? null) === 'agent';
-    $izpilditajsSent = $result !== null && $result['ok'] && ($result['recipient'] ?? null) === 'izpilditajs';
+    // "Nosūtīts" tiek saglabāts datubāzē (agent_notified_at /
+    // izpilditajs_notified_at), tāpēc tas paliek arī pēc lapas pārlādes.
+    $agentSent = (bool) $agentNotifiedAt;
+    $izpilditajsSent = (bool) $izpilditajsNotifiedAt;
     $failed = $result !== null && ! $result['ok'];
 @endphp
 

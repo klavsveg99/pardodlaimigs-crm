@@ -4,13 +4,14 @@
     $clients = $clients ?? [];
     $defaultTo = (string) ($defaultTo ?? '');
     $baseWa = (string) ($baseWa ?? '');
-    $fromName = $fromName ?? (auth()->user()?->name ?: (config('mail.from.name') ?: 'Pārdod Laimīgs'));
+
     // Explicit endpoint; legacy fallback from mode/slug kept for the
     // property view page include.
     $sendUrl = $sendUrl ?? ($mode === 'property'
         ? route('properties.attachments.send-email', ['propertySlug' => $slug ?? ''])
         : route('clients.attachments.send-email', ['clientSlug' => $slug ?? '']));
-    $defaultBody = '<p>Sveiki,</p><p>pievienoju saistītos failus.</p><p>Ar cieņu,<br>Pārdod Laimīgs</p>';
+    // Paraksts un kājene tiek pievienoti automātiski EmailSender pusē.
+    $defaultBody = '<p>Sveiki,</p><p>pievienoju saistītos failus.</p>';
 @endphp
 
 <div
@@ -23,7 +24,6 @@
         clients: @js($clients),
         defaultTo: @js($defaultTo),
         baseWa: @js($baseWa),
-        fromName: @js($fromName),
         target: null,
         candidates: [],
         selected: [],
@@ -115,7 +115,6 @@
                     body: JSON.stringify({
                         to: this.to,
                         subject: this.subject,
-                        from_name: this.fromName,
                         client_id: this.clientId,
                         files: this.selected,
                         body: this.$refs.editor ? this.$refs.editor.innerHTML : '',
@@ -173,13 +172,6 @@
                         <label style="display: flex; flex-direction: column; gap: 0.25rem;">
                             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Saņēmējs</span>
                             <input type="email" x-model="to" placeholder="e-pasts" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;" />
-                        </label>
-                        <label style="display: flex; flex-direction: column; gap: 0.25rem;">
-                            <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Sūtītāja vārds</span>
-                            <div style="display: flex; align-items: stretch; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; background: #fff;">
-                                <input type="text" x-model="fromName" style="border: 0; padding: 0.45rem 0.6rem; font-size: 0.875rem; flex: 1 1 auto; min-width: 0; background: transparent; color: #111827; outline: none;" />
-                                <span style="display: inline-flex; align-items: center; padding: 0 0.6rem; font-size: 0.78rem; color: #6b7280; background: #f9fafb; border-left: 1px solid #e5e7eb; white-space: nowrap;">info@pardodlaimigs.lv</span>
-                            </div>
                         </label>
                         <label style="display: flex; flex-direction: column; gap: 0.25rem;">
                             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Temats</span>

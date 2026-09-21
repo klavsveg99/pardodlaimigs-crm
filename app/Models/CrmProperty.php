@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Services\AuditLogger;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -35,9 +36,22 @@ class CrmProperty extends Model
         'external' => 'Ārējais',
     ];
 
+    /** Sadarbības līguma periodi (mēnešos). */
+    public const PARTNERSHIP_PERIODS = [
+        3 => '3 mēneši',
+        6 => '6 mēneši',
+        9 => '9 mēneši',
+        12 => '12 mēneši',
+    ];
+
+    /** Cik dienas bez cenas/statusa izmaiņām pirms brīdinājuma. */
+    public const STALE_AFTER_DAYS = 45;
+
     protected $fillable = [
         'wp_post_id', 'title', 'slug', 'description', 'image_urls', 'price_cents', 'price_eur',
-        'currency', 'category', 'status', 'lead_source', 'lead_owner', 'beds', 'baths',
+        'currency', 'category', 'status', 'sale_started_at', 'partnership_months',
+        'price_status_changed_at', 'stale_notice_dismissed_at',
+        'lead_source', 'lead_owner', 'beds', 'baths',
         'size_m2', 'land_m2', 'kadastra_nr', 'city', 'address', 'zip',
         'lat', 'lng', 'owner_user_id', 'sort_order',
         'final_price_eur', 'commission_eur', 'sold_at', 'ai_notes', 'ai_result',
@@ -49,6 +63,10 @@ class CrmProperty extends Model
         'final_price_eur' => 'decimal:2',
         'commission_eur' => 'decimal:2',
         'sold_at' => 'datetime',
+        'sale_started_at' => 'date',
+        'partnership_months' => 'integer',
+        'price_status_changed_at' => 'datetime',
+        'stale_notice_dismissed_at' => 'datetime',
         'image_urls' => 'array',
         'beds' => 'integer',
         'baths' => 'integer',
@@ -93,6 +111,14 @@ class CrmProperty extends Model
             if ($property->isDirty('status')) {
                 if ($property->status === 'sold' && empty($property->sold_at)) {
                     $property->sold_at = now();
+                }
+            }
+            // Cena vai statuss mainīts → atiestata 45 dienu atgādinājuma
+            // atskaiti un jau aizvērto paziņojumu.
+            if (empty($property->price_status_changed_at) || $property->isDirty('price_eur') || $property->isDirty('status')) {
+                $property->price_status_changed_at = now();
+                if ($property->exists) {
+                    $property->stale_notice_dismissed_at = null;
                 }
             }
             // If final_price/commission set without sold status, keep sold_at; if needed, clear when not sold:
@@ -197,6 +223,47 @@ class CrmProperty extends Model
         }
 
         return round($comm / $final * 100, 2);
+    }
+
+    public function getPartnershipLabelAttribute(): string
+    {
+        return self::PARTNERSHIP_PERIODS[$this->partnership_months] ?? '—';
+    }
+
+    /**
+     * Aktīvs (nav melnraksts/pārdots/dzēsts) īpašums, kura cena un statuss nav
+     * mainīti vismaz STALE_AFTER_DAYS dienas.
+     */
+    public function isPriceStatusStale(): bool
+    {
+        if (in_array($this->status, ['draft', 'sold', 'deleted'], true)) {
+            return false;
+        }
+
+        $since = $this->price_status_changed_at ?? $this->updated_at;
+
+        return $since !== null && $since->lte(now()->subDays(self::STALE_AFTER_DAYS));
+    }
+
+    public function daysWithoutPriceStatusChange(): int
+    {
+        $since = $this->price_status_changed_at ?? $this->updated_at;
+
+        return $since ? (int) $since->startOfDay()->diffInDays(now()->startOfDay()) : 0;
+    }
+
+    /** Īpašumi, kam jāparādās 45 dienu brīdinājumā. */
+    public function scopePriceStatusStale(Builder $query): Builder
+    {
+        return $query
+            ->whereNotIn('status', ['draft', 'sold', 'deleted'])
+            ->where(function ($q): void {
+                $q->where('price_status_changed_at', '<=', now()->subDays(self::STALE_AFTER_DAYS))
+                    ->orWhere(function ($q2): void {
+                        $q2->whereNull('price_status_changed_at')
+                            ->where('updated_at', '<=', now()->subDays(self::STALE_AFTER_DAYS));
+                    });
+            });
     }
 
     public function toWpPayload(): array

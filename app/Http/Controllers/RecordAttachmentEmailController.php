@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\Task;
 use App\Models\Viewing;
+use App\Services\AuditLogger;
+use App\Services\ImageOptimizer;
 use App\Services\Mail\EmailSender;
 use App\Services\Mail\EmailTooLargeException;
 use Illuminate\Database\Eloquent\Model;
@@ -75,7 +78,7 @@ class RecordAttachmentEmailController extends Controller
         };
     }
 
-    private function clientFor(Model $record): ?\App\Models\Client
+    private function clientFor(Model $record): ?Client
     {
         return $record->client;
     }
@@ -130,7 +133,7 @@ class RecordAttachmentEmailController extends Controller
         try {
             $abs = $disk->path($path);
             if (is_file($abs) && str_starts_with((string) $file->getMimeType(), 'image/')) {
-                $result = app(\App\Services\ImageOptimizer::class)->optimize($abs);
+                $result = app(ImageOptimizer::class)->optimize($abs);
                 $size = (int) ($result['size'] ?? $size);
             }
         } catch (\Throwable) {
@@ -196,7 +199,6 @@ class RecordAttachmentEmailController extends Controller
         $data = Validator::make($request->all(), [
             'to' => ['required', 'email'],
             'subject' => ['required', 'string', 'max:255'],
-            'from_name' => ['nullable', 'string', 'max:100'],
             'files' => ['required', 'array', 'min:1'],
             'files.*' => ['integer', 'exists:attachments,id'],
             'body' => ['required', 'string', 'max:100000'],
@@ -213,7 +215,7 @@ class RecordAttachmentEmailController extends Controller
 
         $to = trim($data['to']);
         $subject = trim($data['subject']);
-        $fromName = trim((string) ($data['from_name'] ?? '')) ?: null;
+        $fromName = (string) ($request->user()?->name ?? '');
 
         try {
             app(EmailSender::class)->send($to, $subject, $data['body'], $selected, $fromName);
@@ -225,7 +227,7 @@ class RecordAttachmentEmailController extends Controller
             return response()->json(['message' => 'Nosūtīšana neizdevās — '.$e->getMessage()], 500);
         }
 
-        app(\App\Services\AuditLogger::class)->activity('attachment_email_sent', [
+        app(AuditLogger::class)->activity('attachment_email_sent', [
             'client_id' => $client->id,
             'owner' => $type.':'.$record->getKey(),
             'to' => $to,

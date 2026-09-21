@@ -49,6 +49,7 @@ class EmailSender
         string $body,
         iterable $attachments = [],
         ?string $fromName = null,
+        ?string $signature = null,
     ): void {
         $files = collect($attachments);
         $totalSize = (int) $files->sum('size');
@@ -57,7 +58,11 @@ class EmailSender
             throw new EmailTooLargeException($totalSize);
         }
 
-        $html = self::renderHtml($body);
+        // Paraksts tiek pievienots automātiski: vispirms no lietotāja profila
+        // (ja nav padots tieši), citādi e-pasts izskatās vienādi visiem.
+        $signature ??= self::defaultSignature();
+
+        $html = self::renderHtml($body, $signature);
         $to = trim($to);
         $subject = trim($subject);
         $name = trim((string) $fromName) ?: $this->fromName();
@@ -82,21 +87,43 @@ class EmailSender
         });
     }
 
+    /** Lietotāja saglabātais e-pasta paraksts (ja tāds ir). */
+    public static function defaultSignature(): ?string
+    {
+        $signature = auth()->user()?->email_signature;
+
+        return filled($signature) ? (string) $signature : null;
+    }
+
     /**
      * RichEditor-like HTML → email-safe HTML: content is user-authored HTML,
      * strip dangerous elements and wrap it in a minimal branded template.
+     *
+     * Struktūra: saturs → lietotāja paraksts → atsevišķa kājene ar logotipu
+     * un saiti uz pardodlaimigs.lv.
      */
-    public static function renderHtml(string $body): string
+    public static function renderHtml(string $body, ?string $signature = null): string
     {
-        $body = trim($body);
-        if ($body === '') {
+        $body = self::sanitize($body);
+        if (trim($body) === '') {
             $body = '<p></p>';
         }
 
-        // Strip scripts/styles/iframes — the editor never produces them but
-        // keep the email safe.
-        $body = preg_replace('/<\s*(script|style|iframe|object|embed)[^>]*>.*?<\s*\/\s*\1\s*>/is', '', $body) ?? $body;
-        $body = preg_replace('/<\s*(script|style|iframe|object|embed)[^>]*\/?>/i', '', $body) ?? $body;
+        $signatureHtml = '';
+        if (filled($signature)) {
+            $signatureHtml = '<div style="margin-top:18px;padding-top:14px;border-top:1px solid #e2e8e6;'
+                .'font-size:14px;line-height:1.6;color:#374151;">'
+                .self::sanitize((string) $signature)
+                .'</div>';
+        }
+
+        $logo = e(url('images/favicon-32x32.jpg'));
+        $footer = '<hr style="border:none;border-top:1px solid #e2e8e6;margin:20px 0 12px;">'
+            .'<p style="font-size:12px;color:#6b7280;margin:0;">'
+            .'<img src="'.$logo.'" alt="Pārdod Laimīgs" width="18" height="18" '
+            .'style="vertical-align:middle;margin-right:6px;border-radius:4px;border:0;">'
+            .'Pārdod Laimīgs · <a href="https://pardodlaimigs.lv" style="color:#285854;">pardodlaimigs.lv</a>'
+            .'</p>';
 
         return '<!DOCTYPE html><html><head><meta charset="utf-8"></head>'
             .'<body style="margin:0;padding:24px;background:#f5f7f6;">'
@@ -104,8 +131,20 @@ class EmailSender
             .'border:1px solid #e2e8e6;padding:24px;font-family:Arial,Helvetica,sans-serif;'
             .'font-size:14px;line-height:1.6;color:#1f2937;">'
             .$body
-            .'<hr style="border:none;border-top:1px solid #e2e8e6;margin:20px 0 12px;">'
-            .'<p style="font-size:12px;color:#6b7280;margin:0;">Pārdod Laimīgs · <a href="https://pardodlaimigs.lv" style="color:#285854;">pardodlaimigs.lv</a></p>'
+            .$signatureHtml
+            .$footer
             .'</div></body></html>';
+    }
+
+    /**
+     * Strip scripts/styles/iframes from user-authored HTML — the editors never
+     * produce them but keep the email safe.
+     */
+    private static function sanitize(string $html): string
+    {
+        $html = trim($html);
+        $html = preg_replace('/<\s*(script|style|iframe|object|embed)[^>]*>.*?<\s*\/\s*\1\s*>/is', '', $html) ?? $html;
+
+        return preg_replace('/<\s*(script|style|iframe|object|embed)[^>]*\/?>/i', '', $html) ?? $html;
     }
 }

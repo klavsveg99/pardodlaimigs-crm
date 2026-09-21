@@ -25,6 +25,11 @@ use UnitEnum;
 
 class TaskResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return ! auth()->user()?->isPhoto();
+    }
+
     protected static ?string $model = Task::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
@@ -110,6 +115,9 @@ class TaskResource extends Resource
                             'agentEmail' => $schema->getRecord()?->assignedTo?->email,
                             'izpilditajsName' => $schema->getRecord()?->izpilditajs?->name,
                             'izpilditajsEmail' => $schema->getRecord()?->izpilditajs?->email,
+                            // Saglabātais "Nosūtīts" statuss (ne tikai pēc POST).
+                            'agentNotifiedAt' => $schema->getRecord()?->agent_notified_at,
+                            'izpilditajsNotifiedAt' => $schema->getRecord()?->izpilditajs_notified_at,
                         ])
                         ->columnSpanFull(),
                 ]),

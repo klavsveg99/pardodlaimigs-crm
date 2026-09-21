@@ -53,14 +53,43 @@ class CrmPropertyResource extends Resource
     // maršrutu binding izmanto šo pašu vaicājumu).
     public static function getEloquentQuery(): EloquentBuilder
     {
+        $user = auth()->user();
+
+        // Fotogrāfs redz visus īpašumus (jāvar pievienot bildes jebkuram),
+        // aģents — tikai savus.
         return parent::getEloquentQuery()->when(
-            ! auth()->user()?->can('manage'),
+            ! $user?->can('manage') && ! $user?->isPhoto(),
             fn ($query) => $query->where('owner_user_id', auth()->id()),
         );
     }
 
     public static function form(Schema $schema): Schema
     {
+        // "photo" loma drīkst rediģēt tikai nosaukumu un galeriju — pārējie
+        // lauki formā vispār netiek parādīti.
+        if (auth()->user()?->isPhoto()) {
+            return $schema->schema([
+                Forms\Components\TextInput::make('title')
+                    ->label('Nosaukums')
+                    ->required()
+                    ->maxLength(255)
+                    ->columnSpanFull(),
+
+                Section::make('Galerija')->columnSpanFull()->schema([
+                    AttachmentsGrid::make('attachments')
+                        ->label('Fotogrāfijas un plānojumi')
+                        ->reorderable()
+                        ->deletable()
+                        ->multiselect()
+                        ->downloadable()
+                        ->collection('gallery')
+                        ->columnSpanFull(),
+
+                    Forms\Components\Hidden::make('attachment_original_names')->default([]),
+                ])->columnSpanFull(),
+            ]);
+        }
+
         return $schema->schema([
             Grid::make(['default' => 1, 'lg' => 2])->schema([
                 Section::make('Pamatdati')->columns(['default' => 1, 'md' => 2])->schema([
@@ -143,6 +172,17 @@ class CrmPropertyResource extends Resource
                         ->numeric()
                         ->minValue(0)
                         ->prefix('€'),
+
+                    Forms\Components\DatePicker::make('sale_started_at')
+                        ->label('Pārdošanas sākuma datums')
+                        ->native(false)
+                        ->displayFormat('d.m.Y'),
+
+                    Forms\Components\Select::make('partnership_months')
+                        ->label('Sadarbības līguma periods')
+                        ->options(CrmProperty::PARTNERSHIP_PERIODS)
+                        ->placeholder('Nav norādīts')
+                        ->native(false),
 
                     Forms\Components\Select::make('owner_user_id')
                         ->label('Aģents')
@@ -463,6 +503,7 @@ class CrmPropertyResource extends Resource
                     ->reorderable()
                     ->deletable()
                     ->multiselect()
+                    ->downloadable()
                     ->collection('gallery')
                     ->columnSpanFull(),
 
@@ -580,6 +621,12 @@ class CrmPropertyResource extends Resource
                         ->color('gray')
                         ->url(fn (CrmProperty $record): string => (string) $record->public_url)
                         ->openUrlInNewTab(),
+                    Actions\Action::make('pdf_generator')
+                        ->label('PDF mārketings')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('gray')
+                        ->url(Pages\ViewCrmProperty::PDF_GENERATOR_URL)
+                        ->openUrlInNewTab(),
                     Actions\ViewAction::make()->label('Skatīt')->color('gray'),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),
                     // Mīkstā dzēšana (CRM 2.1, #1): statuss "Dzēsts" — dati,
@@ -589,7 +636,8 @@ class CrmPropertyResource extends Resource
                         ->label('Dzēst')
                         ->icon('heroicon-s-trash')
                         ->color('danger')
-                        ->visible(fn (CrmProperty $record): bool => $record->status !== 'deleted')
+                        ->visible(fn (CrmProperty $record): bool => $record->status !== 'deleted'
+                            && ! auth()->user()?->isPhoto())
                         ->requiresConfirmation()
                         ->modalHeading('Vai tiešām dzēst šo īpašumu?')
                         ->modalDescription('Īpašums tiks pārvietots uz "Dzēstie" un noņemts no mājaslapas. Datus varēs atjaunot.')
@@ -652,7 +700,7 @@ class CrmPropertyResource extends Resource
                         }),
                 ])->color('gray'),
             ])
-            ->bulkActions([
+            ->bulkActions(auth()->user()?->isPhoto() ? [] : [
                 Actions\BulkActionGroup::make([
                     Actions\BulkAction::make('set_status')
                         ->label('Mainīt statusu')

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources;
 
-use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Filament\Admin\Resources\ViewingResource\Pages;
+use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Models\Client;
 use App\Models\CrmProperty;
 use App\Models\Viewing;
@@ -22,6 +22,11 @@ use UnitEnum;
 
 class ViewingResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return ! auth()->user()?->isPhoto();
+    }
+
     protected static ?string $model = Viewing::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-map-pin';

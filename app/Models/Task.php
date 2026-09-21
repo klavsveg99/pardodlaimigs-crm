@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class Task extends Model
 {
@@ -17,6 +18,7 @@ class Task extends Model
 
     protected $fillable = [
         'title', 'body', 'due_at', 'completed_at',
+        'agent_notified_at', 'izpilditajs_notified_at',
         'assigned_user_id', 'izpilditajs_id', 'created_by_user_id',
         'client_id', 'property_id',
     ];
@@ -24,6 +26,8 @@ class Task extends Model
     protected $casts = [
         'due_at' => 'datetime',
         'completed_at' => 'datetime',
+        'agent_notified_at' => 'datetime',
+        'izpilditajs_notified_at' => 'datetime',
     ];
 
     protected static function booted(): void
@@ -45,7 +49,7 @@ class Task extends Model
 
             // Pielikumi bez saimnieka ir atkritumi — dzēšam arī failus.
             $t->attachments()->get()->each(function ($attachment) {
-                \Illuminate\Support\Facades\Storage::disk($attachment->disk)->delete($attachment->path);
+                Storage::disk($attachment->disk)->delete($attachment->path);
                 $attachment->delete();
             });
         });
@@ -98,7 +102,12 @@ class Task extends Model
             return 'Aģentam nav norādīts e-pasts.';
         }
 
-        return $this->sendAssignmentEmail($user->email, 'Aģents: '.$user->name);
+        $error = $this->sendAssignmentEmail($user->email, 'Aģents: '.$user->name);
+        if ($error === null) {
+            $this->forceFill(['agent_notified_at' => now()])->saveQuietly();
+        }
+
+        return $error;
     }
 
     /**
@@ -115,7 +124,12 @@ class Task extends Model
             return 'Izpildītājam nav norādīts e-pasts.';
         }
 
-        return $this->sendAssignmentEmail($sub->email, 'Izpildītājs: '.$sub->name);
+        $error = $this->sendAssignmentEmail($sub->email, 'Izpildītājs: '.$sub->name);
+        if ($error === null) {
+            $this->forceFill(['izpilditajs_notified_at' => now()])->saveQuietly();
+        }
+
+        return $error;
     }
 
     /**

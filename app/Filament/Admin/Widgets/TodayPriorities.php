@@ -4,208 +4,177 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Models\CrmProperty;
 use App\Models\Task;
 use App\Models\Viewing;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Widgets\TableWidget as BaseWidget;
-use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Filament\Widgets\Widget;
+use Illuminate\Support\Carbon;
 
-class TodayPriorities extends BaseWidget
+/**
+ * "Šodien jāizdara" — notikumu saraksts bez fiksētām kolonnām. Katrs
+ * ieraksts pats nes sev līdzi datus (nosaukums, lauki, saite), tāpēc
+ * uzdevumus, apskates un īpašumu atgādinājumus var rādīt vienā plūsmā.
+ */
+class TodayPriorities extends Widget
 {
+    protected string $view = 'filament.admin.widgets.today-priorities';
+
     protected static ?int $sort = 4;
 
     protected int|string|array $columnSpan = 'full';
 
-    /** When true, the table shows only the current user's tasks (aria). */
+    /** Kad true, rāda tikai šī lietotāja uzdevumus. */
     public bool $showOnlyMine = false;
-
-    public function getTableRecordKey(EloquentModel|array $record): string
-    {
-        return (string) ($record['type'].'-'.$record['id']);
-    }
 
     public function toggleOnlyMine(): void
     {
         $this->showOnlyMine = ! $this->showOnlyMine;
     }
 
-    public function table(Table $table): Table
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getNotifications(): array
     {
-        $records = $this->collectToday();
+        $records = array_merge(
+            $this->propertyNotifications(),
+            $this->taskNotifications(),
+            $this->viewingNotifications(),
+        );
 
-        return $table
-            ->heading('Šodien jāizdara')
-            ->description(now()->locale('lv')->translatedFormat('l, d.m.Y'))
-            ->headerActions([
-                \Filament\Actions\Action::make('mani_uzdevumi')
-                    ->label('Mani uzdevumi')
-                    ->icon('heroicon-o-user')
-                    ->color(fn (): string => $this->showOnlyMine ? 'primary' : 'gray')
-                    ->outlined(fn (): bool => ! $this->showOnlyMine)
-                    ->action(fn () => $this->toggleOnlyMine()),
-            ])
-            ->query(Task::query()->whereRaw('1 = 0'))
-            ->records(fn () => $records)
-            ->columns([
-                Tables\Columns\TextColumn::make('time')
-                    ->label('Laiks')
-                    ->dateTime('H:i')
-                    ->alignCenter()
-                    ->sortable(),
+        usort($records, function (array $a, array $b): int {
+            // Īpašumu atgādinājumi (bez laika) ir pirmie.
+            $aTime = $a['timestamp'] instanceof Carbon ? $a['timestamp']->getTimestamp() : -1;
+            $bTime = $b['timestamp'] instanceof Carbon ? $b['timestamp']->getTimestamp() : -1;
 
-                Tables\Columns\TextColumn::make('type')
-                    ->label('Veids')
-                    ->badge()
-                    ->formatStateUsing(fn ($state) => $state),
-
-                Tables\Columns\TextColumn::make('title')
-                    ->label('Kas')
-                    ->weight('bold')
-                    ->wrap()
-                    ->url(fn ($record) => $record['record_url'] ?? null),
-
-                Tables\Columns\TextColumn::make('assigned')
-                    ->label('Aģents')
-                    ->placeholder('—')
-                    ->url(fn ($record) => $record['assigned_url'] ?? null),
-
-                Tables\Columns\TextColumn::make('client')
-                    ->label('Klients')
-                    ->placeholder('—')
-                    ->url(fn ($record) => $record['client_url'] ?? null),
-
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Statuss')
-                    ->badge()
-                    ->formatStateUsing(fn ($state) => [
-                        'scheduled' => 'Ieplānota',
-                        'completed' => 'Pabeigta',
-                        'cancelled' => 'Atcelta',
-                        'Nokavēts' => 'Nokavēts',
-                        'Plānots' => 'Plānots',
-                    ][$state] ?? $state),
-            ])
-            ->paginated(false)
-            ->emptyStateHeading('Šodien nekas nav jāveic')
-            ->emptyStateDescription('Nav uzdevumu vai apskatu uz šodienu.')
-            ->emptyStateIcon('heroicon-o-check-circle');
-    }
-
-    protected function collectToday(): array
-    {
-        $records = [];
-        $today = now()->toDateString();
-
-        if ($this->showOnlyMine) {
-            foreach ($this->myTasksToday() as $record) {
-                $records[] = $record;
-            }
-        } else {
-            $onlyMine = ! auth()->user()?->can('manage');
-
-            // Tasks due today or overdue (not completed)
-            Task::query()
-                ->whereNull('completed_at')
-                ->when($onlyMine, fn ($q) => $q->where('assigned_user_id', auth()->id()))
-                ->where(function ($q) use ($today) {
-                    $q->whereDate('due_at', $today)
-                      ->orWhere(function ($q2) {
-                          $q2->whereNotNull('due_at')->where('due_at', '<', now());
-                      });
-                })
-                ->with(['assignedTo', 'client'])
-                ->get()
-                ->each(function (Task $task) use (&$records) {
-                    $records[] = [
-                        'id' => $task->id,
-                        'time' => $task->due_at,
-                        'type' => 'Uzdevums',
-                        'title' => $task->title,
-                        'assigned' => $task->assignedTo?->name,
-                        'client' => $task->client?->name,
-                        'status' => $task->isOverdue() ? 'Nokavēts' : 'Plānots',
-                        'record_url' => route('filament.admin.resources.tasks.edit', $task),
-                        'assigned_url' => $task->assigned_user_id
-                            ? route('filament.admin.resources.users.edit', $task->assigned_user_id)
-                            : null,
-                        'client_url' => $task->client_id
-                            ? route('filament.admin.resources.clients.view', $task->client_id)
-                            : null,
-                    ];
-                });
-
-            // Viewings today
-            Viewing::query()
-                ->whereDate('scheduled_at', $today)
-                ->when($onlyMine, fn ($q) => $q->where('agent_user_id', auth()->id()))
-                ->with(['agent', 'client', 'property'])
-                ->get()
-                ->each(function (Viewing $viewing) use (&$records) {
-                    $records[] = [
-                        'id' => $viewing->id,
-                        'time' => $viewing->scheduled_at,
-                        'type' => 'Apskate',
-                        'title' => $viewing->property?->title ?? 'Īpašums',
-                        'assigned' => $viewing->agent?->name,
-                        'client' => $viewing->client?->name,
-                        'status' => $viewing->status,
-                        'record_url' => route('filament.admin.resources.viewings.edit', $viewing),
-                        'assigned_url' => $viewing->agent_user_id
-                            ? route('filament.admin.resources.users.edit', $viewing->agent_user_id)
-                            : null,
-                        'client_url' => $viewing->client_id
-                            ? route('filament.admin.resources.clients.view', $viewing->client_id)
-                            : null,
-                    ];
-                });
-        }
-
-        usort($records, fn ($a, $b) => ($a['time']?->getTimestamp() ?? 0) <=> ($b['time']?->getTimestamp() ?? 0));
+            return $aTime <=> $bTime;
+        });
 
         return array_values($records);
     }
 
+    public function hasNotifications(): bool
+    {
+        return $this->getNotifications() !== [];
+    }
+
     /**
-     * Current user's open tasks due today, formatted as table rows.
-     *
      * @return array<int, array<string, mixed>>
      */
-    protected function myTasksToday(): array
+    protected function propertyNotifications(): array
+    {
+        $user = auth()->user();
+        $today = now()->toDateString();
+
+        return CrmProperty::query()
+            ->priceStatusStale()
+            ->when(! $user?->can('manage') && ! $user?->isPhoto(), fn ($q) => $q->where('owner_user_id', $user?->id))
+            ->orderBy('price_status_changed_at')
+            ->get()
+            ->map(function (CrmProperty $property) use ($today): array {
+                $fields = [
+                    ['label' => 'Bez izmaiņām', 'value' => $property->daysWithoutPriceStatusChange().' dienas'],
+                    ['label' => 'Pārdošanas sākums', 'value' => $property->sale_started_at?->format('d.m.Y') ?? '—'],
+                    ['label' => 'Līguma periods', 'value' => $property->partnership_label],
+                ];
+
+                return [
+                    'key' => 'property-'.$property->id,
+                    'type' => 'Īpašums',
+                    'type_color' => 'warning',
+                    'icon' => 'heroicon-o-exclamation-triangle',
+                    'urgent' => true,
+                    'title' => $property->title,
+                    'url' => route('filament.admin.resources.properties.view', $property),
+                    'fields' => $fields,
+                    'timestamp' => null,
+                    'date' => $today,
+                ];
+            })
+            ->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    protected function taskNotifications(): array
     {
         $today = now()->toDateString();
-        $rows = [];
 
-        Task::query()
+        return Task::query()
             ->whereNull('completed_at')
-            ->where('assigned_user_id', auth()->id())
-            ->where(function ($q) use ($today) {
+            ->when($this->scopeToUser(), fn ($q) => $q->where('assigned_user_id', auth()->id()))
+            ->where(function ($q) use ($today): void {
                 $q->whereDate('due_at', $today)
-                  ->orWhere(function ($q2) {
-                      $q2->whereNotNull('due_at')->where('due_at', '<', now());
-                  });
+                    ->orWhere(function ($q2): void {
+                        $q2->whereNotNull('due_at')->where('due_at', '<', now());
+                    });
             })
             ->with(['assignedTo', 'client'])
             ->get()
-            ->each(function (Task $task) use (&$rows) {
-                $rows[] = [
-                    'id' => $task->id,
-                    'time' => $task->due_at,
-                    'type' => 'Uzdevums',
-                    'title' => $task->title,
-                    'assigned' => $task->assignedTo?->name,
-                    'client' => $task->client?->name,
-                    'status' => $task->isOverdue() ? 'Nokavēts' : 'Plānots',
-                    'record_url' => route('filament.admin.resources.tasks.edit', $task),
-                    'assigned_url' => $task->assigned_user_id
-                        ? route('filament.admin.resources.users.edit', $task->assigned_user_id)
-                        : null,
-                    'client_url' => $task->client_id
-                        ? route('filament.admin.resources.clients.view', $task->client_id)
-                        : null,
-                ];
-            });
+            ->map(function (Task $task): array {
+                $overdue = $task->isOverdue();
 
-        return $rows;
+                return [
+                    'key' => 'task-'.$task->id,
+                    'type' => 'Uzdevums',
+                    'type_color' => $overdue ? 'danger' : 'gray',
+                    'icon' => $overdue ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-clipboard-document-check',
+                    'urgent' => $overdue,
+                    'title' => $task->title,
+                    'url' => route('filament.admin.resources.tasks.edit', $task),
+                    'fields' => array_values(array_filter([
+                        ['label' => 'Laiks', 'value' => $task->due_at?->locale('lv')->translatedFormat('d.m.Y H:i')],
+                        $task->assignedTo ? ['label' => 'Aģents', 'value' => $task->assignedTo->name] : null,
+                        $task->client ? ['label' => 'Klients', 'value' => $task->client->name] : null,
+                    ])),
+                    'status' => $overdue ? 'Nokavēts' : 'Plānots',
+                    'status_color' => $overdue ? 'danger' : 'gray',
+                    'timestamp' => $task->due_at,
+                ];
+            })
+            ->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    protected function viewingNotifications(): array
+    {
+        $today = now()->toDateString();
+
+        return Viewing::query()
+            ->whereDate('scheduled_at', $today)
+            ->when($this->scopeToUser(), fn ($q) => $q->where('agent_user_id', auth()->id()))
+            ->with(['agent', 'client', 'property'])
+            ->get()
+            ->map(fn (Viewing $viewing): array => [
+                'key' => 'viewing-'.$viewing->id,
+                'type' => 'Apskate',
+                'type_color' => 'info',
+                'icon' => 'heroicon-o-map-pin',
+                'urgent' => false,
+                'title' => $viewing->property?->title ?? 'Īpašums',
+                'url' => route('filament.admin.resources.viewings.edit', $viewing),
+                'fields' => array_values(array_filter([
+                    ['label' => 'Laiks', 'value' => $viewing->scheduled_at?->locale('lv')->translatedFormat('d.m.Y H:i')],
+                    $viewing->agent ? ['label' => 'Aģents', 'value' => $viewing->agent->name] : null,
+                    $viewing->client ? ['label' => 'Klients', 'value' => $viewing->client->name] : null,
+                ])),
+                'status' => [
+                    'scheduled' => 'Ieplānota',
+                    'completed' => 'Pabeigta',
+                    'cancelled' => 'Atcelta',
+                ][$viewing->status] ?? $viewing->status,
+                'status_color' => 'gray',
+                'timestamp' => $viewing->scheduled_at,
+            ])
+            ->all();
+    }
+
+    /** Vai uzdevumu/apskašu sarakstu ierobežot tikai ar šo lietotāju. */
+    protected function scopeToUser(): bool
+    {
+        return $this->showOnlyMine || ! auth()->user()?->can('manage');
     }
 }

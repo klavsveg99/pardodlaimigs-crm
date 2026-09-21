@@ -1,5 +1,10 @@
 <?php
 
+use App\Http\Controllers\ClientAttachmentEmailController;
+use App\Http\Controllers\PropertyAttachmentEmailController;
+use App\Http\Controllers\PropertyGalleryDownloadController;
+use App\Http\Controllers\RecordAttachmentEmailController;
+use App\Http\Controllers\TaskNotificationController;
 use App\Models\CrmProperty;
 use App\Models\Task;
 use App\Models\User;
@@ -188,7 +193,8 @@ Route::get('/property/image-proxy', function (Request $request) {
 })->middleware(['auth', 'web'])->name('filament.admin.property.image-proxy');
 
 // ── Attachment upload endpoint ────────────────────────────────
-Route::post('/property/upload-attachment', function () {    $file = request()->file('file');
+Route::post('/property/upload-attachment', function () {
+    $file = request()->file('file');
 
     if (! $file) {
         return response()->json(['error' => 'No file provided'], 422);
@@ -237,50 +243,60 @@ Route::post('/property/upload-attachment', function () {    $file = request()->f
 
 // ── Client attachments: upload + "Nosūtīt" email popup ────────
 Route::post('/clients/{clientSlug}/attachments/upload',
-    [App\Http\Controllers\ClientAttachmentEmailController::class, 'upload']
+    [ClientAttachmentEmailController::class, 'upload']
 )->middleware(['auth', 'web'])->name('clients.attachments.upload');
 
 Route::post('/clients/{clientSlug}/attachments/send-email',
-    [App\Http\Controllers\ClientAttachmentEmailController::class, 'send']
+    [ClientAttachmentEmailController::class, 'send']
 )->middleware(['auth', 'web'])->name('clients.attachments.send-email');
 
 Route::delete('/clients/{clientSlug}/attachments/{attachment}',
-    [App\Http\Controllers\ClientAttachmentEmailController::class, 'destroy']
+    [ClientAttachmentEmailController::class, 'destroy']
 )->middleware(['auth', 'web'])->name('clients.attachments.destroy');
 
 // ── Property attachments: upload + "Nosūtīt" email (associated client) ──
 Route::post('/properties/{propertySlug}/attachments/upload',
-    [App\Http\Controllers\PropertyAttachmentEmailController::class, 'upload']
+    [PropertyAttachmentEmailController::class, 'upload']
 )->middleware(['auth', 'web'])->name('properties.attachments.upload');
 
 Route::post('/properties/{propertySlug}/attachments/send-email',
-    [App\Http\Controllers\PropertyAttachmentEmailController::class, 'send']
+    [PropertyAttachmentEmailController::class, 'send']
 )->middleware(['auth', 'web'])->name('properties.attachments.send-email');
 
 Route::delete('/properties/{propertySlug}/attachments/{attachment}',
-    [App\Http\Controllers\PropertyAttachmentEmailController::class, 'destroy']
+    [PropertyAttachmentEmailController::class, 'destroy']
 )->middleware(['auth', 'web'])->name('properties.attachments.destroy');
+
+// ── Property gallery: "Lejupielādēt visus" ZIP ────────────────
+Route::get('/properties/{propertySlug}/gallery/download',
+    [PropertyGalleryDownloadController::class, 'download']
+)->middleware(['auth', 'web'])->name('properties.gallery.download');
+
+// ── Thank-you email to one associated client (no attachments) ──
+Route::post('/properties/{propertySlug}/clients/{client}/send-email',
+    [PropertyAttachmentEmailController::class, 'sendToClient']
+)->middleware(['auth', 'web'])->name('properties.clients.send-email');
 
 // ── Viewing / Task attachments (associated client recipient) ──
 foreach (['viewings' => 'Viewing', 'tasks' => 'Task'] as $segment => $suffix) {
     Route::post("/{$segment}/{id}/attachments/upload",
-        [App\Http\Controllers\RecordAttachmentEmailController::class, "upload{$suffix}"]
+        [RecordAttachmentEmailController::class, "upload{$suffix}"]
     )->middleware(['auth', 'web'])->name("{$segment}.attachments.upload");
 
     Route::delete("/{$segment}/{id}/attachments/{attachment}",
-        [App\Http\Controllers\RecordAttachmentEmailController::class, "destroy{$suffix}"]
+        [RecordAttachmentEmailController::class, "destroy{$suffix}"]
     )->middleware(['auth', 'web'])->name("{$segment}.attachments.destroy");
 
     Route::post("/{$segment}/{id}/attachments/send-email",
-        [App\Http\Controllers\RecordAttachmentEmailController::class, "send{$suffix}"]
+        [RecordAttachmentEmailController::class, "send{$suffix}"]
     )->middleware(['auth', 'web'])->name("{$segment}.attachments.send-email");
 }
 
 // ── Task assignment notification (manual, from the task page section) ──
 Route::post('/tasks/{id}/notify/agent',
-    [App\Http\Controllers\TaskNotificationController::class, 'agent']
+    [TaskNotificationController::class, 'agent']
 )->middleware(['auth', 'web'])->name('tasks.notify.agent');
 
 Route::post('/tasks/{id}/notify/izpilditajs',
-    [App\Http\Controllers\TaskNotificationController::class, 'izpilditajs']
+    [TaskNotificationController::class, 'izpilditajs']
 )->middleware(['auth', 'web'])->name('tasks.notify.izpilditajs');

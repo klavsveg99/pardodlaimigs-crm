@@ -15,7 +15,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'role', 'calendar_token', 'slug', 'phone', 'position', 'description', 'avatar_path', 'facebook_url', 'instagram_url', 'linkedin_url', 'website_url', 'office_address'])]
+#[Fillable(['name', 'email', 'password', 'role', 'calendar_token', 'slug', 'phone', 'position', 'description', 'avatar_path', 'facebook_url', 'instagram_url', 'linkedin_url', 'website_url', 'office_address', 'email_signature'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -48,6 +48,24 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return true;
+    }
+
+    /**
+     * "photo" loma: drīkst tikai izveidot īpašumu un rediģēt tā nosaukumu
+     * un galeriju. Nekas cits nav pieejams.
+     */
+    public function isPhoto(): bool
+    {
+        return ($this->role ?? null) === 'photo';
+    }
+
+    public function getRoleLabelAttribute(): string
+    {
+        return match ($this->role) {
+            'admin' => 'Administrators',
+            'photo' => 'Fotogrāfs',
+            default => 'Aģents',
+        };
     }
 
     public function generateCalendarToken(): string

@@ -118,7 +118,16 @@
             @php
                 $galleryJson = $galleryAttachments->map(fn($a)=>["url"=>$a->cacheBustedUrl(),"name"=>$a->original_name])->values()->toJson();
                 $galleryUid = "view-gallery-".$record->id;
+                $galleryZipUrl = route('properties.gallery.download', ['propertySlug' => $record->slug ?? $record->getKey()]);
             @endphp
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
+                <a href="{{ $galleryZipUrl }}"
+                   class="fi-btn fi-size-sm fi-color fi-color-gray fi-outlined"
+                   style="display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;">
+                    <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2m-16-5l8 8 8-8m-16 0V4h16v10"/></svg>
+                    <span>Lejupielādēt visus</span>
+                </a>
+            </div>
             <script type="application/json" id="{{ $galleryUid }}-data">{!! $galleryJson !!}</script>
             <div
                 x-data="{
@@ -206,32 +215,52 @@
     </x-filament::section>
 
     <x-filament::section heading="Saistītie klienti">
-        <x-slot:afterHeader>
-            <div wire:click="mountAction('piesaisit_klientu')"
-                 class="fi-btn fi-size-sm fi-color fi-color-gray fi-outlined"
-                 style="cursor: pointer;">
-                <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                </svg>
-                <span>Pievienot klientu</span>
-            </div>
-        </x-slot:afterHeader>
+        @if (! auth()->user()?->isPhoto())
+            <x-slot:afterHeader>
+                <div wire:click="mountAction('piesaisit_klientu')"
+                     class="fi-btn fi-size-sm fi-color fi-color-gray fi-outlined"
+                     style="cursor: pointer;">
+                    <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span>Pievienot klientu</span>
+                </div>
+            </x-slot:afterHeader>
+        @endif
         @if ($record->clients->isNotEmpty())
             <div class="flex flex-col gap-4">
                 @foreach ($record->clients as $client)
-                    <a href="{{ \App\Filament\Admin\Resources\ClientResource::getUrl('view', ['record' => $client]) }}"
-                       class="pdc-client-card">
-                        <div class="pdc-client-main">
-                            <div class="pdc-client-avatar">{{ strtoupper(mb_substr($client->name, 0, 1)) }}</div>
-                            <div class="pdc-client-info">
-                                <p class="pdc-client-name">{{ $client->name }}</p>
-                                <p class="pdc-client-contact">{{ implode(' · ', array_filter([\App\Support\PhoneFormat::display($client->phone ?? null), $client->email])) ?: '—' }}</p>
-                                <x-filament::badge color="gray" class="pdc-client-badge">
-                                    {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
-                                </x-filament::badge>
+                    <div style="display: flex; align-items: stretch; gap: 0.5rem; flex-wrap: wrap;">
+                        <a href="{{ \App\Filament\Admin\Resources\ClientResource::getUrl('view', ['record' => $client]) }}"
+                           class="pdc-client-card" style="flex: 1 1 auto; min-width: 0;">
+                            <div class="pdc-client-main">
+                                <div class="pdc-client-avatar">{{ strtoupper(mb_substr($client->name, 0, 1)) }}</div>
+                                <div class="pdc-client-info">
+                                    <p class="pdc-client-name">{{ $client->name }}</p>
+                                    <p class="pdc-client-contact">{{ implode(' · ', array_filter([\App\Support\PhoneFormat::display($client->phone ?? null), $client->email])) ?: '—' }}</p>
+                                    <x-filament::badge color="gray" class="pdc-client-badge">
+                                        {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
+                                    </x-filament::badge>
+                                </div>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                        @if ($client->email && ! auth()->user()?->isPhoto())
+                            <button
+                                type="button"
+                                data-client-id="{{ $client->id }}"
+                                data-client-name="{{ $client->name }}"
+                                data-client-email="{{ $client->email }}"
+                                data-send-url="{{ route('properties.clients.send-email', ['propertySlug' => $record->slug ?? $record->getKey(), 'client' => $client->id]) }}"
+                                x-on:click="window.dispatchEvent(new CustomEvent('pdc-open-client-email', { detail: { id: Number($el.dataset.clientId), name: $el.dataset.clientName, email: $el.dataset.clientEmail, url: $el.dataset.sendUrl } }))"
+                                class="fi-btn fi-size-sm fi-color fi-color-primary"
+                                style="flex: none; align-self: center; display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.35rem; white-space: nowrap;"
+                                title="Nosūtīt e-pastu"
+                            >
+                                <svg style="width: 0.9rem; height: 0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+                                <span>Nosūtīt</span>
+                            </button>
+                        @endif
+                    </div>
                 @endforeach
             </div>
         @else
@@ -242,7 +271,7 @@
     </x-filament::section>
 
     <x-filament::section heading="Datumi">
-        <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Izveidots</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->created_at->format('d.m.Y H:i') }}</dd>
@@ -252,9 +281,15 @@
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->updated_at->format('d.m.Y H:i') }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Publicēts</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->published_at?->format('d.m.Y H:i') ?? '—' }}</dd>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pārdošanas sākums</dt>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->sale_started_at?->format('d.m.Y') ?? '—' }}</dd>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sadarbības līguma periods</dt>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->partnership_label }}</dd>
             </div>
         </div>
     </x-filament::section>
+
+    @include('filament.partials.property-client-email-popup')
 </x-filament-panels::page>

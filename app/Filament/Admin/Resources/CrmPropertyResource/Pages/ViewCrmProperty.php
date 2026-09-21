@@ -27,6 +27,18 @@ class ViewCrmProperty extends ViewRecord
      */
     public function form(Schema $schema): Schema
     {
+        // Fotogrāfs dokumentus tikai apskata — bez dzēšanas vai nosūtīšanas.
+        if (auth()->user()?->isPhoto()) {
+            return $schema->components([
+                AttachmentsGrid::make('attachments_documents')
+                    ->reorderable(false)
+                    ->multiselect(false)
+                    ->deletable(false)
+                    ->collection('documents')
+                    ->columnSpanFull(),
+            ]);
+        }
+
         return $schema->components([
             AttachmentsGrid::make('attachments_documents')
                 ->reorderable(false)
@@ -38,32 +50,53 @@ class ViewCrmProperty extends ViewRecord
         ]);
     }
 
+    /**
+     * Ārējais PDF mārketinga lapas ģenerators. Tam nav API/URL parametru, tāpēc
+     * integrācija ir saite, kas atver ģeneratoru jaunā cilnē no īpašuma lapas.
+     */
+    public const PDF_GENERATOR_URL = 'https://real-estate-pdf-offer-generator.vercel.app/';
+
     protected function getHeaderActions(): array
     {
-        return [
-            $this->getPievienotKlientuAction(),
-            Actions\EditAction::make()->label('Rediģēt'),
-            Actions\Action::make('open_site')
-                ->label('Atvērt mājaslapā')
-                ->icon('heroicon-o-arrow-top-right-on-square')
-                ->url(fn () => $this->record->public_url)
-                ->openUrlInNewTab(),
-            Actions\Action::make('restore_property')
-                ->label('Atjaunot')
-                ->icon('heroicon-o-arrow-path')
-                ->color('gray')
-                ->visible(fn (): bool => $this->record?->status === 'deleted')
-                ->requiresConfirmation()
-                ->modalHeading('Atjaunot īpašumu?')
-                ->modalDescription('Īpašums atgriezīsies kā melnraksts un būs redzams aktīvo īpašumu sarakstā.')
-                ->modalSubmitActionLabel('Atjaunot')
-                ->action(function (): void {
-                    $this->record->update(['status' => 'draft']);
-                    Notification::make()
-                        ->title('Īpašums atjaunots')
-                        ->success()
-                        ->send();
-                }),
-        ];
+        $actions = [];
+
+        if (! auth()->user()?->isPhoto()) {
+            $actions[] = $this->getPievienotKlientuAction();
+        }
+
+        $actions[] = Actions\Action::make('pdf_generator')
+            ->label('PDF mārketings')
+            ->icon('heroicon-o-document-arrow-down')
+            ->color('gray')
+            ->url(self::PDF_GENERATOR_URL)
+            ->openUrlInNewTab();
+
+        $actions[] = Actions\EditAction::make()->label('Rediģēt');
+
+        $actions[] = Actions\Action::make('open_site')
+            ->label('Atvērt mājaslapā')
+            ->icon('heroicon-o-arrow-top-right-on-square')
+            ->url(fn () => $this->record->public_url)
+            ->openUrlInNewTab();
+
+        $actions[] = Actions\Action::make('restore_property')
+            ->label('Atjaunot')
+            ->icon('heroicon-o-arrow-path')
+            ->color('gray')
+            ->visible(fn (): bool => $this->record?->status === 'deleted'
+                && ! auth()->user()?->isPhoto())
+            ->requiresConfirmation()
+            ->modalHeading('Atjaunot īpašumu?')
+            ->modalDescription('Īpašums atgriezīsies kā melnraksts un būs redzams aktīvo īpašumu sarakstā.')
+            ->modalSubmitActionLabel('Atjaunot')
+            ->action(function (): void {
+                $this->record->update(['status' => 'draft']);
+                Notification::make()
+                    ->title('Īpašums atjaunots')
+                    ->success()
+                    ->send();
+            });
+
+        return $actions;
     }
 }

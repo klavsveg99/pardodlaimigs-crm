@@ -12,6 +12,11 @@ use UnitEnum;
 
 class CalendarResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return ! auth()->user()?->isPhoto();
+    }
+
     protected static ?string $model = null;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';

@@ -9,10 +9,12 @@ use App\Filament\Forms\Components\PhoneInput;
 use App\Models\User;
 use App\Rules\Phone;
 use Filament\Actions\Action;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
@@ -65,7 +67,7 @@ class MyProfile extends Page
     {
         $user = $this->getUser();
 
-        $this->form->fill(collect(['name', 'email', 'avatar_path', 'phone', 'position', 'description', 'facebook_url', 'instagram_url', 'linkedin_url', 'website_url', 'office_address'])
+        $this->form->fill(collect(['name', 'email', 'avatar_path', 'phone', 'position', 'description', 'facebook_url', 'instagram_url', 'linkedin_url', 'website_url', 'office_address', 'email_signature'])
             ->mapWithKeys(fn (string $key): array => [$key => $user->{$key}])
             ->all());
     }
@@ -123,6 +125,11 @@ class MyProfile extends Page
                     TextInput::make('linkedin_url')->label('LinkedIn URL')->url()->maxLength(500)->columnSpan(1),
                     TextInput::make('website_url')->label('Mājaslapa')->url()->maxLength(500)->columnSpan(1),
                     TextInput::make('office_address')->label('Biroja adrese')->maxLength(500)->placeholder('Rīga, Brīvības iela 1')->columnSpanFull(),
+                    RichEditor::make('email_signature')
+                        ->label('E-pasta paraksts')
+                        ->helperText('Tiek automātiski pievienots visiem e-pastiem, ko nosūtāt no CRM.')
+                        ->toolbarButtons(['bold', 'italic', 'underline', 'link', 'bulletList', 'orderedList'])
+                        ->columnSpanFull(),
                 ])->columns(2),
             ]);
     }
@@ -134,7 +141,7 @@ class MyProfile extends Page
                 ->id('form')
                 ->livewireSubmitHandler('save')
                 ->footer([
-                    \Filament\Schemas\Components\Actions::make([$this->getSaveFormAction()]),
+                    Actions::make([$this->getSaveFormAction()]),
                 ]),
         ]);
     }
@@ -159,7 +166,7 @@ class MyProfile extends Page
         $this->form->fill($user->only([
             'name', 'email', 'avatar_path', 'phone', 'position',
             'description', 'facebook_url', 'instagram_url', 'linkedin_url',
-            'website_url', 'office_address',
+            'website_url', 'office_address', 'email_signature',
         ]));
 
         Notification::make()
@@ -168,4 +175,3 @@ class MyProfile extends Page
             ->send();
     }
 }
-

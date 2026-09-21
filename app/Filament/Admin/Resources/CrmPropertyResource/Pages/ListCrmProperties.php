@@ -6,6 +6,7 @@ namespace App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 
 use App\Filament\Admin\Resources\CrmPropertyResource;
 use App\Filament\Admin\Resources\Pages\Concerns\RefreshesTabBadges;
+use App\Filament\Admin\Widgets\StalePropertiesNotice;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -22,6 +23,13 @@ class ListCrmProperties extends ListRecords
     {
         return [
             Actions\CreateAction::make()->label('Jauns īpašums')->color('gray'),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            StalePropertiesNotice::class,
         ];
     }
 
@@ -48,8 +56,10 @@ class ListCrmProperties extends ListRecords
 
     private static function agentScoped(Builder $query): Builder
     {
+        $user = auth()->user();
+
         return $query->when(
-            ! auth()->user()?->can('manage'),
+            ! $user?->can('manage') && ! $user?->isPhoto(),
             fn ($q) => $q->where('owner_user_id', auth()->id()),
         );
     }

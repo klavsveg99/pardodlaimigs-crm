@@ -14,6 +14,7 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -51,12 +52,14 @@ class UserResource extends Resource
                 Forms\Components\Select::make('role')->label('Loma')
                     ->options([
                         'aģents' => 'Aģents',
+                        'photo' => 'Fotogrāfs',
                         'admin' => 'Administrators',
                     ])
                     ->searchable()
                     ->default('aģents')
                     ->required()
                     ->native(false)
+                    ->live()
                     ->dehydrateStateUsing(fn ($state) => $state === 'agent' ? 'aģents' : $state),
                 Forms\Components\TextInput::make('password')
                     ->label('Parole')
@@ -89,6 +92,12 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('linkedin_url')->label('LinkedIn URL')->url()->maxLength(500)->columnSpan(1),
                 Forms\Components\TextInput::make('website_url')->label('Mājaslapa')->url()->maxLength(500)->columnSpan(1),
                 Forms\Components\TextInput::make('office_address')->label('Biroja adrese')->maxLength(500)->placeholder('Rīga, Brīvības iela 1')->columnSpanFull(),
+                Forms\Components\RichEditor::make('email_signature')
+                    ->label('E-pasta paraksts')
+                    ->helperText('Tiek automātiski pievienots visiem e-pastiem, ko šis lietotājs nosūta no CRM.')
+                    ->toolbarButtons(['bold', 'italic', 'underline', 'link', 'bulletList', 'orderedList'])
+                    ->visible(fn (Get $get): bool => ($get('role') ?? 'aģents') !== 'admin')
+                    ->columnSpanFull(),
             ])->columns(2),
         ]);
     }
@@ -128,6 +137,7 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('role')->label('Loma')->badge()->sortable()
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'aģents', 'agent' => 'Aģents',
+                        'photo' => 'Fotogrāfs',
                         'admin' => 'Administrators',
                         default => $state ?: '—',
                     }),
@@ -137,6 +147,7 @@ class UserResource extends Resource
                     ->label('Loma')
                     ->options([
                         'aģents' => 'Aģents',
+                        'photo' => 'Fotogrāfs',
                         'admin' => 'Administrators',
                     ]),
             ])

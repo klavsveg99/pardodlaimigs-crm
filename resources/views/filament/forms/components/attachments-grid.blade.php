@@ -4,6 +4,10 @@
     $isReorderable = $isReorderable();
     $isDeletable = $isDeletable();
     $isMultiselect = $isMultiselect();
+    // "Lejupielādēt visus" ZIP — tikai īpašuma galerijai ar saglabātu ierakstu.
+    $galleryZipUrl = ($isDownloadable() && $record instanceof \App\Models\CrmProperty)
+        ? route('properties.gallery.download', ['propertySlug' => $record->slug ?? $record->getKey()])
+        : null;
     // The layout follows the field configuration (client/viewing/task and
     // property-document grids use rows), independent of whether send actions
     // are currently possible — on the create page the files should already
@@ -860,6 +864,17 @@
                         </button>
                     </div>
                 </template>
+            @endif
+            @if($galleryZipUrl)
+                <a
+                    href="{{ $galleryZipUrl }}"
+                    x-show="files.length > 0"
+                    class="fi-btn fi-size-sm fi-color fi-color-gray fi-outlined"
+                    style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; flex-direction: row; white-space: nowrap;"
+                >
+                    <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2m-16-5l8 8 8-8m-16 0V4h16v10"/></svg>
+                    <span>Lejupielādēt visus</span>
+                </a>
             @endif
         </div>
     </div>

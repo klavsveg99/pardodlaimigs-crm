@@ -22,6 +22,9 @@ class AttachmentsGrid extends Field
 
     public bool $recordSendable = false;
 
+    /** Property gallery: show a "Lejupielādēt visus" ZIP button. */
+    public bool $downloadable = false;
+
     public string $collection = 'gallery';
 
     public static function make(?string $name = null): static
@@ -99,6 +102,18 @@ class AttachmentsGrid extends Field
     public function isRecordSendable(): bool
     {
         return $this->recordSendable;
+    }
+
+    public function downloadable(bool $downloadable = true): static
+    {
+        $this->downloadable = $downloadable;
+
+        return $this;
+    }
+
+    public function isDownloadable(): bool
+    {
+        return $this->downloadable;
     }
 
     public function isReorderable(): bool

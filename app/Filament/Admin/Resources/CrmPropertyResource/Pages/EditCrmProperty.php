@@ -62,6 +62,14 @@ class EditCrmProperty extends EditRecord
 
     public function getRelationManagersContentComponent(): Component
     {
+        // Fotogrāfam nav pieejami saistīto klientu pārvaldības bloki —
+        // tikai nosaukums un galerija.
+        if (auth()->user()?->isPhoto()) {
+            return Group::make([
+                $this->getFormActionsContentComponent(),
+            ]);
+        }
+
         return Group::make([
             parent::getRelationManagersContentComponent(),
             $this->getFormActionsContentComponent(),
@@ -154,18 +162,31 @@ class EditCrmProperty extends EditRecord
 
     protected function getHeaderActions(): array
     {
+        $save = Actions\Action::make('save')
+            ->label('Saglabāt izmaiņas')
+            ->color('primary')
+            ->badge(fn (): ?string => $this->autosaveState === 'error' ? ($this->autosaveError ?: 'Nav izdevies saglabāt') : null)
+            ->badgeColor('warning')
+            ->keyBindings(['mod+s'])
+            ->action(function () {
+                $this->save();
+            });
+
+        // Fotogrāfs drīkst saglabāt tikai nosaukumu un galeriju.
+        if (auth()->user()?->isPhoto()) {
+            return [$save];
+        }
+
         return [
-            Actions\Action::make('save')
-                ->label('Saglabāt izmaiņas')
-                ->color('primary')
-                ->badge(fn (): ?string => $this->autosaveState === 'error' ? ($this->autosaveError ?: 'Nav izdevies saglabāt') : null)
-                ->badgeColor('warning')
-                ->keyBindings(['mod+s'])
-                ->action(function () {
-                    $this->save();
-                }),
+            $save,
             $this->getAttachSellerAction(),
             $this->getAttachBuyerAction(),
+            Actions\Action::make('pdf_generator')
+                ->label('PDF mārketings')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('gray')
+                ->url(ViewCrmProperty::PDF_GENERATOR_URL)
+                ->openUrlInNewTab(),
             Actions\Action::make('open_site')
                 ->label('Atvērt mājaslapā')
                 ->icon('heroicon-o-arrow-top-right-on-square')
