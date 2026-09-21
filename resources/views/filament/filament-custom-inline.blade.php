@@ -137,15 +137,11 @@
     flex: 0 0 auto !important;
 }
 
-/* Section titles are neutral (gray/black) everywhere — form sections,
-   relation managers and dashboard widgets all share the same heading color.
-   Only the page h1 keeps the brand green. */
-.fi-section-header-heading {
-    color: var(--gray-950) !important;
-}
-
+/* All headings — page title and section titles — share one neutral
+   (gray/black) color so nothing stands out by accident. */
+.fi-section-header-heading,
 h1.fi-header-heading {
-    color: var(--pdc-primary-darker) !important;
+    color: var(--gray-950) !important;
 }
 
 .dark .fi-section-header-heading,

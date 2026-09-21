@@ -17,13 +17,7 @@
         min-height: 0;
     }
 
-    /* ── Widget heading — match Filament table widget style ────── */
-    .fi-wi-calendar-viewings .fi-section-header-heading,
-    .fi-wi-calendar-viewings .fi-section .fi-section-heading {
-        color: var(--fi-color-base-900, #0b0f14) !important;
-        font-weight: 600 !important;
-    }
-
+    /* Widget heading inherits the shared section-title style. */
     .fi-wi-calendar-viewings .fi-section-header-icon,
     .fi-wi-calendar-viewings .fi-section .fi-section-icon {
         color: var(--fi-color-base-500, #6b7280) !important;
@@ -449,11 +443,6 @@
 
     .dark .fc .fc-list-day-cushion {
         background: #18181b !important;
-    }
-
-    .dark .fi-wi-calendar-viewings .fi-section-header-heading,
-    .dark .fi-wi-calendar-viewings .fi-section .fi-section-heading {
-        color: #f4f4f5 !important;
     }
 </style>
 
