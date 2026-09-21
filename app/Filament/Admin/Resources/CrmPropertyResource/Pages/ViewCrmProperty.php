@@ -50,12 +50,6 @@ class ViewCrmProperty extends ViewRecord
         ]);
     }
 
-    /**
-     * Ārējais PDF mārketinga lapas ģenerators. Tam nav API/URL parametru, tāpēc
-     * integrācija ir saite, kas atver ģeneratoru jaunā cilnē no īpašuma lapas.
-     */
-    public const PDF_GENERATOR_URL = 'https://real-estate-pdf-offer-generator.vercel.app/';
-
     protected function getHeaderActions(): array
     {
         $actions = [];
@@ -68,7 +62,9 @@ class ViewCrmProperty extends ViewRecord
             ->label('PDF mārketings')
             ->icon('heroicon-o-document-arrow-down')
             ->color('gray')
-            ->url(self::PDF_GENERATOR_URL)
+            ->url(fn (): string => route('properties.marketing', [
+                'propertySlug' => $this->record->slug ?? $this->record->getKey(),
+            ]))
             ->openUrlInNewTab();
 
         $actions[] = Actions\EditAction::make()->label('Rediģēt');

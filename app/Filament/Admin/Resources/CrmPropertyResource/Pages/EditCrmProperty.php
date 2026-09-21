@@ -185,7 +185,9 @@ class EditCrmProperty extends EditRecord
                 ->label('PDF mārketings')
                 ->icon('heroicon-o-document-arrow-down')
                 ->color('gray')
-                ->url(ViewCrmProperty::PDF_GENERATOR_URL)
+                ->url(fn (): string => route('properties.marketing', [
+                    'propertySlug' => $this->record->slug ?? $this->record->getKey(),
+                ]))
                 ->openUrlInNewTab(),
             Actions\Action::make('open_site')
                 ->label('Atvērt mājaslapā')

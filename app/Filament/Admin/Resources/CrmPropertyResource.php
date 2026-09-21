@@ -625,7 +625,9 @@ class CrmPropertyResource extends Resource
                         ->label('PDF mārketings')
                         ->icon('heroicon-o-document-arrow-down')
                         ->color('gray')
-                        ->url(Pages\ViewCrmProperty::PDF_GENERATOR_URL)
+                        ->url(fn (CrmProperty $record): string => route('properties.marketing', [
+                            'propertySlug' => $record->slug ?? $record->getKey(),
+                        ]))
                         ->openUrlInNewTab(),
                     Actions\ViewAction::make()->label('Skatīt')->color('gray'),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),

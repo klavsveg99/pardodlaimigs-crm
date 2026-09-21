@@ -3,6 +3,7 @@
 use App\Http\Controllers\ClientAttachmentEmailController;
 use App\Http\Controllers\PropertyAttachmentEmailController;
 use App\Http\Controllers\PropertyGalleryDownloadController;
+use App\Http\Controllers\PropertyMarketingController;
 use App\Http\Controllers\RecordAttachmentEmailController;
 use App\Http\Controllers\TaskNotificationController;
 use App\Models\CrmProperty;
@@ -276,6 +277,11 @@ Route::get('/properties/{propertySlug}/gallery/download',
 Route::post('/properties/{propertySlug}/clients/{client}/send-email',
     [PropertyAttachmentEmailController::class, 'sendToClient']
 )->middleware(['auth', 'web'])->name('properties.clients.send-email');
+
+// ── "PDF mārketings": A4 lapa ar automātiski aizpildītiem īpašuma datiem ──
+Route::get('/properties/{propertySlug}/marketing',
+    [PropertyMarketingController::class, 'show']
+)->middleware(['auth', 'web'])->name('properties.marketing');
 
 // ── Viewing / Task attachments (associated client recipient) ──
 foreach (['viewings' => 'Viewing', 'tasks' => 'Task'] as $segment => $suffix) {
