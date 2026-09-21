@@ -127,8 +127,11 @@ class MyProfile extends Page
                     TextInput::make('office_address')->label('Biroja adrese')->maxLength(500)->placeholder('Rīga, Brīvības iela 1')->columnSpanFull(),
                     RichEditor::make('email_signature')
                         ->label('E-pasta paraksts')
-                        ->helperText('Tiek automātiski pievienots visiem e-pastiem, ko nosūtāt no CRM.')
-                        ->toolbarButtons(['bold', 'italic', 'underline', 'link', 'bulletList', 'orderedList'])
+                        ->helperText('Tiek automātiski pievienots visiem e-pastiem, ko nosūtāt no CRM. Var pievienot arī attēlu.')
+                        ->toolbarButtons(['bold', 'italic', 'underline', 'link', 'bulletList', 'orderedList', 'attachFiles'])
+                        ->fileAttachmentsDisk('public')
+                        ->fileAttachmentsDirectory('email-signatures')
+                        ->fileAttachmentsVisibility('public')
                         ->columnSpanFull(),
                 ])->columns(2),
             ]);
