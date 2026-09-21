@@ -60,8 +60,8 @@
         .stage { display: flex; justify-content: center; padding: 1.5rem 1rem 3rem; }
 
         .flyer {
-            width: 794px; min-height: 1123px; background: #ffffff;
-            padding: 45px; display: flex; flex-direction: column;
+            width: 794px; height: 1122px; min-height: 1122px; overflow: hidden;
+            background: #ffffff; padding: 45px; display: flex; flex-direction: column;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15);
             font-family: 'Source Sans Pro', system-ui, sans-serif;
         }
@@ -74,8 +74,8 @@
         .brand span { margin-left: 8px; font-size: 15px; font-weight: 700; color: #000000; white-space: nowrap; }
         .chip { background: #285854; color: #ffffff; padding: 6px 12px; font-size: 11px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
 
-        .flyer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; flex: 1; }
-        .col-left { display: flex; flex-direction: column; min-width: 0; }
+        .flyer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; flex: 1; min-height: 0; }
+        .col-left { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 
         h1.title { font-family: 'Maven Pro', sans-serif; font-size: 32px; font-weight: 700; line-height: 1.2; margin: 0 0 8px; color: #111827; outline: none; }
         .address { font-size: 18px; color: #6b7280; margin: 0 0 20px; outline: none; }
@@ -84,7 +84,7 @@
         .price { font-size: 32px; font-weight: 700; color: #111827; }
         .price-meta { font-size: 14px; color: #6b7280; margin-top: 4px; }
 
-        .desc { flex: 1; margin-bottom: 20px; overflow: hidden; font-size: 14px; line-height: 1.6; color: #4b5563; outline: none; }
+        .desc { flex: 1 1 auto; min-height: 0; margin-bottom: 16px; overflow: hidden; font-size: 14px; line-height: 1.6; color: #4b5563; outline: none; }
         .desc p { margin: 0 0 12px; word-break: break-word; }
         .desc ul, .desc ol { margin: 0 0 12px; padding-left: 1.1rem; }
 
@@ -120,11 +120,12 @@
             html, body { background: #ffffff; }
             .no-print { display: none !important; }
             .stage { padding: 0; }
-            .flyer { width: 100%; min-height: auto; box-shadow: none; padding: 14mm; }
+            .flyer { width: 100%; height: 296mm; min-height: 296mm; overflow: hidden; box-shadow: none; padding: 14mm; }
         }
         @media (max-width: 860px) {
-            .flyer { width: 100%; min-height: auto; padding: 20px; }
+            .flyer { width: 100%; height: auto; min-height: auto; overflow: visible; padding: 20px; }
             .flyer-grid { grid-template-columns: 1fr; }
+            .desc { overflow: visible; }
             .toolbar-hint { display: none; }
         }
     </style>
@@ -259,7 +260,8 @@
                         image: { type: 'jpeg', quality: 0.95 },
                         html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
                         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+                        // Fiksēta vienas A4 lapas lapa — nelaužam saturu pāri lapām.
+                        pagebreak: { mode: [] },
                     }).from(document.getElementById('flyer')).save();
                 } catch (error) {
                     console.warn('PDF ģenerēšana neizdevās, izmanto druku:', error);
