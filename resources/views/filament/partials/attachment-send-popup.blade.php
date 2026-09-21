@@ -125,7 +125,7 @@
                     this.error = data.message || 'Nosūtīšana neizdevās. Pārbaudiet saņēmēja adresi un failu izmēru.';
                     return;
                 }
-                const sent = { marked: data.marked || [], sentAt: data.sentAt || '' };
+                const sent = { marked: data.marked || [], sentAt: data.sentAt || '', toClient: !! data.to_client };
                 window.dispatchEvent(new CustomEvent('pdc-attachment-sent', { detail: sent }));
                 const to = this.to;
                 this.open = false;

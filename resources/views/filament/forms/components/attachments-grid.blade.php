@@ -59,6 +59,15 @@
         ? (($record instanceof \App\Models\Viewing ? 'viewing' : 'task').':'.$record->getKey())
         : null;
 
+    // Klienta e-pasts pēc konteksta — lai zinātu, vai sūtījums tiešām gāja
+    // klientam ("Nosūtīts klientam") vai citam saņēmējam ("Nosūtīts").
+    $propertyClientEmails = collect($propertyClients)
+        ->mapWithKeys(fn (array $c): array => [(int) $c['id'] => strtolower(trim((string) $c['email']))])
+        ->all();
+    $contextClientEmail = $isRecordSendable
+        ? strtolower(trim((string) ($recordClient?->email ?? '')))
+        : strtolower(trim((string) ($record?->email ?? '')));
+
     $sentAtByAttachment = [];
     if ($record && ($isSendable || $isPropertySendable || $isRecordSendable)) {
         \App\Models\Activity::query()
@@ -70,28 +79,42 @@
             )
             ->orderBy('created_at')
             ->get()
-            ->each(function ($activity) use (&$sentAtByAttachment, $isRecordSendable, $recordOwnerKey): void {
+            ->each(function ($activity) use (&$sentAtByAttachment, $isPropertySendable, $isRecordSendable, $recordOwnerKey, $propertyClientEmails, $contextClientEmail): void {
                 if ($isRecordSendable && ($activity->payload['owner'] ?? null) !== $recordOwnerKey) {
                     return;
                 }
+                $to = strtolower(trim((string) ($activity->payload['to'] ?? '')));
+                $clientEmail = $isPropertySendable
+                    ? ($propertyClientEmails[(int) ($activity->payload['client_id'] ?? 0)] ?? '')
+                    : $contextClientEmail;
+                $toClient = $to !== '' && $to === $clientEmail;
+
                 foreach ((array) ($activity->payload['files'] ?? []) as $attachmentId) {
                     if (is_int($attachmentId)) {
-                        $sentAtByAttachment[$attachmentId] = $activity->created_at?->format('d.m.Y H:i');
+                        $sentAtByAttachment[$attachmentId] = [
+                            'at' => $activity->created_at?->format('d.m.Y H:i'),
+                            'toClient' => $toClient,
+                        ];
                     }
                 }
             });
     }
 
-    $attachmentsJson = $existingAttachments->map(fn ($a) => [
-        'id' => $a->id,
-        'path' => $a->path,
-        'url' => $a->cacheBustedUrl(),
-        'name' => $a->original_name,
-        'mime' => $a->mime_type,
-        'size' => $a->size,
-        'sentAt' => $sentAtByAttachment[$a->id] ?? null,
-        'created' => $a->created_at?->format('d.m.Y'),
-    ])->values()->toJson();
+    $attachmentsJson = $existingAttachments->map(function ($a) use ($sentAtByAttachment): array {
+        $sent = $sentAtByAttachment[$a->id] ?? null;
+
+        return [
+            'id' => $a->id,
+            'path' => $a->path,
+            'url' => $a->cacheBustedUrl(),
+            'name' => $a->original_name,
+            'mime' => $a->mime_type,
+            'size' => $a->size,
+            'sentAt' => $sent['at'] ?? null,
+            'sentToClient' => (bool) ($sent['toClient'] ?? false),
+            'created' => $a->created_at?->format('d.m.Y'),
+        ];
+    })->values()->toJson();
 
     $originalNamesPath = preg_replace('/attachments$/', 'attachment_original_names', $statePath);
     $uid = 'att-' . str_replace('.', '-', $statePath);
@@ -331,12 +354,13 @@
                 detail: { file: { id: file.id, name: file.name }, all },
             }));
         },
-        // Marks files as sent (green Nosūtīts klientam badge) after the popup sends.
+        // Marks files as sent after the popup sends. sentToClient is true only
+        // when the recipient was the client's own e-mail address.
         markSent(detail) {
             if (!detail) return;
             (detail.marked || []).forEach(id => {
                 const f = this.files.find(x => x.id === id);
-                if (f) { f.sentAt = detail.sentAt || ''; }
+                if (f) { f.sentAt = detail.sentAt || ''; f.sentToClient = !!detail.toClient; }
             });
         },
         init() {
@@ -966,7 +990,7 @@
                     <span style="background: var(--pdc-primary); color: white; font-size: 0.72rem; font-weight: 600; padding: 0.22rem 0.5rem; border-radius: 0.35rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; max-width: 100%; box-shadow: 0 1px 4px rgba(0,0,0,0.25);" x-text="file.name"></span>
                 </div>
 
-                <div x-show="file.sentAt" title="Nosūtīts klientam"
+                <div x-show="file.sentAt" x-bind:title="file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts'"
                     style="position: absolute; bottom: 0.5rem; left: 0.5rem; z-index: 11; height: 1.6rem; width: 1.6rem; border-radius: 9999px; background: #16a34a; color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.35); box-shadow: 0 1px 4px rgba(0,0,0,0.3);"
                     x-cloak>
                     <svg x-show="file.sentAt" style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
@@ -1016,9 +1040,9 @@
                         <span x-show="file.created && sizeLabel(file.size)">·</span>
                         <span x-show="sizeLabel(file.size)" x-text="sizeLabel(file.size)"></span>
                         @if($isRowMode)
-                        <span x-bind:style="{ display: file.sentAt ? 'inline-flex' : 'none' }" class="fi-badge fi-color-success fi-color" style="display: inline-flex; align-items: center; gap: 0.25rem;" title="Nosūtīts klientam" x-cloak>
+                        <span x-bind:style="{ display: file.sentAt ? 'inline-flex' : 'none' }" x-bind:title="file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts'" class="fi-badge fi-color-success fi-color" style="display: inline-flex; align-items: center; gap: 0.25rem;" x-cloak>
                             <svg style="width: 0.8rem; height: 0.8rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-                            <span>Nosūtīts klientam</span>
+                            <span x-text="file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts'">Nosūtīts klientam</span>
                         </span>
                         @endif
                     </div>

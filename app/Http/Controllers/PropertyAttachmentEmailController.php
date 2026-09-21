@@ -186,6 +186,7 @@ class PropertyAttachmentEmailController extends Controller
         return response()->json([
             'ok' => true,
             'to' => $to,
+            'to_client' => strcasecmp($to, trim((string) $client->email)) === 0,
             'marked' => $selected->pluck('id')->all(),
             'sentAt' => now()->format('d.m.Y'),
         ]);
