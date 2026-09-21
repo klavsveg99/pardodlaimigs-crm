@@ -14,7 +14,6 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -61,6 +60,9 @@ class UserResource extends Resource
                     ->native(false)
                     ->live()
                     ->dehydrateStateUsing(fn ($state) => $state === 'agent' ? 'aģents' : $state),
+            ])->columns(2),
+
+            Section::make('Parole')->schema([
                 Forms\Components\TextInput::make('password')
                     ->label('Parole')
                     ->hint(fn (string $operation): ?string => $operation === 'edit' ? 'Atstāj tukšu, ja nemainīt' : null)
@@ -99,7 +101,6 @@ class UserResource extends Resource
                     ->fileAttachmentsDisk('public')
                     ->fileAttachmentsDirectory('email-signatures')
                     ->fileAttachmentsVisibility('public')
-                    ->visible(fn (Get $get): bool => ($get('role') ?? 'aģents') !== 'admin')
                     ->columnSpanFull(),
             ])->columns(2),
         ]);

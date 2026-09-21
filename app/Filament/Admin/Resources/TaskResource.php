@@ -65,7 +65,7 @@ class TaskResource extends Resource
                 ->minDate(fn (string $operation) => $operation === 'create' ? now() : null)
                 ->required(),
             Forms\Components\Select::make('assigned_user_id')->label('Aģents')
-                ->relationship('assignedTo', 'name')->required()->searchable()->preload()->optionsLimit(20),
+                ->relationship('assignedTo', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())->required()->searchable()->preload()->optionsLimit(20),
             Forms\Components\Select::make('izpilditajs_id')->label('Izpildītājs')
                 ->relationship('izpilditajs', 'name')
                 ->getOptionLabelUsing(fn ($value): ?string => Izpilditajs::find($value)?->display_label)

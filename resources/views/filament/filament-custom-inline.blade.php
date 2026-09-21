@@ -137,23 +137,19 @@
     flex: 0 0 auto !important;
 }
 
-.fi-section-header-heading,
+/* Section titles are neutral (gray/black) everywhere — form sections,
+   relation managers and dashboard widgets all share the same heading color.
+   Only the page h1 keeps the brand green. */
+.fi-section-header-heading {
+    color: var(--gray-950) !important;
+}
+
 h1.fi-header-heading {
     color: var(--pdc-primary-darker) !important;
 }
 
-/* Chart widget (main dashboard "Komisijas tendence") heading must match the
-   neutral style of the other dashboard table-widget section titles. */
-.fi-wi-chart .fi-section-header-heading {
-    color: var(--gray-950) !important;
-}
-
 .dark .fi-section-header-heading,
 .dark h1.fi-header-heading {
-    color: #f9fafb !important;
-}
-
-.dark .fi-wi-chart .fi-section-header-heading {
     color: #f9fafb !important;
 }
 
@@ -1209,6 +1205,7 @@ html.dark .rounded-xl .text-emerald-900 {
    Look matches the view page info cards (rounded-xl, bg-gray-50). The
    whole card is a clickable link to the client view page. */
 .pdc-client-card {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1219,8 +1216,6 @@ html.dark .rounded-xl .text-emerald-900 {
     background: #f9fafb;
     padding: 1rem;
     cursor: pointer;
-    text-decoration: none;
-    color: inherit;
     transition: background 0.15s, border-color 0.15s;
 }
 .pdc-client-card:hover {
@@ -1232,6 +1227,23 @@ html.dark .rounded-xl .text-emerald-900 {
     align-items: center;
     gap: 0.75rem;
     min-width: 0;
+    flex: 1 1 auto;
+    color: inherit;
+    text-decoration: none;
+}
+/* Stretched link: the whole card opens the client, while the send button
+   stays clickable above the overlay. */
+.pdc-client-main::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+}
+.pdc-client-send {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    align-self: center;
+    margin-left: auto;
 }
 .pdc-client-avatar {
     width: 2.5rem;
@@ -1263,6 +1275,7 @@ html.dark .rounded-xl .text-emerald-900 {
     margin: 0;
     font-size: 0.75rem;
     color: #6b7280;
+    word-break: break-word;
 }
 .pdc-client-badge {
     font-size: 0.7rem !important;

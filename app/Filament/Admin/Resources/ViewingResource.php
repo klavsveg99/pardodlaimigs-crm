@@ -80,7 +80,7 @@ class ViewingResource extends Resource
                 ->required(),
             Forms\Components\TextInput::make('duration_min')->label('Ilgums (min)')->numeric()->default(30),
             Forms\Components\Select::make('agent_user_id')->label('Aģents')
-                ->relationship('agent', 'name')->searchable()->preload()->optionsLimit(20),
+                ->relationship('agent', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())->searchable()->preload()->optionsLimit(20),
             Forms\Components\Select::make('status')->label('Statuss')->options([
                 'scheduled' => 'Ieplānota',
                 'done' => 'Notikusi',

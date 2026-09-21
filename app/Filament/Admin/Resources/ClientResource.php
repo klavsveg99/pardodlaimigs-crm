@@ -98,7 +98,7 @@ class ClientResource extends Resource
                         ->columnSpanFull(),
                     Forms\Components\Select::make('owner_user_id')
                         ->label('Atbildīgais aģents')
-                        ->relationship('owner', 'name')
+                        ->relationship('owner', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())
                         ->searchable()
                         ->preload()
                         ->columnSpanFull(),
@@ -173,7 +173,7 @@ class ClientResource extends Resource
                     fn ($query) => $query->whereNull('gdpr_consent_at')->whereNull('gdpr_erased_at')
                 ),
                 Tables\Filters\SelectFilter::make('owner_user_id')->label('Aģents')
-                    ->relationship('owner', 'name'),
+                    ->relationship('owner', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable()),
             ])
             ->actions([
                 Actions\ActionGroup::make([

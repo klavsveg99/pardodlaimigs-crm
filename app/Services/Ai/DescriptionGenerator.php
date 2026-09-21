@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Ai;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
@@ -23,10 +24,13 @@ class DescriptionGenerator
 
     public const MODE_PERSUASIVE = 'persuasive';
 
+    /** PDF mārketinga apraksta maksimālais teksts (bez HTML), kas saturīgi ietilpst A4 bukletā. */
+    public const FLYER_MAX_CHARS = 500;
+
     /**
      * @param  array<string, mixed>  $context  CRM form datos (title, category, ...)
      * @param  array<string, string|null>  $notes  ai_notes (advantages, technical, investment, extra)
-     * @return array{description: string, description_ss: string, title: string, facebook: string, instagram: string}
+     * @return array{description: string, description_ss: string, title: string, facebook: string, instagram: string, pdf: string}
      */
     public function generate(array $context, array $notes, string $mode = self::MODE_FULL, ?string $currentDescription = null): array
     {
@@ -53,7 +57,29 @@ class DescriptionGenerator
             'title' => (string) $payload['title'],
             'facebook' => (string) $payload['facebook'],
             'instagram' => (string) $payload['instagram'],
+            // PDF variants ir papildu lauks — ja modelis to aizmirst, pārējie
+            // teksti netiek zaudēti; PDF ģeneratorā paliek pieejama atsevišķā
+            // "AI ģenerēt" poga.
+            'pdf' => is_string($payload['pdf'] ?? null) ? (string) $payload['pdf'] : '',
         ];
+    }
+
+    /**
+     * Atsevišķi (pēc pieprasījuma) ģenerē tikai PDF mārketinga aprakstu, ja
+     * pilnais AI tekstu komplekts vēl nav ģenerēts vai lietotājs atver PDF
+     * ģeneratoru pirms tam. Atgriež ierobežota HTML virkni.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    public function generateFlyerDescription(array $context): string
+    {
+        $payload = $this->callModel($this->buildFlyerPrompt($context));
+
+        if (! isset($payload['pdf']) || ! is_string($payload['pdf'])) {
+            throw new RuntimeException('AI atbildei trūkst lauka: pdf');
+        }
+
+        return (string) $payload['pdf'];
     }
 
     public static function provider(): ?string
@@ -85,7 +111,7 @@ class DescriptionGenerator
 
         $response = Http::timeout(90)
             ->retry([1000, 2000, 4000], function ($exception) {
-                return $exception instanceof \Illuminate\Http\Client\RequestException
+                return $exception instanceof RequestException
                     && $exception->response
                     && $exception->response->status() === 429;
             })
@@ -124,7 +150,7 @@ class DescriptionGenerator
         $response = Http::withToken($key)
             ->timeout(90)
             ->retry([1000, 2000, 4000], function ($exception) {
-                return $exception instanceof \Illuminate\Http\Client\RequestException
+                return $exception instanceof RequestException
                     && $exception->response
                     && $exception->response->status() === 429;
             })
@@ -171,7 +197,7 @@ class DescriptionGenerator
         }
 
         if (! is_array($decoded)) {
-            \Illuminate\Support\Facades\Log::warning('AI non-JSON response', [
+            Log::warning('AI non-JSON response', [
                 'text' => mb_substr($text, 0, 600),
                 'text_len' => mb_strlen($text),
                 'json_error' => json_last_error_msg(),
@@ -184,19 +210,7 @@ class DescriptionGenerator
 
     private function buildPrompt(array $context, array $notes, string $mode, ?string $currentDescription): string
     {
-        $data = [
-            'nosaukums' => (string) ($context['title'] ?? ''),
-            'kategorija' => (string) ($context['category'] ?? ''),
-            'statuss' => (string) ($context['status'] ?? ''),
-            'cena_eur' => (string) ($context['price_eur'] ?? ''),
-            'istabas' => (string) ($context['beds'] ?? ''),
-            'vannas_istabas' => (string) ($context['baths'] ?? ''),
-            'platiba_m2' => (string) ($context['size_m2'] ?? ''),
-            'zemes_platiba_m2' => (string) ($context['land_m2'] ?? ''),
-            'kadastra_nr' => (string) ($context['kadastra_nr'] ?? ''),
-            'pilseta' => (string) ($context['city'] ?? ''),
-            'adrese' => (string) ($context['address'] ?? ''),
-        ];
+        $data = $this->contextData($context);
 
         $dataJson = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $notesJson = json_encode(array_map(strval(...), $notes), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -253,6 +267,51 @@ ATGRIEZT TIKAI JSON ar šādām atslēgām:
 - "title": īss sludinājuma virsraksta variants (maks. ~60 rakstzīmes, bez cenas, latviski).
 - "facebook": Facebook ieraksts (600–900 rakstzīmes); strukturēts: piesaistoša ievadrinda → 2–4 teikumi par īpašumu → bloks "Galvenie fakti:" ar 3–6 rindām (cena/platība/istabas/atradne — tikai aizpildītie dati) → noslēguma aicinājums pieteikt apskati un kontaktinformācijas akcents. Maksimums 2–3 emoji visā tekstā, tikai piemērotās vietās (piem. ievadrindā un aicinājumā). Bez izdomātiem faktiem.
 - "instagram": īss uzrunājošs Instagram/Reels apraksts (1-3 teikumi, 3-6 atbilstoši hashtag, piem. #nekustamieipasumi #pardodlaimigs).
+- "pdf": īss mārketinga apraksts A4 PDF bukletam. TIKAI latviešu valodā, BEZ virsraksta un emocijzīmēm. MAKSIMUMU 500 rakstzīmes (ieskaitot atstarpes) — skaiti rakstzīmes pirms atbildes. Formatējums: tikai <p>, <br>, <strong>, <em>, <u>, <ul>, <li> tagi (bez Markdown). Struktūra: 1-2 īsas ievada rindkopas ar spēcīgākajiem argumentiem, tad 3-5 aizzīmes (<ul><li>) ar galvenajiem faktiem (cena, platība, istabas, atrašanās vieta), tad viena noslēguma aicinājuma rinda. Bez izdomātiem faktiem.
+PROMPT;
+    }
+
+    /** @return array<string, mixed> */
+    private function contextData(array $context): array
+    {
+        return [
+            'nosaukums' => (string) ($context['title'] ?? ''),
+            'kategorija' => (string) ($context['category'] ?? ''),
+            'statuss' => (string) ($context['status'] ?? ''),
+            'cena_eur' => (string) ($context['price_eur'] ?? ''),
+            'istabas' => (string) ($context['beds'] ?? ''),
+            'vannas_istabas' => (string) ($context['baths'] ?? ''),
+            'platiba_m2' => (string) ($context['size_m2'] ?? ''),
+            'zemes_platiba_m2' => (string) ($context['land_m2'] ?? ''),
+            'kadastra_nr' => (string) ($context['kadastra_nr'] ?? ''),
+            'pilseta' => (string) ($context['city'] ?? ''),
+            'adrese' => (string) ($context['address'] ?? ''),
+        ];
+    }
+
+    /**
+     * Fokusēts prompts tikai PDF bukleta aprakstam (izmanto PDF ģeneratora
+     * "AI ģenerēt" pogu, ja pilnais komplekts vēl nav ģenerēts).
+     */
+    private function buildFlyerPrompt(array $context): string
+    {
+        $dataJson = json_encode($this->contextData($context), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $max = self::FLYER_MAX_CHARS;
+
+        return <<<PROMPT
+Tu esi nekustamo īpašumu aģentūras "Pārdod Laimīgs" tekstu autors. Raksti latviešu valodā.
+
+Izveido ĪSU mārketinga aprakstu A4 PDF bukletam (klientam paredzēts izdrukājams buklets).
+- MAKSIMUMU {$max} rakstzīmes (ieskaitot atstarpes) — skaiti rakstzīmes pirms atbildes un iekļaujies limitā.
+- TIKAI latviešu valodā. Bez virsraksta, bez emocijzīmēm.
+- Formatējums: tikai <p>, <br>, <strong>, <em>, <u>, <ul>, <li> tagi. Bez Markdown, bez atribūtiem.
+- Struktūra: 1-2 īsas ievada rindkopas ar spēcīgākajiem pārdošanas argumentiem, tad 3-5 aizzīmes (<ul><li>) ar galvenajiem faktiem (cena, platība, istabas, atrašanās vieta — tikai aizpildītie dati), tad viena noslēguma aicinājuma rinda.
+- Izmanto tikai CRM datos esošos faktus — NEDRĪKST izdomāt neko (ne attālumus, ne infrastruktūru, ne apkuri).
+
+DATI (CRM formas lauki):
+{$dataJson}
+
+ATGRIEZT TIKAI JSON: {"pdf": "<p>...</p><ul><li>...</li></ul>"}
 PROMPT;
     }
 }

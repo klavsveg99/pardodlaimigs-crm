@@ -283,6 +283,10 @@ Route::get('/properties/{propertySlug}/marketing',
     [PropertyMarketingController::class, 'show']
 )->middleware(['auth', 'web'])->name('properties.marketing');
 
+Route::post('/properties/{propertySlug}/marketing/ai',
+    [PropertyMarketingController::class, 'generateAi']
+)->middleware(['auth', 'web'])->name('properties.marketing.ai');
+
 // ── Viewing / Task attachments (associated client recipient) ──
 foreach (['viewings' => 'Viewing', 'tasks' => 'Task'] as $segment => $suffix) {
     Route::post("/{$segment}/{id}/attachments/upload",

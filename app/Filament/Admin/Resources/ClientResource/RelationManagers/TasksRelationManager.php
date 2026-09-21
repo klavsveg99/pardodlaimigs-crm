@@ -8,6 +8,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 class TasksRelationManager extends RelationManager
 {
@@ -24,7 +25,7 @@ class TasksRelationManager extends RelationManager
             Forms\Components\Textarea::make('body')->label('Apraksts')->rows(3),
             Forms\Components\DateTimePicker::make('due_at')->label('Līdz')->native(false),
             Forms\Components\Select::make('assigned_user_id')->label('Aģents')
-                ->relationship('assignedTo', 'name')->searchable(),
+                ->relationship('assignedTo', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())->searchable(),
         ]);
     }
 

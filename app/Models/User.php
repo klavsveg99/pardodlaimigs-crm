@@ -9,6 +9,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -57,6 +58,17 @@ class User extends Authenticatable implements FilamentUser
     public function isPhoto(): bool
     {
         return ($this->role ?? null) === 'photo';
+    }
+
+    /**
+     * Lietotāji, kurus var izvēlēties aģentu izvēlnēs. Izslēdz "Fotogrāfs"
+     * lomu, jo fotogrāfu nevar piešķirt kā atbildīgo aģentu.
+     */
+    public function scopeAssignable(Builder $query): Builder
+    {
+        return $query->where(function (Builder $query): void {
+            $query->where('role', '!=', 'photo')->orWhereNull('role');
+        });
     }
 
     public function getRoleLabelAttribute(): string

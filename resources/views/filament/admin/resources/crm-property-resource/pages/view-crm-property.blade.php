@@ -230,21 +230,19 @@
         @if ($record->clients->isNotEmpty())
             <div class="flex flex-col gap-4">
                 @foreach ($record->clients as $client)
-                    <div style="display: flex; align-items: stretch; gap: 0.5rem; flex-wrap: wrap;">
+                    <div class="pdc-client-card">
                         <a href="{{ \App\Filament\Admin\Resources\ClientResource::getUrl('view', ['record' => $client]) }}"
-                           class="pdc-client-card" style="flex: 1 1 auto; min-width: 0;">
-                            <div class="pdc-client-main">
-                                <div class="pdc-client-avatar">{{ strtoupper(mb_substr($client->name, 0, 1)) }}</div>
-                                <div class="pdc-client-info">
-                                    <p class="pdc-client-name">{{ $client->name }}</p>
-                                    <p class="pdc-client-contact">{{ implode(' · ', array_filter([\App\Support\PhoneFormat::display($client->phone ?? null), $client->email])) ?: '—' }}</p>
-                                    <x-filament::badge color="gray" class="pdc-client-badge">
-                                        {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
-                                    </x-filament::badge>
-                                </div>
+                           class="pdc-client-main">
+                            <div class="pdc-client-avatar">{{ strtoupper(mb_substr($client->name, 0, 1)) }}</div>
+                            <div class="pdc-client-info">
+                                <p class="pdc-client-name">{{ $client->name }}</p>
+                                <p class="pdc-client-contact">{{ implode(' · ', array_filter([\App\Support\PhoneFormat::display($client->phone ?? null), $client->email])) ?: '—' }}</p>
+                                <x-filament::badge color="gray" class="pdc-client-badge">
+                                    {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
+                                </x-filament::badge>
                             </div>
                         </a>
-                        @if ($client->email && ! auth()->user()?->isPhoto())
+                        @if ($client->email && ! auth()->user()?->isPhoto() && $record->status === 'sold')
                             <button
                                 type="button"
                                 data-client-id="{{ $client->id }}"
@@ -252,8 +250,8 @@
                                 data-client-email="{{ $client->email }}"
                                 data-send-url="{{ route('properties.clients.send-email', ['propertySlug' => $record->slug ?? $record->getKey(), 'client' => $client->id]) }}"
                                 x-on:click="window.dispatchEvent(new CustomEvent('pdc-open-client-email', { detail: { id: Number($el.dataset.clientId), name: $el.dataset.clientName, email: $el.dataset.clientEmail, url: $el.dataset.sendUrl } }))"
-                                class="fi-btn fi-size-sm fi-color fi-color-primary"
-                                style="flex: none; align-self: center; display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.35rem; white-space: nowrap;"
+                                class="fi-btn fi-size-sm fi-color fi-color-primary pdc-client-send"
+                                style="display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.35rem; white-space: nowrap;"
                                 title="Nosūtīt e-pastu"
                             >
                                 <svg style="width: 0.9rem; height: 0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>

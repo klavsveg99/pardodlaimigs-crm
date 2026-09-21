@@ -45,11 +45,11 @@
         ])->values()->all()
         : [];
     // Records owned by a client (viewings/tasks): recipient from the
-    // associated client; no send buttons without one. Property sending is an
-    // edit-page action only — the property view page shows a read-only list.
+    // associated client; no send buttons without one. Property documents can
+    // be emailed to an associated client from both the edit and view pages.
     $recordClient = $isRecordSendable ? $record?->client : null;
     $canSend = $isPropertySendable
-        ? (count($propertyClients) > 0 && ! $isView)
+        ? (count($propertyClients) > 0)
         : ($isRecordSendable ? (bool) $recordClient : $isSendable);
 
     // Mark files that were previously emailed ("Nosūtīts klientam") from the

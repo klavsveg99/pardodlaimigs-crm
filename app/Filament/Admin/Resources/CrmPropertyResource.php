@@ -176,17 +176,25 @@ class CrmPropertyResource extends Resource
                     Forms\Components\DatePicker::make('sale_started_at')
                         ->label('Pārdošanas sākuma datums')
                         ->native(false)
-                        ->displayFormat('d.m.Y'),
+                        ->displayFormat('d.m.Y')
+                        ->required()
+                        ->validationMessages([
+                            'required' => 'Pārdošanas sākuma datums ir obligāts lauks.',
+                        ]),
 
                     Forms\Components\Select::make('partnership_months')
                         ->label('Sadarbības līguma periods')
                         ->options(CrmProperty::PARTNERSHIP_PERIODS)
                         ->placeholder('Nav norādīts')
-                        ->native(false),
+                        ->native(false)
+                        ->required()
+                        ->validationMessages([
+                            'required' => 'Sadarbības līguma periods ir obligāts lauks.',
+                        ]),
 
                     Forms\Components\Select::make('owner_user_id')
                         ->label('Aģents')
-                        ->relationship('owner', 'name')
+                        ->relationship('owner', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())
                         ->searchable()
                         ->preload(),
                 ])->columnSpan(1),
@@ -608,7 +616,7 @@ class CrmPropertyResource extends Resource
                 Tables\Filters\SelectFilter::make('status')->label('Statuss')->options(CrmProperty::STATUSES)->multiple()->preload()->searchable(),
                 Tables\Filters\SelectFilter::make('category')->label('Kategorija')->options(CrmProperty::CATEGORIES)->multiple()->preload()->searchable(),
                 Tables\Filters\SelectFilter::make('owner_user_id')->label('Aģents')
-                    ->relationship('owner', 'name')
+                    ->relationship('owner', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())
                     ->searchable()
                     ->preload(),
             ])
