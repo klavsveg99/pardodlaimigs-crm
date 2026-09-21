@@ -72,7 +72,39 @@ class PropertyMarketingController extends Controller
                 ? (int) round((float) $property->price_eur / (int) $property->size_m2)
                 : null,
             'ctaUrl' => $property->public_url,
+            'descriptionText' => $this->flyerDescription($property),
         ]);
+    }
+
+    /**
+     * PDF mārketinga apraksts: galvenokārt no AI ģenerētā Facebook teksta
+     * (`ai_result.facebook`), bez emocijzīmēm; ja tā nav, izmanto parasto
+     * īpašuma aprakstu. HTML tiek pārvērsts vienkāršā tekstā ar rindkopām.
+     */
+    private function flyerDescription(CrmProperty $property): string
+    {
+        $ai = is_array($property->ai_result) ? $property->ai_result : [];
+        $source = trim((string) ($ai['facebook'] ?? ''));
+        if ($source === '') {
+            $source = (string) $property->description;
+        }
+
+        $text = preg_replace(['/<br\s*\/?>/i', '/<\/(p|div|li|h[1-6])>/i'], "\n", $source) ?? $source;
+        $text = html_entity_decode(strip_tags($text));
+        $text = $this->stripEmojis($text);
+        $text = preg_replace('/[ \t]+/', ' ', $text) ?? $text;
+        $text = preg_replace('/ ?\n ?/', "\n", $text) ?? $text;
+        $text = preg_replace('/\n{3,}/', "\n\n", $text) ?? $text;
+
+        return trim($text);
+    }
+
+    /** Noņem emocijzīmes, nemainot parasto tekstu (€, domuzīmes, pēdiņas paliek). */
+    private function stripEmojis(string $text): string
+    {
+        $pattern = '/[\x{1F000}-\x{1FAFF}\x{2600}-\x{27BF}\x{2B00}-\x{2BFF}\x{FE0F}\x{200D}]/u';
+
+        return preg_replace($pattern, '', $text) ?? $text;
     }
 
     /** Attēla URL, kas html2canvas var ielādēt bez CORS problēmām (same-origin). */

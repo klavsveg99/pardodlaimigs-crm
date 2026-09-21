@@ -1,11 +1,7 @@
 @php
-    // Apraksts redaktoram kā vienkāršs teksts (rindkopas ar tukšām rindām).
-    $withBreaks = preg_replace(
-        ['/<br\s*\/?>/i', '/<\/(p|div|li|h[1-6])>/i'],
-        "\n",
-        (string) $property->description
-    );
-    $descriptionText = trim(preg_replace('/\n{3,}/', "\n\n", html_entity_decode(strip_tags((string) $withBreaks))));
+    // Apraksts nāk no kontrollera (AI Facebook teksts bez emocijzīmēm, citādi
+    // parastais apraksts) kā vienkāršs teksts ar rindkopām.
+    $descriptionText = trim((string) ($descriptionText ?? ''));
 
     $addressLine = trim(implode(', ', array_filter([$property->address, $property->city])));
     $priceValue = (float) $property->price_eur > 0 ? number_format((float) $property->price_eur, 0, ',', ' ') : '';
