@@ -896,7 +896,7 @@
                     class="fi-btn fi-size-sm fi-color fi-color-gray fi-outlined"
                     style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; flex-direction: row; white-space: nowrap;"
                 >
-                    <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2m-16-5l8 8 8-8m-16 0V4h16v10"/></svg>
+                    <i class="fa-solid fa-download" style="font-size: 0.95rem;"></i>
                     <span>Lejupielādēt visus</span>
                 </a>
             @endif
@@ -1217,7 +1217,7 @@
                 <span style="background: var(--pdc-primary); color:white; font-size:0.78rem; font-weight:600; padding:0.3rem 0.7rem; border-radius:0.5rem; max-width: 60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" x-text="lightboxFile?.name"></span>
                 <a x-bind:href="lightboxFile?.url" target="_blank"
                    style="display: inline-flex; align-items: center; gap: 0.3rem; color: white; font-size: 0.8rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 9999px; background: var(--pdc-primary); text-decoration: none; border: 1px solid rgba(255,255,255,0.3);">
-                    <svg style="width: 0.9rem; height: 0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2m-16-5l8 8 8-8m-16 0V4h16v10"/></svg>
+                    <i class="fa-solid fa-download" style="font-size: 0.85rem;"></i>
                     <span>Lejupielādēt</span>
                 </a>
             </div>
