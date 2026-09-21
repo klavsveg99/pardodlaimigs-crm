@@ -1061,7 +1061,7 @@
                             <span>Nosūtīt</span>
                         </button>
                     @endif
-                    @if($isDeletable && ((!$isView) || $isSendable))
+                    @if($isDeletable && !$isView)
                         <button
                             type="button"
                             x-on:click.stop="removeFile(file.id)"
