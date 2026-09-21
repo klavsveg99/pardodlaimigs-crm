@@ -507,15 +507,29 @@
                     return new Promise(function (resolve) { img.onload = img.onerror = resolve; });
                 }));
             }
-            function buildCaptureNode() {
-                const clone = flyer.cloneNode(true);
-                clone.id = 'flyer-capture';
-                clone.classList.add('flyer-capture');
-                clone.style.position = 'fixed';
-                clone.style.left = '-10000px';
-                clone.style.top = '0';
-                document.body.appendChild(clone);
-                return clone;
+            // Uz laiku pārslēdz īsto priekšskatījuma lapu A4 režīmā (bez
+            // mērogošanas), lai html2canvas to uzzīmētu pilnā izmērā.
+            // Klons ārpus ekrāna netiek izmantots — tas radīja tukšu PDF.
+            const scalerEl = document.getElementById('preview-scaler');
+            const stageEl = document.querySelector('.preview-stage');
+            async function withCaptureMode(run) {
+                const previous = {
+                    transform: scalerEl ? scalerEl.style.transform : null,
+                    width: stageEl ? stageEl.style.width : null,
+                    height: stageEl ? stageEl.style.height : null,
+                };
+                flyer.classList.add('flyer-capture');
+                if (scalerEl) { scalerEl.style.transform = 'none'; }
+                if (stageEl) { stageEl.style.width = '794px'; stageEl.style.height = '1122px'; }
+                void flyer.offsetHeight;
+                try {
+                    return await run();
+                } finally {
+                    flyer.classList.remove('flyer-capture');
+                    if (scalerEl) { scalerEl.style.transform = previous.transform; }
+                    if (stageEl) { stageEl.style.width = previous.width; stageEl.style.height = previous.height; }
+                    fitPreview();
+                }
             }
 
             window.pdcDownloadPdf = async function () {
@@ -526,25 +540,25 @@
                 button.disabled = true;
                 label.textContent = 'Ģenerē...';
                 if (status) { status.textContent = ''; }
-                const capture = buildCaptureNode();
                 try {
                     await ensureHtml2Pdf();
-                    await waitForImages(capture);
-                    await window.html2pdf().set({
-                        margin: 0,
-                        filename: @json($filename),
-                        image: { type: 'jpeg', quality: 0.95 },
-                        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0 },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                        pagebreak: { mode: [] },
-                    }).from(capture).save();
+                    await withCaptureMode(async function () {
+                        await waitForImages(flyer);
+                        await window.html2pdf().set({
+                            margin: 0,
+                            filename: @json($filename),
+                            image: { type: 'jpeg', quality: 0.95 },
+                            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0 },
+                            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                            pagebreak: { mode: [] },
+                        }).from(flyer).save();
+                    });
                     if (status) { status.textContent = 'PDF sagatavots.'; }
                 } catch (error) {
                     console.warn('PDF ģenerēšana neizdevās:', error);
                     if (status) { status.textContent = 'Neizdevās ģenerēt PDF — atverama drukas forma.'; }
                     window.print();
                 } finally {
-                    capture.remove();
                     button.disabled = false;
                     label.textContent = original;
                 }
