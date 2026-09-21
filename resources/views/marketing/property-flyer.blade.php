@@ -128,6 +128,12 @@
             .desc { overflow: visible; }
             .toolbar-hint { display: none; }
         }
+
+        /* PDF vienmēr tiek veidots no fiksēta A4 klona, tāpēc mobilajā
+           skatā izmērs un kolonnas tiek atjaunotas uz laiku. */
+        .flyer-capture { width: 794px !important; height: 1122px !important; min-height: 1122px !important; overflow: hidden !important; padding: 45px !important; box-shadow: none !important; }
+        .flyer-capture .flyer-grid { grid-template-columns: 1fr 1fr !important; }
+        .flyer-capture .desc { overflow: hidden !important; }
     </style>
 </head>
 <body>
@@ -244,6 +250,18 @@
                 });
             }
 
+            // Fiksēta A4 klona izveide — PDF izskatās vienādi arī mobilajā skatā.
+            function buildCaptureNode() {
+                const clone = document.getElementById('flyer').cloneNode(true);
+                clone.id = 'flyer-capture';
+                clone.classList.add('flyer-capture');
+                clone.style.position = 'fixed';
+                clone.style.left = '-10000px';
+                clone.style.top = '0';
+                document.body.appendChild(clone);
+                return clone;
+            }
+
             window.pdcDownloadPdf = async function () {
                 const button = document.getElementById('btn-download');
                 const label = button.querySelector('span');
@@ -252,6 +270,7 @@
                 document.querySelectorAll('[contenteditable]').forEach(function (el) { el.blur(); });
                 button.disabled = true;
                 label.textContent = 'Ģenerē...';
+                const capture = buildCaptureNode();
                 try {
                     await loadHtml2Pdf();
                     await window.html2pdf().set({
@@ -262,11 +281,12 @@
                         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                         // Fiksēta vienas A4 lapas lapa — nelaužam saturu pāri lapām.
                         pagebreak: { mode: [] },
-                    }).from(document.getElementById('flyer')).save();
+                    }).from(capture).save();
                 } catch (error) {
                     console.warn('PDF ģenerēšana neizdevās, izmanto druku:', error);
                     window.print();
                 } finally {
+                    capture.remove();
                     button.disabled = false;
                     label.textContent = original;
                 }
