@@ -35,6 +35,15 @@ trait PievienotKlientuRelationAction
             ->color('gray')
             ->icon('heroicon-o-user-plus')
             ->modalHeading('Pievienot klientu')
+            // Rāda tikai, kamēr trūkst attiecīgās lomas: pirms pārdošanas —
+            // pārdevēja; pārdotam — pircēja.
+            ->visible(function (): bool {
+                try {
+                    return $this->getPievienotKlientuProperty()->canAttachClient();
+                } catch (\Throwable) {
+                    return false;
+                }
+            })
             ->modalSubmitActionLabel('Pievienot')
             ->extraModalFooterActions([
                 Actions\Action::make('izveidot_jaunu_klientu')

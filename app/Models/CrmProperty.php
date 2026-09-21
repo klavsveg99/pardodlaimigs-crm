@@ -152,6 +152,18 @@ class CrmProperty extends Model
             ->withTimestamps();
     }
 
+    /**
+     * Vai īpašumam vēl var piesaistīt klientu. Pirms pārdošanas tikai, ja nav
+     * pārdevēja; pārdotam — ja nav pircēja. Kad attiecīgā loma jau aizpildīta,
+     * "Pievienot klientu" poga vairs netiek rādīta.
+     */
+    public function canAttachClient(): bool
+    {
+        $relation = $this->status === 'sold' ? 'buyer' : 'seller';
+
+        return ! $this->clients()->wherePivot('relation', $relation)->exists();
+    }
+
     public function attachments(): MorphMany
     {
         return $this->morphMany(Attachment::class, 'attachable')->orderBy('sort_order');

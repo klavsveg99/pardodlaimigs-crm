@@ -215,7 +215,7 @@
     </x-filament::section>
 
     <x-filament::section heading="Saistītie klienti">
-        @if (! auth()->user()?->isPhoto())
+        @if (! auth()->user()?->isPhoto() && $record->canAttachClient())
             <x-slot:afterHeader>
                 <div wire:click="mountAction('piesaisit_klientu')"
                      class="fi-btn fi-size-sm fi-color fi-color-gray fi-outlined"
