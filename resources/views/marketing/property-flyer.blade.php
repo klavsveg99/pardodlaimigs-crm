@@ -22,6 +22,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $property->title }} · PDF mārketings</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/favicon-32x32.jpg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&family=Maven+Pro:wght@400;700&display=swap" rel="stylesheet">
@@ -43,6 +44,7 @@
             box-shadow: 0 1px 4px rgba(0,0,0,0.04);
         }
         .topbar .title { font-family: 'Maven Pro', sans-serif; font-weight: 700; font-size: 1rem; margin-right: 0.25rem; }
+        .topbar .topbar-logo { height: 2rem; width: 2rem; object-fit: contain; flex: none; }
         .topbar .spacer { flex: 1 1 auto; }
 
         .btn {
@@ -226,6 +228,7 @@
 </head>
 <body>
     <div class="topbar no-print">
+        <img class="topbar-logo" src="{{ asset('images/favicon-180x180.jpg') }}" alt="Pārdod Laimīgs · CRM">
         <span class="title">PDF mārketings</span>
         <button type="button" id="btn-download" class="btn btn-primary" onclick="pdcDownloadPdf()">
             <i class="fa-solid fa-download"></i><span>Lejupielādēt PDF</span>
