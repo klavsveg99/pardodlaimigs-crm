@@ -2,7 +2,7 @@
     // Apraksts nāk no kontrollera: AI PDF variants (ierobežots HTML) vai
     // Facebook/parastā apraksta atvasinājums. Vienmēr attīrīts un limitēts.
     $descriptionHtml = (string) ($descriptionHtml ?? '');
-    $flyerMaxChars = (int) ($flyerMaxChars ?? 650);
+    $flyerMaxChars = (int) ($flyerMaxChars ?? 600);
 
     $addressLine = trim(implode(', ', array_filter([$property->address, $property->city])));
     $priceValue = (float) $property->price_eur > 0 ? number_format((float) $property->price_eur, 0, ',', ' ') : '';
@@ -158,7 +158,7 @@
         .flyer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; flex: 1; min-height: 0; }
         .col-left { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
         h1.f-title {
-            font-family: 'Maven Pro', sans-serif; font-size: 32px; font-weight: 700; line-height: 1.2;
+            font-family: 'Maven Pro', sans-serif; font-size: 30px; font-weight: 700; line-height: 1.15;
             margin: 0 0 8px; color: #111827; overflow-wrap: anywhere;
         }
         .f-address {
@@ -169,7 +169,7 @@
         .price-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 15px; }
         .f-price { font-size: 32px; font-weight: 700; color: #111827; }
         .price-meta { font-size: 14px; color: #6b7280; margin-top: 4px; }
-        .desc { flex: 1 1 auto; min-height: 0; margin-bottom: 16px; overflow: hidden; font-size: 14px; line-height: 1.6; color: #4b5563; overflow-wrap: anywhere; }
+        .desc { flex: 1 1 auto; min-height: 0; margin-bottom: 16px; overflow: hidden; font-size: 13.5px; line-height: 1.5; color: #4b5563; overflow-wrap: anywhere; }
         .desc p { margin: 0 0 12px; word-break: break-word; }
         .desc ul { margin: 0 0 12px 1.15rem; padding: 0; }
         .desc li { margin: 0 0 3px; word-break: break-word; }
