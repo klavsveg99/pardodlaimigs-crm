@@ -5,7 +5,7 @@
     $defaultBody = '<p>Sveiki,</p>'
         .'<p>Pateicamies par uzticēšanos Jūsu īpašuma pārdošanā.</p>'
         .'<p>Novērtēsim, ja atstāsiet atsauksmi par mūsu sadarbību šeit:<br>'
-        .'<a href="https://share.google/eJorYMS8Z5cA1xMiD">https://share.google/eJorYMS8Z5cA1xMiD</a></p>'
+        .'<a href="https://g.page/r/CRZd6XZu2hhmEBM/review">https://g.page/r/CRZd6XZu2hhmEBM/review</a></p>'
         .'<p>Jūsu nekustamā īpašuma birojs,<br>Pārdod Laimīgs</p>';
 @endphp
 
