@@ -185,9 +185,11 @@
         .map img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .map-empty { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 13px; }
         .thumbs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .thumbs img { width: 100%; height: 105px; object-fit: cover; border-radius: 4px; background: #e5e7eb; }
+        /* Background image (not <img> + object-fit) so html2canvas crops the
+           same way in the downloaded PDF instead of stretching the image. */
+        .thumbs .thumb-img { width: 100%; height: 105px; border-radius: 4px; background-color: #e5e7eb; background-size: cover; background-position: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         /* A lone image in the last row stretches across the full width. */
-        .thumbs img.thumb-full { grid-column: 1 / -1; }
+        .thumbs .thumb-img.thumb-full { grid-column: 1 / -1; }
         .flyer-footer { border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: auto; }
         .agent-card { background: var(--pdc-primary); padding: 16px; border-radius: 6px; display: flex; flex-direction: row; align-items: center; gap: 24px; }
         .agent-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
@@ -622,13 +624,17 @@
                 }
                 if (thumbsSlot) {
                     const photos = state.photos.slice(0, 4);
-                    thumbsSlot.innerHTML = photos.map(function (url) {
-                        return '<img src="' + url + '" alt="">';
-                    }).join('');
-                    // A lone image in a row spans the full width instead of half.
-                    if (photos.length % 2 === 1) {
-                        thumbsSlot.lastElementChild.classList.add('thumb-full');
-                    }
+                    thumbsSlot.innerHTML = '';
+                    photos.forEach(function (url, i) {
+                        const thumb = document.createElement('div');
+                        thumb.className = 'thumb-img';
+                        thumb.style.backgroundImage = 'url("' + url.replace(/"/g, '\\"') + '")';
+                        // A lone image in a row spans the full width instead of half.
+                        if (i === photos.length - 1 && photos.length % 2 === 1) {
+                            thumb.classList.add('thumb-full');
+                        }
+                        thumbsSlot.appendChild(thumb);
+                    });
                 }
                 if (mapSlot) {
                     if (!state.showMap) {
