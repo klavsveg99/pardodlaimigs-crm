@@ -2,7 +2,7 @@
     // Apraksts nāk no kontrollera: AI PDF variants (ierobežots HTML) vai
     // Facebook/parastā apraksta atvasinājums. Vienmēr attīrīts un limitēts.
     $descriptionHtml = (string) ($descriptionHtml ?? '');
-    $flyerMaxChars = (int) ($flyerMaxChars ?? 500);
+    $flyerMaxChars = (int) ($flyerMaxChars ?? 650);
 
     $addressLine = trim(implode(', ', array_filter([$property->address, $property->city])));
     $priceValue = (float) $property->price_eur > 0 ? number_format((float) $property->price_eur, 0, ',', ' ') : '';
@@ -160,8 +160,6 @@
         h1.f-title {
             font-family: 'Maven Pro', sans-serif; font-size: 32px; font-weight: 700; line-height: 1.2;
             margin: 0 0 8px; color: #111827; overflow-wrap: anywhere;
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-            max-height: 77px;
         }
         .f-address {
             font-size: 18px; color: #6b7280; margin: 0 0 20px; overflow-wrap: anywhere;

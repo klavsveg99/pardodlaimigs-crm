@@ -25,7 +25,7 @@ class DescriptionGenerator
     public const MODE_PERSUASIVE = 'persuasive';
 
     /** PDF mārketinga apraksta maksimālais teksts (bez HTML), kas saturīgi ietilpst A4 bukletā. */
-    public const FLYER_MAX_CHARS = 500;
+    public const FLYER_MAX_CHARS = 650;
 
     /**
      * @param  array<string, mixed>  $context  CRM form datos (title, category, ...)
