@@ -184,6 +184,8 @@
         .map-empty { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 13px; }
         .thumbs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .thumbs img { width: 100%; height: 105px; object-fit: cover; border-radius: 4px; background: #e5e7eb; }
+        /* A lone image in the last row stretches across the full width. */
+        .thumbs img.thumb-full { grid-column: 1 / -1; }
         .flyer-footer { border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: auto; }
         .agent-card { background: var(--pdc-primary); padding: 16px; border-radius: 6px; display: flex; flex-direction: row; align-items: center; gap: 24px; }
         .agent-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
@@ -616,9 +618,14 @@
                         : '<div class="map-empty">Nav attēla</div>';
                 }
                 if (thumbsSlot) {
-                    thumbsSlot.innerHTML = state.photos.slice(0, 4).map(function (url) {
+                    const photos = state.photos.slice(0, 4);
+                    thumbsSlot.innerHTML = photos.map(function (url) {
                         return '<img src="' + url + '" alt="">';
                     }).join('');
+                    // A lone image in a row spans the full width instead of half.
+                    if (photos.length % 2 === 1) {
+                        thumbsSlot.lastElementChild.classList.add('thumb-full');
+                    }
                 }
                 if (mapSlot) {
                     if (!state.showMap) {
