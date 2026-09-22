@@ -294,7 +294,6 @@
                         <span class="hint" id="desc-ai-status"></span>
                     </div>
                 </div>
-                <div class="hint">Izmaiņas uzreiz redzamas priekšskatījumā.</div>
             </div>
 
             <div class="panel" data-panel="images">
@@ -314,7 +313,6 @@
                 <div class="field">
                     <label style="display:flex;align-items:center;gap:0.4rem;font-weight:600;"><input type="checkbox" id="show-map" @checked($mapUrl)> Rādīt karti</label>
                 </div>
-                <div class="hint" id="images-hint"></div>
             </div>
 
             <div class="panel" data-panel="agent">
@@ -593,7 +591,6 @@
             // ── Attēli: galvenais + līdz 4 papildu ───────────────
             const mainEditor = document.getElementById('main-editor');
             const thumbsEditor = document.getElementById('thumbs-editor');
-            const imagesHint = document.getElementById('images-hint');
             const mainSlot = document.getElementById('main-slot');
             const thumbsSlot = document.getElementById('thumbs-slot');
             const mapSlot = document.getElementById('map-slot');
@@ -613,9 +610,6 @@
                             + '<button type="button" class="icon-btn icon-btn-danger" data-remove="' + i + '" title="Noņemt"><i class="fa-solid fa-trash"></i></button>'
                             + '</div></div>';
                     }).join('');
-                }
-                if (imagesHint) {
-                    imagesHint.textContent = 'Papildu attēli: ' + state.photos.length + ' / 4';
                 }
 
                 if (mainSlot) {
