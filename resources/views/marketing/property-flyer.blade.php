@@ -76,8 +76,10 @@
 
         .field { margin-bottom: 0.8rem; }
         .field-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.25rem; }
-        .field label { display: block; font-size: 0.78rem; font-weight: 600; color: #374151; }
+        .field label { display: block; font-size: 0.78rem; font-weight: 600; color: #374151; margin-bottom: 0.3rem; }
         .field-head label { margin-bottom: 0; }
+        /* Labels that are styled as buttons must keep the button presentation. */
+        .field label.btn { display: inline-flex; font-size: 0.86rem; margin-bottom: 0; }
         .field input[type=text], .field input[type=email], .field textarea {
             width: 100%; border: 1px solid #d7dedc; border-radius: 0.5rem; padding: 0.5rem 0.6rem;
             font-size: 0.875rem; font-family: inherit; color: #111827; background: #fff;
