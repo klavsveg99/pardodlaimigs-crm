@@ -263,15 +263,9 @@
                         <input type="text" data-bind="pricePerSqm" value="{{ $pricePerSqmValue }}">
                     </div>
                 </div>
-                <div class="grid-2">
-                    <div class="field">
-                        <label>Platība (m²)</label>
-                        <input type="text" data-bind="area" value="{{ $areaValue }}">
-                    </div>
-                    <div class="field">
-                        <label>Sludinājuma ID</label>
-                        <input type="text" data-bind="listingId" value="{{ $listingId }}">
-                    </div>
+                <div class="field">
+                    <label>Platība (m²)</label>
+                    <input type="text" data-bind="area" value="{{ $areaValue }}">
                 </div>
                 <div class="field">
                     <label>Pārdošanas sākuma datums</label>
@@ -299,10 +293,6 @@
                         <span class="hint" id="desc-count">0 / {{ $flyerMaxChars }}</span>
                         <span class="hint" id="desc-ai-status"></span>
                     </div>
-                </div>
-                <div class="field">
-                    <label>CTA poga</label>
-                    <input type="text" data-bind="cta" value="Vairāk informācija">
                 </div>
                 <div class="hint">Izmaiņas uzreiz redzamas priekšskatījumā.</div>
             </div>
