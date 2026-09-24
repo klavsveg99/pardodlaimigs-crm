@@ -528,6 +528,9 @@
                             list: 'Saraksts',
                         },
                         locale: 'lv',
+                        // Vienmēr rādām minūtes ar nullēm (14:00, 16:00), nevis tikai stundu (14).
+                        eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false },
+                        slotLabelFormat: { hour: '2-digit', minute: '2-digit', meridiem: false },
                         // On mobile show only 2-letter day names in both month and week/timegrid headers.
                         // (v6 passes a DateEnv marker object here — not a real Date — so build the date from its fields.)
                         dayHeaderFormat: (info) => {
