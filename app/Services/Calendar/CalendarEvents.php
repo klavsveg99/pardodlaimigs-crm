@@ -37,14 +37,10 @@ final class CalendarEvents
                 'client' => $viewing->client?->name ?? '—',
                 'agent' => $viewing->agent?->name ?? '—',
                 'agentId' => $viewing->agent_user_id,
-                'start' => $viewing->scheduledHasTime()
-                    ? $viewing->scheduled_at?->toIso8601String()
-                    : $viewing->scheduled_at?->toDateString(),
-                'end' => $viewing->scheduledHasTime()
-                    ? $viewing->scheduled_at?->copy()->addMinutes($viewing->duration_min ?? 30)->toIso8601String()
-                    : null,
-                // Nav norādīta laika — rādām kā visas dienas notikumu, bez izdomāta laika.
-                'allDay' => ! $viewing->scheduledHasTime(),
+                'start' => $viewing->scheduled_at?->toIso8601String(),
+                'end' => $viewing->scheduled_at?->copy()->addMinutes($viewing->duration_min ?? 30)->toIso8601String(),
+                // Slēpjam tikai laika tekstu; notikuma izskats nemainās.
+                'noTime' => ! $viewing->scheduledHasTime(),
                 'status' => $viewing->status,
                 'color' => match ($viewing->status) {
                     'scheduled' => '#236D63',
@@ -70,13 +66,11 @@ final class CalendarEvents
                 'client' => $task->client?->name ?? '—',
                 'agent' => $task->assignedTo?->name ?? '—',
                 'agentId' => $task->assigned_user_id,
-                'start' => $task->dueHasTime()
-                    ? $task->due_at?->toIso8601String()
-                    : $task->due_at?->toDateString(),
-                'end' => $task->dueHasTime() ? $task->due_at?->toIso8601String() : null,
-                // Datuma-tikai uzdevumiem rādām visas dienas notikumu; 12:00 ir
-                // tikai aprēķinu vērtība un nedrīkst parādīties kalendārā.
-                'allDay' => ! $task->dueHasTime(),
+                'start' => $task->effectiveDueAt()?->toIso8601String(),
+                'end' => $task->effectiveDueAt()?->toIso8601String(),
+                // Datuma-tikai uzdevumiem slēpjam tikai laika tekstu; 12:00 ir
+                // aprēķinu vērtība un nedrīkst parādīties kalendārā.
+                'noTime' => ! $task->dueHasTime(),
                 'status' => $task->completed_at ? 'done' : ($task->isOverdue() ? 'overdue' : 'open'),
                 'color' => $task->completed_at ? '#9ca3af' : ($task->isOverdue() ? '#cf2e2e' : '#285854'),
                 'url' => route('filament.admin.resources.tasks.edit', $task),

@@ -488,26 +488,21 @@
                 toFcEvents() {
                     return this.filteredEvents().map((e) => {
                         const prefix = e.type === 'task' ? '[Uzdevums] ' : '[Apskate] ';
-                        const fc = {
+                        return {
                             id: e.id,
                             title: prefix + e.title + ' – ' + e.client,
                             start: e.start,
+                            end: e.end,
                             backgroundColor: e.color,
                             borderColor: e.color,
                             url: e.url,
-                            allDay: !!e.allDay,
                             extendedProps: {
                                 agent: e.agent,
                                 status: e.status,
                                 type: e.type,
+                                noTime: !!e.noTime,
                             },
                         };
-                        // Notikums bez laika ir visas dienas pasākums — beigu datumu
-                        // neuzstādām, lai FullCalendar nerāda izdomātu laiku.
-                        if (e.end) {
-                            fc.end = e.end;
-                        }
-                        return fc;
                     });
                 },
                 renderCalendar() {
@@ -548,6 +543,15 @@
                         eventClick: (info) => {
                             if (info.event.url) {
                                 window.location.href = info.event.url;
+                            }
+                        },
+                        // Ierakstiem bez norādīta laika paslēpjam tikai laika tekstu,
+                        // nemainot paša notikuma izskatu.
+                        eventDidMount: (info) => {
+                            if (info.event.extendedProps.noTime) {
+                                info.el.querySelectorAll('.fc-event-time, .fc-list-event-time').forEach((el) => {
+                                    el.style.display = 'none';
+                                });
                             }
                         },
                         height: 'auto',
