@@ -225,6 +225,12 @@
         margin-bottom: 0.125rem !important;
     }
 
+    /* Noņemam krāsaino punktiņu indikatoru (mēneša un saraksta skatos) */
+    .fc .fc-daygrid-event-dot,
+    .fc .fc-list-event-dot {
+        display: none !important;
+    }
+
     /* ── "More" link ───────────────────────────────────────────── */
     .fc .fc-more-link {
         font-size: 0.75rem !important;
