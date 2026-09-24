@@ -6,7 +6,6 @@ namespace App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 
 use App\Filament\Admin\Resources\CrmPropertyResource;
 use App\Filament\Admin\Resources\Pages\Concerns\RefreshesTabBadges;
-use App\Filament\Admin\Widgets\StalePropertiesNotice;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -23,13 +22,6 @@ class ListCrmProperties extends ListRecords
     {
         return [
             Actions\CreateAction::make()->label('Jauns īpašums')->color('gray'),
-        ];
-    }
-
-    protected function getHeaderWidgets(): array
-    {
-        return [
-            StalePropertiesNotice::class,
         ];
     }
 
