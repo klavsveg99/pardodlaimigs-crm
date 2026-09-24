@@ -132,7 +132,7 @@ class ViewingResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('scheduled_at')
                     ->label('Kad')
-                    ->dateTime('d.m.Y H:i')
+                    ->formatStateUsing(fn ($state, Viewing $record): string => $record->scheduled_display ?? '—')
                     ->sortable()
                     ->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->color(fn ($record) => $record->status === 'scheduled' && $record->scheduled_at->isPast() ? 'danger' : null)

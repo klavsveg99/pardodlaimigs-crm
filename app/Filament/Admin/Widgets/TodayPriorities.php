@@ -171,7 +171,7 @@ class TodayPriorities extends Widget
                 'title' => $viewing->property?->title ?? 'Īpašums',
                 'url' => route('filament.admin.resources.viewings.edit', $viewing),
                 'fields' => array_values(array_filter([
-                    ['label' => 'Laiks', 'value' => $viewing->scheduled_at?->locale('lv')->translatedFormat('d.m.Y H:i')],
+                    ['label' => 'Laiks', 'value' => $viewing->scheduled_display],
                     $viewing->agent ? ['label' => 'Aģents', 'value' => $viewing->agent->name] : null,
                     $viewing->client ? ['label' => 'Klients', 'value' => $viewing->client->name] : null,
                 ])),

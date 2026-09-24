@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\ClientResource\RelationManagers;
 
 use App\Filament\Admin\Resources\CrmPropertyResource;
 use App\Models\CrmProperty;
+use App\Models\Viewing;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -40,7 +41,9 @@ class ViewingsRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('scheduled_at')->label('Kad')->dateTime('d.m.Y H:i')->sortable()
+                Tables\Columns\TextColumn::make('scheduled_at')->label('Kad')
+                    ->formatStateUsing(fn ($state, Viewing $record): string => $record->scheduled_display ?? '—')
+                    ->sortable()
                     ->url(fn ($record) => route('filament.admin.resources.viewings.edit', $record)),
                 Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40)->sortable()
                     // Apskates mērķē uz CRM īpašumiem; bez īpašuma — teksts.

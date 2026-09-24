@@ -292,7 +292,8 @@ class ActivityFeed extends BaseWidget
         $bits = [];
         if (! empty($data['scheduled_at'])) {
             try {
-                $bits[] = \Carbon\Carbon::parse($data['scheduled_at'])->format('d.m.Y H:i');
+                $date = \Carbon\Carbon::parse($data['scheduled_at']);
+                $bits[] = $date->format('H:i') === '00:00' ? $date->format('d.m.Y') : $date->format('d.m.Y H:i');
             } catch (\Throwable) {
             }
         }

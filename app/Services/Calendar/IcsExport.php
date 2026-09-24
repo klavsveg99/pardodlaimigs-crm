@@ -24,8 +24,11 @@ class IcsExport
             ->get();
 
         foreach ($viewings as $v) {
-            $start = $v->scheduled_at;
-            $end = $start->copy()->addMinutes($v->duration_min ?? 60);
+            $hasTime = $v->scheduledHasTime();
+            $start = $hasTime ? $v->scheduled_at : $v->scheduled_at->copy()->startOfDay();
+            $end = $hasTime
+                ? $start->copy()->addMinutes($v->duration_min ?? 60)
+                : $start->copy();
             $summary = 'Apskate: '.($v->property?->title ?? '—');
             $description = collect([
                 $v->client ? 'Klients: '.$v->client->name : null,
@@ -38,6 +41,7 @@ class IcsExport
                 description: $description,
                 start: $start,
                 end: $end,
+                allDay: ! $hasTime,
             ));
         }
 
@@ -50,8 +54,9 @@ class IcsExport
             ->get();
 
         foreach ($tasks as $t) {
-            $start = $t->effectiveDueAt();
-            $end = $start->copy()->addMinutes(30);
+            $hasTime = $t->dueHasTime();
+            $start = $hasTime ? $t->effectiveDueAt() : $t->due_at->copy()->startOfDay();
+            $end = $hasTime ? $start->copy()->addMinutes(30) : $start->copy();
             $summary = 'Uzdevums: '.$t->title;
             $description = collect([
                 $t->client ? 'Klients: '.$t->client->name : null,
@@ -64,6 +69,7 @@ class IcsExport
                 description: $description,
                 start: $start,
                 end: $end,
+                allDay: ! $hasTime,
             ));
         }
 

@@ -52,6 +52,27 @@ class Viewing extends Model
         });
     }
 
+    /**
+     * Vai apskatei norādīts konkrēts laiks. Ja laiks nav norādīts (pusnakts),
+     * to uzskatām par "nav laika" — kalendārā rādām kā visas dienas notikumu.
+     */
+    public function scheduledHasTime(): bool
+    {
+        return $this->scheduled_at !== null && $this->scheduled_at->format('H:i') !== '00:00';
+    }
+
+    /** Apskates laika attēlojums: bez laika, ja tas nav norādīts. */
+    public function getScheduledDisplayAttribute(): ?string
+    {
+        if ($this->scheduled_at === null) {
+            return null;
+        }
+
+        return $this->scheduledHasTime()
+            ? $this->scheduled_at->locale('lv')->translatedFormat('d.m.Y H:i')
+            : $this->scheduled_at->locale('lv')->translatedFormat('d.m.Y');
+    }
+
     public function property(): BelongsTo
     {
         // Apskates mērķē tikai uz CRM īpašumiem.

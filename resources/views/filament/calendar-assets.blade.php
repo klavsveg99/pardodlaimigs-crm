@@ -488,20 +488,26 @@
                 toFcEvents() {
                     return this.filteredEvents().map((e) => {
                         const prefix = e.type === 'task' ? '[Uzdevums] ' : '[Apskate] ';
-                        return {
+                        const fc = {
                             id: e.id,
                             title: prefix + e.title + ' – ' + e.client,
                             start: e.start,
-                            end: e.end,
                             backgroundColor: e.color,
                             borderColor: e.color,
                             url: e.url,
+                            allDay: !!e.allDay,
                             extendedProps: {
                                 agent: e.agent,
                                 status: e.status,
                                 type: e.type,
                             },
                         };
+                        // Notikums bez laika ir visas dienas pasākums — beigu datumu
+                        // neuzstādām, lai FullCalendar nerāda izdomātu laiku.
+                        if (e.end) {
+                            fc.end = e.end;
+                        }
+                        return fc;
                     });
                 },
                 renderCalendar() {
