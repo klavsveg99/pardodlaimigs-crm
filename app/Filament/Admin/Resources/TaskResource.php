@@ -10,6 +10,7 @@ use App\Models\Client;
 use App\Models\CrmProperty;
 use App\Models\Izpilditajs;
 use App\Models\Task;
+use App\Support\AgentField;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
@@ -65,7 +66,9 @@ class TaskResource extends Resource
                 ->minDate(fn (string $operation) => $operation === 'create' ? now() : null)
                 ->required(),
             Forms\Components\Select::make('assigned_user_id')->label('Aģents')
-                ->relationship('assignedTo', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())->required()->searchable()->preload()->optionsLimit(20),
+                ->relationship('assignedTo', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())->required()->searchable()->preload()->optionsLimit(20)
+                ->visible(AgentField::visible())
+                ->disabled(AgentField::disabled()),
             Forms\Components\Select::make('izpilditajs_id')->label('Izpildītājs')
                 ->relationship('izpilditajs', 'name')
                 ->getOptionLabelUsing(fn ($value): ?string => Izpilditajs::find($value)?->display_label)

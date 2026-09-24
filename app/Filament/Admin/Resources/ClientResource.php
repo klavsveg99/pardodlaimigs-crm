@@ -11,6 +11,7 @@ use App\Filament\Forms\Components\PersonasKodsInput;
 use App\Filament\Forms\Components\PhoneInput;
 use App\Models\Client;
 use App\Rules\Phone;
+use App\Support\AgentField;
 use App\Support\PhoneFormat;
 use Filament\Actions;
 use Filament\Forms;
@@ -90,6 +91,11 @@ class ClientResource extends Resource
                             'Cits' => 'Cits',
                         ])
                         ->placeholder('Izvēlieties avotu'),
+                    Forms\Components\Select::make('status')
+                        ->label('Statuss')
+                        ->options(Client::STATUSES)
+                        ->default('active')
+                        ->required(),
                     Forms\Components\TextInput::make('source_other')
                         ->label('Avots — precizējums')
                         ->helperText('Precizējiet, kā uzzinājāt par mums')
@@ -101,6 +107,10 @@ class ClientResource extends Resource
                         ->relationship('owner', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())
                         ->searchable()
                         ->preload()
+                        ->optionsLimit(20)
+                        ->required()
+                        ->visible(AgentField::visible())
+                        ->disabled(AgentField::disabled())
                         ->columnSpanFull(),
                     Forms\Components\Checkbox::make('marketing_consent')
                         ->label('Klients atļauj izmantot datus mārketingam')
@@ -155,8 +165,12 @@ class ClientResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable()->weight('bold')
                     ->url(fn (Client $record) => $record->trashed() ? null : static::getUrl('view', ['record' => $record])),
+                Tables\Columns\TextColumn::make('status')->label('Statuss')->badge()->sortable()
+                    ->formatStateUsing(fn ($state): string => Client::STATUSES[$state] ?? (string) $state)
+                    ->color(fn ($state): string => $state === 'lead' ? 'warning' : 'gray'),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable()->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable()->sortable(),
+                Tables\Columns\TextColumn::make('owner.name')->label('Aģents')->sortable()->toggleable(),
                 Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->sortable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('viewings_count')
                     ->counts('viewings')
@@ -173,7 +187,8 @@ class ClientResource extends Resource
                     fn ($query) => $query->whereNull('gdpr_consent_at')->whereNull('gdpr_erased_at')
                 ),
                 Tables\Filters\SelectFilter::make('owner_user_id')->label('Aģents')
-                    ->relationship('owner', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable()),
+                    ->relationship('owner', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())
+                    ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
             ])
             ->actions([
                 Actions\ActionGroup::make([

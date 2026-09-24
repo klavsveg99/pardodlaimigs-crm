@@ -24,14 +24,22 @@ class ListClients extends ListRecords
     public function getTabs(): array
     {
         // Aģentiem skaitītāji rāda tikai viņa paša klientus.
-        $count = fn (Builder $query): int => $query->when(
+        $scoped = fn (Builder $query): Builder => $query->when(
             ! auth()->user()?->can('manage'),
             fn ($q) => $q->where('owner_user_id', auth()->id()),
-        )->count();
+        );
+        $count = fn (Builder $query): int => $scoped($query)->count();
+        $isActive = fn (Builder $query): Builder => $query->where(
+            fn (Builder $q) => $q->whereNull('status')->orWhere('status', 'active'),
+        );
 
         return [
             'active' => Tab::make('Aktīvie')
-                ->badge($count(Client::query())),
+                ->modifyQueryUsing(fn (Builder $query): Builder => $isActive($query))
+                ->badge($count($isActive(Client::query()))),
+            'lead' => Tab::make('Līdi')
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'lead'))
+                ->badge($count(Client::query()->where('status', 'lead'))),
             'deleted' => Tab::make('Dzēstie')
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->onlyTrashed())
                 ->badge($count(Client::onlyTrashed())),

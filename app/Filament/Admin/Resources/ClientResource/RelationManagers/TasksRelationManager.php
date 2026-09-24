@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\ClientResource\RelationManagers;
 
 use Filament\Actions;
 use Filament\Forms;
+use App\Support\AgentField;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -25,7 +26,9 @@ class TasksRelationManager extends RelationManager
             Forms\Components\Textarea::make('body')->label('Apraksts')->rows(3),
             Forms\Components\DateTimePicker::make('due_at')->label('Līdz')->native(false),
             Forms\Components\Select::make('assigned_user_id')->label('Aģents')
-                ->relationship('assignedTo', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())->searchable()->preload()->optionsLimit(20),
+                ->relationship('assignedTo', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())->searchable()->preload()->optionsLimit(20)
+                ->visible(AgentField::visible())
+                ->disabled(AgentField::disabled()),
         ]);
     }
 
@@ -50,7 +53,16 @@ class TasksRelationManager extends RelationManager
                     ->sortable(query: fn ($query, $direction) => $query->orderBy('completed_at', $direction)),
             ])
             ->headerActions([
-                Actions\CreateAction::make()->label('Jauns uzdevums')->color('gray'),
+                Actions\CreateAction::make()->label('Jauns uzdevums')->color('gray')
+                    ->mutateDataUsing(function (array $data): array {
+                        // Aģenta lauku redz tikai administrators; pārējiem
+                        // uzdevums tiek piesaistīts pašam veidotājam.
+                        if (blank($data['assigned_user_id'] ?? null) && ! auth()->user()?->can('manage')) {
+                            $data['assigned_user_id'] = auth()->id();
+                        }
+
+                        return $data;
+                    }),
             ])
             ->actions([
                 Actions\ActionGroup::make([

@@ -8,8 +8,8 @@ use App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 use App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers\ClientsRelationManager;
 use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Models\CrmProperty;
-use App\Models\User;
 use App\Services\Ai\DescriptionGenerator;
+use App\Support\AgentField;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
@@ -23,7 +23,6 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Support\Collection;
@@ -198,7 +197,10 @@ class CrmPropertyResource extends Resource
                         ->label('Aģents')
                         ->relationship('owner', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())
                         ->searchable()
-                        ->preload(),
+                        ->preload()
+                        ->optionsLimit(20)
+                        ->visible(AgentField::visible())
+                        ->disabled(AgentField::disabled()),
                 ])->columnSpan(1),
 
                 Section::make('Īpašuma dati')->columns(['default' => 1, 'md' => 2])->schema([
@@ -614,23 +616,15 @@ class CrmPropertyResource extends Resource
                 Tables\Columns\TextColumn::make('owner.name')->label('Aģents')->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->sortable(),
             ])
-            // Filtri redzami uzreiz virs saraksta un pielietojas, tiklīdz
-            // lietotājs maina izvēli (bez atsevišķas "Apply filters" pogas).
-            // Visi trīs kombinējas savā starpā (AND) un ar aktīvo cilni.
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->label('Statuss')->options(CrmProperty::STATUSES)->multiple()->preload()->searchable(),
                 Tables\Filters\SelectFilter::make('category')->label('Kategorija')->options(CrmProperty::CATEGORIES)->multiple()->preload()->searchable(),
-                // Opcijas ielādē tieši no assignable() saraksta — relationship()
-                // + preload() šeit atgrieza "No options available". Aģentiem
-                // filtru nerāda, jo viņu saraksts jau ir ierobežots ar saviem
-                // īpašumiem.
                 Tables\Filters\SelectFilter::make('owner_user_id')->label('Aģents')
-                    ->options(fn (): array => User::query()->assignable()->orderBy('name')->pluck('name', 'id')->all())
-                    ->visible(fn (): bool => auth()->user()?->can('manage') ?? false)
-                    ->searchable(),
+                    ->relationship('owner', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())
+                    ->searchable()
+                    ->preload()
+                    ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
             ])
-            ->filtersLayout(FiltersLayout::AboveContent)
-            ->deferFilters(false)
             ->filtersFormColumns(3)
             ->actions([
                 Actions\ActionGroup::make([

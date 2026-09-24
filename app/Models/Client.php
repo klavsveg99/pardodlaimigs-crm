@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasSlug;
 use App\Services\AuditLogger;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use App\Support\PhoneFormat;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -22,10 +23,31 @@ class Client extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name', 'phone', 'email', 'personas_kods', 'source', 'gdpr_consent_at',
+        'name', 'phone', 'email', 'personas_kods', 'source', 'status', 'gdpr_consent_at',
         'marketing_consent',
         'gdpr_erased_at', 'notes_md', 'owner_user_id',
     ];
+
+    /** Klienta statuss: parasts klients vai potenciālais pārdevējs (līdis). */
+    public const STATUSES = [
+        'active' => 'Aktīvs',
+        'lead' => 'Līdis',
+    ];
+
+    public function scopeLeads(Builder $query): Builder
+    {
+        return $query->where('status', 'lead');
+    }
+
+    public function isLead(): bool
+    {
+        return $this->status === 'lead';
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return self::STATUSES[$this->status] ?? ($this->status ?? '—');
+    }
 
     protected $with = ['attachments'];
 
