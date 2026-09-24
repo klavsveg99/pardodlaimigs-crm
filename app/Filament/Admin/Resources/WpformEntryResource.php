@@ -28,6 +28,7 @@ class WpformEntryResource extends Resource
         'spam' => 'Mēstule',
         'archived' => 'Arhivēts',
         'klients_pievienots' => 'Klients pievienots',
+        'follow_up' => 'Follow Up līdis',
         'deleted' => 'Dzēsts',
     ];
 
@@ -38,6 +39,7 @@ class WpformEntryResource extends Resource
         'spam' => 'danger',
         'archived' => 'gray',
         'klients_pievienots' => 'success',
+        'follow_up' => 'warning',
         'deleted' => 'gray',
     ];
 
@@ -51,6 +53,7 @@ class WpformEntryResource extends Resource
         'spam' => 'Mēstule',
         'archived' => 'Arhivēts',
         'klients_pievienots' => 'Klients pievienots',
+        'follow_up' => 'Follow Up līdis',
     ];
 
     protected static ?string $model = WpformEntry::class;
