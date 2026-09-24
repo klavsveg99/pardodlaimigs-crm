@@ -1682,14 +1682,14 @@ add_filter('get_post_metadata', 'pdc_frontend_map_location_address', 10, 4);
 /**
  * Frontend: ERE īpašumu kartes sākuma skats.
  *
- * Problēma: ERE karte sākas ar fiksētu centru/zoom un klasterus veido pēc
- * noklusējuma (gridSize 60, maxZoom null) — tāpēc īpašumi vizuāli saspiežas
- * vienā stūrī un klasteri ir pārāk agresīvi.
+ * Problēma: ERE klastero pārāk agresīvi (gridSize 60, maxZoom 18 — klasteri
+ * veidojas gandrīz visos tuvinājuma līmeņos) un sākuma skats ne vienmēr
+ * ietilpina visus īpašumus.
  *
- * Risinājums: pēc tam, kad marķieri ielādēti, aprēķinām to kopējo robežu un
- * pielāgojam centru/zoom (fitBounds), kā arī mīkstinām klasterošanu
- * (mazāks gridSize, ierobežots maxZoom). Darbojas tikai kartēm ar >1
- * marķieri, lai neaiztiktu viena īpašuma karti.
+ * Risinājums: pārtveram MarkerClusterer, lai mīkstinātu klasterošanu
+ * (mazāks gridSize, zemāks maxZoom) un piespiestu karti pēc marķieru
+ * ielādes ietilpināt visus marķierus (fitMapToMarkers). Darbojas tikai
+ * kartēm ar >1 marķieri, lai neaiztiktu viena īpašuma karti.
  */
 add_action('wp_footer', 'pdc_map_autofit_script', 100);
 function pdc_map_autofit_script()
@@ -1698,118 +1698,87 @@ function pdc_map_autofit_script()
         return;
     }
 
-    // Klasterošana pārstājas virs šī zoom līmeņa (zemāks = mazāk klasteru).
+    // Klasterošana: mazāks rādiuss (gridSize) un zemāks maxZoom = mazāk
+    // agresīva klasterošana. ERE pēc noklusējuma lieto gridSize 60, maxZoom 18.
     $cluster_max_zoom = 15;
-    // Klastera rādiuss pikseļos (noklusējums 60; mazāks = šaurāks tvērums).
     $cluster_grid_size = 45;
+
+    // ERE veido karti un MarkerClusterer savos iekšējos mainīgajos, tāpēc
+    // pārtveram globālo MarkerClusterer konstruktoru: uzliekam savus
+    // klasterošanas iestatījumus un piespiežam karti ietilpināt visus
+    // marķierus (fitMapToMarkers), lai sākuma skats nav maldinošs.
     ?>
     <script>
     (function () {
         var CLUSTER_MAX_ZOOM = <?php echo (int) $cluster_max_zoom; ?>;
         var CLUSTER_GRID_SIZE = <?php echo (int) $cluster_grid_size; ?>;
 
-        function instanceOf(entry) {
-            return entry && entry.instance ? entry.instance : entry;
+        function tune(instance) {
+            try {
+                if (typeof instance.setGridSize === 'function') {
+                    instance.setGridSize(CLUSTER_GRID_SIZE);
+                }
+                if (typeof instance.setMaxZoom === 'function') {
+                    instance.setMaxZoom(CLUSTER_MAX_ZOOM);
+                }
+                if (typeof instance.repaint === 'function') {
+                    instance.repaint();
+                }
+            } catch (e) { /* ignore */ }
         }
 
-        function markersOf(inst) {
-            return inst && inst.markers ? inst.markers : [];
+        function fit(instance) {
+            try {
+                var markers = (typeof instance.getMarkers === 'function') ? instance.getMarkers() : [];
+                // Viena marķiera kartei ERE pati nosaka centru/zoom.
+                if (markers.length < 2) {
+                    return;
+                }
+                if (typeof instance.fitMapToMarkers === 'function') {
+                    instance.fitMapToMarkers();
+                }
+            } catch (e) { /* ignore */ }
         }
 
-        function applyToInstance(inst) {
-            if (!inst || !inst.map) {
-                return;
+        function wrap() {
+            if (typeof window.MarkerClusterer !== 'function' || window.MarkerClusterer.__pdcWrapped) {
+                return typeof window.MarkerClusterer === 'function';
             }
 
-            // 1) Mīkstinām klasterošanu (tikai ja tā ir ieslēgta).
-            if (inst.clusterer && inst.clusterer.clusterer) {
-                var cl = inst.clusterer.clusterer;
-                if (typeof cl.setMaxZoom === 'function') {
-                    cl.setMaxZoom(CLUSTER_MAX_ZOOM);
-                }
-                if (typeof cl.setGridSize === 'function') {
-                    cl.setGridSize(CLUSTER_GRID_SIZE);
-                }
-                if (typeof cl.repaint === 'function') {
-                    cl.repaint();
-                }
-            }
+            var Original = window.MarkerClusterer;
 
-            // 2) Pielāgojam sākuma skatu faktiskajām koordinātēm.
-            var markers = markersOf(inst);
-            if (markers.length < 2 || !window.google || !google.maps.LatLngBounds) {
-                return;
-            }
+            var Wrapped = function (map, markers, options) {
+                options = options || {};
+                options.gridSize = CLUSTER_GRID_SIZE;
+                options.maxZoom = CLUSTER_MAX_ZOOM;
 
-            var bounds = new google.maps.LatLngBounds();
-            var count = 0;
-            markers.forEach(function (m) {
-                try {
-                    var pos = m.getPosition && m.getPosition();
-                    if (pos && typeof pos.getLatitude === 'function') {
-                        bounds.extend(new google.maps.LatLng(pos.getLatitude(), pos.getLongitude()));
-                        count++;
-                    }
-                } catch (e) { /* ignore malformed marker */ }
-            });
+                var instance = new Original(map, markers, options);
 
-            if (count < 2) {
-                return;
-            }
+                window.setTimeout(function () {
+                    tune(instance);
+                    fit(instance);
+                }, 0);
 
-            inst.map.fitBounds(bounds);
+                return instance;
+            };
 
-            // fitBounds uz blīviem punktiem var pietuvināt pārāk tuvu —
-            // ierobežojam zoom, kad karte norimst.
-            google.maps.event.addListenerOnce(inst.map, 'idle', function () {
-                if (inst.map.getZoom() > CLUSTER_MAX_ZOOM) {
-                    inst.map.setZoom(CLUSTER_MAX_ZOOM);
-                }
-            });
+            Wrapped.prototype = Original.prototype;
+            Wrapped.__pdcWrapped = true;
+            window.MarkerClusterer = Wrapped;
+
+            return true;
         }
 
-        var tries = 0;
-
-        function run() {
-            var list = (window.ERE_MAP && ERE_MAP.instances) ? ERE_MAP.instances : [];
-            var ready = 0;
-
-            list.forEach(function (entry) {
-                var inst = instanceOf(entry);
-                if (markersOf(inst).length) {
-                    ready++;
-                    applyToInstance(inst);
+        // Konstruktors var tikt ielādēts pēc mums — pārbaudām dažas reizes.
+        if (!wrap()) {
+            var tries = 0;
+            var timer = window.setInterval(function () {
+                if (wrap() || tries++ > 60) {
+                    window.clearInterval(timer);
                 }
-            });
-
-            // Pārrēķinām arī tad, kad marķieri mainās (AJAX filtrēšana).
-            if (!run.bound && list.length) {
-                run.bound = true;
-                list.forEach(function (entry) {
-                    var inst = instanceOf(entry);
-                    if (inst && inst.map && window.google) {
-                        google.maps.event.addListener(inst.map, 'updated_markers', function () {
-                            window.setTimeout(function () { applyToInstance(inst); }, 50);
-                        });
-                    }
-                });
-            }
-
-            // Marķieri ielādējas asinhroni — pārbaudām vēlreiz, līdz tie parādās.
-            if (ready === 0 && tries++ < 40) {
-                window.setTimeout(run, 250);
-            }
-        }
-
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            window.setTimeout(run, 50);
-        } else {
-            document.addEventListener('DOMContentLoaded', function () {
-                window.setTimeout(run, 50);
-            });
+            }, 100);
         }
     })();
     </script>
     <?php
 }
-
