@@ -1407,48 +1407,18 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
 }
 
 /* ── Sidebar version label ───────────────────────────────────────
-   Very faint accent-green "v1.0" pinned to the bottom-left of the
-   main/mobile menu. Clicking it fires a cheerful emoji+confetti burst
-   (window.pdcVersionBurst, defined in filament/sidebar-version.blade.php). */
+   Faint accent-green version tag pinned to the bottom-left of the
+   main/mobile menu. */
 .pdc-version {
     margin-top: auto;
     margin-bottom: -1rem;
     align-self: flex-start;
     padding: 0.25rem 0.125rem;
-    border: 0;
-    background: none;
-    cursor: pointer;
     color: rgba(127, 179, 173, 0.38) !important;
     font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.04em;
     line-height: 1;
-    transition: color 0.2s ease, transform 0.2s ease;
-}
-.pdc-version:hover,
-.pdc-version:focus-visible {
-    color: rgba(127, 179, 173, 0.72) !important;
-}
-.pdc-version:active {
-    transform: scale(0.92);
-}
-/* Reduced-motion users still get the label, just no particle burst. */
-@media (prefers-reduced-motion: reduce) {
-    .pdc-version { transition: color 0.2s ease !important; }
-}
-
-.pdc-burst-layer {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 99999;
-}
-.pdc-burst-emoji,
-.pdc-burst-confetti {
-    position: absolute;
-    display: block;
-    line-height: 1;
-    will-change: transform, opacity;
+    user-select: none;
 }
 </style>

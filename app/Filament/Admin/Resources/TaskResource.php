@@ -64,7 +64,10 @@ class TaskResource extends Resource
             // (nokavēta) uzdevuma saglabāšana editā neizdodas.
             Forms\Components\DateTimePicker::make('due_at')->label('Līdz')->native(false)
                 ->minDate(fn (string $operation) => $operation === 'create' ? now() : null)
-                ->required(),
+                ->required()
+                // Aģenta lauks (blakus kolonnā) nav redzams ne-adminiem;
+                // tad šis lauks aizņem visu rindu.
+                ->columnSpan(['default' => AgentField::siblingSpan()]),
             Forms\Components\Select::make('assigned_user_id')->label('Aģents')
                 ->relationship('assignedTo', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())->required()->searchable()->preload()->optionsLimit(20)
                 ->visible(AgentField::visible())

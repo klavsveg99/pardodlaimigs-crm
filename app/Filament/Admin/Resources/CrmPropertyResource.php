@@ -191,7 +191,10 @@ class CrmPropertyResource extends Resource
                         ->required()
                         ->validationMessages([
                             'required' => 'Sadarbības līguma periods ir obligāts lauks.',
-                        ]),
+                        ])
+                        // Aģenta lauks (blakus kolonnā) nav redzams ne-adminiem;
+                        // tad šis lauks aizņem visu rindu.
+                        ->columnSpan(['default' => AgentField::siblingSpan()]),
 
                     Forms\Components\Select::make('owner_user_id')
                         ->label('Aģents')

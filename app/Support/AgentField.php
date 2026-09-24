@@ -25,4 +25,15 @@ final class AgentField
     {
         return fn (string $operation): bool => $operation === 'view';
     }
+
+    /**
+     * Kolonnas platums laukam, kas formā atrodas blakus aģenta laukam vienā
+     * rindā: kad aģenta lauks nav redzams (nav administrators un nav skata
+     * režīms), pārējais lauks aizņem visu rindu, lai nepaliek tukša otrā
+     * kolonna. Izmanto kā `->columnSpan(['default' => AgentField::siblingSpan()])`.
+     */
+    public static function siblingSpan(): Closure
+    {
+        return fn (string $operation): int|string => static::visible()($operation) ? 1 : 'full';
+    }
 }

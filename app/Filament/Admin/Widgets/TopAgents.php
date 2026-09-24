@@ -110,11 +110,12 @@ class TopAgents extends BaseWidget
                                 3 => '#b87333', // bronza
                             };
 
-                            return '<i class="fa-solid fa-medal" style="font-size: 1.6rem; line-height: 1; color: '.$color.';"></i>';
+                            return '<span style="display:inline-flex;align-items:center;justify-content:center;"><i class="fa-solid fa-medal" style="font-size: 1.6rem; line-height: 1; color: '.$color.';"></i></span>';
                         }
 
                         return '<span style="font-size: 1rem; font-weight: 700; color: #6b7280;">'.$rank.'</span>';
-                    }),
+                    })
+                    ->extraCellAttributes(['style' => 'vertical-align: middle']),
 
                 Tables\Columns\ImageColumn::make('avatar')
                     ->label('Foto')

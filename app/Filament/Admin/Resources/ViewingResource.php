@@ -107,7 +107,10 @@ class ViewingResource extends Resource
                 'done' => 'Notikusi',
                 'cancelled' => 'Atcelta',
                 'no_show' => 'Neatnāca',
-            ])->default('scheduled'),
+            ])->default('scheduled')
+                // Aģenta lauks (blakus kolonnā) nav redzams ne-adminiem;
+                // tad šis lauks aizņem visu rindu.
+                ->columnSpan(['default' => AgentField::siblingSpan()]),
             Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(3)->columnSpanFull(),
             AttachmentsGrid::make('attachments')
                 ->label('Pielikumi')
