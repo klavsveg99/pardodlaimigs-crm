@@ -79,24 +79,10 @@ class TopAgents extends BaseWidget
             ->filter()
             ->values();
 
-        // Add rank and medal
+        // Add rank
         $ranked = $rows->map(function ($item, $index) {
-            $rank = $index + 1;
-            $medal = match ($rank) {
-                1 => '🥇',
-                2 => '🥈',
-                3 => '🥉',
-                default => (string) $rank,
-            };
-            $medalColor = match ($rank) {
-                1 => 'warning', // gold
-                2 => 'gray',    // silver
-                3 => 'warning', // bronze - use warning but could be custom
-                default => 'gray',
-            };
-            $item['rank'] = $rank;
-            $item['medal'] = $medal;
-            $item['medalColor'] = $medalColor;
+            $item['rank'] = $index + 1;
+
             return $item;
         });
 
@@ -109,13 +95,26 @@ class TopAgents extends BaseWidget
             )
             ->records(fn () => $ranked)
             ->columns([
-                Tables\Columns\TextColumn::make('medal')
+                Tables\Columns\TextColumn::make('rank')
                     ->label('#')
                     ->alignCenter()
                     ->width('60px')
-                    ->formatStateUsing(fn ($state, $record) => $record['medal'] ?? $record['rank'])
-                    ->badge()
-                    ->extraAttributes(['style' => 'font-size: 1.1rem;']),
+                    ->html()
+                    ->formatStateUsing(function ($state, $record): string {
+                        $rank = (int) ($record['rank'] ?? 0);
+
+                        if (in_array($rank, [1, 2, 3], true)) {
+                            $color = match ($rank) {
+                                1 => '#d4af37', // zelts
+                                2 => '#9aa1ac', // sudrabs
+                                3 => '#b87333', // bronza
+                            };
+
+                            return '<i class="fa-solid fa-medal" style="font-size: 2rem; line-height: 1; color: '.$color.';"></i>';
+                        }
+
+                        return '<span style="font-size: 1rem; font-weight: 700; color: #6b7280;">'.$rank.'</span>';
+                    }),
 
                 Tables\Columns\ImageColumn::make('avatar')
                     ->label('Foto')
