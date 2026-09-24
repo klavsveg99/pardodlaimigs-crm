@@ -110,9 +110,11 @@
    color, so it reads as "not done" next to the completed check. */
 .fi-ta-table .pdc-task-uncompleted .fi-icon {
     color: #9ca3af !important;
+    opacity: 0.5;
 }
 .dark .fi-ta-table .pdc-task-uncompleted .fi-icon {
     color: #71717a !important;
+    opacity: 0.5;
 }
 
 /* Sidebar icons stay as-is — excluded from global icon rules. */
