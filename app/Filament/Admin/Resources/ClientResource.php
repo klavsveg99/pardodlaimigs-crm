@@ -168,19 +168,16 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('status')->label('Statuss')->badge()->sortable()
                     ->formatStateUsing(fn ($state): string => Client::STATUSES[$state] ?? (string) $state)
                     ->color(fn ($state): string => $state === 'lead' ? 'warning' : 'gray'),
-                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable()->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
+                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable()
+                    ->extraCellAttributes(['class' => 'pdc-nowrap'])
+                    ->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable()->sortable(),
                 Tables\Columns\TextColumn::make('owner.name')->label('Aģents')->sortable()->toggleable(),
                 Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->sortable()->placeholder('—'),
-                Tables\Columns\TextColumn::make('viewings_count')
-                    ->counts('viewings')
-                    ->label('Apskates')
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('crm_properties_count')
                     ->counts('crmProperties')
                     ->label('Īpašumi')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->sortable(),
             ])
             ->filters([
                 Tables\Filters\Filter::make('gdpr_pending')->label('Bez GDPR piekrišanas')->query(
