@@ -110,7 +110,7 @@ class TopAgents extends BaseWidget
                                 3 => '#b87333', // bronza
                             };
 
-                            return '<i class="fa-solid fa-medal" style="font-size: 2rem; line-height: 1; color: '.$color.';"></i>';
+                            return '<i class="fa-solid fa-medal" style="font-size: 1.6rem; line-height: 1; color: '.$color.';"></i>';
                         }
 
                         return '<span style="font-size: 1rem; font-weight: 700; color: #6b7280;">'.$rank.'</span>';
