@@ -1679,3 +1679,137 @@ function pdc_frontend_map_location_address($value, $object_id, $meta_key, $singl
 }
 add_filter('get_post_metadata', 'pdc_frontend_map_location_address', 10, 4);
 
+/**
+ * Frontend: ERE īpašumu kartes sākuma skats.
+ *
+ * Problēma: ERE karte sākas ar fiksētu centru/zoom un klasterus veido pēc
+ * noklusējuma (gridSize 60, maxZoom null) — tāpēc īpašumi vizuāli saspiežas
+ * vienā stūrī un klasteri ir pārāk agresīvi.
+ *
+ * Risinājums: pēc tam, kad marķieri ielādēti, aprēķinām to kopējo robežu un
+ * pielāgojam centru/zoom (fitBounds), kā arī mīkstinām klasterošanu
+ * (mazāks gridSize, ierobežots maxZoom). Darbojas tikai kartēm ar >1
+ * marķieri, lai neaiztiktu viena īpašuma karti.
+ */
+add_action('wp_footer', 'pdc_map_autofit_script', 100);
+function pdc_map_autofit_script()
+{
+    if (is_admin()) {
+        return;
+    }
+
+    // Klasterošana pārstājas virs šī zoom līmeņa (zemāks = mazāk klasteru).
+    $cluster_max_zoom = 15;
+    // Klastera rādiuss pikseļos (noklusējums 60; mazāks = šaurāks tvērums).
+    $cluster_grid_size = 45;
+    ?>
+    <script>
+    (function () {
+        var CLUSTER_MAX_ZOOM = <?php echo (int) $cluster_max_zoom; ?>;
+        var CLUSTER_GRID_SIZE = <?php echo (int) $cluster_grid_size; ?>;
+
+        function instanceOf(entry) {
+            return entry && entry.instance ? entry.instance : entry;
+        }
+
+        function markersOf(inst) {
+            return inst && inst.markers ? inst.markers : [];
+        }
+
+        function applyToInstance(inst) {
+            if (!inst || !inst.map) {
+                return;
+            }
+
+            // 1) Mīkstinām klasterošanu (tikai ja tā ir ieslēgta).
+            if (inst.clusterer && inst.clusterer.clusterer) {
+                var cl = inst.clusterer.clusterer;
+                if (typeof cl.setMaxZoom === 'function') {
+                    cl.setMaxZoom(CLUSTER_MAX_ZOOM);
+                }
+                if (typeof cl.setGridSize === 'function') {
+                    cl.setGridSize(CLUSTER_GRID_SIZE);
+                }
+                if (typeof cl.repaint === 'function') {
+                    cl.repaint();
+                }
+            }
+
+            // 2) Pielāgojam sākuma skatu faktiskajām koordinātēm.
+            var markers = markersOf(inst);
+            if (markers.length < 2 || !window.google || !google.maps.LatLngBounds) {
+                return;
+            }
+
+            var bounds = new google.maps.LatLngBounds();
+            var count = 0;
+            markers.forEach(function (m) {
+                try {
+                    var pos = m.getPosition && m.getPosition();
+                    if (pos && typeof pos.getLatitude === 'function') {
+                        bounds.extend(new google.maps.LatLng(pos.getLatitude(), pos.getLongitude()));
+                        count++;
+                    }
+                } catch (e) { /* ignore malformed marker */ }
+            });
+
+            if (count < 2) {
+                return;
+            }
+
+            inst.map.fitBounds(bounds);
+
+            // fitBounds uz blīviem punktiem var pietuvināt pārāk tuvu —
+            // ierobežojam zoom, kad karte norimst.
+            google.maps.event.addListenerOnce(inst.map, 'idle', function () {
+                if (inst.map.getZoom() > CLUSTER_MAX_ZOOM) {
+                    inst.map.setZoom(CLUSTER_MAX_ZOOM);
+                }
+            });
+        }
+
+        var tries = 0;
+
+        function run() {
+            var list = (window.ERE_MAP && ERE_MAP.instances) ? ERE_MAP.instances : [];
+            var ready = 0;
+
+            list.forEach(function (entry) {
+                var inst = instanceOf(entry);
+                if (markersOf(inst).length) {
+                    ready++;
+                    applyToInstance(inst);
+                }
+            });
+
+            // Pārrēķinām arī tad, kad marķieri mainās (AJAX filtrēšana).
+            if (!run.bound && list.length) {
+                run.bound = true;
+                list.forEach(function (entry) {
+                    var inst = instanceOf(entry);
+                    if (inst && inst.map && window.google) {
+                        google.maps.event.addListener(inst.map, 'updated_markers', function () {
+                            window.setTimeout(function () { applyToInstance(inst); }, 50);
+                        });
+                    }
+                });
+            }
+
+            // Marķieri ielādējas asinhroni — pārbaudām vēlreiz, līdz tie parādās.
+            if (ready === 0 && tries++ < 40) {
+                window.setTimeout(run, 250);
+            }
+        }
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            window.setTimeout(run, 50);
+        } else {
+            document.addEventListener('DOMContentLoaded', function () {
+                window.setTimeout(run, 50);
+            });
+        }
+    })();
+    </script>
+    <?php
+}
+
