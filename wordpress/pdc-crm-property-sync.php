@@ -325,7 +325,7 @@ function pdc_create_attachment_from_sideload($tmp_file, $name, $post_id, $subdir
     return $result;
 }
 
-function pdc_find_existing_media_by_path($path, $url = '')
+function pdc_find_existing_media_by_path($path, $url = '', $name = '')
 {
     global $wpdb;
     if ($path === '' && $url === '') {
@@ -357,9 +357,16 @@ function pdc_find_existing_media_by_path($path, $url = '')
         );
         if ($by_url && (int) $by_url > 0) {
             $stored_file = get_post_meta((int) $by_url, '_wp_attached_file', true);
+            // CRM glabā failus ar hašotu nosaukumu (piem., OKeAFqjm...jpg),
+            // bet WP tos saglabā ar CRM oriģinālo nosaukumu (piem.,
+            // MG_6395-HDR-1982.jpg). Tāpēc URL basename nesakrīt ar
+            // saglabāto nosaukumu un bez papildu pārbaudes katra
+            // sinhronizācija lejupielādē failu no jauna, radot dublikātus.
+            // Papildus pieņemam sakritību ar CRM oriģinālo nosaukumu ($name).
             if (is_string($stored_file) && $stored_file !== ''
                 && pdc_same_upload_dir($stored_file, $path)
-                && pdc_same_upload_basename($stored_file, $path)) {
+                && (pdc_same_upload_basename($stored_file, $path)
+                    || ($name !== '' && pdc_same_upload_basename($stored_file, $name)))) {
                 return (int) $by_url;
             }
             // Stale/contaminated stamp — ignore this match and fall through.
@@ -571,7 +578,7 @@ function pdc_sync_attachments($post_id, $attachments, $started_at = 0)
             continue;
         }
 
-        $media_id = pdc_find_existing_media_by_path($path, $url);
+        $media_id = pdc_find_existing_media_by_path($path, $url, $name);
 
         if ($media_id > 0) {
             update_post_meta($media_id, '_pdc_crm_attachment_url', $url);
