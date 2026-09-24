@@ -168,13 +168,13 @@ h1.fi-header-heading {
 }
 
 .dark .fi-sidebar-item.fi-active .fi-sidebar-item-btn {
-    background: #ffffff !important;
-    color: #0b0f14 !important;
+    background: #1f2937 !important;
+    color: #f9fafb !important;
 }
 
 .dark .fi-sidebar-item.fi-active .fi-sidebar-item-label,
 .dark .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
-    color: #0b0f14 !important;
+    color: #f9fafb !important;
 }
 
 .dark .fi-sidebar-item.fi-active .fi-sidebar-item-badge-ctn .fi-badge,
@@ -422,6 +422,43 @@ a.fi-link:not(.fi-btn):not(.fi-color-primary) .fi-link-label {
 
 .dark .fi-input::placeholder,
 .dark .fi-textarea::placeholder {
+    color: #9ca3af !important;
+}
+
+/* ── Dark mode: our own components (email pop-ups, notices, today list,
+   attachments) hardcode light surfaces/text. Swap pure white and near-white
+   backgrounds to the app's dark grayscale surfaces, and their dark text to
+   light text, so nothing stays white on dark mode. ── */
+.dark [style*="background: #ffffff"],
+.dark [style*="background:#ffffff"],
+.dark [style*="background: #fff;"],
+.dark [style*="background:#fff;"] {
+    background-color: #111827 !important;
+}
+.dark [style*="background: #f9fafb"],
+.dark [style*="background:#f9fafb"] {
+    background-color: #0b0f14 !important;
+}
+.dark [style*="background: #f3f4f6"],
+.dark [style*="background:#f3f4f6"] {
+    background-color: #111827 !important;
+}
+.dark [style*="color: #111827"],
+.dark [style*="color:#111827"] {
+    color: #f3f4f6 !important;
+}
+.dark [style*="color: #1f2937"],
+.dark [style*="color:#1f2937"] {
+    color: #e5e7eb !important;
+}
+.dark [style*="color: #374151"],
+.dark [style*="color:#374151"] {
+    color: #d1d5db !important;
+}
+.dark [style*="color: #4b5563"],
+.dark [style*="color:#4b5563"],
+.dark [style*="color: #6b7280"],
+.dark [style*="color:#6b7280"] {
     color: #9ca3af !important;
 }
 

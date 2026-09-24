@@ -321,6 +321,15 @@
     .cropper-modal {
         background: rgba(0,0,0,0.5) !important;
     }
+    /* Dark mode: use the app's dark grayscale surfaces instead of white. */
+    .dark [data-attach-card] { background: #111827 !important; }
+    .dark [data-attach-card] img { background: #0b0f14 !important; }
+    .dark [data-attach-row] { background: #111827 !important; }
+    .dark .pdc-attach-thumb { background: #0b0f14 !important; border-color: #27303a !important; }
+    .dark .pdc-attach-name { color: #f3f4f6 !important; }
+    .dark .pdc-attach-meta { color: #9ca3af !important; }
+    .dark .pdc-attach-del { color: #9ca3af !important; border-color: #27303a !important; }
+    .dark .pdc-attach-empty { border-color: #27303a !important; }
     @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 
@@ -908,7 +917,7 @@
         <template x-for="(file, index) in files" :key="file.id">
             <div
                 data-attach-card
-                class="group"
+                class="group pdc-attach-card"
                 style="position: relative; border-radius: 0.75rem; overflow: hidden; aspect-ratio: 16/9; background: #f9fafb; transition: all 0.2s ease; cursor: grab; border: 1px solid #e5e7eb;"
                 :style="{ border: selected.includes(file.id) ? '2px solid var(--pdc-primary)' : '1px solid #e5e7eb', boxShadow: selected.includes(file.id) ? '0 0 0 3px rgba(40,88,84,0.2)' : 'none' }"
                 {!! $cardDragAttrs !!}
@@ -1013,6 +1022,7 @@
             >
                 <button
                     type="button"
+                    class="pdc-attach-thumb"
                     x-on:click="file ? openLightbox(index) : null"
                     title="Atvērt"
                     style="flex: none; height: 3rem; width: 3rem; border-radius: 0.55rem; overflow: hidden; border: 1px solid #e5e7eb; background: #f9fafb; padding: 0; cursor: zoom-in; display: flex; align-items: center; justify-content: center;"
@@ -1034,8 +1044,8 @@
                 </button>
 
                 <div style="flex: 1 1 auto; min-width: 0; cursor: pointer;" x-on:click="openLightbox(index)">
-                    <div style="font-size: 0.875rem; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="file.name"></div>
-                    <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.15rem; font-size: 0.75rem; color: #6b7280;">
+                    <div class="pdc-attach-name" style="font-size: 0.875rem; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="file.name"></div>
+                    <div class="pdc-attach-meta" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.15rem; font-size: 0.75rem; color: #6b7280;">
                         <span x-show="file.created" x-text="file.created"></span>
                         <span x-show="file.created && sizeLabel(file.size)">·</span>
                         <span x-show="sizeLabel(file.size)" x-text="sizeLabel(file.size)"></span>
@@ -1064,6 +1074,7 @@
                     @if($isDeletable && !$isView)
                         <button
                             type="button"
+                            class="pdc-attach-del"
                             x-on:click.stop="removeFile(file.id)"
                             title="Dzēst"
                             style="display: inline-flex; align-items: center; justify-content: center; height: 2rem; width: 2rem; border-radius: 0.5rem; background: transparent; color: #6b7280; border: 1px solid #e5e7eb; cursor: pointer;"
@@ -1112,6 +1123,7 @@
 
     <div
         x-show="files.length === 0"
+        class="pdc-attach-empty"
         style="text-align: center; padding: 2rem; border: 2px dashed #e5e7eb; border-radius: 0.75rem;"
     >
         <div style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.875rem; color: #6b7280;">
