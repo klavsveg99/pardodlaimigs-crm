@@ -1698,10 +1698,12 @@ function pdc_map_autofit_script()
         return;
     }
 
-    // Klasterošana: mazāks rādiuss (gridSize) un zemāks maxZoom = mazāk
-    // agresīva klasterošana. ERE pēc noklusējuma lieto gridSize 60, maxZoom 18.
-    $cluster_max_zoom = 15;
-    $cluster_grid_size = 45;
+    // Klasterošana: gridSize = klastera rādiuss (px), maxZoom = tuvinājums,
+    // virs kura klasterošana vairs nenotiek. Šādi tuvu esošas grupas (piem.,
+    // vairāki īpašumi Saldū) veido klasteri līdz iebraukšanai pilsētā, bet
+    // attāli atsevišķi objekti nesavienojas. ERE noklusējums ir 60 / 18.
+    $cluster_max_zoom = 13;
+    $cluster_grid_size = 50;
 
     // ERE veido karti un MarkerClusterer savos iekšējos mainīgajos, tāpēc
     // pārtveram globālo MarkerClusterer konstruktoru: uzliekam savus
@@ -1763,6 +1765,16 @@ function pdc_map_autofit_script()
             };
 
             Wrapped.prototype = Original.prototype;
+
+            // Saglabā statiskās īpašības (piem., BATCH_SIZE). Bez tām
+            // konstruktors iegūst undefined batchSize un klasterus vispār
+            // neveido (klasteri pazūd).
+            Object.getOwnPropertyNames(Original).forEach(function (key) {
+                try {
+                    Wrapped[key] = Original[key];
+                } catch (e) { /* ignore */ }
+            });
+
             Wrapped.__pdcWrapped = true;
             window.MarkerClusterer = Wrapped;
 
