@@ -1,6 +1,6 @@
 <x-filament-widgets::widget class="fi-wi-calendar-viewings">
     <x-filament::section heading="Kalendārs">
-        <div class="fc-calendar-wrapper">
+        <div class="fc-calendar-wrapper" wire:ignore>
             <div
                 x-data="calendarCombined"
                 data-calendar-viewings
