@@ -1743,13 +1743,17 @@ function pdc_map_autofit_script()
                 }
                 // Sākuma skats: vēl viens solis uz āru, lai būtu redzams
                 // plašāks apgabals. Rastera kartei mazākais iespējamais solis
-                // ir vesels tuvinājuma līmenis.
+                // ir vesels tuvinājuma līmenis. fitMapToMarkers() pielieto
+                // tuvinājumu asinhroni, tāpēc nogaidām kartes "idle" notikumu,
+                // citādi gala fitBounds mūsu setZoom pārraksta.
                 var map = (typeof instance.getMap === 'function') ? instance.getMap() : null;
-                if (map && typeof map.getZoom === 'function' && typeof map.setZoom === 'function') {
-                    var zoom = map.getZoom();
-                    if (typeof zoom === 'number' && !isNaN(zoom)) {
-                        map.setZoom(zoom - 1);
-                    }
+                if (map && typeof google !== 'undefined' && google.maps && google.maps.event) {
+                    google.maps.event.addListenerOnce(map, 'idle', function () {
+                        var zoom = map.getZoom();
+                        if (typeof zoom === 'number' && !isNaN(zoom)) {
+                            map.setZoom(zoom - 1);
+                        }
+                    });
                 }
             } catch (e) { /* ignore */ }
         }
