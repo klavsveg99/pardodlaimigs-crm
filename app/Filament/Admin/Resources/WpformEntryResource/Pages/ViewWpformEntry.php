@@ -4,7 +4,6 @@ namespace App\Filament\Admin\Resources\WpformEntryResource\Pages;
 
 use App\Filament\Admin\Resources\WpformEntryResource;
 use App\Models\Client;
-use App\Models\FollowUpLead;
 use Filament\Actions;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
@@ -86,54 +85,6 @@ class ViewWpformEntry extends ViewRecord
                     Notification::make()
                         ->title('Klients izveidots un piesaistīts')
                         ->body("Klients #{$client->id} · {$client->name}")
-                        ->success()
-                        ->send();
-                }),
-            Actions\Action::make('to_follow_up')
-                ->label('Uz Follow Up līdi')
-                ->icon('heroicon-o-phone-arrow-up-right')
-                ->color('gray')
-                ->visible(fn (): bool => $this->record->status !== 'deleted'
-                    && ! FollowUpLead::where('source_wpform_entry_id', $this->record->id)->exists())
-                ->requiresConfirmation()
-                ->modalHeading('Izveidot Follow Up līdi')
-                ->modalDescription('Tiks izveidots/piesaistīts klients un izveidots Follow Up līdis, kuram CRM atgādinās regulāri sazināties, līdz sadarbība tiek uzsākta.')
-                ->modalSubmitActionLabel('Izveidot')
-                ->action(function (): void {
-                    $client = $this->record->client;
-
-                    if (! $client) {
-                        $email = $this->record->fieldValue('E-pasts');
-                        $client = $email
-                            ? Client::where('email', $email)->whereNull('gdpr_erased_at')->first()
-                            : null;
-                    }
-
-                    if (! $client) {
-                        $client = Client::create([
-                            'name' => $this->record->fieldValue('Jūsu vārds') ?? '—',
-                            'email' => $this->record->fieldValue('E-pasts'),
-                            'phone' => $this->record->fieldValue('Telefona numurs'),
-                            'source' => 'Tīmekļa vietne',
-                            'owner_user_id' => auth()->user()?->can('manage') ? null : auth()->id(),
-                        ]);
-                    }
-
-                    $this->record->update(['client_id' => $client->id, 'status' => 'follow_up']);
-
-                    FollowUpLead::create([
-                        'client_id' => $client->id,
-                        'owner_user_id' => $client->owner_user_id ?: auth()->id(),
-                        'source_wpform_entry_id' => $this->record->id,
-                        'conversation_started_at' => ($this->record->created_at ?? now())->toDateString(),
-                        'next_contact_at' => today()->addDays(7)->toDateString(),
-                        'cadence_days' => 7,
-                        'status' => 'active',
-                    ]);
-
-                    Notification::make()
-                        ->title('Follow Up līdis izveidots')
-                        ->body($client->name)
                         ->success()
                         ->send();
                 }),

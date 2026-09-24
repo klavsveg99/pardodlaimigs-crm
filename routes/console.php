@@ -22,12 +22,6 @@ Schedule::command('pdc:send-reminders')
     ->name('send-reminders')
     ->withoutOverlapping();
 
-// Follow Up līdi: iknedēļas (throttled) atgādinājumi katru dienu 08:00
-Schedule::command('pdc:send-followup-reminders')
-    ->dailyAt('08:00')
-    ->name('send-followup-reminders')
-    ->withoutOverlapping();
-
 // Full-data backup daily at 00:00 (APP_TIMEZONE, i.e. Europe/Riga on prod).
 // Scheduler is HTTP-triggered via /cron-schedule, so the first post-midnight
 // ping runs it; runs once per day and keeps config('backup.keep') copies.
