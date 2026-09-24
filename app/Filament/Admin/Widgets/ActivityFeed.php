@@ -321,7 +321,8 @@ class ActivityFeed extends BaseWidget
         foreach (['due_at', 'scheduled_at'] as $field) {
             if (! empty($after[$field])) {
                 try {
-                    $bits[] = (self::FIELD_LABELS[$field] ?? $field).': '.\Carbon\Carbon::parse($after[$field])->format('d.m.Y H:i');
+                    $date = \Carbon\Carbon::parse($after[$field]);
+                    $bits[] = (self::FIELD_LABELS[$field] ?? $field).': '.($date->format('H:i') === '00:00' ? $date->format('d.m.Y') : $date->format('d.m.Y H:i'));
                 } catch (\Throwable) {
                 }
             }

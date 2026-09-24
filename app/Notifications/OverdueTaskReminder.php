@@ -29,7 +29,7 @@ class OverdueTaskReminder extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->subject('Kavēts uzdevums: '.$task->title)
-            ->line('Jums ir kavēts uzdevums, kam jābūt pabeigtam līdz '.$task->due_at->format('d.m.Y H:i').'.')
+            ->line('Jums ir kavēts uzdevums, kam jābūt pabeigtam līdz '.($task->due_display ?? '—').'.')
             ->line('Uzdevums: '.$task->title)
             ->when($task->client, fn (MailMessage $m, $c) => $m->line('Klients: '.$c->name))
             ->when($task->property, fn (MailMessage $m, $p) => $m->line('Īpašums: '.$p->selection_label))

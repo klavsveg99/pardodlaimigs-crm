@@ -165,7 +165,9 @@ class TaskResource extends Resource
                     ->sortable(query: fn ($query, $direction) => $query->orderBy('completed_at', $direction)),
                 Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable()->weight('bold')->wrap()
                     ->url(fn ($record) => route('filament.admin.resources.tasks.edit', $record)),
-                Tables\Columns\TextColumn::make('due_at')->label('Līdz')->dateTime('d.m.Y H:i')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap'])
+                Tables\Columns\TextColumn::make('due_at')->label('Līdz')
+                    ->formatStateUsing(fn ($state, Task $record): string => $record->due_display ?? '—')
+                    ->sortable()->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->color(fn ($record) => $record->isOverdue() ? 'danger' : null)
                     ->icon(fn ($record) => $record->isOverdue() ? 'heroicon-o-exclamation-triangle' : null)
                     ->iconColor('warning'),
@@ -186,9 +188,14 @@ class TaskResource extends Resource
             ])
             ->filters([
                 Tables\Filters\Filter::make('open')->label('Atvērti')->query(fn ($query) => $query->whereNull('completed_at')),
-                Tables\Filters\Filter::make('overdue')->label('Nokavēti')->query(
-                    fn ($query) => $query->whereNull('completed_at')->where('due_at', '<', now())
-                ),
+                Tables\Filters\Filter::make('overdue')->label('Nokavēti')->query(function ($query) {
+                    // Datuma-tikai uzdevumi kļūst nokavēti tikai pēc 12:00.
+                    $ids = Task::query()->whereNull('completed_at')->get()
+                        ->filter(fn (Task $task): bool => $task->isOverdue())
+                        ->pluck('id');
+
+                    return $query->whereIn('id', $ids);
+                }),
                 Tables\Filters\Filter::make('today')->label('Šodien')->query(
                     fn ($query) => $query->whereNull('completed_at')->whereBetween('due_at', [now()->startOfDay(), now()->endOfDay()])
                 ),

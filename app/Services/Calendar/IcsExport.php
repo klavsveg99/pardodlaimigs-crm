@@ -50,7 +50,7 @@ class IcsExport
             ->get();
 
         foreach ($tasks as $t) {
-            $start = $t->due_at;
+            $start = $t->effectiveDueAt();
             $end = $start->copy()->addMinutes(30);
             $summary = 'Uzdevums: '.$t->title;
             $description = collect([

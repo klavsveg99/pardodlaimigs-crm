@@ -21,7 +21,7 @@
                     </a>
                     <div class="text-xs text-gray-500">
                         @if ($task->due_at)
-                            Līdz: {{ $task->due_at->format('d.m.Y H:i') }}
+                            Līdz: {{ $task->due_display }}
                         @else
                             Bez termiņa
                         @endif

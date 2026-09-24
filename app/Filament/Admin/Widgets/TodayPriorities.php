@@ -138,13 +138,13 @@ class TodayPriorities extends Widget
                     'title' => $task->title,
                     'url' => route('filament.admin.resources.tasks.edit', $task),
                     'fields' => array_values(array_filter([
-                        ['label' => 'Laiks', 'value' => $task->due_at?->locale('lv')->translatedFormat('d.m.Y H:i')],
+                        ['label' => 'Laiks', 'value' => $task->due_display],
                         $task->assignedTo ? ['label' => 'Aģents', 'value' => $task->assignedTo->name] : null,
                         $task->client ? ['label' => 'Klients', 'value' => $task->client->name] : null,
                     ])),
                     'status' => $overdue ? 'Nokavēts' : 'Plānots',
                     'status_color' => $overdue ? 'danger' : 'gray',
-                    'timestamp' => $task->due_at,
+                    'timestamp' => $task->effectiveDueAt(),
                 ];
             })
             ->all();

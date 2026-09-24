@@ -24,9 +24,10 @@ class SendReminders extends Command
 
         $overdueTasks = Task::query()
             ->whereNull('completed_at')
-            ->where('due_at', '<', now())
             ->whereNotNull('assigned_user_id')
-            ->get();
+            ->where('due_at', '<', now()->endOfDay())
+            ->get()
+            ->filter(fn (Task $task): bool => $task->isOverdue());
 
         foreach ($overdueTasks as $task) {
             if ($this->throttle('task', $task->id)) {

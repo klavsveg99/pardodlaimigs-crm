@@ -9,6 +9,7 @@ use App\Services\Mail\EmailSender;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -77,9 +78,45 @@ class Task extends Model
 
     public function isOverdue(): bool
     {
+        $due = $this->effectiveDueAt();
+
         return $this->completed_at === null
-            && $this->due_at !== null
-            && $this->due_at->isPast();
+            && $due !== null
+            && $due->isPast();
+    }
+
+    /**
+     * Vai uzdevumam norādīts konkrēts laiks. Ja laiks nav norādīts (pusnakts),
+     * to uzskatām par "nav laika".
+     */
+    public function dueHasTime(): bool
+    {
+        return $this->due_at !== null && $this->due_at->format('H:i') !== '00:00';
+    }
+
+    /**
+     * Termiņš aprēķiniem (nokavēts, atgādinājumi, kārtošana). Ja laiks nav
+     * norādīts, izmantojam 12:00, lai uzdevums nekļūst nokavēts jau pusnaktī.
+     */
+    public function effectiveDueAt(): ?Carbon
+    {
+        if ($this->due_at === null) {
+            return null;
+        }
+
+        return $this->dueHasTime() ? $this->due_at : $this->due_at->copy()->setTime(12, 0);
+    }
+
+    /** Termiņa attēlojums: bez laika, ja tas nav norādīts. */
+    public function getDueDisplayAttribute(): ?string
+    {
+        if ($this->due_at === null) {
+            return null;
+        }
+
+        return $this->dueHasTime()
+            ? $this->due_at->locale('lv')->translatedFormat('d.m.Y H:i')
+            : $this->due_at->locale('lv')->translatedFormat('d.m.Y');
     }
 
     public function attachments(): MorphMany
@@ -139,7 +176,7 @@ class Task extends Model
      */
     private function sendAssignmentEmail(string $to, string $recipientLabel): ?string
     {
-        $due = $this->due_at?->locale('lv')->translatedFormat('d.m.Y H:i') ?? '—';
+        $due = $this->due_display ?? '—';
 
         $rows = ['<p>Jums piešķirts jauns uzdevums: <strong>'.$this->title.'</strong></p>'];
 
