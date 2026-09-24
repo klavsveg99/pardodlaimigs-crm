@@ -23,6 +23,16 @@ trait RefreshesTabBadges
         unset($this->cachedTabs);
         $this->cachedSchemas = [];
 
+        // Clearing cachedSchemas also drops the table's cached filter-form
+        // schema (normally keyed "tableFiltersForm"). Re-cache it explicitly:
+        // otherwise the filters re-render keyed by statePath ("tableFilters.*")
+        // and the dynamic select options can no longer be resolved by
+        // callSchemaComponentMethod(), so every filter dropdown shows
+        // "No options available".
+        if (method_exists($this, 'getTableFiltersForm') && method_exists($this, 'cacheSchema')) {
+            $this->cacheSchema('tableFiltersForm', $this->getTableFiltersForm(...));
+        }
+
         parent::renderingInteractsWithSchemas();
     }
 }

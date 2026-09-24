@@ -66,12 +66,30 @@ class ViewingResource extends Resource
                         ->all();
                 })
                 ->getOptionLabelUsing(fn ($value): ?string => CrmProperty::find($value)?->selection_label)
+                ->getSearchResultsUsing(fn (string $search): array => CrmProperty::query()
+                    ->where('status', '!=', 'deleted')
+                    ->where(fn ($q) => $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('city', 'like', "%{$search}%")
+                        ->orWhere('kadastra_nr', 'like', "%{$search}%"))
+                    ->orderByDesc('id')
+                    ->limit(50)
+                    ->get()
+                    ->mapWithKeys(fn (CrmProperty $p) => [$p->id => $p->selection_label])
+                    ->all())
                 ->required()
                 ->default(request()->query('property_id')),
             Forms\Components\Select::make('client_id')->label('Klients')
                 ->searchable()
                 ->required()
                 ->options(fn () => Client::query()->orderBy('name')->limit(20)->pluck('name', 'id')->all())
+                ->getSearchResultsUsing(fn (string $search): array => Client::query()
+                    ->where(fn ($q) => $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%"))
+                    ->orderBy('name')
+                    ->limit(50)
+                    ->pluck('name', 'id')
+                    ->all())
                 ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name),
             // "Nevēlāks kā tagad" tikai izveidojot — pretējā gadījumā vecas
             // apskates saglabāšana editā neizdodas (statuss mainās vēlāk).

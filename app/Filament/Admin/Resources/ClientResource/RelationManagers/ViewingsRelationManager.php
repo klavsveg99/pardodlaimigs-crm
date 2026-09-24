@@ -23,7 +23,7 @@ class ViewingsRelationManager extends RelationManager
     {
         return $schema->schema([
             Forms\Components\Select::make('property_id')->label('Īpašums')
-                ->relationship('property', 'title')->searchable()->required(),
+                ->relationship('property', 'title')->searchable()->preload()->optionsLimit(20)->required(),
             Forms\Components\DateTimePicker::make('scheduled_at')->label('Datums/laiks')->native(false)->required(),
             Forms\Components\TextInput::make('duration_min')->label('Ilgums (min)')->numeric()->default(30),
             Forms\Components\Select::make('status')->label('Statuss')->options([

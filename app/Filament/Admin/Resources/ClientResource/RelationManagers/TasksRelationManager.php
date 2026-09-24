@@ -25,7 +25,7 @@ class TasksRelationManager extends RelationManager
             Forms\Components\Textarea::make('body')->label('Apraksts')->rows(3),
             Forms\Components\DateTimePicker::make('due_at')->label('Līdz')->native(false),
             Forms\Components\Select::make('assigned_user_id')->label('Aģents')
-                ->relationship('assignedTo', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())->searchable(),
+                ->relationship('assignedTo', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())->searchable()->preload()->optionsLimit(20),
         ]);
     }
 
