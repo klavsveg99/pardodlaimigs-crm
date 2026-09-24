@@ -1702,8 +1702,10 @@ function pdc_map_autofit_script()
     // virs kura klasterošana vairs nenotiek. Šādi tuvu esošas grupas (piem.,
     // vairāki īpašumi Saldū) veido klasteri līdz iebraukšanai pilsētā, bet
     // attāli atsevišķi objekti nesavienojas. ERE noklusējums ir 60 / 18.
+    // 40 (nevis 50) saglabā to pašu "17 Saldū / 2 pie Ezeres" sadalījumu arī
+    // vienu tuvinājuma līmeni tālākā sākuma skatā (skat. fit()).
     $cluster_max_zoom = 13;
-    $cluster_grid_size = 50;
+    $cluster_grid_size = 40;
 
     // ERE veido karti un MarkerClusterer savos iekšējos mainīgajos, tāpēc
     // pārtveram globālo MarkerClusterer konstruktoru: uzliekam savus
@@ -1738,6 +1740,16 @@ function pdc_map_autofit_script()
                 }
                 if (typeof instance.fitMapToMarkers === 'function') {
                     instance.fitMapToMarkers();
+                }
+                // Sākuma skats: vēl viens solis uz āru, lai būtu redzams
+                // plašāks apgabals. Rastera kartei mazākais iespējamais solis
+                // ir vesels tuvinājuma līmenis.
+                var map = (typeof instance.getMap === 'function') ? instance.getMap() : null;
+                if (map && typeof map.getZoom === 'function' && typeof map.setZoom === 'function') {
+                    var zoom = map.getZoom();
+                    if (typeof zoom === 'number' && !isNaN(zoom)) {
+                        map.setZoom(zoom - 1);
+                    }
                 }
             } catch (e) { /* ignore */ }
         }
