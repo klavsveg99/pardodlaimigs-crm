@@ -28,10 +28,10 @@ class Client extends Model
         'gdpr_erased_at', 'notes_md', 'owner_user_id',
     ];
 
-    /** Klienta statuss: parasts klients vai potenciālais pārdevējs (līdis). */
+    /** Klienta statuss: parasts klients vai potenciālais pārdevējs (līds). */
     public const STATUSES = [
         'active' => 'Aktīvs',
-        'lead' => 'Līdis',
+        'lead' => 'Līds',
     ];
 
     public function scopeLeads(Builder $query): Builder

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /** Klienta statuss: "Aktīvs" (parasts klients) vai "Līdis" (potenciāls klients). */
+    /** Klienta statuss: "Aktīvs" (parasts klients) vai "Līds" (potenciāls klients). */
     public function up(): void
     {
         Schema::table('clients', function (Blueprint $table) {

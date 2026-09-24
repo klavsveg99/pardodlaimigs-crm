@@ -19,12 +19,12 @@ use Illuminate\Support\Collection;
  * notification_dismissals tabulā, tāpēc abas vietas vienmēr sakrīt.
  *
  * Paziņojumu veidi:
- *  - lead: klienti ar statusu "Līdis" (atbildīgajam aģentam);
+ *  - lead: klienti ar statusu "Līds" (atbildīgajam aģentam);
  *  - stale_property: aktīvi īpašumi, kuru cena/statuss nav mainīti 45 dienas.
  */
 class NoticeCenter
 {
-    /** Pēc cik dienām aizvērts "līdis" atkal parādās (~divas reizes nedēļā). */
+    /** Pēc cik dienām aizvērts "līds" atkal parādās (~divas reizes nedēļā). */
     public const LEAD_RESURFACE_DAYS = 4;
 
     public const LEAD_KEY_PREFIX = 'lead:';
@@ -68,7 +68,7 @@ class NoticeCenter
             ->reject(fn (Client $client): bool => $this->leadDismissed($dismissals->get(self::LEAD_KEY_PREFIX.$client->id)))
             ->map(fn (Client $client): array => [
                 'key' => self::LEAD_KEY_PREFIX.$client->id,
-                'type' => 'Līdis',
+                'type' => 'Līds',
                 'type_color' => 'warning',
                 'icon' => 'heroicon-o-phone-arrow-up-right',
                 'urgent' => false,
