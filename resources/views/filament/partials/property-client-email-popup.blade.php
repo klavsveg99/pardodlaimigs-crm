@@ -2,10 +2,11 @@
     // "Paldies par sadarbību" e-pasts saistītajam klientam. Atverams ar
     // notikumu `pdc-open-client-email` (detail {id, name, email, url}).
     $defaultSubject = 'Paldies par sadarbību';
+    $reviewUrl = \App\Services\Mail\EmailSender::GOOGLE_REVIEW_URL;
     $defaultBody = '<p>Sveiki,</p>'
         .'<p>Pateicamies par uzticēšanos Jūsu īpašuma pārdošanā.</p>'
         .'<p>Novērtēsim, ja atstāsiet atsauksmi par mūsu sadarbību šeit:<br>'
-        .'<a href="https://g.page/r/CRZd6XZu2hhmEBM/review">https://g.page/r/CRZd6XZu2hhmEBM/review</a></p>'
+        .'<a href="'.$reviewUrl.'">'.$reviewUrl.'</a></p>'
         .'<p>Jūsu nekustamā īpašuma birojs,<br>Pārdod Laimīgs</p>';
 @endphp
 
