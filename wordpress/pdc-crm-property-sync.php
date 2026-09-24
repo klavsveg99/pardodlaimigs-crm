@@ -1698,15 +1698,12 @@ function pdc_map_autofit_script()
         return;
     }
 
-    // Klasterošana pēc īstā attāluma: gridSize tiek pārrēķināts katrā
-    // tuvinājumā, lai tas atbilstu ~4 km rādiusam (skat. gridSizeFor). Tā
-    // tuvu esoši objekti (piem., vairāki īpašumi Saldū) veido klasteri, bet
-    // attālas apdzīvotas vietas (piem., Ezere ~30 km no Saldus) nekad
-    // neiekrīt vienā klasterī — ar fiksētu gridSize to nevar panākt, jo pie
-    // liela attālinājuma 30 km ir tikai daži pikseļi. Virs maxZoom klasteri
-    // vairs neveidojas. ERE noklusējums ir gridSize 60 / maxZoom 18.
+    // Klasterošana: gridSize = klastera rādiuss (px), maxZoom = tuvinājums,
+    // virs kura klasterošana vairs nenotiek. Šādi tuvu esošas grupas (piem.,
+    // vairāki īpašumi Saldū) veido klasteri līdz iebraukšanai pilsētā, bet
+    // attāli atsevišķi objekti nesavienojas. ERE noklusējums ir 60 / 18.
     $cluster_max_zoom = 13;
-    $cluster_radius_m = 4000;
+    $cluster_grid_size = 50;
 
     // ERE veido karti un MarkerClusterer savos iekšējos mainīgajos, tāpēc
     // pārtveram globālo MarkerClusterer konstruktoru: uzliekam savus
@@ -1716,30 +1713,12 @@ function pdc_map_autofit_script()
     <script>
     (function () {
         var CLUSTER_MAX_ZOOM = <?php echo (int) $cluster_max_zoom; ?>;
-        var CLUSTER_RADIUS_M = <?php echo (int) $cluster_radius_m; ?>;
+        var CLUSTER_GRID_SIZE = <?php echo (int) $cluster_grid_size; ?>;
 
-        // gridSize (px) tā, lai tas atbilstu CLUSTER_RADIUS_M metriem pie
-        // konkrētā tuvinājuma un platuma. Apakšējā robeža 1 px ir svarīga:
-        // pie ļoti liela attālinājuma režģis nedrīkst savienot attālas pilsētas.
-        function gridSizeFor(map) {
-            try {
-                var zoom = map.getZoom();
-                var center = map.getCenter();
-                if (typeof zoom !== 'number' || isNaN(zoom)) {
-                    return 40;
-                }
-                var lat = center ? center.lat() : 56.7;
-                var mpp = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom);
-                return Math.max(1, Math.min(CLUSTER_RADIUS_M / mpp, 200));
-            } catch (e) {
-                return 40;
-            }
-        }
-
-        function tune(instance, map) {
+        function tune(instance) {
             try {
                 if (typeof instance.setGridSize === 'function') {
-                    instance.setGridSize(gridSizeFor(map));
+                    instance.setGridSize(CLUSTER_GRID_SIZE);
                 }
                 if (typeof instance.setMaxZoom === 'function') {
                     instance.setMaxZoom(CLUSTER_MAX_ZOOM);
@@ -1772,21 +1751,13 @@ function pdc_map_autofit_script()
 
             var Wrapped = function (map, markers, options) {
                 options = options || {};
-                options.gridSize = gridSizeFor(map);
+                options.gridSize = CLUSTER_GRID_SIZE;
                 options.maxZoom = CLUSTER_MAX_ZOOM;
 
                 var instance = new Original(map, markers, options);
 
-                // Pārrēķinām režģi katrā tuvinājuma maiņā, lai klastera rādiuss
-                // vienmēr atbilstu CLUSTER_RADIUS_M metriem (nevis fiksētiem px).
-                if (map && typeof google !== 'undefined' && google.maps && google.maps.event) {
-                    google.maps.event.addListener(map, 'zoom_changed', function () {
-                        tune(instance, map);
-                    });
-                }
-
                 window.setTimeout(function () {
-                    tune(instance, map);
+                    tune(instance);
                     fit(instance);
                 }, 0);
 
