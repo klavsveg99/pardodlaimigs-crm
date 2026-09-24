@@ -15,12 +15,20 @@ class CalendarViewings extends Widget
 
     protected int|string|array $columnSpan = 'full';
 
+    public ?int $agentFilter = null;
+
+    public function updatedAgentFilter(): void
+    {
+        $this->dispatch('calendar-agent-changed', agentId: $this->agentFilter);
+    }
+
     public function getViewData(): array
     {
         $calendarEvents = app(CalendarEvents::class);
 
         return [
             'eventsJson' => $calendarEvents->all()->toJson(),
+            'agentOptions' => $calendarEvents->agentOptions(),
         ];
     }
 }
