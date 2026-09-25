@@ -1435,7 +1435,10 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
         align-items: center !important;
         column-gap: 0.75rem !important;
         row-gap: 0.25rem !important;
-        padding-block: 0.75rem !important;
+        /* Keep the row content on the same 1rem inner gutter as the table
+           header, so the rows line up under the section title instead of
+           hugging the card edge. */
+        padding: 0.75rem 1rem !important;
     }
 
     .fi-ta.pdc-top-agents .fi-ta-table-stacked-on-mobile > tbody > tr > td {
@@ -1485,7 +1488,9 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
         align-items: center !important;
         column-gap: 0.75rem !important;
         row-gap: 0.15rem !important;
-        padding-block: 0.75rem !important;
+        /* Same 1rem inner gutter as the table header so rows align with the
+           section title rather than touching the card edge. */
+        padding: 0.75rem 1rem !important;
     }
 
     .fi-ta.pdc-category-leaders .fi-ta-table-stacked-on-mobile > tbody > tr > td {
