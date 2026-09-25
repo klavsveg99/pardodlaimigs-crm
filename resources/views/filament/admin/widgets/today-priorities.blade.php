@@ -65,7 +65,7 @@
                                 type="button"
                                 wire:click="dismiss(@js($item['key']))"
                                 title="Aizvērt"
-                                style="flex: none; align-self: flex-start; margin: 0.6rem 0.6rem 0 0; width: 1.7rem; height: 1.7rem; border-radius: 9999px; background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 0;"
+                                style="flex: none; align-self: center; margin: 0 0.6rem 0 0; width: 1.7rem; height: 1.7rem; border-radius: 9999px; background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 0;"
                             >
                                 <svg style="width: 0.85rem; height: 0.85rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>

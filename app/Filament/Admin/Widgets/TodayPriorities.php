@@ -97,7 +97,9 @@ class TodayPriorities extends Widget
         return array_map(fn (array $notice): array => [
             'key' => $notice['key'],
             'type' => $notice['type'],
-            'type_color' => $notice['type_color'],
+            // "Šodien jāizdara" tipos nekrāsojam — tikai nokavētiem
+            // uzdevumiem paliek sarkanais statuss zemāk.
+            'type_color' => 'gray',
             'icon' => $notice['icon'],
             'urgent' => $notice['urgent'],
             'title' => $notice['title'],
@@ -132,7 +134,9 @@ class TodayPriorities extends Widget
                 return [
                     'key' => 'task-'.$task->id,
                     'type' => 'Uzdevums',
-                    'type_color' => $overdue ? 'danger' : 'gray',
+                    // Tipa birka vienmēr neitrāli pelēka; nokavējumu izceļ
+                    // statuss "Nokavēts", ikona un kartītes sarkanā mala.
+                    'type_color' => 'gray',
                     'icon' => $overdue ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-clipboard-document-check',
                     'urgent' => $overdue,
                     'title' => $task->title,
@@ -168,7 +172,7 @@ class TodayPriorities extends Widget
             ->map(fn (Viewing $viewing): array => [
                 'key' => 'viewing-'.$viewing->id,
                 'type' => 'Apskate',
-                'type_color' => 'info',
+                'type_color' => 'gray',
                 'icon' => 'heroicon-o-map-pin',
                 'urgent' => false,
                 'title' => $viewing->property?->title ?? 'Īpašums',

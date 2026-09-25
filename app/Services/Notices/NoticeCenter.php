@@ -62,6 +62,12 @@ class NoticeCenter
         return Client::query()
             ->where('status', 'lead')
             ->when(! $user->can('manage'), fn ($query) => $query->where('owner_user_id', $user->id))
+            // Nerādām pavisam jaunu, neaiztiktu līdu tajā pašā dienā, kad tas
+            // izveidots — dodam dienu, pirms tas sāk parādīties paziņojumos.
+            ->where(function ($query): void {
+                $query->where('created_at', '<', now()->startOfDay())
+                    ->orWhereColumn('updated_at', '>', 'created_at');
+            })
             ->with('owner')
             ->orderBy('updated_at')
             ->get()
