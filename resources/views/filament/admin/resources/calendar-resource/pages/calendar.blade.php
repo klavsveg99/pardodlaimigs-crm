@@ -1,7 +1,7 @@
 <x-filament-panels::page>
     @if (auth()->user()?->can('manage'))
-        <div class="flex items-center justify-end mb-4">
-            <label for="agent-filter" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Aģents:</label>
+        <div class="pdc-agent-filter-row">
+            <label for="agent-filter" class="pdc-agent-filter-label">Aģents:</label>
             <select
                 id="agent-filter"
                 wire:model.live="agentFilter"

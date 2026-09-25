@@ -171,6 +171,25 @@
         color: #e5e7eb;
     }
 
+    /* Agent filter row above the calendar. Tailwind utilities (flex/mb-4)
+       are not in the compiled app.css, so the row needs explicit spacing —
+       otherwise the select sits flush against the calendar card. */
+    .pdc-agent-filter-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .pdc-agent-filter-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+    }
+    .dark .pdc-agent-filter-label {
+        color: #d4d4d8;
+    }
+
     .fc .fc-scrollgrid {
         border-color: #e5e7eb !important;
     }

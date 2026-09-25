@@ -57,7 +57,7 @@
                                 @endif
                             </div>
 
-                            <x-filament::icon icon="heroicon-o-chevron-right" style="flex: none; width: 1.1rem; height: 1.1rem; color: #9ca3af; margin-top: 0.4rem;" />
+                            <x-filament::icon icon="heroicon-o-chevron-right" style="flex: none; align-self: center; width: 1.1rem; height: 1.1rem; color: #9ca3af;" />
                         </a>
 
                         @if (! empty($item['dismissable']))
