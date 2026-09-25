@@ -1482,6 +1482,55 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-ta.pdc-top-agents .fi-ta-cell-avg-percent .fi-ta-text-item { justify-content: flex-end !important; }
 }
 
+/* ── Aģentu komisijas šogad — compact leaderboard cards on mobile ─
+   Same treatment as "Top 5 aģenti": Filament's stacked layout turns
+   this five-column table into a repeated label/value list, so reflow
+   each record into one card instead — photo + name on top, the yearly
+   commission and average % below, sold badge top-right. */
+@media (max-width: 639px) {
+    .fi-ta.pdc-yearly-commission .fi-ta-table-stacked-on-mobile > tbody > tr {
+        display: grid !important;
+        grid-template-columns: 2.5rem minmax(0, 1fr) auto !important;
+        grid-template-areas: 'avatar name sold' 'avatar money pct' !important;
+        align-items: center !important;
+        column-gap: 0.75rem !important;
+        row-gap: 0.25rem !important;
+        /* Same 1rem inner gutter as the table header, so rows line up
+           under the section title instead of hugging the card edge. */
+        padding: 0.75rem 1rem !important;
+    }
+
+    .fi-ta.pdc-yearly-commission .fi-ta-table-stacked-on-mobile > tbody > tr > td {
+        display: block !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+    }
+
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-label {
+        display: none !important;
+    }
+
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-avatar { grid-area: avatar !important; }
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-name { grid-area: name !important; align-self: end !important; }
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-sold-count { grid-area: sold !important; text-align: right !important; }
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-year-commission { grid-area: money !important; align-self: start !important; text-align: left !important; }
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-avg-percent { grid-area: pct !important; text-align: right !important; }
+
+    /* Filament puts its alignment class on the INNER text item, not the
+       <td>, so the commission needs text-align overridden there too or it
+       floats right instead of sitting under the agent name. */
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-year-commission .fi-ta-col,
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-year-commission .fi-ta-text,
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-year-commission .fi-ta-text-item {
+        text-align: left !important;
+        justify-content: flex-start !important;
+    }
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-sold-count .fi-ta-text,
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-sold-count .fi-ta-text-item,
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-avg-percent .fi-ta-text,
+    .fi-ta.pdc-yearly-commission .fi-ta-cell-avg-percent .fi-ta-text-item { justify-content: flex-end !important; }
+}
+
 /* ── Kategoriju līderi — compact rows on mobile ──────────────────
    The avatar column has no label, so Filament's stacked layout leaves
    it floating beside "Kategorija" and repeats every label. Show one

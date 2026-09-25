@@ -36,6 +36,7 @@ class AgentYearlyCommission extends BaseWidget
         $rows = $this->compute($start, $end);
 
         return $table
+            ->extraAttributes(['class' => 'pdc-yearly-commission'])
             ->heading("Aģentu komisijas šogad — {$yearLabel}")
             ->description('Pēc pārdoto īpašumu komisijas (ārējie līdi: 20% no komisijas)')
             ->query(User::query()->whereRaw('1 = 0'))
