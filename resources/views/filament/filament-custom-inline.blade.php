@@ -1421,4 +1421,44 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     line-height: 1;
     user-select: none;
 }
+
+/* ── Top 5 aģenti — compact leaderboard cards on mobile ──────────
+   Filament's stacked layout turns this six-column table into a long
+   label/value list (the label repeated on every agent). Reflow each
+   record into one card instead: medal + photo + name on top, the
+   monthly commission and average % below, sold badge top-right. */
+@media (max-width: 639px) {
+    .fi-ta.pdc-top-agents .fi-ta-table-stacked-on-mobile > tbody > tr {
+        display: grid !important;
+        grid-template-columns: 1.75rem 2.5rem minmax(0, 1fr) auto !important;
+        grid-template-areas: 'rank avatar name sold' 'rank avatar money pct' !important;
+        align-items: center !important;
+        column-gap: 0.75rem !important;
+        row-gap: 0.25rem !important;
+        padding-block: 0.75rem !important;
+    }
+
+    .fi-ta.pdc-top-agents .fi-ta-table-stacked-on-mobile > tbody > tr > td {
+        display: block !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+    }
+
+    .fi-ta.pdc-top-agents .fi-ta-cell-label {
+        display: none !important;
+    }
+
+    .fi-ta.pdc-top-agents .fi-ta-cell-rank { grid-area: rank !important; text-align: center !important; }
+    .fi-ta.pdc-top-agents .fi-ta-cell-avatar { grid-area: avatar !important; }
+    .fi-ta.pdc-top-agents .fi-ta-cell-name { grid-area: name !important; align-self: end !important; }
+    .fi-ta.pdc-top-agents .fi-ta-cell-sold-count { grid-area: sold !important; text-align: right !important; }
+    .fi-ta.pdc-top-agents .fi-ta-cell-total-commission { grid-area: money !important; align-self: start !important; text-align: left !important; }
+    .fi-ta.pdc-top-agents .fi-ta-cell-avg-percent { grid-area: pct !important; text-align: right !important; }
+
+    /* Rank cell is centered; keep the medal and the plain number on one axis. */
+    .fi-ta.pdc-top-agents .fi-ta-cell-rank .fi-ta-text { justify-content: center !important; }
+    .fi-ta.pdc-top-agents .fi-ta-cell-total-commission .fi-ta-text { justify-content: flex-start !important; }
+    .fi-ta.pdc-top-agents .fi-ta-cell-sold-count .fi-ta-text,
+    .fi-ta.pdc-top-agents .fi-ta-cell-avg-percent .fi-ta-text { justify-content: flex-end !important; }
+}
 </style>
