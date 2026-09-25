@@ -159,15 +159,15 @@ class TodayPriorities extends Widget
      */
     protected function viewingNotifications(): array
     {
-        $today = now()->toDateString();
-
         return Viewing::query()
-            ->whereDate('scheduled_at', $today)
-            // Tikai neizpildītas apskates — pabeigtas/atceltas šodienas
-            // apskates nav jādara, tāpēc tās nerādām.
+            // Neizpildītas apskates līdz šodienai (ieskaitot): gan šodienas,
+            // gan nokavētās. Paliek sarakstā ar statusu "Ieplānota", līdz
+            // statuss mainīts vai apskate dzēsta.
             ->where('status', 'scheduled')
+            ->where('scheduled_at', '<=', now()->endOfDay())
             ->when($this->scopeToUser(), fn ($q) => $q->where('agent_user_id', auth()->id()))
             ->with(['agent', 'client', 'property'])
+            ->orderBy('scheduled_at')
             ->get()
             ->map(fn (Viewing $viewing): array => [
                 'key' => 'viewing-'.$viewing->id,
