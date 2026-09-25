@@ -31,6 +31,7 @@ class CategoryLeaders extends BaseWidget
         $leaders = $this->computeLeaders($start, $end);
 
         return $table
+            ->extraAttributes(['class' => 'pdc-category-leaders'])
             ->heading('Kategoriju līderi šomēnes')
             ->description('Par katru kategoriju parādīts uzvarētājs un tā vērtība')
             ->query(

@@ -1461,4 +1461,40 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-ta.pdc-top-agents .fi-ta-cell-sold-count .fi-ta-text,
     .fi-ta.pdc-top-agents .fi-ta-cell-avg-percent .fi-ta-text { justify-content: flex-end !important; }
 }
+
+/* ── Kategoriju līderi — compact rows on mobile ──────────────────
+   The avatar column has no label, so Filament's stacked layout leaves
+   it floating beside "Kategorija" and repeats every label. Show one
+   row per category instead: avatar + category + value on top, the
+   winning agent underneath. */
+@media (max-width: 639px) {
+    .fi-ta.pdc-category-leaders .fi-ta-table-stacked-on-mobile > tbody > tr {
+        display: grid !important;
+        grid-template-columns: 2.5rem minmax(0, 1fr) auto !important;
+        grid-template-areas: 'avatar category value' 'avatar name name' !important;
+        align-items: center !important;
+        column-gap: 0.75rem !important;
+        row-gap: 0.15rem !important;
+        padding-block: 0.75rem !important;
+    }
+
+    .fi-ta.pdc-category-leaders .fi-ta-table-stacked-on-mobile > tbody > tr > td {
+        display: block !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+    }
+
+    .fi-ta.pdc-category-leaders .fi-ta-cell-label {
+        display: none !important;
+    }
+
+    .fi-ta.pdc-category-leaders .fi-ta-cell-leader-avatar { grid-area: avatar !important; }
+    .fi-ta.pdc-category-leaders .fi-ta-cell-category { grid-area: category !important; }
+    .fi-ta.pdc-category-leaders .fi-ta-cell-leader-value { grid-area: value !important; text-align: right !important; }
+    .fi-ta.pdc-category-leaders .fi-ta-cell-leader-name { grid-area: name !important; }
+
+    .fi-ta.pdc-category-leaders .fi-ta-cell-leader-value .fi-ta-text { justify-content: flex-end !important; }
+    .fi-ta.pdc-category-leaders .fi-ta-cell-leader-name .fi-ta-text { color: #6b7280 !important; }
+    .dark .fi-ta.pdc-category-leaders .fi-ta-cell-leader-name .fi-ta-text { color: #9ca3af !important; }
+}
 </style>
