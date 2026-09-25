@@ -147,6 +147,7 @@
             >
                 <div class="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                     @foreach ($galleryAttachments as $idx => $attachment)
+                        <div style="position: relative; display: inline-block; margin: 0 0.35rem 0.5rem 0;">
                         <button
                             type="button"
                             x-on:click="show({{ $idx }})"
@@ -169,6 +170,10 @@
                                 <span style="background:var(--pdc-primary); color:white; font-size:0.72rem; font-weight:600; padding:0.22rem 0.5rem; border-radius:0.35rem; box-shadow:0 1px 4px rgba(0,0,0,0.25); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; max-width:100%;">{{ $attachment->original_name }}</span>
                             </div>
                         </button>
+                        <a href="{{ $attachment->cacheBustedUrl() }}" download="{{ $attachment->original_name }}" title="Lejupielādēt" style="position: absolute; top: 0.5rem; right: 0.5rem; z-index: 10; display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; border-radius: 0.4rem; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.25); text-decoration: none;">
+                            <i class="fa-solid fa-download" style="font-size: 0.8rem;"></i>
+                        </a>
+                        </div>
                     @endforeach
                 </div>
 

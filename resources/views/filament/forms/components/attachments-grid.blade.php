@@ -28,6 +28,11 @@
     // ViewRecord publication renders the same field read-only.
     $isView = (fn () => $getContainer()->getOperation() === 'view')();
 
+    // Top-right download icon offset in grid cards: the edit button sits at
+    // right 2.7rem and delete at 0.5rem on editable pages, so on view pages
+    // (no edit/delete) the download goes first, otherwise left of them.
+    $gridDownloadOffset = $isView ? '0.5' : '4.9';
+
     $collection = $getCollection();
     $existingAttachments = collect($record?->attachments ?? [])
         ->where('collection', $collection)
@@ -971,6 +976,17 @@
                     </button>
                 @endif
 
+                {{-- Lejupielādēt šo failu (ikona bez teksta) --}}
+                <a
+                    x-bind:href="file.url"
+                    x-bind:download="file.name"
+                    x-on:click.stop
+                    title="Lejupielādēt"
+                    style="position: absolute; top: 0.5rem; right: {{ $gridDownloadOffset }}rem; z-index: 10; height: 1.6rem; width: 1.6rem; border-radius: 0.35rem; background: rgba(0,0,0,0.62); color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.22); cursor: pointer; backdrop-filter: blur(2px); text-decoration: none;"
+                >
+                    <i class="fa-solid fa-download" style="font-size: 0.8rem;"></i>
+                </a>
+
                 @if($isDeletable && !$isView)
                     <button
                         type="button"
@@ -1059,6 +1075,16 @@
                 </div>
 
                 <div style="flex: none; display: flex; align-items: center; gap: 0.4rem;">
+                    {{-- Lejupielādēt šo failu (ikona bez teksta) --}}
+                    <a
+                        x-bind:href="file.url"
+                        x-bind:download="file.name"
+                        x-on:click.stop
+                        title="Lejupielādēt"
+                        style="display: inline-flex; flex: none; align-items: center; justify-content: center; height: 2rem; width: 2rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background: #f9fafb; color: #4b5563; text-decoration: none; cursor: pointer;"
+                    >
+                        <i class="fa-solid fa-download" style="font-size: 0.85rem;"></i>
+                    </a>
                     @if($isRowMode && $canSend)
                         <button
                             type="button"
