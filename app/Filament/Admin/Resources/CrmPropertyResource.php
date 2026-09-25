@@ -103,7 +103,11 @@ class CrmPropertyResource extends Resource
                     Forms\Components\Select::make('category')
                         ->label('Kategorija')
                         ->options(CrmProperty::CATEGORIES)
-                        ->searchable(),
+                        ->required()
+                        ->searchable()
+                        ->validationMessages([
+                            'required' => 'Kategorija ir obligāts lauks.',
+                        ]),
 
                     Forms\Components\Select::make('status')
                         ->label('Statuss')
@@ -172,7 +176,11 @@ class CrmPropertyResource extends Resource
                         ->label('Cena (€)')
                         ->numeric()
                         ->minValue(0)
-                        ->prefix('€'),
+                        ->prefix('€')
+                        ->required()
+                        ->validationMessages([
+                            'required' => 'Cena ir obligāts lauks.',
+                        ]),
 
                     Forms\Components\DatePicker::make('sale_started_at')
                         ->label('Pārdošanas sākuma datums')
