@@ -8,6 +8,7 @@ use App\Services\AuditLogger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 
 class Viewing extends Model
 {
@@ -71,6 +72,32 @@ class Viewing extends Model
         return $this->scheduledHasTime()
             ? $this->scheduled_at->locale('lv')->translatedFormat('d.m.Y H:i')
             : $this->scheduled_at->locale('lv')->translatedFormat('d.m.Y');
+    }
+
+    /**
+     * Apskates brīdis salīdzinājumiem. Ja laiks nav norādīts, uzskatām to par
+     * visas dienas notikumu — nokavēta tikai pēc dienas beigām, nevis jau
+     * pusnaktī. Ar konkrētu laiku — nokavēta, kad laiks pagājis.
+     */
+    public function effectiveScheduledAt(): ?Carbon
+    {
+        if ($this->scheduled_at === null) {
+            return null;
+        }
+
+        return $this->scheduledHasTime()
+            ? $this->scheduled_at
+            : $this->scheduled_at->copy()->endOfDay();
+    }
+
+    /** Vai apskate ir nokavēta (ieplānota, bet tās laiks/diena pagājusi). */
+    public function isOverdue(): bool
+    {
+        $at = $this->effectiveScheduledAt();
+
+        return $this->status === 'scheduled'
+            && $at !== null
+            && $at->isPast();
     }
 
     public function property(): BelongsTo

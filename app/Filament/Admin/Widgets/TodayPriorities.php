@@ -169,27 +169,27 @@ class TodayPriorities extends Widget
             ->with(['agent', 'client', 'property'])
             ->orderBy('scheduled_at')
             ->get()
-            ->map(fn (Viewing $viewing): array => [
-                'key' => 'viewing-'.$viewing->id,
-                'type' => 'Apskate',
-                'type_color' => 'gray',
-                'icon' => 'heroicon-o-map-pin',
-                'urgent' => false,
-                'title' => $viewing->property?->title ?? 'Īpašums',
-                'url' => route('filament.admin.resources.viewings.edit', $viewing),
-                'fields' => array_values(array_filter([
-                    ['label' => 'Laiks', 'value' => $viewing->scheduled_display],
-                    $viewing->agent ? ['label' => 'Aģents', 'value' => $viewing->agent->name] : null,
-                    $viewing->client ? ['label' => 'Klients', 'value' => $viewing->client->name] : null,
-                ])),
-                'status' => [
-                    'scheduled' => 'Ieplānota',
-                    'completed' => 'Pabeigta',
-                    'cancelled' => 'Atcelta',
-                ][$viewing->status] ?? $viewing->status,
-                'status_color' => 'gray',
-                'timestamp' => $viewing->scheduled_at,
-            ])
+            ->map(function (Viewing $viewing): array {
+                $overdue = $viewing->isOverdue();
+
+                return [
+                    'key' => 'viewing-'.$viewing->id,
+                    'type' => 'Apskate',
+                    'type_color' => 'gray',
+                    'icon' => $overdue ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-map-pin',
+                    'urgent' => $overdue,
+                    'title' => $viewing->property?->title ?? 'Īpašums',
+                    'url' => route('filament.admin.resources.viewings.edit', $viewing),
+                    'fields' => array_values(array_filter([
+                        ['label' => 'Laiks', 'value' => $viewing->scheduled_display],
+                        $viewing->agent ? ['label' => 'Aģents', 'value' => $viewing->agent->name] : null,
+                        $viewing->client ? ['label' => 'Klients', 'value' => $viewing->client->name] : null,
+                    ])),
+                    'status' => $overdue ? 'Nokavēts' : 'Ieplānota',
+                    'status_color' => $overdue ? 'danger' : 'gray',
+                    'timestamp' => $viewing->effectiveScheduledAt(),
+                ];
+            })
             ->all();
     }
 
