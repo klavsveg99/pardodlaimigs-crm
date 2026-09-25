@@ -364,13 +364,62 @@
             font-size: 0.6875rem !important;
         }
 
-        /* List view: roomier rows on small screens */
+        /* List view on mobile: the dot is hidden, but its graphic column
+           still reserved width and squeezed the title into a narrow wrapped
+           column — worst on all-day rows, which have no time cell. Drop the
+           graphic cell, pair time + title left-aligned, and left-align the
+           day header (FullCalendar floats the date to the right by default). */
         .fc .fc-list-event {
             padding: 0.6rem 0.5rem !important;
+            display: grid !important;
+            grid-template-columns: max-content minmax(0, 1fr) !important;
+            column-gap: 0 !important;
+            align-items: stretch !important;
+            border-bottom: 1px solid var(--fc-border-color) !important;
+        }
+
+        .fc .fc-list-event-graphic {
+            display: none !important;
+        }
+
+        .fc .fc-list-event-time {
+            width: auto !important;
+            white-space: nowrap !important;
+            align-self: start !important;
         }
 
         .fc .fc-list-event-title {
+            width: auto !important;
             line-height: 1.5 !important;
+        }
+
+        /* Cell borders would step where the time and a wrapping title have
+           different heights; the row border above replaces them. */
+        .fc .fc-list-table td.fc-list-event-time,
+        .fc .fc-list-table td.fc-list-event-title {
+            border-top: 0 !important;
+            border-bottom: 0 !important;
+        }
+
+        .fc .fc-list-day-cushion {
+            text-align: left !important;
+        }
+
+        .fc .fc-list-day-text,
+        .fc .fc-list-day-side-text {
+            float: none !important;
+            display: inline !important;
+            text-align: left !important;
+        }
+
+        .fc .fc-list-day-side-text {
+            margin-left: 0.5rem;
+        }
+
+        /* Agent filter sits left on mobile; it stays right-aligned on desktop,
+           where it shares the header row. */
+        .pdc-agent-filter-row {
+            justify-content: flex-start;
         }
 
         .fc .fc-timegrid-slot {
