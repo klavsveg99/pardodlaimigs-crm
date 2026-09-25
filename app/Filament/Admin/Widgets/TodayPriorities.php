@@ -159,6 +159,9 @@ class TodayPriorities extends Widget
 
         return Viewing::query()
             ->whereDate('scheduled_at', $today)
+            // Tikai neizpildītas apskates — pabeigtas/atceltas šodienas
+            // apskates nav jādara, tāpēc tās nerādām.
+            ->where('status', 'scheduled')
             ->when($this->scopeToUser(), fn ($q) => $q->where('agent_user_id', auth()->id()))
             ->with(['agent', 'client', 'property'])
             ->get()

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\Task;
-use App\Models\Viewing;
 use App\Notifications\OverdueTaskReminder;
-use App\Notifications\OverdueViewingReminder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -16,7 +14,7 @@ class SendReminders extends Command
 {
     protected $signature = 'pdc:send-reminders';
 
-    protected $description = 'Send reminder emails for overdue tasks and overdue viewings.';
+    protected $description = 'Send reminder emails for overdue tasks.';
 
     public function handle(): int
     {
@@ -32,19 +30,6 @@ class SendReminders extends Command
         foreach ($overdueTasks as $task) {
             if ($this->throttle('task', $task->id)) {
                 $task->assignedTo->notify(new OverdueTaskReminder($task));
-                $sent++;
-            }
-        }
-
-        $overdueViewings = Viewing::query()
-            ->where('scheduled_at', '<', now())
-            ->where('status', 'scheduled')
-            ->whereNotNull('agent_user_id')
-            ->get();
-
-        foreach ($overdueViewings as $viewing) {
-            if ($this->throttle('viewing', $viewing->id)) {
-                $viewing->agent->notify(new OverdueViewingReminder($viewing));
                 $sent++;
             }
         }
