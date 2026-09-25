@@ -1457,9 +1457,19 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
 
     /* Rank cell is centered; keep the medal and the plain number on one axis. */
     .fi-ta.pdc-top-agents .fi-ta-cell-rank .fi-ta-text { justify-content: center !important; }
-    .fi-ta.pdc-top-agents .fi-ta-cell-total-commission .fi-ta-text { justify-content: flex-start !important; }
+    /* Filament puts its alignment class on the INNER text item, not the <td>,
+       so the commission needs text-align overridden there too or it floats
+       to the right instead of sitting under the agent name. */
+    .fi-ta.pdc-top-agents .fi-ta-cell-total-commission .fi-ta-col,
+    .fi-ta.pdc-top-agents .fi-ta-cell-total-commission .fi-ta-text,
+    .fi-ta.pdc-top-agents .fi-ta-cell-total-commission .fi-ta-text-item {
+        text-align: left !important;
+        justify-content: flex-start !important;
+    }
     .fi-ta.pdc-top-agents .fi-ta-cell-sold-count .fi-ta-text,
-    .fi-ta.pdc-top-agents .fi-ta-cell-avg-percent .fi-ta-text { justify-content: flex-end !important; }
+    .fi-ta.pdc-top-agents .fi-ta-cell-sold-count .fi-ta-text-item,
+    .fi-ta.pdc-top-agents .fi-ta-cell-avg-percent .fi-ta-text,
+    .fi-ta.pdc-top-agents .fi-ta-cell-avg-percent .fi-ta-text-item { justify-content: flex-end !important; }
 }
 
 /* ── Kategoriju līderi — compact rows on mobile ──────────────────
