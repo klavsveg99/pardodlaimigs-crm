@@ -593,6 +593,19 @@ input[type="checkbox"][checked] {
     border-color: var(--pdc-primary) !important;
 }
 
+/* Property edit – Apraksts section: the WYSIWYG editor should sit flush
+   beneath the Apraksts/Versijas tab row, not inside a nested contained
+   card with its own 1.5rem padding. */
+.pdc-desc-tabs.fi-contained {
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.pdc-desc-tabs .fi-sc-tabs-tab.fi-active {
+    margin-top: 0 !important;
+    padding: 0 !important;
+}
+
 /* Teal palette → brand (legacy) */
 .fi-color-teal, .dark .fi-color-teal { --color-50: var(--pdc-primary) !important; --color-100: var(--pdc-primary) !important; --color-200: var(--pdc-primary) !important; --color-300: var(--pdc-primary) !important; --color-400: var(--pdc-primary) !important; --color-500: var(--pdc-primary) !important; --color-600: var(--pdc-primary-darker) !important; --color-700: var(--pdc-primary-darker) !important; --color-800: var(--pdc-primary-darker) !important; --color-900: var(--pdc-primary-darker) !important; --color-950: var(--pdc-primary-darker) !important; }
 /* Buttons: ALL semantic colors render as brand (only 2 button styles: primary solid / gray). Badges/count bubbles keep their real semantic colors */

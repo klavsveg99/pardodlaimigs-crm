@@ -65,12 +65,13 @@ class ClientsRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
+        // Max two rows (buyer + seller), so sorting/filters just add noise.
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->label('#')->sortable(),
-                Tables\Columns\TextColumn::make('name')->label('Klients')->sortable()->weight('bold')->wrap(),
-                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->sortable()->wrap()->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
-                Tables\Columns\TextColumn::make('email')->label('E-pasts')->sortable()->wrap(),
+                Tables\Columns\TextColumn::make('id')->label('#'),
+                Tables\Columns\TextColumn::make('name')->label('Klients')->weight('bold')->wrap(),
+                Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->wrap()->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
+                Tables\Columns\TextColumn::make('email')->label('E-pasts')->wrap(),
                 Tables\Columns\TextColumn::make('pivot.relation')
                     ->label('Saistība')
                     ->badge()
@@ -84,8 +85,10 @@ class ClientsRelationManager extends RelationManager
                         default => $state,
                     }),
                 Tables\Columns\IconColumn::make('marketing_consent')
-                    ->label('Mārketings')->boolean()->sortable(),
+                    ->label('Mārketings')->boolean(),
             ])
+            ->filters([])
+            ->defaultSort(null)
             ->headerActions([
                 $this->getPievienotKlientuAction(),
             ])

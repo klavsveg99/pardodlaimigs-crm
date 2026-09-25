@@ -494,6 +494,7 @@ class CrmPropertyResource extends Resource
                 ])
                 ->schema([
                     Tabs::make()
+                        ->extraAttributes(['class' => 'pdc-desc-tabs'])
                         ->tabs([
                             Tab::make('Apraksts')
                                 ->icon('heroicon-o-pencil-square')
