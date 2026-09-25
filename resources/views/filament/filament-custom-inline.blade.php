@@ -443,6 +443,13 @@ a.fi-link:not(.fi-btn):not(.fi-color-primary) .fi-link-label {
 .dark [style*="background:#f3f4f6"] {
     background-color: #111827 !important;
 }
+/* Urgent red-tinted icon chips (e.g. "Šodien jāizdara" overdue items) keep
+   their near-white #fef2f2 fill otherwise, which leaves the forced-white
+   dark-mode icon on a near-white chip. Use a dark red surface instead. */
+.dark [style*="background: #fef2f2"],
+.dark [style*="background:#fef2f2"] {
+    background-color: #450a0a !important;
+}
 .dark [style*="color: #111827"],
 .dark [style*="color:#111827"] {
     color: #f3f4f6 !important;

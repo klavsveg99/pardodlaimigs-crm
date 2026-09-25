@@ -4,55 +4,147 @@
         $keyHash = md5(implode('|', array_column($notices, 'key')));
     @endphp
 
+    {{-- Tailwind utility classes are NOT compiled for CRM blades, so this
+         popup is styled with explicit pdc-notice-* rules (incl. dark mode)
+         instead of utility classes. --}}
     <style>
         [x-cloak] { display: none !important; }
-        @media (max-width: 640px) {
-            .pdc-notice-stack { left: 0.5rem !important; right: 0.5rem !important; width: auto !important; }
+
+        .pdc-notice-stack {
+            position: fixed;
+            top: 4.5rem;
+            right: 1rem;
+            z-index: 2147483000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 24rem;
+            max-width: calc(100vw - 1rem);
         }
+        @media (max-width: 640px) {
+            .pdc-notice-stack { left: 0.5rem; right: 0.5rem; width: auto; }
+        }
+
+        .pdc-notice-card {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-left: 4px solid var(--pdc-primary);
+            border-radius: 0.75rem;
+            background: #ffffff;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .pdc-notice-card--urgent { border-left-color: #dc2626; }
+
+        .pdc-notice-row { display: flex; align-items: flex-start; gap: 0.625rem; }
+
+        .pdc-notice-icon {
+            display: inline-flex;
+            flex: none;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.375rem;
+            background: #f3f4f6;
+            color: #374151;
+        }
+        .pdc-notice-icon--urgent { background: #fef2f2; color: #dc2626; }
+        .pdc-notice-icon .fi-icon { width: 1rem; height: 1rem; }
+
+        .pdc-notice-body { flex: 1 1 auto; min-width: 0; }
+        .pdc-notice-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem; }
+        .pdc-notice-title { font-size: 0.875rem; font-weight: 700; color: #111827; text-decoration: none; }
+        .pdc-notice-fields { display: flex; flex-wrap: wrap; margin-top: 0.375rem; column-gap: 0.875rem; row-gap: 0.25rem; }
+        .pdc-notice-field { font-size: 0.75rem; color: #4b5563; }
+        .pdc-notice-field-label { color: #9ca3af; }
+        .pdc-notice-field-value { font-weight: 600; }
+
+        .pdc-notice-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-height: 1.5rem; margin-top: 0.5rem; }
+        .pdc-notice-open { font-size: 0.75rem; font-weight: 600; color: var(--pdc-primary); text-decoration: none; }
+        .pdc-notice-nav { display: inline-flex; align-items: center; gap: 0.375rem; }
+        .pdc-notice-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 9999px;
+            background: #ffffff;
+            color: #374151;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .pdc-notice-counter { font-size: 0.75rem; color: #6b7280; }
+
+        .pdc-notice-close {
+            display: inline-flex;
+            flex: none;
+            align-items: center;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 9999px;
+            background: #f3f4f6;
+            color: #4b5563;
+            cursor: pointer;
+        }
+        .pdc-notice-close svg { width: 0.875rem; height: 0.875rem; }
+
+        /* Dark mode */
+        .dark .pdc-notice-card { border-color: #374151; background: #111827; }
+        .dark .pdc-notice-icon { background: #1f2937; color: #e5e7eb; }
+        .dark .pdc-notice-icon--urgent { background: #450a0a; color: #fca5a5; }
+        .dark .pdc-notice-title { color: #f3f4f6; }
+        .dark .pdc-notice-field { color: #9ca3af; }
+        .dark .pdc-notice-field-label { color: #6b7280; }
+        .dark .pdc-notice-nav-btn { border-color: #374151; background: #1f2937; color: #e5e7eb; }
+        .dark .pdc-notice-counter { color: #9ca3af; }
+        .dark .pdc-notice-close { border-color: #374151; background: #1f2937; color: #d1d5db; }
     </style>
 
     <div
         wire:key="notice-popup-{{ $keyHash }}"
-        class="pdc-notice-stack fixed right-4 top-[4.5rem] z-[2147483000] flex w-96 max-w-[calc(100vw-1rem)] flex-col gap-2"
+        class="pdc-notice-stack"
         x-data="{ i: 0, total: {{ count($notices) }} }"
     >
         @foreach ($notices as $idx => $notice)
             <div
                 x-show="i === {{ $idx }}"
                 x-cloak
-                class="rounded-xl border border-gray-200 bg-white p-3 shadow-xl dark:border-gray-700 dark:bg-gray-900"
-                style="border-left: 4px solid {{ $notice['urgent'] ? '#dc2626' : 'var(--pdc-primary)' }};"
+                class="pdc-notice-card {{ $notice['urgent'] ? 'pdc-notice-card--urgent' : '' }}"
             >
-                <div class="flex items-start gap-2.5">
-                    <span class="flex h-8 w-8 flex-none items-center justify-center rounded-md {{ $notice['urgent'] ? 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200' }}">
-                        <x-filament::icon :icon="$notice['icon']" class="h-4 w-4" />
+                <div class="pdc-notice-row">
+                    <span class="pdc-notice-icon {{ $notice['urgent'] ? 'pdc-notice-icon--urgent' : '' }}">
+                        <x-filament::icon :icon="$notice['icon']" />
                     </span>
 
-                    <div class="min-w-0 flex-1">
-                        <div class="flex flex-wrap items-center gap-1.5">
+                    <div class="pdc-notice-body">
+                        <div class="pdc-notice-head">
                             <x-filament::badge :color="$notice['type_color']">{{ $notice['type'] }}</x-filament::badge>
-                            <a href="{{ $notice['url'] }}" class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ $notice['title'] }}</a>
+                            <a href="{{ $notice['url'] }}" class="pdc-notice-title">{{ $notice['title'] }}</a>
                         </div>
 
                         @if (! empty($notice['fields']))
-                            <div class="mt-1.5 flex flex-wrap gap-x-3.5 gap-y-1">
+                            <div class="pdc-notice-fields">
                                 @foreach ($notice['fields'] as $field)
-                                    <span class="text-xs text-gray-600 dark:text-gray-300">
-                                        <span class="text-gray-400 dark:text-gray-500">{{ $field['label'] }}:</span>
-                                        <span class="font-semibold">{{ $field['value'] }}</span>
+                                    <span class="pdc-notice-field">
+                                        <span class="pdc-notice-field-label">{{ $field['label'] }}:</span>
+                                        <span class="pdc-notice-field-value">{{ $field['value'] }}</span>
                                     </span>
                                 @endforeach
                             </div>
                         @endif
 
-                        <div class="mt-2 flex min-h-6 items-center justify-between gap-2">
-                            <a href="{{ $notice['url'] }}" class="text-xs font-semibold text-[color:var(--pdc-primary)]">Atvērt</a>
+                        <div class="pdc-notice-foot">
+                            <a href="{{ $notice['url'] }}" class="pdc-notice-open">Atvērt</a>
 
                             @if (count($notices) > 1)
-                                <span class="inline-flex items-center gap-1.5">
-                                    <button type="button" x-on:click="i = i > 0 ? i - 1 : total - 1" title="Iepriekšējais" class="flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 leading-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">‹</button>
-                                    <span class="text-xs text-gray-500 dark:text-gray-400" x-text="(i + 1) + ' / ' + total"></span>
-                                    <button type="button" x-on:click="i = i < total - 1 ? i + 1 : 0" title="Nākamais" class="flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 leading-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">›</button>
+                                <span class="pdc-notice-nav">
+                                    <button type="button" x-on:click="i = i > 0 ? i - 1 : total - 1" title="Iepriekšējais" class="pdc-notice-nav-btn">‹</button>
+                                    <span class="pdc-notice-counter" x-text="(i + 1) + ' / ' + total"></span>
+                                    <button type="button" x-on:click="i = i < total - 1 ? i + 1 : 0" title="Nākamais" class="pdc-notice-nav-btn">›</button>
                                 </span>
                             @endif
                         </div>
@@ -62,9 +154,9 @@
                         type="button"
                         wire:click="dismiss(@js($notice['key']))"
                         title="Aizvērt"
-                        class="flex h-7 w-7 flex-none items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                        class="pdc-notice-close"
                     >
-                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
             </div>
