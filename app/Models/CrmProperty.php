@@ -310,19 +310,17 @@ class CrmProperty extends Model
             'crm_id' => $this->id,
             'sort_order' => $this->sort_order ?? $this->id,
             'agent' => $agent,
+            // Tikai galerijas pielikumi (Attachments) — tie ir vienīgā CRM
+            // galerija. Vecais image_urls lauks ir mantojums no WP importa un
+            // nav redzams CRM galerijā, tāpēc to vairs nesūtām uz WP; citādi
+            // priekšpusē parādījās bildes, kas nav CRM galerijā.
             'attachments' => $this->attachments->sortBy('sort_order')->values()->map(fn (Attachment $attachment) => [
                 'url' => $attachment->url,
                 'name' => $attachment->original_name,
                 'mime_type' => $attachment->mime_type,
                 'size' => (int) $attachment->size,
                 'sort_order' => $attachment->sort_order,
-            ])->concat(collect($this->image_urls ?? [])->values()->map(fn (string $url, int $index): array => [
-                'url' => $url,
-                'name' => basename(parse_url($url, PHP_URL_PATH) ?: "image-{$index}.jpg"),
-                'mime_type' => 'image/*',
-                'size' => 0,
-                'sort_order' => $index,
-            ]))->values()->all(),
+            ])->values()->all(),
         ];
     }
 }

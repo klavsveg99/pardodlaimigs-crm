@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 2.4.0
+ * Version: 2.5.0
  * Author: Pārdod Laimīgs
  */
 if (! defined('ABSPATH')) {
@@ -358,17 +358,12 @@ function pdc_find_existing_media_by_path($path, $url = '')
         if ($by_url && (int) $by_url > 0) {
             $stored_file = get_post_meta((int) $by_url, '_wp_attached_file', true);
             // CRM URL ir unikāls faila identifikators, un to piešķir tikai šī
-            // sinhronizācija. Drošais pretlīdzeklis pret vecajiem (pirms 2.3)
-            // "svešajiem" zīmogiem ir tikai mapes pārbaude: tie zīmogi rādīja
-            // uz citām mapēm (YYYY/MM), tāpēc pārbaude uz pdc-crm mapi tos
-            // atsijā. Basename salīdzināšana šeit neder: CRM nosaukumi bieži
-            // beidzas ar "-<skaitlis>" (piem., IMG_8037-21.jpg), un WP
-            // kolīziju pievienotais "-<skaitlis>" (IMG_8037-21-722.jpg) padara
-            // tos neatšķiramus no cita faila nosaukuma, tāpēc katrs
-            // sinhronizācijas cikls lejupielādēja failu no jauna un radīja
-            // dublikātu.
-            if (is_string($stored_file) && $stored_file !== ''
-                && pdc_same_upload_dir($stored_file, $path)) {
+            // sinhronizācija. Tomēr vecāki (pirms 2.3) sinhronizācijas zīmogi
+            // var būt uzlīmēti citam failam, tāpēc pārbaudām, ka arī pats
+            // faila nosaukums atbilst CRM avotam (skat.
+            // pdc_crm_file_matches() — tas pieļauj WP kolīziju "-<n>" un
+            // sākuma "_" noņemšanu, bet nenoņem CRM nosaukuma galotni).
+            if (pdc_crm_file_matches($stored_file, $path)) {
                 return (int) $by_url;
             }
             // Stale/contaminated stamp — ignore this match and fall through.
@@ -427,34 +422,48 @@ function pdc_find_existing_media_by_path($path, $url = '')
         }
     }
 
-    // 3. Last-resort basename fallback — SAME DIRECTORY ONLY.
-    //    Matching "anywhere in the uploads tree" is what attached other
-    //    properties' "1.jpg"/"5.jpg"/"6.jpg" as featured images. A fallback hit
-    //    must live in the expected directory; otherwise download fresh.
-    $base = preg_replace('/-\d+$/', '', preg_replace('/\.[^.]+$/', '', $basename));
-    $ext = pathinfo($basename, PATHINFO_EXTENSION);
-    if ($base === '' || $ext === '') {
-        return 0;
-    }
-
+    // 3. Last-resort fallback — same directory, matching filename only.
+    //    Tolerates WP collision renames ("<name>-1.jpg") and sanitize_file_name()'s
+    //    leading ".", "_", "-" strip, but NEVER strips a "-<number>" that is part
+    //    of the CRM filename itself. The old code did strip it, so "4-2.jpg"
+    //    matched "4.jpg" (another property's photo) and became the featured image.
+    //    Candidates already stamped with a DIFFERENT CRM URL are skipped.
+    $stem = trim((string) pathinfo($basename, PATHINFO_FILENAME), '.-_');
     $dir = trim(dirname($path), '/');
-    if ($dir === '' || $dir === '.') {
+    if ($stem === '' || $dir === '' || $dir === '.') {
         return 0;
     }
 
-    $like = $wpdb->esc_like($dir.'/'.$base.'.').'%';
-    $fallback = $wpdb->get_var(
+    $like_exact = $wpdb->esc_like($dir.'/'.$stem).'.%';
+    $like_collision = $wpdb->esc_like($dir.'/'.$stem).'-%';
+    $candidates = $wpdb->get_col(
         $wpdb->prepare(
             "SELECT post_id FROM {$wpdb->postmeta}
              WHERE meta_key = '_wp_attached_file'
-               AND meta_value LIKE %s
-             ORDER BY post_id DESC
-             LIMIT 1",
-            $like
+               AND (meta_value LIKE %s OR meta_value LIKE %s)
+             ORDER BY post_id DESC",
+            $like_exact,
+            $like_collision
         )
     );
 
-    return $fallback && (int) $fallback > 0 ? (int) $fallback : 0;
+    foreach ($candidates as $candidate_id) {
+        $candidate_id = (int) $candidate_id;
+        $stored_file = (string) get_post_meta($candidate_id, '_wp_attached_file', true);
+        if (! pdc_crm_file_matches($stored_file, $path)) {
+            continue;
+        }
+        if ($url !== '') {
+            $stamp = (string) get_post_meta($candidate_id, '_pdc_crm_attachment_url', true);
+            if ($stamp !== '' && $stamp !== $url) {
+                continue; // pieder citam CRM failam
+            }
+        }
+
+        return $candidate_id;
+    }
+
+    return 0;
 }
 
 /**
@@ -466,26 +475,42 @@ function pdc_same_upload_dir($a, $b)
 }
 
 /**
- * Same basename, tolerating WP collision renames ("5.jpg" vs "5-2.jpg") and
- * WP's sanitize_file_name() stripping leading underscores/dashes
- * ("_MG_8004-HDR.JPG" → "MG_8004-HDR-6.jpg"). Without the leading-char
- * tolerance those files miss the URL-stamp match and get re-downloaded on
- * every sync, churning duplicate attachments and slowing syncs to minutes.
+ * Vai WP saglabātais faila ceļš atbilst CRM avota ceļam (tajā pašā mapē)?
+ *
+ * Tolerē WP sanitize_file_name() (noņem sākuma ".", "_", "-" un paplašinājumu
+ * padara ar mazajiem burtiem) un WP kolīziju pārdēvēšanu ("<nosaukums>-<skaitlis>.jpg"),
+ * BET nekad nenoņem "-<skaitlis>", kas ir daļa no paša CRM faila nosaukuma.
+ * Vecais variants grieza nost arī CRM nosaukuma galotni, tāpēc "4-2.jpg" tika
+ * sajaukts ar "4.jpg" un cita īpašuma bilde kļuva par galveno attēlu.
  */
-function pdc_same_upload_basename($a, $b)
+function pdc_crm_file_matches($stored_file, $crm_path)
 {
-    $strip = function ($f) {
-        $name = basename((string) $f);
-        $name = preg_replace('/\.[^.]+$/', '', $name);
-        $name = preg_replace('/-\d+$/', '', (string) $name);
+    if (! is_string($stored_file) || $stored_file === '' || empty($crm_path)) {
+        return false;
+    }
+    if (! pdc_same_upload_dir($stored_file, $crm_path)) {
+        return false;
+    }
 
-        return preg_replace('/^[_-]+/', '', (string) $name);
-    };
-    $ea = pathinfo((string) $a, PATHINFO_EXTENSION);
-    $eb = pathinfo((string) $b, PATHINFO_EXTENSION);
+    $stored_name = basename($stored_file);
+    $crm_name = basename((string) $crm_path);
 
-    return $strip($a) !== '' && strcasecmp($strip($a), $strip($b)) === 0
-        && strcasecmp((string) $ea, (string) $eb) === 0;
+    if (strcasecmp(pathinfo($stored_name, PATHINFO_EXTENSION), pathinfo($crm_name, PATHINFO_EXTENSION)) !== 0) {
+        return false;
+    }
+
+    $stored_stem = strtolower(trim((string) pathinfo($stored_name, PATHINFO_FILENAME), '.-_'));
+    $crm_stem = strtolower(trim((string) pathinfo($crm_name, PATHINFO_FILENAME), '.-_'));
+
+    if ($stored_stem === '' || $crm_stem === '') {
+        return false;
+    }
+    if ($stored_stem === $crm_stem) {
+        return true;
+    }
+
+    // WP kolīzijas pievienotais "-<skaitlis>" pirms paplašinājuma.
+    return (bool) preg_match('/^'.preg_quote($crm_stem, '/').'-\d+$/', $stored_stem);
 }
 
 function pdc_sync_attachments($post_id, $attachments, $started_at = 0)
