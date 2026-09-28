@@ -1200,6 +1200,49 @@ html.dark .rounded-xl .text-emerald-900 {
     margin: 0 !important;
 }
 
+/* Shared empty state for galleries, attachments and similar list/file
+   placeholders: identical box, icon size/colour and text size/colour
+   everywhere — only the wording and the icon differ. */
+.pdc-empty-state {
+    text-align: center;
+    padding: 2rem;
+    border: 2px dashed #e5e7eb;
+    border-radius: 0.75rem;
+}
+.pdc-empty-state-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+}
+.pdc-empty-state-inner i {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 2rem;
+    line-height: 1;
+    color: #9ca3af;
+}
+.pdc-empty-state-inner p,
+.pdc-empty-state-inner span {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+.dark .pdc-empty-state {
+    border-color: #27303a;
+}
+.dark .pdc-empty-state-inner i {
+    color: #6b7280;
+}
+.dark .pdc-empty-state-inner p,
+.dark .pdc-empty-state-inner span {
+    color: #9ca3af;
+}
+
 /* Badge spacing in sections */
 .fi-section-content .fi-badge {
     font-size: 0.7rem !important;

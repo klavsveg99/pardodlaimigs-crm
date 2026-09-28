@@ -34,6 +34,7 @@
     $gridDownloadOffset = $isView ? '0.5' : '4.9';
 
     $collection = $getCollection();
+    $isGalleryCollection = $collection === 'gallery';
     $existingAttachments = collect($record?->attachments ?? [])
         ->where('collection', $collection)
         ->sortBy('sort_order')
@@ -334,7 +335,6 @@
     .dark .pdc-attach-name { color: #f3f4f6 !important; }
     .dark .pdc-attach-meta { color: #9ca3af !important; }
     .dark .pdc-attach-del { color: #9ca3af !important; border-color: #27303a !important; }
-    .dark .pdc-attach-empty { border-color: #27303a !important; }
     @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 
@@ -1154,14 +1154,11 @@
 
     <div
         x-show="files.length === 0"
-        class="pdc-attach-empty"
-        style="text-align: center; padding: 2rem; border: 2px dashed #e5e7eb; border-radius: 0.75rem;"
+        class="pdc-empty-state"
     >
-        <div style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.875rem; color: #6b7280;">
-            <svg style="max-width: 60px; width: 2.5rem; height: 2.5rem; flex: none; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span>Nav pielikumu.</span>
+        <div class="pdc-empty-state-inner">
+            <i class="{{ $isGalleryCollection ? 'fa-solid fa-image' : 'fa-solid fa-paperclip' }}" aria-hidden="true"></i>
+            <span>{{ $isGalleryCollection ? 'Galerijā nav attēlu.' : 'Nav pielikumu.' }}</span>
         </div>
         @if(!$isView)
             <div style="margin-top: 0.75rem;">
