@@ -956,6 +956,7 @@
                     <button
                         type="button"
                         x-on:click.stop="toggleSelect(file.id)"
+                        class="pdc-thumb-action"
                         style="position: absolute; top: 0.5rem; left: 0.5rem; z-index: 10; height: 1.4rem; width: 1.4rem; border-radius: 0.35rem; border: 2px solid; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.35); cursor: pointer; background: rgba(255,255,255,0.96); border-color: #6b7280; color: transparent;"
                         :style="{ background: selected.includes(file.id) ? 'var(--pdc-primary)' : 'rgba(255,255,255,0.96)', borderColor: selected.includes(file.id) ? 'var(--pdc-primary)' : '#6b7280', color: selected.includes(file.id) ? 'white' : 'transparent' }"
                     >
@@ -969,6 +970,7 @@
                     <button
                         type="button"
                         x-on:click.stop="openEditor(index)"
+                        class="pdc-thumb-action"
                         style="position: absolute; top: 0.5rem; right: 2.7rem; z-index: 10; height: 1.6rem; width: 1.6rem; border-radius: 0.35rem; background: rgba(0,0,0,0.62); color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.22); cursor: pointer; backdrop-filter: blur(2px);"
                         title="Rediģēt attēlu"
                     >
@@ -992,6 +994,7 @@
                     <button
                         type="button"
                         x-on:click.stop="removeFile(file.id)"
+                        class="pdc-thumb-action"
                         style="position: absolute; top: 0.5rem; right: 0.5rem; z-index: 10; height: 1.6rem; width: 1.6rem; border-radius: 9999px; background: rgba(0,0,0,0.55); color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; backdrop-filter: blur(2px);"
                     >
                         <svg style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd"/></svg>
@@ -1004,6 +1007,7 @@
                         x-bind:style="{ display: typeof file.id === 'number' ? 'inline-flex' : 'none' }"
                         x-on:click.stop="sendFile(file)"
                         title="Nosūtīt ar e-pastu"
+                        class="pdc-thumb-action"
                         style="position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10; height: 1.7rem; padding: 0 0.55rem; border-radius: 0.4rem; background: var(--pdc-primary); color: white; display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.3rem; white-space: nowrap; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; font-size: 0.72rem; font-weight: 600;"
                     >
                         <svg style="width: 0.85rem; height: 0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
@@ -1012,7 +1016,7 @@
                 @endif
 
                 <!-- Title on hover - accent container -->
-                <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 45%); opacity: 0; display: flex; align-items: flex-end; padding: 0.6rem; transition: opacity 0.2s; pointer-events: none;" class="group-hover:opacity-100" x-bind:style="'opacity: ' + (selected.includes(file.id) ? '1' : '')">
+                <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 45%); opacity: 0; display: flex; align-items: flex-end; padding: 0.6rem; transition: opacity 0.2s; pointer-events: none;" class="group-hover:opacity-100" x-bind:class="selected.includes(file.id) ? 'pdc-attach-overlay-selected' : ''">
                     <span style="background: var(--pdc-primary); color: white; font-size: 0.72rem; font-weight: 600; padding: 0.22rem 0.5rem; border-radius: 0.35rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; max-width: 100%; box-shadow: 0 1px 4px rgba(0,0,0,0.25);" x-text="file.name"></span>
                 </div>
 

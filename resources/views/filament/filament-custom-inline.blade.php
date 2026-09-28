@@ -506,6 +506,10 @@ a.fi-link:not(.fi-btn):not(.fi-color-primary) .fi-link-label {
 [data-attach-card]:hover .pdc-thumb-main-badge {
     opacity: 0;
 }
+/* Name overlay stays visible on multiselected edit-gallery cards. */
+[data-attach-card] .pdc-attach-overlay-selected {
+    opacity: 1 !important;
+}
 @media (hover: none) {
     .pdc-view-thumb .pdc-thumb-action,
     [data-attach-card] .pdc-thumb-action {
