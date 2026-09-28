@@ -292,11 +292,14 @@
                             <button type="button" data-cmd="underline" title="Pasvītrojums"><i class="fa-solid fa-underline"></i></button>
                             <button type="button" data-cmd="insertUnorderedList" title="Aizzīmju saraksts"><i class="fa-solid fa-list-ul"></i></button>
                         </div>
-                        <div class="wysiwyg-editor" id="desc-editor" contenteditable="true">{!! $descriptionHtml !!}</div>
+                        <div class="wysiwyg-editor" id="desc-editor" contenteditable="true" data-save-url="{{ $pdfSaveUrl }}">{!! $descriptionHtml !!}</div>
                     </div>
                     <div class="field-foot">
                         <span class="hint" id="desc-count">0 / {{ $flyerMaxChars }}</span>
-                        <span class="hint" id="desc-ai-status"></span>
+                        <span style="display:flex; align-items:center; gap:0.6rem;">
+                            <span class="hint" id="desc-save-status"></span>
+                            <span class="hint" id="desc-ai-status"></span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -527,9 +530,42 @@
                 return tpl.innerHTML;
             }
 
+            // ── Apraksta autosaglabāšana ────────────────────────
+            const descSaveUrl = descEditor ? descEditor.dataset.saveUrl : null;
+            const descSaveStatus = document.getElementById('desc-save-status');
+            let descSaveTimer = null;
+            let descSavedHtml = descEditor ? sanitizeHtml(descEditor.innerHTML) : null;
+
+            function saveDescription() {
+                if (!descEditor || !descSaveUrl) { return; }
+                const html = sanitizeHtml(descEditor.innerHTML);
+                if (html === descSavedHtml) { return; }
+                if (descSaveStatus) { descSaveStatus.textContent = 'Saglabā...'; }
+                fetch(descSaveUrl, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': CSRF, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ html: html }),
+                }).then(function (res) {
+                    if (!res.ok) { throw new Error(); }
+                    descSavedHtml = html;
+                    if (descSaveStatus) { descSaveStatus.textContent = 'Saglabāts'; }
+                }).catch(function () {
+                    if (descSaveStatus) { descSaveStatus.textContent = 'Neizdevās saglabāt'; }
+                });
+            }
+
+            function scheduleDescriptionSave() {
+                if (descSaveTimer) { clearTimeout(descSaveTimer); }
+                descSaveTimer = setTimeout(saveDescription, 900);
+            }
+
             if (descEditor) {
                 descEditor.innerHTML = sanitizeHtml(descEditor.innerHTML);
-                descEditor.addEventListener('input', applyDescription);
+                descEditor.addEventListener('input', function () {
+                    applyDescription();
+                    scheduleDescriptionSave();
+                });
+                descEditor.addEventListener('blur', saveDescription);
                 descEditor.addEventListener('beforeinput', function (e) {
                     if (!e.inputType || e.inputType.indexOf('insert') !== 0) { return; }
                     const sel = window.getSelection();
@@ -547,6 +583,20 @@
                 applyDescription();
             }
 
+            // Nodrošina, ka pēdējās izmaiņas aiziet arī tad, ja lapa tiek
+            // aizvērta/stiepta pirms debounce taimera nostrādāšanas.
+            window.addEventListener('pagehide', function () {
+                if (!descEditor || !descSaveUrl) { return; }
+                const html = sanitizeHtml(descEditor.innerHTML);
+                if (html === descSavedHtml) { return; }
+                const fd = new FormData();
+                fd.append('_token', CSRF);
+                fd.append('html', html);
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon(descSaveUrl, fd);
+                }
+            });
+
             const toolbar = document.getElementById('desc-toolbar');
             if (toolbar && descEditor) {
                 toolbar.addEventListener('mousedown', function (e) { e.preventDefault(); });
@@ -556,6 +606,7 @@
                     descEditor.focus();
                     document.execCommand(btn.dataset.cmd, false, null);
                     applyDescription();
+                    scheduleDescriptionSave();
                 });
             }
 
@@ -576,6 +627,9 @@
                         if (!res.ok) { throw new Error(data.message || 'Neizdevās ģenerēt aprakstu.'); }
                         descEditor.innerHTML = sanitizeHtml(data.pdf || '');
                         applyDescription();
+                        if (descSaveTimer) { clearTimeout(descSaveTimer); }
+                        descSavedHtml = sanitizeHtml(descEditor.innerHTML);
+                        if (descSaveStatus) { descSaveStatus.textContent = 'Saglabāts'; }
                         btnAi.remove();
                     } catch (error) {
                         if (descStatus) { descStatus.textContent = error.message || 'Neizdevās ģenerēt aprakstu.'; }

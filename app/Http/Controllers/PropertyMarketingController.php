@@ -81,6 +81,9 @@ class PropertyMarketingController extends Controller
             'aiUrl' => route('properties.marketing.ai', [
                 'propertySlug' => $property->slug ?? $property->getKey(),
             ]),
+            'pdfSaveUrl' => route('properties.marketing.pdf-description', [
+                'propertySlug' => $property->slug ?? $property->getKey(),
+            ]),
         ]);
     }
 
@@ -127,9 +130,40 @@ class PropertyMarketingController extends Controller
 
         $ai = is_array($property->ai_result) ? $property->ai_result : [];
         $ai['pdf'] = $html;
+        // Mērķtiecīgi iestatīts PDF apraksts (arī tukšs) — vairs neizmantojam
+        // Facebook/parastā apraksta fallbacku, lai lietotāja izdzēstais teksts
+        // paliktu izdzēsts.
+        $ai['pdf_set'] = true;
         $property->update(['ai_result' => $ai]);
 
         return response()->json(['pdf' => $html]);
+    }
+
+    /**
+     * PDF bukleta apraksta autosaglabāšana no WYSIWYG redaktora. Saglabā tikai
+     * attīrītu/ierobežotu HTML; tukšs saturs nozīmē "apraksts izdzēsts".
+     */
+    public function savePdfDescription(Request $request, string $propertySlug): JsonResponse
+    {
+        $property = CrmProperty::query()
+            ->where('slug', $propertySlug)
+            ->firstOrFail();
+
+        $user = $request->user();
+        abort_unless(
+            $user->can('manage') || $property->owner_user_id === $user->id || $user->isPhoto(),
+            403,
+        );
+
+        $html = (string) $request->input('html', '');
+        $html = $this->truncateFlyerHtml($this->sanitizeFlyerHtml($html));
+
+        $ai = is_array($property->ai_result) ? $property->ai_result : [];
+        $ai['pdf'] = $html;
+        $ai['pdf_set'] = true;
+        $property->update(['ai_result' => $ai]);
+
+        return response()->json(['ok' => true, 'pdf' => $html]);
     }
 
     private function hasPdfDescription(CrmProperty $property): bool
@@ -148,8 +182,11 @@ class PropertyMarketingController extends Controller
     {
         $ai = is_array($property->ai_result) ? $property->ai_result : [];
         $source = trim((string) ($ai['pdf'] ?? ''));
+        // Kad apraksts reiz saglabāts (AI ģenerēts vai manuāli rediģēts),
+        // tukšs saturs nozīmē apzināti izdzēstu aprakstu — nevis fallbacku.
+        $isSet = ($ai['pdf_set'] ?? false) === true;
 
-        if ($source !== '') {
+        if ($isSet || $source !== '') {
             return $this->truncateFlyerHtml($this->sanitizeFlyerHtml($source));
         }
 
