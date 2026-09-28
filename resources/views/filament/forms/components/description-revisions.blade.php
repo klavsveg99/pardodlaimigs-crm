@@ -4,7 +4,6 @@
 @endphp
 
 <style>
-    .dark .pdc-rev-empty { border-color: #374151 !important; }
     .dark .pdc-rev-card { background: #111827 !important; border-color: #27303a !important; }
     .dark .pdc-rev-head { background: #1f2937 !important; border-color: #27303a !important; }
     .dark .pdc-rev-time { color: #f3f4f6 !important; }
@@ -13,9 +12,12 @@
 </style>
 
 @if ($revisions->isEmpty())
-    <div class="pdc-rev-empty" style="text-align: center; padding: 1.5rem; border: 1px dashed #d1d5db; border-radius: 0.75rem;">
-        <p style="font-size: 0.875rem; color: #6b7280;">Nav saglabātu apraksta versiju.</p>
-        <p style="margin-top: 0.25rem; font-size: 0.75rem; color: #9ca3af;">Versija tiek saglabāta katru reizi, kad apraksts tiek mainīts un saglabāts ar "Saglabāt". Pēdējās 30 versijas ir pieejamas.</p>
+    <div class="pdc-empty-state">
+        <div class="pdc-empty-state-inner">
+            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+            <span>Nav saglabātu apraksta versiju.</span>
+        </div>
+        <p style="margin: 0.5rem 0 0; font-size: 0.75rem; color: #9ca3af;">Versija tiek saglabāta katru reizi, kad apraksts tiek mainīts un saglabāts ar "Saglabāt". Pēdējās 30 versijas ir pieejamas.</p>
     </div>
 @else
     <div style="display: flex; flex-direction: column; gap: 0.75rem;">
