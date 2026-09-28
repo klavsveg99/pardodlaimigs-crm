@@ -88,16 +88,23 @@ class CrmStatsOverview extends StatsOverviewWidget
         ];
 
         // Kapitalizācija = pašreizējā kopējā vērtība Pārdošanā esošajiem
-        // īpašumiem (aģentam — paša īpašumi, adminam — visi kopā).
-        $capitalization = ($isAdmin
+        // īpašumiem (aģentam — paša īpašumi, adminam — visi kopā). Zem tās
+        // rādām šo pašu īpašumu vidējo cenu.
+        $portfolioQuery = ($isAdmin
             ? CrmProperty::query()
             : CrmProperty::query()->where('owner_user_id', $user?->id)
-        )
-            ->where('status', 'published')
-            ->sum('price_eur');
+        )->where('status', 'published');
 
-        $stats[] = Stat::make('Kapitalizācija', number_format((float) $capitalization, 0, ',', ' ').' €')
-            ->descriptionIcon('heroicon-o-banknotes')
+        $portfolioCount = (clone $portfolioQuery)->count();
+        $capitalization = (float) (clone $portfolioQuery)->sum('price_eur');
+        $avgPropertyPrice = $portfolioCount > 0 ? round($capitalization / $portfolioCount, 2) : null;
+
+        $stats[] = Stat::make('Kapitalizācija', number_format($capitalization, 0, ',', ' ').' €')
+            ->description($avgPropertyPrice !== null
+                ? 'Vidējā īpašuma cena: '.number_format($avgPropertyPrice, 0, ',', ' ').' €'
+                : 'Nav īpašumu pārdošanā')
+            ->descriptionIcon('heroicon-o-calculator')
+            ->descriptionColor('secondary')
             ->color('primary')
             ->url(\App\Filament\Admin\Resources\CrmPropertyResource::getUrl('index'));
 
