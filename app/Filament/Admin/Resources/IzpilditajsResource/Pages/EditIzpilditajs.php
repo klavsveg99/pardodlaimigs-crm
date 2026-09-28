@@ -12,6 +12,11 @@ class EditIzpilditajs extends EditRecord
 {
     protected static string $resource = IzpilditajsResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Rediģēt izpildītāju';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

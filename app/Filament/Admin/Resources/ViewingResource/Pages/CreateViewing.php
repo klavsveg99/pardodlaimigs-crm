@@ -12,6 +12,11 @@ class CreateViewing extends CreateRecord
 
     protected static string $resource = ViewingResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Jauna apskate';
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Agents only see their own viewings, so default the agent to the

@@ -10,6 +10,11 @@ class ViewClient extends ViewRecord
 {
     protected static string $resource = ClientResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Skatīt klientu';
+    }
+
     protected function getHeaderActions(): array
     {
         // Send/email + WhatsApp live only in the attachment rows'

@@ -12,6 +12,11 @@ class CreateClient extends CreateRecord
 
     protected static string $resource = ClientResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Jauns klients';
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (($data['source'] ?? null) === 'Cits' && filled($data['source_other'] ?? null)) {

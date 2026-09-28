@@ -26,6 +26,11 @@ class CreateCrmProperty extends CreateRecord
 
     protected static string $resource = CrmPropertyResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Jauns īpašums';
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Agents only see their own properties, so default the owner to the

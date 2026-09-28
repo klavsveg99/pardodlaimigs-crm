@@ -10,4 +10,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateIzpilditajs extends CreateRecord
 {
     protected static string $resource = IzpilditajsResource::class;
+
+    public function getTitle(): string
+    {
+        return 'Jauns izpildītājs';
+    }
 }

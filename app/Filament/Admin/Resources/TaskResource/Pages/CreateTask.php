@@ -12,6 +12,11 @@ class CreateTask extends CreateRecord
 
     protected static string $resource = TaskResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Jauns uzdevums';
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Aģents lauku redz tikai administrators; pārējiem uzdevums tiek

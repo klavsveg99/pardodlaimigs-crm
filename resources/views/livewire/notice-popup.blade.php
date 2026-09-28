@@ -22,10 +22,11 @@
             max-width: calc(100vw - 1rem);
         }
         @media (max-width: 640px) {
-            /* Mobile: top-center, full width, same side gutter as page content. */
+            /* Mobile: bottom-center, full width, with a gutter from the
+               screen sides and bottom. */
             .pdc-notice-stack {
-                top: 4.5rem;
-                bottom: auto;
+                top: auto;
+                bottom: 1rem;
                 left: 1rem;
                 right: 1rem;
                 width: auto;

@@ -20,6 +20,11 @@ class ViewCrmProperty extends ViewRecord
 
     protected string $view = 'filament.admin.resources.crm-property-resource.pages.view-crm-property';
 
+    public function getTitle(): string
+    {
+        return 'Skatīt īpašumu';
+    }
+
     /**
      * The custom view blade renders the readable sections itself; the form
      * only carries the documents grid so the view page gets the same
