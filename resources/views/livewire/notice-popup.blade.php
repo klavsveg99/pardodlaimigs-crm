@@ -12,7 +12,7 @@
 
         .pdc-notice-stack {
             position: fixed;
-            top: 4.5rem;
+            bottom: 1rem;
             right: 1rem;
             z-index: 2147483000;
             display: flex;
@@ -22,7 +22,15 @@
             max-width: calc(100vw - 1rem);
         }
         @media (max-width: 640px) {
-            .pdc-notice-stack { left: 0.5rem; right: 0.5rem; width: auto; }
+            /* Mobile: top-center, full width, same side gutter as page content. */
+            .pdc-notice-stack {
+                top: 4.5rem;
+                bottom: auto;
+                left: 1rem;
+                right: 1rem;
+                width: auto;
+                max-width: none;
+            }
         }
 
         .pdc-notice-card {
@@ -97,6 +105,7 @@
         .dark .pdc-notice-icon { background: #1f2937; color: #e5e7eb; }
         .dark .pdc-notice-icon--urgent { background: #450a0a; color: #fca5a5; }
         .dark .pdc-notice-title { color: #f3f4f6; }
+        .dark .pdc-notice-open { color: #ffffff; }
         .dark .pdc-notice-field { color: #9ca3af; }
         .dark .pdc-notice-field-label { color: #6b7280; }
         .dark .pdc-notice-nav-btn { border-color: #374151; background: #1f2937; color: #e5e7eb; }

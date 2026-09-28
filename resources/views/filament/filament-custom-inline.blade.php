@@ -483,6 +483,37 @@ a.fi-link:not(.fi-btn):not(.fi-color-primary) .fi-link-label {
 .opacity-0 { opacity: 0 !important; }
 .group:hover .group-hover\:opacity-100 { opacity: 1 !important; }
 
+/* Property gallery thumbnails (view + edit): the filename chip and download
+   action show only on hover; the GALVENĀ badge hides on hover so the chip is
+   not obscured by it. Touch devices have no hover, so there the download
+   action stays visible and reachable. */
+.pdc-view-thumb .pdc-thumb-action,
+[data-attach-card] .pdc-thumb-action {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+.pdc-view-thumb:hover .pdc-thumb-action,
+[data-attach-card]:hover .pdc-thumb-action {
+    opacity: 1;
+    pointer-events: auto;
+}
+.pdc-view-thumb .pdc-thumb-main-badge,
+[data-attach-card] .pdc-thumb-main-badge {
+    transition: opacity 0.15s ease;
+}
+.pdc-view-thumb:hover .pdc-thumb-main-badge,
+[data-attach-card]:hover .pdc-thumb-main-badge {
+    opacity: 0;
+}
+@media (hover: none) {
+    .pdc-view-thumb .pdc-thumb-action,
+    [data-attach-card] .pdc-thumb-action {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
 .dark .fi-label {
     color: #f9fafb !important;
 }

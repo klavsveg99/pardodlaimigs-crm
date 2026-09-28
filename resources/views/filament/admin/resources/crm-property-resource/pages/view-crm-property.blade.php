@@ -147,7 +147,7 @@
             >
                 <div class="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                     @foreach ($galleryAttachments as $idx => $attachment)
-                        <div style="position: relative; display: inline-block; margin: 0 0.35rem 0.5rem 0;">
+                        <div class="pdc-view-thumb" style="position: relative; display: inline-block; margin: 0 0.35rem 0.5rem 0;">
                         <button
                             type="button"
                             x-on:click="show({{ $idx }})"
@@ -164,13 +164,13 @@
                                  height="300"
                                  class="h-32 w-full object-cover md:h-36 pointer-events-none">
                             @if($idx === 0)
-                                <span style="position:absolute; left:0.5rem; top:0.5rem; background:var(--pdc-primary); color:white; font-size:0.68rem; font-weight:700; padding:0.28rem 0.55rem; border-radius:0.4rem; letter-spacing:0.04em; box-shadow:0 2px 8px rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.2); line-height:1;">GALVENĀ</span>
+                                <span class="pdc-thumb-main-badge" style="position:absolute; left:0.5rem; top:0.5rem; background:var(--pdc-primary); color:white; font-size:0.68rem; font-weight:700; padding:0.28rem 0.55rem; border-radius:0.4rem; letter-spacing:0.04em; box-shadow:0 2px 8px rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.2); line-height:1;">GALVENĀ</span>
                             @endif
-                            <div class="absolute inset-0 flex items-end p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" style="background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 45%);">
+                            <div class="absolute inset-0 opacity-0 group-hover:opacity-100" style="background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 45%); display:flex; align-items:flex-end; padding:0.5rem; transition:opacity 0.2s; pointer-events:none;">
                                 <span style="background:var(--pdc-primary); color:white; font-size:0.72rem; font-weight:600; padding:0.22rem 0.5rem; border-radius:0.35rem; box-shadow:0 1px 4px rgba(0,0,0,0.25); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; max-width:100%;">{{ $attachment->original_name }}</span>
                             </div>
                         </button>
-                        <a href="{{ $attachment->cacheBustedUrl() }}" download="{{ $attachment->original_name }}" title="Lejupielādēt" style="position: absolute; top: 0.5rem; right: 0.5rem; z-index: 10; display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; border-radius: 0.4rem; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.25); text-decoration: none;">
+                        <a class="pdc-thumb-action" href="{{ $attachment->cacheBustedUrl() }}" download="{{ $attachment->original_name }}" title="Lejupielādēt" style="position: absolute; top: 0.5rem; right: 0.5rem; z-index: 10; display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; border-radius: 0.4rem; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.25); text-decoration: none;">
                             <i class="fa-solid fa-download" style="font-size: 0.8rem;"></i>
                         </a>
                         </div>

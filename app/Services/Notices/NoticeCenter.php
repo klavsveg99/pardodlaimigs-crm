@@ -75,7 +75,7 @@ class NoticeCenter
             ->map(fn (Client $client): array => [
                 'key' => self::LEAD_KEY_PREFIX.$client->id,
                 'type' => 'Līds',
-                'type_color' => 'warning',
+                'type_color' => 'gray',
                 'icon' => 'heroicon-o-phone-arrow-up-right',
                 'urgent' => false,
                 'title' => $client->name,
@@ -110,7 +110,7 @@ class NoticeCenter
             ->map(fn (CrmProperty $property): array => [
                 'key' => self::STALE_KEY_PREFIX.$property->id,
                 'type' => 'Īpašums',
-                'type_color' => 'danger',
+                'type_color' => 'gray',
                 'icon' => 'heroicon-o-exclamation-triangle',
                 'urgent' => true,
                 'title' => $property->title,

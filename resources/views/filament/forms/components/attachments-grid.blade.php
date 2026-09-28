@@ -982,6 +982,7 @@
                     x-bind:download="file.name"
                     x-on:click.stop
                     title="Lejupielādēt"
+                    class="pdc-thumb-action"
                     style="position: absolute; top: 0.5rem; right: {{ $gridDownloadOffset }}rem; z-index: 10; height: 1.6rem; width: 1.6rem; border-radius: 0.35rem; background: rgba(0,0,0,0.62); color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.22); cursor: pointer; backdrop-filter: blur(2px); text-decoration: none;"
                 >
                     <i class="fa-solid fa-download" style="font-size: 0.8rem;"></i>
@@ -1022,7 +1023,7 @@
                 </div>
 
                 @if($isReorderable)
-                    <div x-show="index === 0" style="position: absolute; bottom: 0.5rem; left: 0.5rem; z-index: 10; background: var(--pdc-primary); color: white; font-size: 0.68rem; font-weight: 700; padding: 0.28rem 0.55rem; border-radius: 0.4rem; letter-spacing: 0.04em; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.2); line-height: 1;">GALVENĀ</div>
+                    <div x-show="index === 0" class="pdc-thumb-main-badge" style="position: absolute; bottom: 0.5rem; left: 0.5rem; z-index: 10; background: var(--pdc-primary); color: white; font-size: 0.68rem; font-weight: 700; padding: 0.28rem 0.55rem; border-radius: 0.4rem; letter-spacing: 0.04em; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.2); line-height: 1;">GALVENĀ</div>
                 @endif
             </div>
         </template>

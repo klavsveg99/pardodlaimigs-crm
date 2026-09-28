@@ -65,8 +65,10 @@ class ClientsRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
-        // Max two rows (buyer + seller), so sorting/filters just add noise.
+        // Max two rows (buyer + seller), so sorting/filters/pagination just add
+        // noise. Pagination off also hides the "Rāda X rezultātu" footer.
         return $table
+            ->paginated(false)
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('#'),
                 Tables\Columns\TextColumn::make('name')->label('Klients')->weight('bold')->wrap(),
