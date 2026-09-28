@@ -428,7 +428,7 @@ function pdc_find_existing_media_by_path($path, $url = '')
     //    of the CRM filename itself. The old code did strip it, so "4-2.jpg"
     //    matched "4.jpg" (another property's photo) and became the featured image.
     //    Candidates already stamped with a DIFFERENT CRM URL are skipped.
-    $stem = trim((string) pathinfo($basename, PATHINFO_FILENAME), '.-_');
+    $stem = pdc_sanitize_media_name(pathinfo($basename, PATHINFO_FILENAME));
     $dir = trim(dirname($path), '/');
     if ($stem === '' || $dir === '' || $dir === '.') {
         return 0;
@@ -477,11 +477,12 @@ function pdc_same_upload_dir($a, $b)
 /**
  * Vai WP saglabātais faila ceļš atbilst CRM avota ceļam (tajā pašā mapē)?
  *
- * Tolerē WP sanitize_file_name() (noņem sākuma ".", "_", "-" un paplašinājumu
- * padara ar mazajiem burtiem) un WP kolīziju pārdēvēšanu ("<nosaukums>-<skaitlis>.jpg"),
- * BET nekad nenoņem "-<skaitlis>", kas ir daļa no paša CRM faila nosaukuma.
- * Vecais variants grieza nost arī CRM nosaukuma galotni, tāpēc "4-2.jpg" tika
- * sajaukts ar "4.jpg" un cita īpašuma bilde kļuva par galveno attēlu.
+ * Tolerē WP sanitize_file_name() (noņem aizliegtās rakstzīmes, atstarpes →
+ * "-", noņem sākuma ".", "_", "-") un WP kolīziju pārdēvēšanu
+ * ("<nosaukums>-<skaitlis>.jpg"), BET nekad nenoņem "-<skaitlis>", kas ir daļa
+ * no paša CRM faila nosaukuma. Vecais variants grieza nost arī CRM nosaukuma
+ * galotni, tāpēc "4-2.jpg" tika sajaukts ar "4.jpg" un cita īpašuma bilde
+ * kļuva par galveno attēlu.
  */
 function pdc_crm_file_matches($stored_file, $crm_path)
 {
@@ -492,25 +493,44 @@ function pdc_crm_file_matches($stored_file, $crm_path)
         return false;
     }
 
-    $stored_name = basename($stored_file);
-    $crm_name = basename((string) $crm_path);
+    $stored_name = pdc_sanitize_media_name(basename($stored_file));
+    $crm_name = pdc_sanitize_media_name(basename((string) $crm_path));
 
-    if (strcasecmp(pathinfo($stored_name, PATHINFO_EXTENSION), pathinfo($crm_name, PATHINFO_EXTENSION)) !== 0) {
+    if ($stored_name === '' || $crm_name === '') {
         return false;
     }
-
-    $stored_stem = strtolower(trim((string) pathinfo($stored_name, PATHINFO_FILENAME), '.-_'));
-    $crm_stem = strtolower(trim((string) pathinfo($crm_name, PATHINFO_FILENAME), '.-_'));
-
-    if ($stored_stem === '' || $crm_stem === '') {
-        return false;
-    }
-    if ($stored_stem === $crm_stem) {
+    if ($stored_name === $crm_name) {
         return true;
     }
 
     // WP kolīzijas pievienotais "-<skaitlis>" pirms paplašinājuma.
-    return (bool) preg_match('/^'.preg_quote($crm_stem, '/').'-\d+$/', $stored_stem);
+    $dot = strrpos($crm_name, '.');
+    if ($dot === false) {
+        return false;
+    }
+    $stem = substr($crm_name, 0, $dot);
+    $ext = substr($crm_name, $dot);
+
+    return (bool) preg_match('/^'.preg_quote($stem, '/').'-\d+'.preg_quote($ext, '/').'$/', $stored_name);
+}
+
+/**
+ * Aptuveni atdarina WP sanitize_file_name(): noņem aizliegtās rakstzīmes,
+ * atstarpju virknes pārvērš vienā "-", sablīvē "-" virknes un noņem sākuma/
+ * beigu ".", "_", "-". Salīdzināšana ir reģistrnejutīga, tāpēc uzreiz
+ * pārveidojam arī uz mazajiem burtiem.
+ */
+function pdc_sanitize_media_name($name)
+{
+    $name = str_replace(
+        ['?', '[', ']', '/', '\\', '=', '<', '>', ':', ';', ',', "'", '"', '&', '$', '#', '*', '(', ')', '|', '~', '`', '!', '{', '}', '%', '+'],
+        '',
+        (string) $name
+    );
+    $name = preg_replace('/[\r\n\t ]+/', '-', $name);
+    $name = preg_replace('/-+/', '-', (string) $name);
+
+    return strtolower(trim((string) $name, '.-_'));
 }
 
 function pdc_sync_attachments($post_id, $attachments, $started_at = 0)
