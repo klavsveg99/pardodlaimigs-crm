@@ -1659,4 +1659,23 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-ta.pdc-category-leaders .fi-ta-cell-leader-name .fi-ta-text { color: #6b7280 !important; }
     .dark .fi-ta.pdc-category-leaders .fi-ta-cell-leader-name .fi-ta-text { color: #9ca3af !important; }
 }
+/* --- "Šodien jāizdara" quick-complete (today-priorities widget) ---
+   On click the row fades/slides out while the Livewire request runs, then
+   the re-render removes it. The button is disabled + shows a spinner so a
+   double click cannot fire two completions. */
+.pdc-today-row {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.pdc-today-row.is-completing {
+    opacity: 0;
+    transform: translateX(0.75rem);
+    pointer-events: none;
+}
+.pdc-today-spinner {
+    animation: pdc-spin 0.7s linear infinite;
+    transform-origin: center;
+}
+@keyframes pdc-spin {
+    to { transform: rotate(360deg); }
+}
 </style>

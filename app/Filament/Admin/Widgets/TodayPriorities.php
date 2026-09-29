@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Concerns\HasUndoableNotifications;
 use App\Models\Task;
 use App\Models\Viewing;
 use App\Services\Notices\NoticeCenter;
-use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\On;
@@ -21,6 +21,8 @@ use Livewire\Attributes\On;
  */
 class TodayPriorities extends Widget
 {
+    use HasUndoableNotifications;
+
     protected string $view = 'filament.admin.widgets.today-priorities';
 
     protected static ?int $sort = 4;
@@ -68,7 +70,7 @@ class TodayPriorities extends Widget
 
         $task->update(['completed_at' => now()]);
 
-        Notification::make()->title('Uzdevums izpildīts')->success()->send();
+        $this->notifyUndoable('Uzdevums izpildīts', 'task-completed', ['id' => $task->id]);
     }
 
     /** Ātrā darbība: atzīmēt apskati kā notikušu. */
@@ -84,7 +86,41 @@ class TodayPriorities extends Widget
 
         $viewing->update(['status' => 'done']);
 
-        Notification::make()->title('Apskate atzīmēta kā notikusi')->success()->send();
+        $this->notifyUndoable('Apskate atzīmēta kā notikusi', 'viewing-done', ['id' => $viewing->id]);
+    }
+
+    /**
+     * Atsauc iepriekšējo ātro darbību. Ieraksts tiek meklēts no jauna ar to
+     * pašu tvērumu, ar kādu tas tika atzīmēts, lai no notikuma datiem
+     * nevarētu mainīt svešus ierakstus.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    protected function applyUndo(string $action, array $data): bool
+    {
+        $id = (int) ($data['id'] ?? 0);
+
+        $record = match ($action) {
+            'task-completed' => Task::query()
+                ->when($this->scopeToUser(), fn ($q) => $q->where('assigned_user_id', auth()->id()))
+                ->find($id),
+            'viewing-done' => Viewing::query()
+                ->when($this->scopeToUser(), fn ($q) => $q->where('agent_user_id', auth()->id()))
+                ->find($id),
+            default => null,
+        };
+
+        if (! $record) {
+            return false;
+        }
+
+        if ($record instanceof Task) {
+            $record->update(['completed_at' => null]);
+        } else {
+            $record->update(['status' => 'scheduled']);
+        }
+
+        return true;
     }
 
     /**
