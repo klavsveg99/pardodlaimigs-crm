@@ -57,8 +57,30 @@
                                 @endif
                             </div>
 
-                            <x-filament::icon icon="heroicon-o-chevron-right" style="flex: none; align-self: center; width: 1.1rem; height: 1.1rem; color: #9ca3af;" />
                         </a>
+
+                        <div style="flex: none; display: inline-flex; align-items: center; gap: 0.4rem; padding-right: 0.6rem;">
+                            @if (! empty($item['task_id']))
+                                <button
+                                    type="button"
+                                    wire:click="completeTask({{ $item['task_id'] }})"
+                                    title="Atzīmēt kā pabeigtu"
+                                    style="width: 1.7rem; height: 1.7rem; border-radius: 9999px; background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 0;"
+                                >
+                                    <svg style="width: 0.95rem; height: 0.95rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                </button>
+                            @elseif (! empty($item['viewing_id']))
+                                <button
+                                    type="button"
+                                    wire:click="completeViewing({{ $item['viewing_id'] }})"
+                                    title="Atzīmēt kā pabeigtu"
+                                    style="width: 1.7rem; height: 1.7rem; border-radius: 9999px; background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 0;"
+                                >
+                                    <svg style="width: 0.95rem; height: 0.95rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                </button>
+                            @endif
+                            <x-filament::icon icon="heroicon-o-chevron-right" style="flex: none; width: 1.1rem; height: 1.1rem; color: #9ca3af;" />
+                        </div>
 
                         @if (! empty($item['dismissable']))
                             <button

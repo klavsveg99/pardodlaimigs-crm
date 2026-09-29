@@ -59,10 +59,6 @@ class ViewCrmProperty extends ViewRecord
     {
         $actions = [];
 
-        if (! auth()->user()?->isPhoto()) {
-            $actions[] = $this->getPievienotKlientuAction();
-        }
-
         $actions[] = Actions\Action::make('pdf_generator')
             ->label('PDF mārketings')
             ->icon('heroicon-o-document-arrow-down')

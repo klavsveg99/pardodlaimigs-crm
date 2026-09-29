@@ -7,6 +7,7 @@ namespace App\Filament\Admin\Widgets;
 use App\Models\Task;
 use App\Models\Viewing;
 use App\Services\Notices\NoticeCenter;
+use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\On;
@@ -52,6 +53,38 @@ class TodayPriorities extends Widget
         }
 
         $this->dispatch('notices-changed');
+    }
+
+    /** Ātrā darbība: atzīmēt uzdevumu kā izpildītu. */
+    public function completeTask(int $taskId): void
+    {
+        $task = Task::query()
+            ->when($this->scopeToUser(), fn ($q) => $q->where('assigned_user_id', auth()->id()))
+            ->find($taskId);
+
+        if (! $task || $task->completed_at !== null) {
+            return;
+        }
+
+        $task->update(['completed_at' => now()]);
+
+        Notification::make()->title('Uzdevums izpildīts')->success()->send();
+    }
+
+    /** Ātrā darbība: atzīmēt apskati kā notikušu. */
+    public function completeViewing(int $viewingId): void
+    {
+        $viewing = Viewing::query()
+            ->when($this->scopeToUser(), fn ($q) => $q->where('agent_user_id', auth()->id()))
+            ->find($viewingId);
+
+        if (! $viewing || $viewing->status !== 'scheduled') {
+            return;
+        }
+
+        $viewing->update(['status' => 'done']);
+
+        Notification::make()->title('Apskate atzīmēta kā notikusi')->success()->send();
     }
 
     /**
@@ -133,6 +166,7 @@ class TodayPriorities extends Widget
 
                 return [
                     'key' => 'task-'.$task->id,
+                    'task_id' => $task->id,
                     'type' => 'Uzdevums',
                     // Tipa birka vienmēr neitrāli pelēka; nokavējumu izceļ
                     // statuss "Nokavēts", ikona un kartītes sarkanā mala.
@@ -174,6 +208,7 @@ class TodayPriorities extends Widget
 
                 return [
                     'key' => 'viewing-'.$viewing->id,
+                    'viewing_id' => $viewing->id,
                     'type' => 'Apskate',
                     'type_color' => 'gray',
                     'icon' => $overdue ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-map-pin',
