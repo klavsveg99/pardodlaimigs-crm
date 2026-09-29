@@ -1622,6 +1622,35 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-ta.pdc-yearly-commission .fi-ta-cell-avg-percent .fi-ta-text-item { justify-content: flex-end !important; }
 }
 
+/* ── Kategoriju līderu avatari — sakrauti ar 50% pārklājumu ───── */
+.pdc-avatar-stack {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+}
+
+.pdc-avatar-stack img {
+    width: 36px;
+    height: 36px;
+    border-radius: 9999px;
+    object-fit: cover;
+    box-shadow: 0 0 0 2px #ffffff;
+    transition: transform 0.15s ease;
+}
+
+.pdc-avatar-stack img + img {
+    margin-left: -18px;
+}
+
+.pdc-avatar-stack img:hover {
+    z-index: 999 !important;
+    transform: scale(1.08);
+}
+
+.dark .pdc-avatar-stack img {
+    box-shadow: 0 0 0 2px #111827;
+}
+
 /* ── Kategoriju līderi — compact rows on mobile ──────────────────
    The avatar column has no label, so Filament's stacked layout leaves
    it floating beside "Kategorija" and repeats every label. Show one
@@ -1658,6 +1687,15 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-ta.pdc-category-leaders .fi-ta-cell-leader-value .fi-ta-text { justify-content: flex-end !important; }
     .fi-ta.pdc-category-leaders .fi-ta-cell-leader-name .fi-ta-text { color: #6b7280 !important; }
     .dark .fi-ta.pdc-category-leaders .fi-ta-cell-leader-name .fi-ta-text { color: #9ca3af !important; }
+
+    .pdc-avatar-stack img {
+        width: 30px;
+        height: 30px;
+    }
+
+    .pdc-avatar-stack img + img {
+        margin-left: -15px;
+    }
 }
 /* --- "Šodien jāizdara" quick-complete (today-priorities widget) ---
    On click the row fades/slides out while the Livewire request runs, then

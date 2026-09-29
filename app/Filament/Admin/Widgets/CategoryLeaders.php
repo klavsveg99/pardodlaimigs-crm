@@ -44,13 +44,10 @@ class CategoryLeaders extends BaseWidget
                     ->wrap()
                     ->width('220px')
                     ->weight('bold'),
-                Tables\Columns\ImageColumn::make('leader_avatar')
+                Tables\Columns\TextColumn::make('leader_avatar')
                     ->label('')
-                    ->circular()
-                    ->defaultImageUrl(asset('images/no-photo.svg'))
-                    ->getStateUsing(fn ($record) => $record['leader_avatar'] ? \Illuminate\Support\Facades\Storage::disk('public')->url($record['leader_avatar']) : null)
-                    ->height(36)
-                    ->width(36),
+                    ->html()
+                    ->getStateUsing(fn ($record) => $this->avatarStackHtml($record['leaders'] ?? [])),
                 Tables\Columns\TextColumn::make('leader_name')
                     ->label('Uzvarētājs')
                     ->wrap()
@@ -76,7 +73,29 @@ class CategoryLeaders extends BaseWidget
 
     protected function computeLeaders($start, $end): array
     {
-        $empty = fn () => ['leader_name' => '—', 'leader_value' => '—', 'leader_avatar' => null];
+        $empty = fn () => ['leader_name' => '—', 'leader_value' => '—', 'leaders' => []];
+
+        // Uzvarētāju saraksts no lietotāju ID; saglabājam to secību. Ja
+        // vairāki dalībnieki sasniedz vienādu vērtību, visi ir uzvarētāji.
+        $build = function (string $category, $value, array $userIds): array {
+            $users = \App\Models\User::whereIn('id', $userIds)->get()->keyBy('id');
+
+            $leaders = [];
+            foreach (array_values(array_unique($userIds)) as $id) {
+                $user = $users->get($id);
+                if (! $user) {
+                    continue;
+                }
+                $leaders[] = ['name' => (string) $user->name, 'avatar' => $user->avatar_url];
+            }
+
+            return [
+                'category' => $category,
+                'leader_value' => $value,
+                'leader_name' => $leaders === [] ? '—' : implode(', ', array_column($leaders, 'name')),
+                'leaders' => $leaders,
+            ];
+        };
 
         // Jauni klienti
         $newClients = Client::whereBetween('created_at', [$start, $end])
@@ -87,14 +106,12 @@ class CategoryLeaders extends BaseWidget
             ->sortDesc();
 
         if ($newClients->count()) {
-            $userId = $newClients->keys()->first();
-            $user = \App\Models\User::find($userId);
-            $leaders[] = [
-                'category' => 'Jauni klienti',
-                'leader_name' => $user?->name ?? '—',
-                'leader_value' => $newClients->first(),
-                'leader_avatar' => $user?->avatar_path,
-            ];
+            $winning = $newClients->first();
+            $leaders[] = $build(
+                'Jauni klienti',
+                $winning,
+                $newClients->filter(fn ($count) => $count === $winning)->keys()->all(),
+            );
         } else {
             $leaders[] = array_merge(['category' => 'Jauni klienti'], $empty());
         }
@@ -108,14 +125,12 @@ class CategoryLeaders extends BaseWidget
             ->sortDesc();
 
         if ($viewingLeader->count()) {
-            $userId = $viewingLeader->keys()->first();
-            $user = \App\Models\User::find($userId);
-            $leaders[] = [
-                'category' => 'Organizētas apskates',
-                'leader_name' => $user?->name ?? '—',
-                'leader_value' => $viewingLeader->first(),
-                'leader_avatar' => $user?->avatar_path,
-            ];
+            $winning = $viewingLeader->first();
+            $leaders[] = $build(
+                'Organizētas apskates',
+                $winning,
+                $viewingLeader->filter(fn ($count) => $count === $winning)->keys()->all(),
+            );
         } else {
             $leaders[] = array_merge(['category' => 'Organizētas apskates'], $empty());
         }
@@ -136,14 +151,12 @@ class CategoryLeaders extends BaseWidget
             ->sortDesc();
 
         if ($soldLeader->count()) {
-            $userId = $soldLeader->keys()->first();
-            $user = \App\Models\User::find($userId);
-            $leaders[] = [
-                'category' => 'Pārdoti īpašumi',
-                'leader_name' => $user?->name ?? '—',
-                'leader_value' => $soldLeader->first(),
-                'leader_avatar' => $user?->avatar_path,
-            ];
+            $winning = $soldLeader->first();
+            $leaders[] = $build(
+                'Pārdoti īpašumi',
+                $winning,
+                $soldLeader->filter(fn ($count) => $count === $winning)->keys()->all(),
+            );
         } else {
             $leaders[] = array_merge(['category' => 'Pārdoti īpašumi'], $empty());
         }
@@ -160,30 +173,55 @@ class CategoryLeaders extends BaseWidget
             ->whereBetween('sold_at', [$start, $end])
             ->get(['owner_user_id', 'sale_started_at', 'sold_at']);
 
-        $fastest = null;
+        $fastestDays = null;
+        $fastestUserIds = [];
         foreach ($soldProperties as $prop) {
             $days = (int) $prop->sale_started_at->copy()->startOfDay()
                 ->diffInDays($prop->sold_at->copy()->startOfDay());
             if ($days < 0) {
                 continue;
             }
-            if ($fastest === null || $days < $fastest['days']) {
-                $fastest = ['user_id' => $prop->owner_user_id, 'days' => $days];
+            if ($fastestDays === null || $days < $fastestDays) {
+                $fastestDays = $days;
+                $fastestUserIds = [(int) $prop->owner_user_id];
+            } elseif ($days === $fastestDays) {
+                $fastestUserIds[] = (int) $prop->owner_user_id;
             }
         }
 
-        if ($fastest) {
-            $user = \App\Models\User::find($fastest['user_id']);
-            $leaders[] = [
-                'category' => 'Ātrākais pārdošanas cikls',
-                'leader_name' => $user?->name ?? '—',
-                'leader_value' => $fastest['days'],
-                'leader_avatar' => $user?->avatar_path,
-            ];
+        if ($fastestDays !== null) {
+            $leaders[] = $build('Ātrākais pārdošanas cikls', $fastestDays, $fastestUserIds);
         } else {
             $leaders[] = array_merge(['category' => 'Ātrākais pārdošanas cikls'], $empty());
         }
 
         return $leaders;
+    }
+
+    /**
+     * Sakrautas uzvarētāju fotogrāfijas: nākamā 50% pārklāj iepriekšējo un
+     * uz hover nāk priekšā (skat. .pdc-avatar-stack CSS).
+     *
+     * @param  array<int, array{name: string, avatar: ?string}>  $leaders
+     */
+    protected function avatarStackHtml(array $leaders): string
+    {
+        $fallback = asset('images/no-photo.svg');
+
+        if ($leaders === []) {
+            return '<span class="pdc-avatar-stack"><img src="'.e($fallback).'" alt=""></span>';
+        }
+
+        $html = '<span class="pdc-avatar-stack">';
+        $zIndex = count($leaders);
+        foreach ($leaders as $leader) {
+            $html .= '<img src="'.e($leader['avatar'] ?: $fallback).'"'
+                .' alt="'.e($leader['name']).'"'
+                .' title="'.e($leader['name']).'"'
+                .' style="z-index: '.$zIndex.'">';
+            $zIndex--;
+        }
+
+        return $html.'</span>';
     }
 }
