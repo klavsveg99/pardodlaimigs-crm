@@ -66,6 +66,8 @@ trait AttachSellerAction
             ->label('Piesaistīt pircēju')
             ->icon('heroicon-o-user-plus')
             ->color('gray')
+            ->modalHeading('Pievienot pircēju?')
+            ->modalDescription('Vai vēlaties pievienot pircēju šim īpašumam?')
             // Pircēju drīkst piesaistīt tikai pārdotam īpašumam, un tikai
             // ja pircējs vēl nav piesaistīts.
             ->visible(fn (): bool => ($this->record->status ?? null) === 'sold'

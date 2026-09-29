@@ -148,19 +148,23 @@ class CategoryLeaders extends BaseWidget
             $leaders[] = array_merge(['category' => 'Pārdoti īpašumi'], $empty());
         }
 
-        // Ātrākais pārdošanas cikls
+        // Ātrākais pārdošanas cikls — dienas no pārdošanas sākuma datuma
+        // (sale_started_at) līdz dienai, kad statuss kļuva "Pārdots"
+        // (sold_at). Tā kā uzvarētājs tiek meklēts tikai starp statusa
+        // "sold" īpašumiem, atgriežot statusu atpakaļ ieraksts pazūd.
         $soldProperties = CrmProperty::query()
             ->where('status', 'sold')
             ->whereNotNull('owner_user_id')
-            ->whereNotNull('created_at')
+            ->whereNotNull('sale_started_at')
             ->whereNotNull('sold_at')
             ->whereBetween('sold_at', [$start, $end])
-            ->get(['owner_user_id', 'created_at', 'sold_at']);
+            ->get(['owner_user_id', 'sale_started_at', 'sold_at']);
 
         $fastest = null;
         foreach ($soldProperties as $prop) {
-            $days = (int) abs($prop->sold_at->diffInDays($prop->created_at));
-            if ($days <= 0) {
+            $days = (int) $prop->sale_started_at->copy()->startOfDay()
+                ->diffInDays($prop->sold_at->copy()->startOfDay());
+            if ($days < 0) {
                 continue;
             }
             if ($fastest === null || $days < $fastest['days']) {

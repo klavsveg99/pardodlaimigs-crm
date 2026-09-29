@@ -109,8 +109,15 @@ class CrmProperty extends Model
                 $property->slug = $slug;
             }
             if ($property->isDirty('status')) {
-                if ($property->status === 'sold' && empty($property->sold_at)) {
+                if ($property->status === 'sold') {
+                    // Pārdots → pārdošanas datums ir brīdis, kad statuss
+                    // mainīts (atkārtoti pārdodot, datums tiek atjaunots).
                     $property->sold_at = now();
+                } else {
+                    // Statuss mainīts prom no "Pārdots" — noņemam pārdošanas
+                    // datumu, lai īpašums vairs neparādās pārdošanas
+                    // statistikā un "Ātrākais pārdošanas cikls" kategorijā.
+                    $property->sold_at = null;
                 }
             }
             // Cena vai statuss mainīts → atiestata 45 dienu atgādinājuma
@@ -121,8 +128,6 @@ class CrmProperty extends Model
                     $property->stale_notice_dismissed_at = null;
                 }
             }
-            // If final_price/commission set without sold status, keep sold_at; if needed, clear when not sold:
-            // if ($property->status !== 'sold') { $property->sold_at = null; }
         });
 
         static::created(fn (self $p) => app(AuditLogger::class)->log('create', 'crm_property', $p->id, null, $p->toArray()));

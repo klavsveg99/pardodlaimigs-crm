@@ -27,6 +27,12 @@ class EditCrmProperty extends EditRecord
     use SyncsAttachments;
 
     /**
+     * Vai pēdējā saglabāšanā statuss tika mainīts uz "Pārdots" — tad pēc
+     * saglabāšanas piedāvājam uzreiz piesaistīt pircēju.
+     */
+    protected bool $statusChangedToSold = false;
+
+    /**
      * Property attachments live in two collections: gallery images and
      * separate "Pielikumi" documents.
      */
@@ -102,8 +108,11 @@ class EditCrmProperty extends EditRecord
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
         $wasAutosave = $this->isAutosaveRun;
+        $previousStatus = $record->status;
 
         $record = parent::handleRecordUpdate($record, $data);
+
+        $this->statusChangedToSold = $previousStatus !== 'sold' && $record->status === 'sold';
 
         // AI piezīmes tiek glabātas komponentes stāvoklī (modalā textarea),
         // nevis caur shēmas dehidrāciju — saglabājam tās šeit.
@@ -120,6 +129,32 @@ class EditCrmProperty extends EditRecord
         }
 
         return $record;
+    }
+
+    /**
+     * Kad īpašums saglabāts ar statusu "Pārdots", uzreiz piedāvājam
+     * piesaistīt pircēju, atverot esošo "Pievienot klientu" modāli.
+     */
+    protected function afterSave(): void
+    {
+        $shouldPrompt = $this->statusChangedToSold && ! $this->isAutosaveRun;
+        $this->statusChangedToSold = false;
+
+        if (! $shouldPrompt) {
+            return;
+        }
+
+        $record = $this->getRecord();
+
+        if (! $record instanceof CrmProperty) {
+            return;
+        }
+
+        if ($record->clients()->wherePivot('relation', 'buyer')->exists()) {
+            return;
+        }
+
+        $this->mountAction('attach_buyer');
     }
 
     private function storeDescriptionRevision(CrmProperty $record): void
