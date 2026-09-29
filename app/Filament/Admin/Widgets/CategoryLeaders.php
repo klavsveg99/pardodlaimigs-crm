@@ -47,6 +47,9 @@ class CategoryLeaders extends BaseWidget
                 Tables\Columns\TextColumn::make('leader_avatar')
                     ->label('')
                     ->html()
+                    // Fiksēts platums, citādi tabula (w-full) atstāj visu
+                    // atlikušo platumu šai kolonnai un pārējās aizbīdās malā.
+                    ->width('36px')
                     ->getStateUsing(fn ($record) => $this->avatarStackHtml($record['leaders'] ?? [])),
                 Tables\Columns\TextColumn::make('leader_name')
                     ->label('Uzvarētājs')
