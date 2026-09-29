@@ -120,8 +120,9 @@ class CategoryLeaders extends BaseWidget
             $leaders[] = array_merge(['category' => 'Jauni klienti'], $empty());
         }
 
-        // Organizētie apskati
+        // Notikušas apskates
         $viewingLeader = Viewing::whereBetween('scheduled_at', [$start, $end])
+            ->where('status', 'done')
             ->whereNotNull('agent_user_id')
             ->get(['agent_user_id'])
             ->groupBy('agent_user_id')
@@ -131,12 +132,12 @@ class CategoryLeaders extends BaseWidget
         if ($viewingLeader->count()) {
             $winning = $viewingLeader->first();
             $leaders[] = $build(
-                'Organizētas apskates',
+                'Notikušas apskates',
                 $winning,
                 $viewingLeader->filter(fn ($count) => $count === $winning)->keys()->all(),
             );
         } else {
-            $leaders[] = array_merge(['category' => 'Organizētas apskates'], $empty());
+            $leaders[] = array_merge(['category' => 'Notikušas apskates'], $empty());
         }
 
         // Pārdoti īpašumi
