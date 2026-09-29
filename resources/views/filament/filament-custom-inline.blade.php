@@ -1635,7 +1635,8 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     border-radius: 9999px;
     object-fit: cover;
     box-shadow: 0 0 0 2px #ffffff;
-    transition: transform 0.15s ease;
+    /* Nepieļauj flexbox saraušanu — izstiepts/saspiests attēls izskatās blurains. */
+    flex-shrink: 0;
 }
 
 .pdc-avatar-stack img + img {
@@ -1644,11 +1645,18 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
 
 .pdc-avatar-stack img:hover {
     z-index: 999 !important;
-    transform: scale(1.08);
 }
 
 .dark .pdc-avatar-stack img {
     box-shadow: 0 0 0 2px #111827;
+}
+
+/* Avataru šūnai nav savas sānu atstarpes — citādi šaurā kolonna saspiež
+   flexbox saturu un fotogrāfijas deformējas. */
+.fi-ta.pdc-category-leaders .fi-ta-cell-leader-avatar .fi-ta-text,
+.fi-ta.pdc-category-leaders .fi-ta-cell-leader-avatar .fi-ta-col {
+    padding-left: 0;
+    padding-right: 0;
 }
 
 /* ── Kategoriju līderi — compact rows on mobile ──────────────────
