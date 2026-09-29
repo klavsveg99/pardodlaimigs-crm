@@ -30,6 +30,7 @@
                     @php
                         $quickMethod = ! empty($item['task_id']) ? 'completeTask' : (! empty($item['viewing_id']) ? 'completeViewing' : null);
                         $quickId = $item['task_id'] ?? $item['viewing_id'] ?? null;
+                        $quickTitle = ! empty($item['viewing_id']) ? 'Atzīmēt kā notikušu' : 'Atzīmēt kā pabeigtu';
                     @endphp
                     <div class="pdc-today-row" wire:key="today-{{ $item['key'] }}" style="display: flex; align-items: stretch; border: 1px solid {{ $item['urgent'] ? '#fca5a5' : '#e5e7eb' }}; border-left: 3px solid {{ $item['urgent'] ? '#dc2626' : 'var(--pdc-primary)' }}; border-radius: 0.7rem; background: #ffffff;">
                         <a
@@ -70,7 +71,7 @@
                                     x-data="{ busy: false }"
                                     x-on:click="if (busy) return; busy = true; $el.closest('.pdc-today-row').classList.add('is-completing'); $wire.{{ $quickMethod }}({{ $quickId }}).catch(() => { busy = false; $el.closest('.pdc-today-row').classList.remove('is-completing'); })"
                                     x-bind:disabled="busy"
-                                    title="Atzīmēt kā pabeigtu"
+                                    title="{{ $quickTitle }}"
                                     style="width: 1.7rem; height: 1.7rem; border-radius: 9999px; background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 0;"
                                 >
                                     <svg x-show="!busy" style="width: 0.95rem; height: 0.95rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4.5 12.75 6 6 9-13.5"/></svg>
