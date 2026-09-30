@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 2.5.1
+ * Version: 2.6.0
  * Author: Pārdod Laimīgs
  */
 if (! defined('ABSPATH')) {
@@ -987,7 +987,9 @@ function pdc_upsert_property($data, $agent_map = [])
     update_post_meta($post_id, 'real_estate_property_price_short', $price);
     update_post_meta($post_id, 'real_estate_property_price_on_call', 0);
     update_post_meta($post_id, 'real_estate_property_identity', $post_id);
-    // Size may be NULL for land-only properties (e.g., Zeme) — store 0 so ERE size slider (0-3000) doesn't exclude them via meta_query
+    // Size may be NULL for land-only properties (e.g., Zeme) — store 0 so ERE
+    // size slider (0-3000) doesn't exclude them via meta_query. The "Telpu
+    // platība" tile/row is hidden client-side (hideEmptyRooms) when 0.
     update_post_meta($post_id, 'real_estate_property_size', $size_m2 !== null && $size_m2 !== '' ? $size_m2 : 0);
     update_post_meta($post_id, 'real_estate_property_land', $land_m2 ? round($land_m2 / 10000, 2) : '');
     // ERE only omits the overview/tile field when its meta is an empty string.
@@ -1490,21 +1492,38 @@ function pdc_frontend_enqueue()
         });
     }
 
-    /* ── 3. Hide "0 istabas" tiles ──────────────────────────── */
-    function hideEmptyRooms(root) {
-        var tiles = document.querySelectorAll('.ere__loop-property-info-item.property-bedrooms, .property-info-item.property-bedrooms');
-        tiles.forEach(function (tile) {
-            var valueEl = tile.querySelector('.ere__lpi-value');
-            var value = (valueEl ? valueEl.textContent : tile.textContent).trim();
-            // "0" minus possible thousands separators
-            if (value.replace(/[\s.,]/g, '') === '0') {
-                tile.style.display = 'none';
+    /* ── 3. Hide zero-value tiles/rows ──────────────────────── */
+    // Nolasa pirmo skaitli tekstā: "0" → 0, "0 m²" → 0, "1.01 ha" → 1.01.
+    function pdcNumber(text) {
+        var m = String(text || '').replace(/\u00a0/g, ' ').match(/-?\d+(?:[.,]\d+)?/);
+        return m ? parseFloat(m[0].replace(',', '.')) : null;
+    }
+
+    function hideZeroTile(tile) {
+        var valueEl = tile.querySelector('.ere__lpi-value');
+        var value = pdcNumber(valueEl ? valueEl.textContent : tile.textContent);
+        if (value === 0) {
+            tile.style.display = 'none';
+        }
+    }
+
+    function hideEmptyRooms() {
+        // Sarakstu informācijas flīzes: istabas, vannas istabas un "Telpu
+        // platība" (0 m² zemes īpašumiem). "Zemes platība" izmanto to pašu
+        // property-area klasi, tāpēc atšķiram pēc apzīmējuma.
+        document.querySelectorAll('.ere__loop-property-info-item, .property-info-item').forEach(function (tile) {
+            var isRooms = tile.classList.contains('property-bedrooms') || tile.classList.contains('property-bathrooms');
+            var labelEl = tile.querySelector('.ere__lpi-label');
+            var isRoomArea = tile.classList.contains('property-area') && /telpu\s+plat/i.test(labelEl ? labelEl.textContent : '');
+
+            if (isRooms || isRoomArea) {
+                hideZeroTile(tile);
             }
         });
-        // Same "0" in the Informācija overview list — hide the whole row.
-        document.querySelectorAll('.ere__property-bedrooms, .ere__property-bathrooms').forEach(function (el) {
-            var value = (el.textContent || '').trim();
-            if (value.replace(/[\s.,]/g, '') === '0') {
+
+        // "Informācija" saraksts: istabas, vannas istabas, telpu platība.
+        document.querySelectorAll('.ere__property-bedrooms, .ere__property-bathrooms, .ere__property-size').forEach(function (el) {
+            if (pdcNumber(el.textContent) === 0) {
                 var row = el.closest('li');
                 if (row) {
                     row.style.display = 'none';
