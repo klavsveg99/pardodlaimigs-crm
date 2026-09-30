@@ -88,7 +88,14 @@
                                     <svg x-show="busy" x-cloak class="pdc-today-spinner" style="width: 0.95rem; height: 0.95rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a9 9 0 1 0 9 9"/></svg>
                                 </button>
                             @endif
-                            <x-filament::icon icon="heroicon-o-chevron-right" style="flex: none; width: 1.1rem; height: 1.1rem; color: #9ca3af;" />
+                            <a
+                                href="{{ $item['url'] }}"
+                                title="Atvērt"
+                                aria-label="Atvērt"
+                                style="display: inline-flex; align-items: center; justify-content: center; color: #9ca3af; text-decoration: none; cursor: pointer;"
+                            >
+                                <x-filament::icon icon="heroicon-o-chevron-right" style="flex: none; width: 1.1rem; height: 1.1rem;" />
+                            </a>
                         </div>
 
                         @if (! empty($item['dismissable']))
