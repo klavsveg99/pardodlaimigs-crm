@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 2.6.0
+ * Version: 2.6.1
  * Author: Pārdod Laimīgs
  */
 if (! defined('ABSPATH')) {
@@ -1503,7 +1503,8 @@ function pdc_frontend_enqueue()
         var valueEl = tile.querySelector('.ere__lpi-value');
         var value = pdcNumber(valueEl ? valueEl.textContent : tile.textContent);
         if (value === 0) {
-            tile.style.display = 'none';
+            // !important — the theme sets `display: flex !important` on these.
+            tile.style.setProperty('display', 'none', 'important');
         }
     }
 
@@ -1526,7 +1527,8 @@ function pdc_frontend_enqueue()
             if (pdcNumber(el.textContent) === 0) {
                 var row = el.closest('li');
                 if (row) {
-                    row.style.display = 'none';
+                    // !important — .property-overview li has display:flex !important.
+                    row.style.setProperty('display', 'none', 'important');
                 }
             }
         });
