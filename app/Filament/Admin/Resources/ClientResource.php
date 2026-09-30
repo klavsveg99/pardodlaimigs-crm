@@ -73,8 +73,7 @@ class ClientResource extends Resource
                         // Formāts XXXXXX-XXXXX (11 cipari ar domuzīmi);
                         // lauks var palikt tukšs.
                         ->rule('regex:/^\d{6}-\d{5}$/')
-                        ->disabled(fn (string $operation) => $operation === 'view')
-                        ->readonly(fn (?Client $record): bool => filled($record?->personas_kods)),
+                        ->disabled(fn (string $operation) => $operation === 'view'),
                     Forms\Components\DatePicker::make('birth_date')
                         ->label('Dzimšanas datums')
                         ->native(false)

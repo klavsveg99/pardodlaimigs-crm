@@ -122,11 +122,20 @@ class Client extends Model
 
     protected static function booted(): void
     {
-        // Dzimšanas datumu iegūstam no personas koda, ja tas vēl nav norādīts.
-        // Manuāli ievadīto datumu nekad nepārrakstām.
+        // Dzimšanas datumu iegūstam no personas koda: ja datums vēl nav
+        // norādīts, vai ja pats personas kods tiek mainīts (kods ir datuma
+        // avots). Manuāli ievadītu datumu, nemainot kodu, nepārrakstām.
         static::saving(function (Client $client): void {
-            if (blank($client->birth_date) && filled($client->personas_kods)) {
-                $client->birth_date = self::birthDateFromPersonasKods($client->personas_kods);
+            if (blank($client->personas_kods)) {
+                return;
+            }
+
+            if ($client->isDirty('personas_kods') || blank($client->birth_date)) {
+                $date = self::birthDateFromPersonasKods($client->personas_kods);
+
+                if ($date) {
+                    $client->birth_date = $date;
+                }
             }
         });
 
