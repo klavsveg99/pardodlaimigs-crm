@@ -139,11 +139,15 @@ class LawyerDocumentService
         ], fn ($v): bool => filled($v)));
 
         if ($seller) {
-            $html .= $this->renderClient('Pārdevējs', $seller);
+            $html .= $this->renderSection('Pārdevējs', $this->clientRows($seller));
         }
 
         if ($buyer) {
-            $html .= $this->renderClient('Pircējs', $buyer);
+            $html .= $this->renderSection('Pircējs', $this->clientRows($buyer));
+        } elseif (is_array($legal['buyer'] ?? null) && $legal['buyer'] !== []) {
+            // Pircējs nav piesaistīts kā klients — datus ņemam no manuāli
+            // aizpildītā pircēja bloka.
+            $html .= $this->renderSection('Pircējs', $this->buyerRows($legal['buyer']));
         }
 
         $html .= $this->renderSection('Finanšu informācija', array_filter([
@@ -171,16 +175,40 @@ class LawyerDocumentService
         }
     }
 
-    protected function renderClient(string $heading, Client $client): string
+    /** @return array<string, string> */
+    protected function clientRows(Client $client): array
     {
-        return $this->renderSection($heading, array_filter([
+        return array_filter([
             'Vārds, uzvārds' => (string) $client->name,
             'Personas kods' => (string) $client->personas_kods,
             'Dzīvesvietas adrese' => (string) $client->address,
             'Bankas konta numurs' => (string) $client->bank_account,
             'E-pasts' => (string) $client->email,
             'Tālrunis' => (string) $client->phone,
-        ], fn ($v): bool => filled($v)));
+        ], fn ($v): bool => filled($v));
+    }
+
+    /** Pircēja rindas no manuāli aizpildītā bloka (klients nav piesaistīts). */
+    protected function buyerRows(array $data): array
+    {
+        $map = [
+            'name' => 'Vārds, uzvārds',
+            'personas_kods' => 'Personas kods',
+            'address' => 'Dzīvesvietas adrese',
+            'bank_account' => 'Bankas konta numurs',
+            'email' => 'E-pasts',
+            'phone' => 'Tālrunis',
+        ];
+
+        $rows = [];
+
+        foreach ($map as $key => $label) {
+            if (filled($data[$key] ?? null)) {
+                $rows[$label] = (string) $data[$key];
+            }
+        }
+
+        return $rows;
     }
 
     /** @param  array<string, string|int|float|null>  $rows */

@@ -67,6 +67,19 @@ trait LawyerDocumentAction
         $legal = $property?->legal_data ?? [];
         $documents = $service->documentTypes();
 
+        // Ja pircējs nav piesaistīts kā klients, datus ņemam no iepriekš
+        // aizpildītā manuālā bloka.
+        $buyerDefaults = $buyer
+            ? [
+                'name' => $buyer->name,
+                'personas_kods' => $buyer->personas_kods,
+                'address' => $buyer->address,
+                'bank_account' => $buyer->bank_account,
+                'email' => $buyer->email,
+                'phone' => $buyer->phone,
+            ]
+            : (is_array($legal['buyer'] ?? null) ? $legal['buyer'] : []);
+
         $manual = [];
 
         foreach ($service->fields() as $key => $definition) {
@@ -125,13 +138,13 @@ trait LawyerDocumentAction
                 Forms\Components\TextInput::make('seller.phone')->label('Tālrunis')->default($seller?->phone),
             ]),
 
-            Section::make('Pircējs')->columns(2)->visible($buyer !== null)->schema([
-                Forms\Components\TextInput::make('buyer.name')->label('Vārds, uzvārds')->default($buyer?->name),
-                Forms\Components\TextInput::make('buyer.personas_kods')->label('Personas kods')->default($buyer?->personas_kods),
-                Forms\Components\TextInput::make('buyer.address')->label('Dzīvesvietas adrese')->default($buyer?->address),
-                Forms\Components\TextInput::make('buyer.bank_account')->label('Bankas konta numurs')->default($buyer?->bank_account),
-                Forms\Components\TextInput::make('buyer.email')->label('E-pasts')->email()->default($buyer?->email),
-                Forms\Components\TextInput::make('buyer.phone')->label('Tālrunis')->default($buyer?->phone),
+            Section::make('Pircējs')->columns(2)->schema([
+                Forms\Components\TextInput::make('buyer.name')->label('Vārds, uzvārds')->default($buyerDefaults['name'] ?? null),
+                Forms\Components\TextInput::make('buyer.personas_kods')->label('Personas kods')->default($buyerDefaults['personas_kods'] ?? null),
+                Forms\Components\TextInput::make('buyer.address')->label('Dzīvesvietas adrese')->default($buyerDefaults['address'] ?? null),
+                Forms\Components\TextInput::make('buyer.bank_account')->label('Bankas konta numurs')->default($buyerDefaults['bank_account'] ?? null),
+                Forms\Components\TextInput::make('buyer.email')->label('E-pasts')->email()->default($buyerDefaults['email'] ?? null),
+                Forms\Components\TextInput::make('buyer.phone')->label('Tālrunis')->default($buyerDefaults['phone'] ?? null),
             ]),
 
             Section::make('Īpašums')->columns(2)->schema([
@@ -167,10 +180,22 @@ trait LawyerDocumentAction
         }
 
         $this->applyClientUpdates($this->lawyerSeller(), is_array($data['seller'] ?? null) ? $data['seller'] : []);
-        $this->applyClientUpdates($this->lawyerBuyer(), is_array($data['buyer'] ?? null) ? $data['buyer'] : []);
+        $buyerClient = $this->lawyerBuyer();
+        $buyerData = is_array($data['buyer'] ?? null) ? $data['buyer'] : [];
+        $this->applyClientUpdates($buyerClient, $buyerData);
         $this->applyPropertyUpdates($property, is_array($data['property'] ?? null) ? $data['property'] : []);
 
         $legal = is_array($data['legal'] ?? null) ? $data['legal'] : [];
+
+        // Pircējs nav piesaistīts kā klients — saglabājam manuāli ievadītos
+        // datus, lai tie nepazūd un nonāk e-pastā.
+        if ($buyerClient === null) {
+            $buyerBlock = $this->normalizedFields($buyerData, ['name', 'personas_kods', 'address', 'bank_account', 'email', 'phone']);
+            if ($buyerBlock !== []) {
+                $legal['buyer'] = $buyerBlock;
+            }
+        }
+
         $property->legal_data = array_merge(is_array($property->legal_data) ? $property->legal_data : [], $legal);
         $property->save();
 
@@ -245,5 +270,29 @@ trait LawyerDocumentAction
             $value = is_string($data[$key]) ? trim($data[$key]) : $data[$key];
             $property->setAttribute($key, $value === '' ? null : $value);
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @param  array<int, string>  $keys
+     * @return array<string, mixed>
+     */
+    protected function normalizedFields(array $data, array $keys): array
+    {
+        $fields = [];
+
+        foreach ($keys as $key) {
+            if (! array_key_exists($key, $data)) {
+                continue;
+            }
+
+            $value = is_string($data[$key]) ? trim($data[$key]) : $data[$key];
+
+            if ($value !== null && $value !== '') {
+                $fields[$key] = $value;
+            }
+        }
+
+        return $fields;
     }
 }
