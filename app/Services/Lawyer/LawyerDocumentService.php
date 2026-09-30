@@ -16,6 +16,10 @@ use Illuminate\Support\Carbon;
 /**
  * Juristam nosūtāmo dokumentu pieprasījumu loģika: lauku definīcijas
  * (config/crm.php), e-pasta saturs un nosūtīšanas vēsture.
+ *
+ * E-pasts tiek būvēts no datu masīva (context), tāpēc to pašu saturu var
+ * parādīt priekšskatījumā pirms nosūtīšanas — gan no saglabātajiem datiem,
+ * gan no vēl nesaglabātām formas vērtībām.
  */
 class LawyerDocumentService
 {
@@ -61,6 +65,37 @@ class LawyerDocumentService
             ->all();
     }
 
+    public function jurist(mixed $id): ?Izpilditajs
+    {
+        return Izpilditajs::query()
+            ->where('category', 'Jurists')
+            ->find($id);
+    }
+
+    /**
+     * Priekšskatījums no formas datiem: kam, temats un gatavais e-pasta HTML.
+     *
+     * @param  array<string, mixed>  $formData
+     * @return array{to: string, jurist: string, subject: string, html: string, attachments: int}
+     */
+    public function preview(array $formData, CrmProperty $property): array
+    {
+        $property->loadMissing('clients', 'attachments');
+
+        $type = (string) ($formData['document_type'] ?? '');
+        $legal = is_array($formData['legal'] ?? null) ? $formData['legal'] : [];
+        $context = $this->contextFromForm($formData, $property);
+        $jurist = $this->jurist($formData['jurist_id'] ?? null);
+
+        return [
+            'to' => (string) ($jurist?->email ?? ''),
+            'jurist' => (string) ($jurist?->name ?? ''),
+            'subject' => $this->subjectFor($context, $type),
+            'html' => EmailSender::renderHtml($this->buildBody($context, $type, $legal), EmailSender::defaultSignature()),
+            'attachments' => $property->attachments->where('collection', 'documents')->count(),
+        ];
+    }
+
     public function send(
         CrmProperty $property,
         Izpilditajs $jurist,
@@ -70,11 +105,9 @@ class LawyerDocumentService
     ): LawyerRequest {
         $property->load('clients', 'attachments');
 
-        $documentLabel = $this->documentLabel($type);
-        $address = $this->propertyAddress($property);
-        $subject = 'CRM – '.$documentLabel.' – '.($address ?: ($property->title ?? ''));
-
-        $body = $this->buildBody($property, $type, $legal);
+        $context = $this->contextFromProperty($property);
+        $subject = $this->subjectFor($context, $type);
+        $body = $this->buildBody($context, $type, $legal);
         $attachments = $property->attachments
             ->where('collection', 'documents')
             ->values();
@@ -113,57 +146,112 @@ class LawyerDocumentService
         return $request;
     }
 
-    public function propertyAddress(CrmProperty $property): string
+    /**
+     * E-pasta saturs no saglabātā īpašuma un piesaistītajiem klientiem.
+     *
+     * @return array<string, mixed>
+     */
+    public function contextFromProperty(CrmProperty $property): array
     {
-        return trim(implode(', ', array_filter([
-            (string) $property->address,
-            (string) $property->city,
-        ])));
-    }
+        $property->loadMissing('clients');
 
-    public function buildBody(CrmProperty $property, string $type, array $legal): string
-    {
-        $documentLabel = $this->documentLabel($type);
         $seller = $property->clients->first(fn (Client $c): bool => $c->pivot->relation === 'seller');
         $buyer = $property->clients->first(fn (Client $c): bool => $c->pivot->relation === 'buyer');
 
-        $html = '<h2 style="margin:0 0 12px;font-size:18px;color:#285854;">'
-            .e($documentLabel).'</h2>';
+        return [
+            'title' => (string) $property->title,
+            'address' => (string) $property->address,
+            'city' => (string) $property->city,
+            'zip' => (string) $property->zip,
+            'kadastra_nr' => (string) $property->kadastra_nr,
+            'price_display' => (string) $property->price_display,
+            'final_price_eur' => $property->final_price_eur,
+            'commission_eur' => $property->commission_eur,
+            'sold_at' => $property->sold_at,
+            'url' => $this->crmUrl($property),
+            'seller' => $seller ? $this->clientFields($seller) : null,
+            'buyer' => $buyer ? $this->clientFields($buyer) : null,
+        ];
+    }
 
-        $html .= $this->renderSection('Darījuma / īpašuma informācija', array_filter([
-            'Īpašuma adrese' => $this->propertyAddress($property),
-            'Kadastra numurs' => (string) $property->kadastra_nr,
-            'Pilsēta / novads' => (string) $property->city,
-            'Pasta indekss' => (string) $property->zip,
-            'Mājaslapa' => $property->title,
-        ], fn ($v): bool => filled($v)));
+    /**
+     * E-pasta saturs no vēl nesaglabātām formas vērtībām (priekšskatījumam).
+     *
+     * @param  array<string, mixed>  $formData
+     * @return array<string, mixed>
+     */
+    public function contextFromForm(array $formData, CrmProperty $property): array
+    {
+        $context = $this->contextFromProperty($property);
 
-        if ($seller) {
-            $html .= $this->renderSection('Pārdevējs', $this->clientRows($seller));
+        $propertyData = is_array($formData['property'] ?? null) ? $formData['property'] : [];
+        foreach (['address', 'kadastra_nr', 'city', 'zip'] as $key) {
+            if (filled($propertyData[$key] ?? null)) {
+                $context[$key] = (string) $propertyData[$key];
+            }
         }
 
-        if ($buyer) {
-            $html .= $this->renderSection('Pircējs', $this->clientRows($buyer));
-        } elseif (is_array($legal['buyer'] ?? null) && $legal['buyer'] !== []) {
-            // Pircējs nav piesaistīts kā klients — datus ņemam no manuāli
-            // aizpildītā pircēja bloka.
-            $html .= $this->renderSection('Pircējs', $this->buyerRows($legal['buyer']));
+        $seller = $this->filledContact(is_array($formData['seller'] ?? null) ? $formData['seller'] : []);
+        if ($seller !== []) {
+            $context['seller'] = $seller;
         }
 
-        $html .= $this->renderSection('Finanšu informācija', array_filter([
-            'Pārdošanas cena' => $property->price_display,
-            'Gala cena' => $property->final_price_eur ? number_format((float) $property->final_price_eur, 2, ',', ' ').' €' : null,
-            'Komisija' => $property->commission_eur ? number_format((float) $property->commission_eur, 2, ',', ' ').' €' : null,
-            'Pārdots' => $property->sold_at?->format('d.m.Y'),
-        ], fn ($v): bool => filled($v)));
+        $buyer = $this->filledContact(is_array($formData['buyer'] ?? null) ? $formData['buyer'] : []);
+        if ($buyer !== []) {
+            $context['buyer'] = $buyer;
+        }
 
-        $html .= $this->renderLegal($legal);
+        // Pircējs nav aizpildīts formā, bet ir saglabāts pie darījuma datiem.
+        $legalBuyer = $formData['legal']['buyer'] ?? null;
+        if ($buyer === [] && is_array($legalBuyer) && $legalBuyer !== []) {
+            $context['buyer'] = $this->filledContact($legalBuyer);
+        }
 
-        $crmUrl = $this->crmUrl($property);
-        $html .= '<p style="margin:18px 0 0;font-size:13px;color:#6b7280;">'
-            .'Saite uz darījumu CRM: <a href="'.e($crmUrl).'" style="color:#285854;">'.e($crmUrl).'</a></p>';
+        return $context;
+    }
 
-        return $html;
+    /** @return array<string, string> */
+    protected function clientFields(Client $client): array
+    {
+        return array_filter([
+            'name' => (string) $client->name,
+            'personas_kods' => (string) $client->personas_kods,
+            'address' => (string) $client->address,
+            'bank_account' => (string) $client->bank_account,
+            'email' => (string) $client->email,
+            'phone' => (string) $client->phone,
+        ], fn ($v): bool => filled($v));
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, string>
+     */
+    protected function filledContact(array $data): array
+    {
+        $contact = [];
+
+        foreach (['name', 'personas_kods', 'address', 'bank_account', 'email', 'phone'] as $key) {
+            $value = $data[$key] ?? null;
+            if (is_string($value)) {
+                $value = trim($value);
+            }
+            if (filled($value)) {
+                $contact[$key] = (string) $value;
+            }
+        }
+
+        return $contact;
+    }
+
+    public function subjectFor(array $context, string $type): string
+    {
+        $address = trim(implode(', ', array_filter([
+            (string) ($context['address'] ?? ''),
+            (string) ($context['city'] ?? ''),
+        ])));
+
+        return 'CRM – '.$this->documentLabel($type).' – '.($address ?: (string) ($context['title'] ?? ''));
     }
 
     public function crmUrl(CrmProperty $property): string
@@ -175,21 +263,61 @@ class LawyerDocumentService
         }
     }
 
-    /** @return array<string, string> */
-    protected function clientRows(Client $client): array
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    public function buildBody(array $context, string $type, array $legal): string
     {
-        return array_filter([
-            'Vārds, uzvārds' => (string) $client->name,
-            'Personas kods' => (string) $client->personas_kods,
-            'Dzīvesvietas adrese' => (string) $client->address,
-            'Bankas konta numurs' => (string) $client->bank_account,
-            'E-pasts' => (string) $client->email,
-            'Tālrunis' => (string) $client->phone,
-        ], fn ($v): bool => filled($v));
+        $documentLabel = $this->documentLabel($type);
+
+        $html = '<h2 style="margin:0 0 12px;font-size:18px;color:#285854;">'
+            .e($documentLabel).'</h2>';
+
+        $address = trim(implode(', ', array_filter([
+            (string) ($context['address'] ?? ''),
+            (string) ($context['city'] ?? ''),
+        ])));
+
+        $html .= $this->renderSection('Darījuma / īpašuma informācija', array_filter([
+            'Īpašuma adrese' => $address,
+            'Kadastra numurs' => (string) ($context['kadastra_nr'] ?? ''),
+            'Pilsēta / novads' => (string) ($context['city'] ?? ''),
+            'Pasta indekss' => (string) ($context['zip'] ?? ''),
+            'Mājaslapa' => (string) ($context['title'] ?? ''),
+        ], fn ($v): bool => filled($v)));
+
+        if (! empty($context['seller'])) {
+            $html .= $this->renderSection('Pārdevējs', $this->contactRows((array) $context['seller']));
+        }
+
+        if (! empty($context['buyer'])) {
+            $html .= $this->renderSection('Pircējs', $this->contactRows((array) $context['buyer']));
+        }
+
+        $html .= $this->renderSection('Finanšu informācija', array_filter([
+            'Pārdošanas cena' => $context['price_display'] ?? null,
+            'Gala cena' => filled($context['final_price_eur'] ?? null)
+                ? number_format((float) $context['final_price_eur'], 2, ',', ' ').' €'
+                : null,
+            'Komisija' => filled($context['commission_eur'] ?? null)
+                ? number_format((float) $context['commission_eur'], 2, ',', ' ').' €'
+                : null,
+            'Pārdots' => ($context['sold_at'] ?? null)?->format('d.m.Y'),
+        ], fn ($v): bool => filled($v)));
+
+        $html .= $this->renderLegal($legal);
+
+        $url = (string) ($context['url'] ?? '');
+        if ($url !== '') {
+            $html .= '<p style="margin:18px 0 0;font-size:13px;color:#6b7280;">'
+                .'Saite uz darījumu CRM: <a href="'.e($url).'" style="color:#285854;">'.e($url).'</a></p>';
+        }
+
+        return $html;
     }
 
-    /** Pircēja rindas no manuāli aizpildītā bloka (klients nav piesaistīts). */
-    protected function buyerRows(array $data): array
+    /** Kontaktpersonas rindas (no klienta vai manuāli aizpildītiem datiem). */
+    protected function contactRows(array $data): array
     {
         $map = [
             'name' => 'Vārds, uzvārds',

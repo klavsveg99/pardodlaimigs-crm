@@ -14,6 +14,9 @@ use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\View;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
 
 /**
  * "Jurista dokuments" darbība īpašuma skatā: izvēlas dokumenta veidu un
@@ -34,7 +37,12 @@ trait LawyerDocumentAction
             ->modalHeading('Nosūtīt juristam')
             ->modalWidth('4xl')
             ->modalSubmitActionLabel('Nosūtīt')
-            ->form(fn (): array => $this->lawyerFormSchema())
+            // Divi soļi: datu aizpilde un e-pasta priekšskatījums pirms
+            // nosūtīšanas.
+            ->steps(fn (): array => $this->lawyerSteps())
+            ->modifyWizardUsing(fn (Wizard $wizard): Wizard => $wizard
+                ->nextAction(fn (Actions\Action $action): Actions\Action => $action->label('Tālāk'))
+                ->previousAction(fn (Actions\Action $action): Actions\Action => $action->label('Atpakaļ')))
             ->action(fn (array $data) => $this->sendLawyerDocument($data));
     }
 
@@ -57,8 +65,43 @@ trait LawyerDocumentAction
             ->first(fn (Client $client): bool => $client->pivot->relation === 'buyer');
     }
 
+    /** @return array<int, Step> */
+    protected function lawyerSteps(): array
+    {
+        return [
+            Step::make('Dokumenta dati')
+                ->schema($this->lawyerFormFields()),
+            Step::make('Priekšskatījums')
+                ->description('Pārbaudi e-pastu pirms nosūtīšanas')
+                ->schema([$this->lawyerPreview()]),
+        ];
+    }
+
+    /** E-pasta priekšskatījums no aizpildītajām formas vērtībām. */
+    protected function lawyerPreview(): View
+    {
+        $property = $this->lawyerProperty();
+
+        return View::make('filament.admin.partials.lawyer-email-preview')
+            ->viewData(function (Get $get) use ($property): array {
+                if (! $property) {
+                    return ['to' => '', 'jurist' => '', 'subject' => '', 'html' => '', 'attachments' => 0];
+                }
+
+                return app(LawyerDocumentService::class)->preview([
+                    'document_type' => $get('document_type'),
+                    'jurist_id' => $get('jurist_id'),
+                    'legal' => $get('legal') ?? [],
+                    'seller' => $get('seller') ?? [],
+                    'buyer' => $get('buyer') ?? [],
+                    'property' => $get('property') ?? [],
+                ], $property);
+            })
+            ->columnSpanFull();
+    }
+
     /** @return array<int, mixed> */
-    protected function lawyerFormSchema(): array
+    protected function lawyerFormFields(): array
     {
         $service = app(LawyerDocumentService::class);
         $property = $this->lawyerProperty();
