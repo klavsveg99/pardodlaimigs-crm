@@ -19,6 +19,8 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -73,7 +75,20 @@ class ClientResource extends Resource
                         // Formāts XXXXXX-XXXXX (11 cipari ar domuzīmi);
                         // lauks var palikt tukšs.
                         ->rule('regex:/^\d{6}-\d{5}$/')
-                        ->disabled(fn (string $operation) => $operation === 'view'),
+                        ->disabled(fn (string $operation) => $operation === 'view')
+                        // Dzimšanas datumu aizpilda uzreiz, tiklīdz kods ir
+                        // derīgs — bet tikai tad, ja datums vēl nav norādīts.
+                        ->afterStateUpdated(function ($state, Set $set, Get $get): void {
+                            if (filled($get('birth_date'))) {
+                                return;
+                            }
+
+                            $date = Client::birthDateFromPersonasKods($state);
+
+                            if ($date) {
+                                $set('birth_date', $date->toDateString());
+                            }
+                        }),
                     Forms\Components\DatePicker::make('birth_date')
                         ->label('Dzimšanas datums')
                         ->native(false)
