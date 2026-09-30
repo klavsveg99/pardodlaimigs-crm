@@ -15,6 +15,9 @@ class CreateCrmProperty extends CreateRecord
     use GeneratesAiDescription;
     use SyncsAttachments;
 
+    /** Izvēlētais pārdevējs, kas tiek piesaistīts pēc ieraksta izveides. */
+    protected ?int $sellerClientId = null;
+
     /**
      * Property attachments live in two collections: gallery images and
      * separate "Pielikumi" documents.
@@ -33,6 +36,12 @@ class CreateCrmProperty extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        // Pārdevējs nav kolonna — tiek piesaistīts pēc ieraksta izveides.
+        if (filled($data['seller_client_id'] ?? null)) {
+            $this->sellerClientId = (int) $data['seller_client_id'];
+        }
+        unset($data['seller_client_id']);
+
         // Agents only see their own properties, so default the owner to the
         // creator when none is chosen. Fotogrāfam aģents netiek piešķirts —
         // viņš tikai izveido īpašumu un pievieno bildes, atbildīgo aģentu
@@ -49,6 +58,10 @@ class CreateCrmProperty extends CreateRecord
     protected function handleRecordCreation(array $data): Model
     {
         $record = parent::handleRecordCreation($data);
+
+        if ($this->sellerClientId) {
+            $record->clients()->attach($this->sellerClientId, ['relation' => 'seller']);
+        }
 
         // AI piezīmes (modalā textarea) glabājas komponentes stāvoklī, nevis
         // dehidrētājos datos — pieliekam tās pēc ieraksta izveides.

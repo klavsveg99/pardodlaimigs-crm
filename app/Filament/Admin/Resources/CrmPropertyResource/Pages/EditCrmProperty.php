@@ -18,6 +18,7 @@ use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Group;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\ValidationException;
 
 class EditCrmProperty extends EditRecord
 {
@@ -107,6 +108,15 @@ class EditCrmProperty extends EditRecord
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
+        // Pārdotu īpašumu nevar saglabāt bez piesaistīta pārdevēja.
+        if (($data['status'] ?? null) === 'sold'
+            && $record instanceof CrmProperty
+            && ! $record->clients()->wherePivot('relation', 'seller')->exists()) {
+            throw ValidationException::withMessages([
+                'data.status' => 'Īpašumu nevar saglabāt kā "Pārdots" bez piesaistīta pārdevēja. Vispirms piesaisti pārdevēju.',
+            ]);
+        }
+
         $wasAutosave = $this->isAutosaveRun;
         $previousStatus = $record->status;
 

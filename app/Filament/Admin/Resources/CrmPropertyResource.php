@@ -7,6 +7,7 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 use App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers\ClientsRelationManager;
 use App\Filament\Forms\Components\AttachmentsGrid;
+use App\Models\Client;
 use App\Models\CrmProperty;
 use App\Services\Ai\DescriptionGenerator;
 use App\Support\AgentField;
@@ -212,6 +213,36 @@ class CrmPropertyResource extends Resource
                         ->optionsLimit(20)
                         ->visible(AgentField::visible())
                         ->disabled(AgentField::disabled()),
+
+                    // Jaunu īpašumu nevar izveidot bez pārdevēja. Rediģēšanas
+                    // laikā pārdevēju pārvalda ar "Piesaistīt pārdevēju" /
+                    // "Piesaistītie klienti" sadaļu, tāpēc lauks ir tikai
+                    // izveides formā.
+                    Forms\Components\Select::make('seller_client_id')
+                        ->label('Pārdevējs')
+                        ->required()
+                        ->searchable()
+                        ->visible(fn (string $operation): bool => $operation === 'create')
+                        ->options(fn (): array => Client::query()->orderBy('name')->limit(20)->pluck('name', 'id')->all())
+                        ->getSearchResultsUsing(fn (string $search): array => Client::query()
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->limit(20)
+                            ->pluck('name', 'id')
+                            ->all())
+                        ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name)
+                        ->helperText('Īpašumam jābūt piesaistītam pārdevējam. Ja klienta vēl nav, izveido to ar «+».')
+                        ->suffixAction(
+                            Actions\Action::make('create_seller_client')
+                                ->icon('heroicon-o-plus')
+                                ->tooltip('Izveidot jaunu klientu')
+                                ->url(fn (): string => ClientResource::getUrl('create'))
+                                ->openUrlInNewTab()
+                        )
+                        ->validationMessages([
+                            'required' => 'Pārdevējs ir obligāts — īpašumu nevar izveidot bez pārdevēja.',
+                        ])
+                        ->columnSpanFull(),
                 ])->columnSpan(1),
 
                 Section::make('Īpašuma dati')->columns(['default' => 1, 'md' => 2])->schema([
@@ -740,12 +771,37 @@ class CrmPropertyResource extends Resource
                                 ->required(),
                         ])
                         ->action(function (Collection $records, array $data): void {
-                            $records->each->update(['status' => $data['status']]);
+                            $status = $data['status'];
+                            $updated = 0;
+                            $blocked = [];
 
-                            Notification::make()
-                                ->title($records->count().' īpašumi atjaunināti')
-                                ->success()
-                                ->send();
+                            foreach ($records as $record) {
+                                // Pārdotu īpašumu nevar atzīmēt bez pārdevēja.
+                                if ($status === 'sold' && ! $record->hasSeller()) {
+                                    $blocked[] = $record->title;
+                                    continue;
+                                }
+
+                                $record->update(['status' => $status]);
+                                $updated++;
+                            }
+
+                            if ($updated > 0) {
+                                Notification::make()
+                                    ->title($updated.' īpašumi atjaunināti')
+                                    ->success()
+                                    ->send();
+                            }
+
+                            if ($blocked !== []) {
+                                $names = array_slice($blocked, 0, 5);
+
+                                Notification::make()
+                                    ->title('Dažus nevarēja atzīmēt kā "Pārdots"')
+                                    ->body('Nav piesaistīta pārdevēja: '.implode(', ', $names).(count($blocked) > 5 ? '…' : ''))
+                                    ->warning()
+                                    ->send();
+                            }
                         })
                         ->deselectRecordsAfterCompletion(),
                 ]),

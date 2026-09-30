@@ -179,6 +179,12 @@ class CrmProperty extends Model
         return ! $this->clients()->wherePivot('relation', $relation)->exists();
     }
 
+    /** Vai īpašumam ir piesaistīts pārdevējs. */
+    public function hasSeller(): bool
+    {
+        return $this->clients()->wherePivot('relation', 'seller')->exists();
+    }
+
     public function attachments(): MorphMany
     {
         return $this->morphMany(Attachment::class, 'attachable')->orderBy('sort_order');
