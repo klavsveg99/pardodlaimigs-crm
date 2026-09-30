@@ -11,6 +11,7 @@ use App\Models\CrmProperty;
 use App\Models\NotificationDismissal;
 use App\Models\User;
 use App\Support\PhoneFormat;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
@@ -30,6 +31,8 @@ class NoticeCenter
     public const STALE_KEY_PREFIX = 'stale_property:';
 
     public const BIRTHDAY_KEY_PREFIX = 'birthday:';
+
+    public const BIRTHDAY_DAY_KEY_PREFIX = 'birthday_day:';
 
     /** @return array<int, array<string, mixed>> */
     public function forUser(User $user): array
@@ -127,9 +130,14 @@ class NoticeCenter
     }
 
     /**
-     * Dzimšanas dienas atgādinājums tikai "Laimīgajiem" klientiem, sākot
-     * no config('crm.birthdays.days_before') dienām pirms dzimšanas dienas
-     * līdz pat dzimšanas dienai. Apsveiktajiem kārtējā gadā vairs nerāda.
+     * Dzimšanas dienas atgādinājums tikai "Laimīgajiem" klientiem. Ir DIVI
+     * atgādinājumi:
+     *  - pirmsdzimšanas dienas: sāk parādīties config('crm.birthdays.days_before')
+     *    dienas pirms dzimšanas dienas un turpina parādīties KATRU dienu, līdz
+     *    aģents to aizver (X atzīmē uz visu gadu) vai atzīmē "apsveikts";
+     *  - dzimšanas dienas dienā: atsevišķs atgādinājums pašā dzimšanas dienā
+     *    (parādās arī tad, ja iepriekšējais jau aizvērts).
+     * Atzīmēšana kā apsveikts dzēš abus uz kārtējo gadu.
      *
      * @param  Collection<string, NotificationDismissal>  $dismissals
      * @return array<int, array<string, mixed>>
@@ -137,7 +145,7 @@ class NoticeCenter
     private function birthdayNotices(User $user, Collection $dismissals): array
     {
         $today = now()->startOfDay();
-        $until = $today->copy()->addDays((int) config('crm.birthdays.days_before', 3));
+        $daysBefore = (int) config('crm.birthdays.days_before', 3);
 
         return Client::query()
             ->where('status', 'laimigs')
@@ -145,33 +153,52 @@ class NoticeCenter
             ->when(! $user->can('manage'), fn ($query) => $query->where('owner_user_id', $user->id))
             ->orderBy('birth_date')
             ->get()
-            ->filter(function (Client $client) use ($today, $until): bool {
+            ->map(function (Client $client) use ($today, $daysBefore): ?array {
                 $birthday = $client->birthdayThisYear();
 
-                if (! $birthday || ! $birthday->betweenIncluded($today, $until)) {
-                    return false;
+                if (! $birthday || $client->birthday_greeted_at?->year === $today->year) {
+                    return null;
                 }
 
-                return $client->birthday_greeted_at?->year !== $today->year;
+                $daysUntil = (int) $today->diffInDays($birthday, false);
+
+                if ($daysUntil === 0) {
+                    $key = self::BIRTHDAY_DAY_KEY_PREFIX.$client->id;
+                } elseif ($daysUntil >= 1 && $daysUntil <= $daysBefore) {
+                    $key = self::BIRTHDAY_KEY_PREFIX.$client->id;
+                } else {
+                    return null;
+                }
+
+                return [
+                    'key' => $key,
+                    'type' => 'Dzimšanas diena',
+                    'type_color' => 'gray',
+                    'icon' => 'heroicon-o-gift',
+                    'urgent' => false,
+                    'title' => $client->name,
+                    'url' => ClientResource::getUrl('view', ['record' => $client]),
+                    'greet_client_id' => $client->id,
+                    'fields' => array_values(array_filter([
+                        ['label' => 'Dzimšanas diena', 'value' => $client->birth_date?->format('d.m.')],
+                        $client->phone ? ['label' => 'Tālrunis', 'value' => PhoneFormat::display($client->phone)] : null,
+                        $client->email ? ['label' => 'E-pasts', 'value' => $client->email] : null,
+                    ])),
+                ];
             })
-            ->reject(fn (Client $client): bool => $this->dismissedToday($dismissals->get(self::BIRTHDAY_KEY_PREFIX.$client->id)))
-            ->map(fn (Client $client): array => [
-                'key' => self::BIRTHDAY_KEY_PREFIX.$client->id,
-                'type' => 'Dzimšanas diena',
-                'type_color' => 'gray',
-                'icon' => 'heroicon-o-gift',
-                'urgent' => false,
-                'title' => $client->name,
-                'url' => ClientResource::getUrl('view', ['record' => $client]),
-                'greet_client_id' => $client->id,
-                'fields' => array_values(array_filter([
-                    ['label' => 'Dzimšanas diena', 'value' => $client->birth_date?->format('d.m.')],
-                    $client->phone ? ['label' => 'Tālrunis', 'value' => PhoneFormat::display($client->phone)] : null,
-                    $client->email ? ['label' => 'E-pasts', 'value' => $client->email] : null,
-                ])),
-            ])
+            ->filter()
+            ->reject(fn (array $notice): bool => $this->dismissedThisYear($dismissals->get($notice['key']), $today))
             ->values()
             ->all();
+    }
+
+    /**
+     * Dzimšanas dienas atgādinājums ir aizvērts uz visu kārtējo gadu —
+     * aizvēršana to aptur, nevis tikai paslēpj uz dienu.
+     */
+    private function dismissedThisYear(?NotificationDismissal $dismissal, Carbon $today): bool
+    {
+        return $dismissal?->dismissed_at?->year === $today->year;
     }
 
     /**
