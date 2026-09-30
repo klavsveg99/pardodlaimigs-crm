@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources\Pages\Concerns;
 
+use App\Services\AuditLogger;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\Log;
@@ -65,6 +66,9 @@ trait AutosavesForm
         }
 
         $this->isAutosaveRun = true;
+        // Silent persistence: keep autosave churn out of the company activity
+        // feed (see AuditLogger::$suppressUpdates).
+        AuditLogger::$suppressUpdates = true;
 
         try {
             $this->save(shouldRedirect: false, shouldSendSavedNotification: false);
@@ -84,6 +88,7 @@ trait AutosavesForm
             $this->autosaveError = 'Pagaidu saglabāšana neizdevās.';
             Log::warning('Autosave failed', ['msg' => $e->getMessage()]);
         } finally {
+            AuditLogger::$suppressUpdates = false;
             $this->isAutosaveRun = false;
         }
     }

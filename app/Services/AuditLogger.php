@@ -11,6 +11,14 @@ use Illuminate\Support\Facades\Auth;
 
 class AuditLogger
 {
+    /**
+     * While true, 'update' rows are dropped. Form autosave persists on every
+     * debounce tick, so typing a long text field would log a near-identical
+     * "Atjaunināts" row per keystroke and flood the company activity feed.
+     * Autosave runs with this enabled; explicit saves are still logged.
+     */
+    public static bool $suppressUpdates = false;
+
     public function __construct(private readonly Request $request) {}
 
     public function log(
@@ -19,7 +27,11 @@ class AuditLogger
         ?int $entityId,
         ?array $before = null,
         ?array $after = null,
-    ): AuditLog {
+    ): ?AuditLog {
+        if (self::$suppressUpdates && $action === 'update') {
+            return null;
+        }
+
         return AuditLog::create([
             'actor_user_id' => Auth::id(),
             'action' => $action,
