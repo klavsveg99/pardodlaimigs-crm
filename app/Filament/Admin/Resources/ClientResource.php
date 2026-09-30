@@ -24,7 +24,6 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Str;
 use UnitEnum;
 
 class ClientResource extends Resource
@@ -75,7 +74,7 @@ class ClientResource extends Resource
                         // lauks var palikt tukšs.
                         ->rule('regex:/^\d{6}-\d{5}$/')
                         ->disabled(fn (string $operation) => $operation === 'view')
-                        ->readonly(fn (Client $record) => Str::filled($record->personas_kods)),
+                        ->readonly(fn (?Client $record): bool => filled($record?->personas_kods)),
                     Forms\Components\DatePicker::make('birth_date')
                         ->label('Dzimšanas datums')
                         ->native(false)

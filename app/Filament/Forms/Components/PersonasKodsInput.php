@@ -12,6 +12,8 @@ class PersonasKodsInput extends TextInput
     public function toEmbeddedHtml(): string
     {
         $statePath = $this->getStatePath();
+        $disabledAttr = $this->isDisabled() ? 'disabled' : '';
+        $readonlyAttr = $this->isReadOnly() ? 'readonly' : '';
 
         ob_start(); ?>
         <div
@@ -57,6 +59,8 @@ class PersonasKodsInput extends TextInput
                 class="fi-input fi-text-input"
                 maxlength="12"
                 placeholder="XXXXXX-XXXXX"
+                <?= $disabledAttr ?>
+                <?= $readonlyAttr ?>
             />
         </div>
         <?php
