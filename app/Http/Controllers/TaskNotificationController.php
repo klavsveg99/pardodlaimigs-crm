@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -14,17 +15,17 @@ use Illuminate\Http\Request;
  */
 class TaskNotificationController extends Controller
 {
-    public function agent(Request $request, string $id): RedirectResponse
+    public function agent(Request $request, string $id): RedirectResponse|JsonResponse
     {
         return $this->send($request, (int) $id, 'agent');
     }
 
-    public function izpilditajs(Request $request, string $id): RedirectResponse
+    public function izpilditajs(Request $request, string $id): RedirectResponse|JsonResponse
     {
         return $this->send($request, (int) $id, 'izpilditajs');
     }
 
-    private function send(Request $request, int $id, string $recipient): RedirectResponse
+    private function send(Request $request, int $id, string $recipient): RedirectResponse|JsonResponse
     {
         $task = Task::query()->find($id);
         if (! $task) {
@@ -45,12 +46,25 @@ class TaskNotificationController extends Controller
             ? $task->assignedTo?->email
             : $task->izpilditajs?->email;
 
+        $message = $error ?? 'Paziņojums nosūtīts uz '.$to.'.';
+
+        // Lapas pārlāde nav vajadzīga — poga tiek aizstāta ar "Nosūtīts"
+        // uzreiz (fetch), tāpēc atgriežam JSON.
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => $error === null,
+                'recipient' => $recipient,
+                'message' => $message,
+                'to' => $to,
+            ], $error === null ? 200 : 422);
+        }
+
         return redirect()
             ->route('filament.admin.resources.tasks.edit', ['record' => $task->getKey()])
             ->with('task_notify_result', [
                 'ok' => $error === null,
                 'recipient' => $recipient,
-                'message' => $error ?? 'Paziņojums nosūtīts uz '.$to.'.',
+                'message' => $message,
             ]);
     }
 }

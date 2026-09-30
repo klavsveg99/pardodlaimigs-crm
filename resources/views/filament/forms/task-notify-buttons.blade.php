@@ -25,6 +25,8 @@
         </div>
     @endif
 
+    <div class="pdc-task-notify-result" data-pdc-notify-result style="display: none;"></div>
+
     <div class="pdc-task-notify-grid">
         {{-- Aģents --}}
         <div class="pdc-task-notify-person">
@@ -82,24 +84,57 @@
     </div>
 </div>
 
+<template data-pdc-notify-sent-tpl>
+    <div class="pdc-task-notify-sent" title="Nosūtīts">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5"/></svg>
+        <span>Nosūtīts</span>
+    </div>
+</template>
+
 <script>
-    // Submit a detached form so the POST target works even though this block
-    // is nested inside Filament's own <form>.
+    // POST caur fetch (nevis formas submit) — poga uzreiz tiek aizstāta ar
+    // "Nosūtīts" bez lapas pārlādes. Statuss paliek arī datubāzē.
     if (! window.pdcTaskNotify) {
         window.pdcTaskNotify = function (el) {
             if (el.disabled) return;
             el.disabled = true;
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = el.dataset.pdcNotifyUrl;
-            form.style.display = 'none';
-            const token = document.createElement('input');
-            token.type = 'hidden';
-            token.name = '_token';
-            token.value = el.dataset.pdcNotifyToken;
-            form.appendChild(token);
-            document.body.appendChild(form);
-            form.submit();
+
+            const result = document.querySelector('[data-pdc-notify-result]');
+            const tpl = document.querySelector('template[data-pdc-notify-sent-tpl]');
+
+            const showResult = (message, ok) => {
+                if (! result) return;
+                result.style.display = 'block';
+                result.textContent = message;
+                result.style.background = ok ? '#f1f6f5' : '#fef2f2';
+                result.style.borderColor = ok ? '#bfd6d3' : '#fca5a5';
+                result.style.color = ok ? 'var(--pdc-primary, #285854)' : '#b91c1c';
+            };
+
+            fetch(el.dataset.pdcNotifyUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': el.dataset.pdcNotifyToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+                .then(async (resp) => ({ ok: resp.ok, data: await resp.json().catch(() => ({})) }))
+                .then(({ ok, data }) => {
+                    if (! ok || ! data.ok) {
+                        el.disabled = false;
+                        showResult(data.message || 'Nosūtīšana neizdevās.', false);
+                        return;
+                    }
+                    if (tpl) {
+                        el.replaceWith(tpl.content.cloneNode(true));
+                    }
+                    showResult(data.message || 'Nosūtīts.', true);
+                })
+                .catch(() => {
+                    el.disabled = false;
+                    showResult('Nosūtīšana neizdevās.', false);
+                });
         };
     }
 </script>
