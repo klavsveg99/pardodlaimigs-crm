@@ -12,6 +12,7 @@ use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
+use Livewire\Attributes\On;
 
 class ViewCrmProperty extends ViewRecord
 {
@@ -21,6 +22,16 @@ class ViewCrmProperty extends ViewRecord
     protected static string $resource = CrmPropertyResource::class;
 
     protected string $view = 'filament.admin.resources.crm-property-resource.pages.view-crm-property';
+
+    /**
+     * Pēc e-pasta nosūtīšanas klientam pārzīmējam lapu, lai pogas vietā
+     * uzreiz parādītos "Nosūtīts" (stāvoklis nāk no darbību žurnāla).
+     */
+    #[On('pdc-client-email-sent')]
+    public function clientEmailSent(): void
+    {
+        // Atkārtots renderējums.
+    }
 
     public function getTitle(): string
     {

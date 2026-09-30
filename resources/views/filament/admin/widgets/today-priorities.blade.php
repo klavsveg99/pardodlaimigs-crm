@@ -20,7 +20,7 @@
 
         @if (count($notifications) === 0)
             <div style="display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 2rem 1rem; text-align: center;">
-                <x-filament::icon icon="heroicon-o-check-circle" style="width: 2rem; height: 2rem; color: #16a34a;" />
+                <x-filament::icon icon="heroicon-o-check-circle" style="width: 2rem; height: 2rem; color: var(--pdc-primary, #285854);" />
                 <p style="font-size: 0.9rem; font-weight: 600; color: #374151; margin: 0;">Šodien nekas nav jāveic</p>
                 <p style="font-size: 0.8rem; color: #6b7280; margin: 0;">Nav uzdevumu, apskates, līdu, novecojušu īpašumu vai dzimšanas dienu.</p>
             </div>
@@ -82,7 +82,7 @@
                                     x-on:click="if (busy) return; busy = true; $el.closest('.pdc-today-row').classList.add('is-completing'); $wire.{{ $quickMethod }}({{ $quickId }}).catch(() => { busy = false; $el.closest('.pdc-today-row').classList.remove('is-completing'); })"
                                     x-bind:disabled="busy"
                                     title="{{ $quickTitle }}"
-                                    style="width: 1.7rem; height: 1.7rem; border-radius: 9999px; background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 0;"
+                                    style="width: 1.7rem; height: 1.7rem; border-radius: 9999px; background: #f1f6f5; color: var(--pdc-primary, #285854); border: 1px solid #bfd6d3; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 0;"
                                 >
                                     <svg x-show="!busy" style="width: 0.95rem; height: 0.95rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4.5 12.75 6 6 9-13.5"/></svg>
                                     <svg x-show="busy" x-cloak class="pdc-today-spinner" style="width: 0.95rem; height: 0.95rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a9 9 0 1 0 9 9"/></svg>

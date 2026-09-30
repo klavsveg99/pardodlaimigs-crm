@@ -4,6 +4,18 @@
     --pdc-primary: #285854;
     --pdc-primary-darker: #1e4843;
     --pdc-warning: #f97316;
+    /* Filament ģenerētā --primary-* palete no #285854 iznāca gaiši
+       tirkīza ("neonzaļa") — wizard soļi, fokusa gredzeni u.c. Pārrakstām
+       uz mūsu zīmola zaļo, lai visa sistēma lieto vienu akcenta krāsu. */
+    --primary-50: #f1f6f5; --primary-100: #dfeae8; --primary-200: #bfd6d3;
+    --primary-300: #98bcb8; --primary-400: #6c9d97; --primary-500: #4a7f78;
+    --primary-600: #285854; --primary-700: #1e4843; --primary-800: #173a36;
+    --primary-900: #112e2b; --primary-950: #0a1c1a;
+    /* "success" arī uz zīmola zaļo (pazūd neonzaļie "Nosūtīts" badge). */
+    --success-50: #f1f6f5; --success-100: #dfeae8; --success-200: #bfd6d3;
+    --success-300: #98bcb8; --success-400: #6c9d97; --success-500: #4a7f78;
+    --success-600: #285854; --success-700: #1e4843; --success-800: #173a36;
+    --success-900: #112e2b; --success-950: #0a1c1a;
     /* Teal is legacy brand teal – remap to primary */
     --teal-50: var(--pdc-primary) !important; --teal-100: var(--pdc-primary) !important; --teal-200: var(--pdc-primary) !important; --teal-300: var(--pdc-primary) !important; --teal-400: var(--pdc-primary) !important; --teal-500: var(--pdc-primary) !important; --teal-600: var(--pdc-primary-darker) !important; --teal-700: var(--pdc-primary-darker) !important; --teal-800: var(--pdc-primary-darker) !important; --teal-900: var(--pdc-primary-darker) !important; --teal-950: var(--pdc-primary-darker) !important;
 }

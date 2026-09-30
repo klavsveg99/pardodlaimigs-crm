@@ -164,10 +164,7 @@ trait LawyerDocumentAction
                     ->label('Jurists')
                     ->options($juristOptions)
                     ->searchable()
-                    ->required()
-                    ->helperText($juristOptions === []
-                        ? 'Vispirms izveidojiet izpildītāju ar kategoriju "Jurists".'
-                        : null),
+                    ->required(),
             ]),
 
             Section::make('Juridiskie dati')->columns(2)->schema($manual),

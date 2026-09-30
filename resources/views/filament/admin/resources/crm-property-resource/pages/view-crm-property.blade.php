@@ -10,6 +10,24 @@
         </div>
     </x-slot>
 
+    <style>
+        .pdc-client-sent {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            white-space: nowrap;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--pdc-primary, #285854);
+            background: #f1f6f5;
+            border: 1px solid #bfd6d3;
+            border-radius: 0.5rem;
+            padding: 0.4rem 0.65rem;
+        }
+        .pdc-client-sent svg { width: 0.9rem; height: 0.9rem; flex: none; }
+        .dark .pdc-client-sent { background: rgba(40, 88, 84, 0.28); border-color: rgba(108, 157, 151, 0.45); color: #98bcb8; }
+    </style>
+
     <x-filament::section heading="Pamatdati">
         <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
@@ -245,7 +263,15 @@
                                 </x-filament::badge>
                             </div>
                         </a>
-                        @if ($client->email && ! auth()->user()?->isPhoto() && $record->status === 'sold')
+                        @php
+                            $sentAt = $record->clientEmailSentAt($client->id);
+                        @endphp
+                        @if ($sentAt)
+                            <span class="pdc-client-sent" title="Nosūtīts {{ $sentAt->format('d.m.Y') }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                <span>Nosūtīts</span>
+                            </span>
+                        @elseif ($client->email && ! auth()->user()?->isPhoto() && $record->status === 'sold')
                             <button
                                 type="button"
                                 data-client-id="{{ $client->id }}"

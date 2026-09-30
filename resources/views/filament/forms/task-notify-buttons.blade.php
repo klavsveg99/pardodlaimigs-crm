@@ -177,28 +177,28 @@
         height: 2.1rem;
         padding: 0 0.9rem;
         border-radius: 0.5rem;
-        background: #f0fdf4;
-        color: #16a34a;
+        background: #f1f6f5;
+        color: var(--pdc-primary, #285854);
         font-size: 0.8rem;
         font-weight: 600;
-        border: 1px solid #86efac;
+        border: 1px solid #bfd6d3;
     }
 
     .pdc-task-notify-sent svg {
         width: 0.9rem;
         height: 0.9rem;
         flex: none;
-        color: #9ca3af;
+        color: var(--pdc-primary, #285854);
     }
 
     .dark .pdc-task-notify-sent {
-        background: rgba(22, 163, 74, 0.12);
-        border-color: rgba(134, 239, 172, 0.35);
-        color: #4ade80;
+        background: rgba(40, 88, 84, 0.28);
+        border-color: rgba(108, 157, 151, 0.45);
+        color: #98bcb8;
     }
 
     .dark .pdc-task-notify-sent svg {
-        color: #71717a;
+        color: #98bcb8;
     }
 
     .pdc-task-notify-btn svg {

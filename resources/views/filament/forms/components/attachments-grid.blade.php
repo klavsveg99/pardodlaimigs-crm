@@ -1021,7 +1021,7 @@
                 </div>
 
                 <div x-show="file.sentAt" x-bind:title="file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts'"
-                    style="position: absolute; bottom: 0.5rem; left: 0.5rem; z-index: 11; height: 1.6rem; width: 1.6rem; border-radius: 9999px; background: #16a34a; color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.35); box-shadow: 0 1px 4px rgba(0,0,0,0.3);"
+                    style="position: absolute; bottom: 0.5rem; left: 0.5rem; z-index: 11; height: 1.6rem; width: 1.6rem; border-radius: 9999px; background: var(--pdc-primary, #285854); color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.35); box-shadow: 0 1px 4px rgba(0,0,0,0.3);"
                     x-cloak>
                     <svg x-show="file.sentAt" style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                 </div>
@@ -1039,7 +1039,7 @@
             <div
                 data-attach-row
                 style="display: flex; align-items: center; gap: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.65rem; padding: 0.5rem 0.75rem; background: #ffffff; transition: border-color 0.15s ease;"
-                :style="{ borderColor: file.sentAt ? '#16a34a' : '#e5e7eb' }"
+                :style="{ borderColor: file.sentAt ? '#285854' : '#e5e7eb' }"
             >
                 <button
                     type="button"

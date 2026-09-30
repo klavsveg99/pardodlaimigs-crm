@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class CrmProperty extends Model
@@ -183,6 +184,20 @@ class CrmProperty extends Model
     public function hasSeller(): bool
     {
         return $this->clients()->wherePivot('relation', 'seller')->exists();
+    }
+
+    /**
+     * Kad šim klientam par šo īpašumu pēdējo reizi nosūtīts e-pasts
+     * ("Paldies par sadarbību"). Datus ņemam no darbību žurnāla.
+     */
+    public function clientEmailSentAt(int $clientId): ?Carbon
+    {
+        return Activity::query()
+            ->where('type', 'client_email_sent')
+            ->where('property_id', $this->id)
+            ->where('client_id', $clientId)
+            ->latest('created_at')
+            ->first()?->created_at;
     }
 
     public function attachments(): MorphMany

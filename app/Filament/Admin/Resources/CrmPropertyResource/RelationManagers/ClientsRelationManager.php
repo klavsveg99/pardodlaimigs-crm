@@ -95,34 +95,6 @@ class ClientsRelationManager extends RelationManager
                 $this->getPievienotKlientuAction(),
             ])
             ->actions([
-                Actions\Action::make('send_email')
-                    ->label('Nosūtīt')
-                    ->icon('heroicon-o-paper-airplane')
-                    ->color('primary')
-                    // "Paldies par sadarbību" e-pasts ir aktuāls tikai
-                    // pārdotiem īpašumiem, tāpēc poga redzama tikai sold.
-                    ->visible(function (Client $record): bool {
-                        $property = $this->getOwnerRecord();
-
-                        return ! auth()->user()?->isPhoto()
-                            && filled($record->email)
-                            && $property instanceof CrmProperty
-                            && $property->status === 'sold';
-                    })
-                    ->alpineClickHandler(function (Client $record): string {
-                        $property = $this->getOwnerRecord();
-                        $detail = json_encode([
-                            'id' => $record->id,
-                            'name' => (string) $record->name,
-                            'email' => (string) $record->email,
-                            'url' => route('properties.clients.send-email', [
-                                'propertySlug' => $property->slug ?? $property->getKey(),
-                                'client' => $record->id,
-                            ]),
-                        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-                        return "window.dispatchEvent(new CustomEvent('pdc-open-client-email', { detail: {$detail} }))";
-                    }),
                 Actions\ActionGroup::make([
                     Actions\EditAction::make()
                         ->label('Rediģēt')
