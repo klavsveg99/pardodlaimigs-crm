@@ -231,6 +231,7 @@ class CrmPropertyResource extends Resource
                             ->pluck('name', 'id')
                             ->all())
                         ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name)
+                        ->helperText('Īpašumam jābūt piesaistītam pārdevējam. Ja klienta vēl nav, izveido to ar «+».')
                         ->suffixAction(
                             Actions\Action::make('create_seller_client')
                                 ->icon('heroicon-o-plus')
@@ -350,19 +351,23 @@ class CrmPropertyResource extends Resource
                             Forms\Components\Textarea::make('advantages')
                                 ->label('Priekšrocības')
                                 ->rows(3)
-                                ->extraInputAttributes([':disabled' => '$wire.aiGenerating']),
+                                ->extraInputAttributes([':disabled' => '$wire.aiGenerating'])
+                                ->helperText('Galvenais pārdošanas akcents; 3–7 svarīgākās priekšrocības; teritorija (pagalms, dārzs, žogs, piebraucamais ceļš, ainava); apkārtne (attālumi, veikali, skolas, transports, ezers/mežs).'),
                             Forms\Components\Textarea::make('technical')
                                 ->label('Tehniskā informācija')
                                 ->rows(3)
-                                ->extraInputAttributes([':disabled' => '$wire.aiGenerating']),
+                                ->extraInputAttributes([':disabled' => '$wire.aiGenerating'])
+                                ->helperText('Stāvu skaits, papildu platības; būvniecības/renovācijas gads, stāvoklis, dokumentācija; telpas (virtuve, pirts, garāža u.c.); komunikācijas; apkure, patēriņš, izmaksas; konstrukcija (sienas, jumts, logi, siltinājums).'),
                             Forms\Components\Textarea::make('investment')
                                 ->label('Investīciju potenciāls')
                                 ->rows(3)
-                                ->extraInputAttributes([':disabled' => '$wire.aiGenerating']),
+                                ->extraInputAttributes([':disabled' => '$wire.aiGenerating'])
+                                ->helperText('Cena apspriežama, steidzama pārdošana, pirmā iemaksa, maksājumu grafiks, hipotēka/Altum, citi nosacījumi; pārdošanas iemesls (tikai ja patiess).'),
                             Forms\Components\Textarea::make('extra')
                                 ->label('Papildu informācija')
                                 ->rows(3)
-                                ->extraInputAttributes([':disabled' => '$wire.aiGenerating']),
+                                ->extraInputAttributes([':disabled' => '$wire.aiGenerating'])
+                                ->helperText('Viss pārējais svarīgais + vēlamais kontakta veids / noslēguma akcents.'),
                         ])
                         ->fillForm(fn (?CrmProperty $record): array => [
                             'advantages' => $record?->ai_notes['advantages'] ?? null,
@@ -564,6 +569,7 @@ class CrmPropertyResource extends Resource
             Section::make('Pielikumi')->columnSpanFull()->schema([
                 AttachmentsGrid::make('attachments_documents')
                     ->label('Dokumenti')
+                    ->helperText('Pases kopijas, zemesgrāmatas, līgumi, pilnvaras u.c. · var nosūtīt arī ar e-pastu saistītajam klientam.')
                     ->reorderable(false)
                     ->multiselect(false)
                     ->deletable()

@@ -87,7 +87,7 @@ class UserResource extends Resource
                     ->columnSpanFull(),
                 PhoneInput::make('phone')->label('Tālrunis')->maxLength(20)->rule(new Phone),
                 Forms\Components\TextInput::make('position')->label('Amats')->maxLength(255)->placeholder('Aģents'),
-                Forms\Components\Textarea::make('description')->label('Apraksts')->rows(4)->maxLength(2000)->columnSpanFull(),
+                Forms\Components\Textarea::make('description')->label('Apraksts')->rows(4)->maxLength(2000)->helperText('Rādās aģenta lapā un īpašuma kontaktblokā')->columnSpanFull(),
                 Forms\Components\TextInput::make('facebook_url')->label('Facebook URL')->url()->maxLength(500)->columnSpan(1),
                 Forms\Components\TextInput::make('instagram_url')->label('Instagram URL')->url()->maxLength(500)->columnSpan(1),
                 Forms\Components\TextInput::make('linkedin_url')->label('LinkedIn URL')->url()->maxLength(500)->columnSpan(1),
@@ -95,6 +95,7 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('office_address')->label('Biroja adrese')->maxLength(500)->placeholder('Rīga, Brīvības iela 1')->columnSpanFull(),
                 Forms\Components\RichEditor::make('email_signature')
                     ->label('E-pasta paraksts')
+                    ->helperText('Tiek automātiski pievienots visiem e-pastiem, ko šis lietotājs nosūta no CRM. Var pievienot arī attēlu.')
                     ->toolbarButtons(['bold', 'italic', 'underline', 'link', 'bulletList', 'orderedList', 'attachFiles'])
                     ->fileAttachmentsDisk('public')
                     ->fileAttachmentsDirectory('email-signatures')
