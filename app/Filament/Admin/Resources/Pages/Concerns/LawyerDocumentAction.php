@@ -147,14 +147,18 @@ trait LawyerDocumentAction
                 ->default($legal[$key] ?? null)
                 ->required(fn (Get $get): bool => in_array($key, $documents[$get('document_type')]['required'] ?? [], true));
 
-            // Reaģē uz "Pārdevējam ir laulātais", lai laulātā lauku rādītu
-            // tikai tad, kad tas ir atzīmēts.
-            if ($key === 'seller_spouse') {
-                $component->live();
+            // "Atlikusī summa/izpirkums", "Maksājumu grafiks" un "Piezīmes"
+            // aizņem visu rindu, lai 2. kolonna nepaliktu tukša.
+            if (in_array($key, ['payment_remaining', 'payment_plan', 'notes'], true)) {
+                $component->columnSpanFull();
             }
 
-            if (in_array($key, ['payment_plan', 'notes'], true)) {
-                $component->columnSpanFull();
+            // Laulātā lauks redzams tikai tad, kad laulātais ir atzīmēts;
+            // paslēpts, tas pārņem visu rindu, lai 2. kolonna nepaliktu tukša.
+            if ($key === 'seller_spouse') {
+                $component
+                    ->live()
+                    ->columnSpan(fn (Get $get) => $get('legal.seller_spouse') === 'Ir' ? 1 : 'full');
             }
 
             if ($key === 'spouse_name') {

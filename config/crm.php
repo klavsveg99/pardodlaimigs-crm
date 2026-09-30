@@ -47,7 +47,7 @@ return [
             ],
             'payment_total' => ['label' => 'Pilna pirkuma maksa (€)', 'type' => 'money'],
             'payment_down' => ['label' => 'Pirmā iemaksa (€)', 'type' => 'money'],
-            'payment_remaining' => ['label' => 'Atlikušā summa / izpirkums', 'type' => 'textarea'],
+            'payment_remaining' => ['label' => 'Atlikusī summa/izpirkums', 'type' => 'textarea'],
             'payment_plan' => [
                 'label' => 'Maksājumu grafiks',
                 'type' => 'repeater',
