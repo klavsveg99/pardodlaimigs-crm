@@ -34,8 +34,10 @@ class CreateCrmProperty extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Agents only see their own properties, so default the owner to the
-        // creator when none is chosen.
-        if (blank($data['owner_user_id'] ?? null) && ! auth()->user()?->can('manage')) {
+        // creator when none is chosen. Fotogrāfam aģents netiek piešķirts —
+        // viņš tikai izveido īpašumu un pievieno bildes, atbildīgo aģentu
+        // vēlāk norāda kāds cits.
+        if (blank($data['owner_user_id'] ?? null) && ! auth()->user()?->can('manage') && ! auth()->user()?->isPhoto()) {
             $data['owner_user_id'] = auth()->id();
         }
 

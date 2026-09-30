@@ -51,7 +51,9 @@ class MyProfile extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->check();
+        // Fotogrāfs rediģē tikai īpašuma nosaukumu un galeriju, tāpēc
+        // "Mans profils" viņam nav pieejams vispār.
+        return auth()->check() && ! (auth()->user()?->isPhoto() ?? false);
     }
 
     public function getUser(): Model
