@@ -20,15 +20,12 @@ class Izpilditajs extends Model
         'Notārs' => 'Notārs',
         'Jurists' => 'Jurists',
         'Mērnieks' => 'Mērnieks',
-        'Ainavu arhitekts' => 'Ainavu arhitekts',
         'Būvnieks' => 'Būvnieks',
         'Elektriķis' => 'Elektriķis',
         'Santehniķis' => 'Santehniķis',
         'Apdrošinātājs' => 'Apdrošinātājs',
-        'Vērtētājs' => 'Vērtētājs',
         'Fotogrāfs' => 'Fotogrāfs',
         'Video' => 'Video',
-        'Mākleris' => 'Mākleris',
         'Cits' => 'Cits',
     ];
 

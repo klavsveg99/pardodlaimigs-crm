@@ -65,11 +65,6 @@ return [
                 'options' => ['Nav' => 'Nav', 'Ir' => 'Ir'],
             ],
             'spouse_name' => ['label' => 'Laulātā vārds, uzvārds', 'type' => 'text'],
-            'representative_name' => ['label' => 'Pilnvarotā persona — vārds, uzvārds', 'type' => 'text'],
-            'representative_code' => ['label' => 'Pilnvarotā persona — personas kods', 'type' => 'text'],
-            'representative_address' => ['label' => 'Pilnvarotā persona — adrese', 'type' => 'text'],
-            'representative_bank' => ['label' => 'Pilnvarotā persona — bankas konts', 'type' => 'text'],
-            'representative_phone' => ['label' => 'Pilnvarotā persona — tālrunis', 'type' => 'text'],
             'notes' => ['label' => 'Piezīmes / speciālie nosacījumi', 'type' => 'textarea'],
         ],
 
