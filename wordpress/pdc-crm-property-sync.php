@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Pārdod Laimīgs CRM Property Sync
  * Description: Pulls property data from CRM and overwrites WordPress property posts. CRM is the single source of truth.
- * Version: 2.5.0
+ * Version: 2.5.1
  * Author: Pārdod Laimīgs
  */
 if (! defined('ABSPATH')) {
@@ -828,6 +828,7 @@ function pdc_sync_agents()
     }
 
     $agent_map = [];
+    $synced_ids = [];
     foreach ($data['agents'] as $agent) {
         $crm_id = isset($agent['id']) ? $agent['id'] : 0;
         $name = isset($agent['name']) ? $agent['name'] : '';
@@ -888,6 +889,24 @@ function pdc_sync_agents()
 
         $agent_map[$name] = $post_id;
         $agent_map['id:'.$crm_id] = $post_id;
+        $synced_ids[] = (int) $crm_id;
+    }
+
+    // Aģentiem, kas CRM vairs nav (izdzēsti/soft-deleted), arī WP pusē jāpazūd
+    // profils — citādi mājaslapā paliek "spoku" aģenta lapa. Tāpat kā
+    // īpašumiem, ierakstu atspiežam (private), nevis dzēšam neatgriezeniski.
+    // Manuāli veidotus agent ierakstus bez _pdc_crm_agent_id (crm_id = 0) neskaitām.
+    $all_agent_posts = get_posts([
+        'post_type' => 'agent',
+        'numberposts' => -1,
+        'post_status' => 'any',
+    ]);
+    foreach ($all_agent_posts as $agent_post) {
+        $post_crm_id = (int) get_post_meta($agent_post->ID, '_pdc_crm_agent_id', true);
+        if ($post_crm_id > 0 && ! in_array($post_crm_id, $synced_ids, true) && $agent_post->post_status !== 'private') {
+            wp_update_post(['ID' => $agent_post->ID, 'post_status' => 'private']);
+            pdc_log('Agent no longer in CRM: unpublished WP agent #'.$agent_post->ID.' (crm id '.$post_crm_id.')');
+        }
     }
 
     pdc_log('Synced '.count($agent_map).' agents');
