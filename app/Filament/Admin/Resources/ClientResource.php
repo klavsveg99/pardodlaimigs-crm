@@ -98,26 +98,32 @@ class ClientResource extends Resource
                             'Cits' => 'Cits',
                         ])
                         ->placeholder('Izvēlieties avotu'),
-                    Forms\Components\Select::make('status')
-                        ->label('Statuss')
-                        ->options(Client::STATUSES)
-                        ->default('active')
-                        ->required(),
                     Forms\Components\TextInput::make('source_other')
                         ->label('Avots — precizējums')
                         ->maxLength(200)
                         ->visible(fn (callable $get): bool => $get('source') === 'Cits')
                         ->columnSpanFull(),
-                    Forms\Components\Select::make('owner_user_id')
-                        ->label('Atbildīgais aģents')
-                        ->relationship('owner', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())
-                        ->searchable()
-                        ->preload()
-                        ->optionsLimit(20)
-                        ->required()
-                        ->visible(AgentField::visible())
-                        ->disabled(AgentField::disabled())
-                        ->columnSpanFull(),
+
+                    // Statuss un atbildīgais aģents vienā rindā. Aģenta lauks
+                    // nav redzams aģentiem (tikai adminiem un skata režīmā) —
+                    // tad statuss aizņem visu rindu, lai nepaliek tukša kolonna.
+                    Grid::make(['default' => 1, 'md' => 2])->columnSpanFull()->schema([
+                        Forms\Components\Select::make('status')
+                            ->label('Statuss')
+                            ->options(Client::STATUSES)
+                            ->default('active')
+                            ->required()
+                            ->columnSpan(['default' => AgentField::siblingSpan()]),
+                        Forms\Components\Select::make('owner_user_id')
+                            ->label('Atbildīgais aģents')
+                            ->relationship('owner', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())
+                            ->searchable()
+                            ->preload()
+                            ->optionsLimit(20)
+                            ->required()
+                            ->visible(AgentField::visible())
+                            ->disabled(AgentField::disabled()),
+                    ]),
                     Forms\Components\Checkbox::make('marketing_consent')
                         ->label('Klients atļauj izmantot datus mārketingam')
                         ->inline()
