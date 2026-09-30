@@ -147,6 +147,20 @@ trait LawyerDocumentAction
                 ->default($legal[$key] ?? null)
                 ->required(fn (Get $get): bool => in_array($key, $documents[$get('document_type')]['required'] ?? [], true));
 
+            // Reaģē uz "Pārdevējam ir laulātais", lai laulātā lauku rādītu
+            // tikai tad, kad tas ir atzīmēts.
+            if ($key === 'seller_spouse') {
+                $component->live();
+            }
+
+            if (in_array($key, ['payment_plan', 'notes'], true)) {
+                $component->columnSpanFull();
+            }
+
+            if ($key === 'spouse_name') {
+                $component->visible(fn (Get $get): bool => $get('legal.seller_spouse') === 'Ir');
+            }
+
             $manual[] = $component;
         }
 
@@ -236,7 +250,15 @@ trait LawyerDocumentAction
             }
         }
 
-        $property->legal_data = array_merge(is_array($property->legal_data) ? $property->legal_data : [], $legal);
+        $legalData = array_merge(is_array($property->legal_data) ? $property->legal_data : [], $legal);
+
+        // Laulātā vārds ir aktuāls tikai tad, ja laulātais ir atzīmēts;
+        // pretējā gadījumā veco vērtību izmetam, lai tā nepaliek e-pastā.
+        if (($legalData['seller_spouse'] ?? null) !== 'Ir') {
+            unset($legalData['spouse_name']);
+        }
+
+        $property->legal_data = $legalData;
         $property->save();
 
         try {
