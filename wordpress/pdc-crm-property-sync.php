@@ -15,7 +15,7 @@ define('PDC_CRM_API_KEY', defined('WP_PDC_CRM_API_KEY') ? WP_PDC_CRM_API_KEY : '
 define('PDC_CRM_AGENTS_URL', 'https://crm.pardodlaimigs.lv/api/crm/agents');
 define('PDC_SYNC_INTERVAL', 5 * MINUTE_IN_SECONDS);
 // Google key reverse geocode ZIP izgūšanai (tā pati atslēga kā CRM pusē).
-define('PDC_GOOGLE_MAPS_KEY', defined('WP_PDC_GOOGLE_MAPS_KEY') ? WP_PDC_GOOGLE_MAPS_KEY : 'AIzaSyBOU49EJvBKwG2hlMH-sNC0_nWBibOGhRo');
+define('PDC_GOOGLE_MAPS_KEY', defined('WP_PDC_GOOGLE_MAPS_KEY') ? WP_PDC_GOOGLE_MAPS_KEY : 'AIzaSyB4yTDjhHz4S7z_AFouoh_j_-Kb-axEqHI');
 
 function pdc_log($msg)
 {
