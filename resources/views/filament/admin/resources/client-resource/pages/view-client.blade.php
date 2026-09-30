@@ -20,6 +20,22 @@
                 <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">{{ $record->personas_kods ?: '—' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Dzimšanas datums</dt>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->birth_date?->format('d.m.Y') ?? '—' }}</dd>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Adrese</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->address ?: '—' }}</dd>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bankas konts</dt>
+                <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">{{ $record->bank_account ?: '—' }}</dd>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Statuss</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->status_label }}</dd>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Avots</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->source ?: '—' }}</dd>
             </div>

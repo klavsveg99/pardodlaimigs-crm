@@ -36,3 +36,10 @@ Schedule::command('pdc:backup-files')
     ->dailyAt('00:05')
     ->name('daily-files-backup')
     ->withoutOverlapping();
+
+// Drošības tīkls klientu statusiem ("Laimīgs"/"Aktīvs") — pamatā statuss
+// mainās uzreiz, kad darījums tiek noslēgts vai atsaukts.
+Schedule::command('pdc:sync-client-statuses')
+    ->dailyAt('03:30')
+    ->name('sync-client-statuses')
+    ->withoutOverlapping();

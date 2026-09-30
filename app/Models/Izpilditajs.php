@@ -18,6 +18,7 @@ class Izpilditajs extends Model
 
     public const CATEGORIES = [
         'Notārs' => 'Notārs',
+        'Jurists' => 'Jurists',
         'Mērnieks' => 'Mērnieks',
         'Ainavu arhitekts' => 'Ainavu arhitekts',
         'Būvnieks' => 'Būvnieks',

@@ -1,0 +1,249 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Admin\Resources\Pages\Concerns;
+
+use App\Models\Client;
+use App\Models\CrmProperty;
+use App\Models\Izpilditajs;
+use App\Services\Lawyer\LawyerDocumentService;
+use App\Services\Mail\EmailTooLargeException;
+use Filament\Actions;
+use Filament\Forms;
+use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+
+/**
+ * "Jurista dokuments" darbība īpašuma skatā: izvēlas dokumenta veidu un
+ * juristu, ļauj aizpildīt trūkstošos datus, pārbauda obligātos laukus un
+ * nosūta strukturētu e-pastu. Pieejama tikai pārdotam īpašumam ar
+ * piesaistītu pārdevēju (pircējs nav obligāts).
+ */
+trait LawyerDocumentAction
+{
+    protected function getLawyerDocumentAction(): Actions\Action
+    {
+        return Actions\Action::make('lawyer_document')
+            ->label('Jurista dokuments')
+            ->icon('heroicon-o-scale')
+            ->color('gray')
+            ->visible(fn (): bool => $this->lawyerProperty()?->status === 'sold'
+                && $this->lawyerSeller() !== null)
+            ->modalHeading('Nosūtīt juristam')
+            ->modalWidth('4xl')
+            ->modalSubmitActionLabel('Nosūtīt')
+            ->form(fn (): array => $this->lawyerFormSchema())
+            ->action(fn (array $data) => $this->sendLawyerDocument($data));
+    }
+
+    protected function lawyerProperty(): ?CrmProperty
+    {
+        $record = $this->record ?? null;
+
+        return $record instanceof CrmProperty ? $record : null;
+    }
+
+    protected function lawyerSeller(): ?Client
+    {
+        return $this->lawyerProperty()?->clients
+            ->first(fn (Client $client): bool => $client->pivot->relation === 'seller');
+    }
+
+    protected function lawyerBuyer(): ?Client
+    {
+        return $this->lawyerProperty()?->clients
+            ->first(fn (Client $client): bool => $client->pivot->relation === 'buyer');
+    }
+
+    /** @return array<int, mixed> */
+    protected function lawyerFormSchema(): array
+    {
+        $service = app(LawyerDocumentService::class);
+        $property = $this->lawyerProperty();
+        $seller = $this->lawyerSeller();
+        $buyer = $this->lawyerBuyer();
+        $legal = $property?->legal_data ?? [];
+        $documents = $service->documentTypes();
+
+        $manual = [];
+
+        foreach ($service->fields() as $key => $definition) {
+            $component = match ($definition['type']) {
+                'textarea' => Forms\Components\Textarea::make("legal.$key")->rows(2),
+                'date' => Forms\Components\DatePicker::make("legal.$key")->native(false)->displayFormat('d.m.Y'),
+                'money' => Forms\Components\TextInput::make("legal.$key")->numeric()->prefix('€'),
+                'select' => Forms\Components\Select::make("legal.$key")->options($definition['options'] ?? []),
+                'repeater' => Forms\Components\Repeater::make("legal.$key")
+                    ->schema(collect($definition['columns'] ?? [])
+                        ->map(fn (string $label, string $column) => Forms\Components\TextInput::make($column)->label($label))
+                        ->values()
+                        ->all())
+                    ->columns(max(1, count($definition['columns'] ?? [])))
+                    ->addActionLabel('Pievienot rindu')
+                    ->defaultItems(0),
+                default => Forms\Components\TextInput::make("legal.$key"),
+            };
+
+            $component
+                ->label($definition['label'])
+                ->default($legal[$key] ?? null)
+                ->required(fn (Get $get): bool => in_array($key, $documents[$get('document_type')]['required'] ?? [], true));
+
+            $manual[] = $component;
+        }
+
+        $juristOptions = $service->juristOptions();
+
+        return [
+            Section::make()->columns(2)->schema([
+                Forms\Components\Select::make('document_type')
+                    ->label('Dokumenta veids')
+                    ->options($service->documentOptions())
+                    ->required()
+                    ->live()
+                    ->default(array_key_first($documents)),
+                Forms\Components\Select::make('jurist_id')
+                    ->label('Jurists')
+                    ->options($juristOptions)
+                    ->searchable()
+                    ->required()
+                    ->helperText($juristOptions === []
+                        ? 'Vispirms izveidojiet izpildītāju ar kategoriju "Jurists".'
+                        : null),
+            ]),
+
+            Section::make('Juridiskie dati')->columns(2)->schema($manual),
+
+            Section::make('Pārdevējs')->columns(2)->visible($seller !== null)->schema([
+                Forms\Components\TextInput::make('seller.name')->label('Vārds, uzvārds')->required()->default($seller?->name),
+                Forms\Components\TextInput::make('seller.personas_kods')->label('Personas kods')->required()->default($seller?->personas_kods),
+                Forms\Components\TextInput::make('seller.address')->label('Dzīvesvietas adrese')->default($seller?->address),
+                Forms\Components\TextInput::make('seller.bank_account')->label('Bankas konta numurs')->default($seller?->bank_account),
+                Forms\Components\TextInput::make('seller.email')->label('E-pasts')->email()->default($seller?->email),
+                Forms\Components\TextInput::make('seller.phone')->label('Tālrunis')->default($seller?->phone),
+            ]),
+
+            Section::make('Pircējs')->columns(2)->visible($buyer !== null)->schema([
+                Forms\Components\TextInput::make('buyer.name')->label('Vārds, uzvārds')->default($buyer?->name),
+                Forms\Components\TextInput::make('buyer.personas_kods')->label('Personas kods')->default($buyer?->personas_kods),
+                Forms\Components\TextInput::make('buyer.address')->label('Dzīvesvietas adrese')->default($buyer?->address),
+                Forms\Components\TextInput::make('buyer.bank_account')->label('Bankas konta numurs')->default($buyer?->bank_account),
+                Forms\Components\TextInput::make('buyer.email')->label('E-pasts')->email()->default($buyer?->email),
+                Forms\Components\TextInput::make('buyer.phone')->label('Tālrunis')->default($buyer?->phone),
+            ]),
+
+            Section::make('Īpašums')->columns(2)->schema([
+                Forms\Components\TextInput::make('property.address')->label('Adrese')->required()->default($property?->address),
+                Forms\Components\TextInput::make('property.kadastra_nr')->label('Kadastra numurs')->default($property?->kadastra_nr),
+                Forms\Components\TextInput::make('property.city')->label('Pilsēta / novads')->default($property?->city),
+                Forms\Components\TextInput::make('property.zip')->label('Pasta indekss')->default($property?->zip),
+            ]),
+        ];
+    }
+
+    /** @param  array<string, mixed>  $data */
+    protected function sendLawyerDocument(array $data): void
+    {
+        $property = $this->lawyerProperty();
+
+        if (! $property) {
+            return;
+        }
+
+        $type = (string) ($data['document_type'] ?? '');
+        $jurist = Izpilditajs::query()
+            ->where('category', 'Jurists')
+            ->find($data['jurist_id'] ?? 0);
+
+        if (! $jurist || blank($jurist->email)) {
+            Notification::make()
+                ->title('Jurists nav atrasts vai tam nav norādīts e-pasts')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $this->applyClientUpdates($this->lawyerSeller(), is_array($data['seller'] ?? null) ? $data['seller'] : []);
+        $this->applyClientUpdates($this->lawyerBuyer(), is_array($data['buyer'] ?? null) ? $data['buyer'] : []);
+        $this->applyPropertyUpdates($property, is_array($data['property'] ?? null) ? $data['property'] : []);
+
+        $legal = is_array($data['legal'] ?? null) ? $data['legal'] : [];
+        $property->legal_data = array_merge(is_array($property->legal_data) ? $property->legal_data : [], $legal);
+        $property->save();
+
+        try {
+            $request = app(LawyerDocumentService::class)->send(
+                $property->refresh(),
+                $jurist,
+                $type,
+                is_array($property->legal_data) ? $property->legal_data : [],
+                auth()->user(),
+            );
+        } catch (EmailTooLargeException $e) {
+            Notification::make()->title($e->userMessage())->danger()->send();
+
+            return;
+        } catch (\Throwable $e) {
+            report($e);
+
+            Notification::make()
+                ->title('Nosūtīšana neizdevās')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        Notification::make()
+            ->title('Nosūtīts juristam: '.$jurist->name)
+            ->body($request->subject)
+            ->success()
+            ->send();
+    }
+
+    /** @param  array<string, mixed>  $data */
+    protected function applyClientUpdates(?Client $client, array $data): void
+    {
+        if (! $client || $data === []) {
+            return;
+        }
+
+        $updates = [];
+
+        foreach (['name', 'personas_kods', 'address', 'bank_account', 'email', 'phone'] as $key) {
+            if (! array_key_exists($key, $data)) {
+                continue;
+            }
+
+            $value = is_string($data[$key]) ? trim($data[$key]) : $data[$key];
+            if ($value === '') {
+                $value = null;
+            }
+
+            if ($client->getAttribute($key) !== $value) {
+                $updates[$key] = $value;
+            }
+        }
+
+        if ($updates !== []) {
+            $client->update($updates);
+        }
+    }
+
+    /** @param  array<string, mixed>  $data */
+    protected function applyPropertyUpdates(CrmProperty $property, array $data): void
+    {
+        foreach (['address', 'kadastra_nr', 'city', 'zip'] as $key) {
+            if (! array_key_exists($key, $data)) {
+                continue;
+            }
+
+            $value = is_string($data[$key]) ? trim($data[$key]) : $data[$key];
+            $property->setAttribute($key, $value === '' ? null : $value);
+        }
+    }
+}

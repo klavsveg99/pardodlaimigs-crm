@@ -295,5 +295,25 @@
         </div>
     </x-filament::section>
 
+    @if ($record->lawyerRequests->isNotEmpty())
+        <x-filament::section heading="Jurista pieprasījumi">
+            <div class="flex flex-col gap-3">
+                @foreach ($record->lawyerRequests as $lawyerRequest)
+                    <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <x-filament::badge color="gray">{{ $lawyerRequest->document_label }}</x-filament::badge>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ $lawyerRequest->subject }}</span>
+                        </div>
+                        <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                            <span>{{ $lawyerRequest->sent_at?->format('d.m.Y H:i') ?? $lawyerRequest->created_at?->format('d.m.Y H:i') }}</span>
+                            <span>Jurists: {{ $lawyerRequest->jurist?->name ?? '—' }} ({{ $lawyerRequest->recipient_email }})</span>
+                            <span>Nosūtīja: {{ $lawyerRequest->sentBy?->name ?? '—' }}</span>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </x-filament::section>
+    @endif
+
     @include('filament.partials.property-client-email-popup')
 </x-filament-panels::page>

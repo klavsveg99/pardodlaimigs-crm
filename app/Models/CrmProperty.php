@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Services\AuditLogger;
+use App\Services\Clients\ClientStatusSync;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -54,7 +55,7 @@ class CrmProperty extends Model
         'lead_source', 'lead_owner', 'beds', 'baths',
         'size_m2', 'land_m2', 'kadastra_nr', 'city', 'address', 'zip',
         'lat', 'lng', 'owner_user_id', 'sort_order',
-        'final_price_eur', 'commission_eur', 'sold_at', 'ai_notes', 'ai_result',
+        'final_price_eur', 'commission_eur', 'sold_at', 'ai_notes', 'ai_result', 'legal_data',
     ];
 
     protected $casts = [
@@ -77,6 +78,7 @@ class CrmProperty extends Model
         'sort_order' => 'integer',
         'ai_notes' => 'array',
         'ai_result' => 'array',
+        'legal_data' => 'array',
     ];
 
     public function getRouteKeyName(): string
@@ -142,6 +144,14 @@ class CrmProperty extends Model
         });
 
         static::deleted(fn (self $p) => app(AuditLogger::class)->log('delete', 'crm_property', $p->id, $p->toArray(), null));
+
+        // Kad darījums tiek noslēgts (vai atsaukts), pārklasificējam
+        // piesaistītos klientus ("Laimīgs" ↔ "Aktīvs").
+        static::saved(function (self $property): void {
+            if ($property->wasChanged('status')) {
+                app(ClientStatusSync::class)->syncProperty($property);
+            }
+        });
     }
 
     public function owner(): BelongsTo
@@ -177,6 +187,11 @@ class CrmProperty extends Model
     public function descriptionRevisions(): HasMany
     {
         return $this->hasMany(CrmPropertyDescriptionRevision::class);
+    }
+
+    public function lawyerRequests(): HasMany
+    {
+        return $this->hasMany(LawyerRequest::class)->orderByDesc('created_at');
     }
 
     public function getPriceDisplayAttribute(): string

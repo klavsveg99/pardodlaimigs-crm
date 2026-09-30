@@ -105,6 +105,7 @@ class ActivityFeed extends BaseWidget
                 Tables\Columns\TextColumn::make('actor.name')
                     ->label('Aģents')
                     ->sortable()
+                    ->searchable()
                     ->placeholder('Sistēma'),
 
                 Tables\Columns\TextColumn::make('detail')
@@ -112,7 +113,20 @@ class ActivityFeed extends BaseWidget
                     ->wrap()
                     ->limit(140)
                     ->tooltip(fn ($record) => $this->describe($record, false))
-                    ->getStateUsing(fn ($record) => $this->describe($record, true)),
+                    ->getStateUsing(fn ($record) => $this->describe($record, true))
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        $like = '%'.$search.'%';
+
+                        return $query->where(function (Builder $q) use ($like): void {
+                            $q->where('action', 'like', $like)
+                                ->orWhere('entity', 'like', $like)
+                                ->orWhere('entity_id', 'like', $like)
+                                ->orWhere('route', 'like', $like)
+                                ->orWhere('ip', 'like', $like)
+                                ->orWhere('before', 'like', $like)
+                                ->orWhere('after', 'like', $like);
+                        });
+                    }),
             ])
             ->actions([
                 Actions\Action::make('atvert')
@@ -138,8 +152,7 @@ class ActivityFeed extends BaseWidget
             ->where('action', '!=', 'wpform_sync')
             // Darījumi no longer exist in the system — hide their legacy rows.
             ->where('entity', '!=', 'deal')
-            ->orderByDesc('created_at')
-            ->limit(50);
+            ->orderByDesc('created_at');
     }
 
     protected function actionBadge(AuditLog $log): string

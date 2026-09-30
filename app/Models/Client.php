@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 class Client extends Model
@@ -23,15 +24,17 @@ class Client extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name', 'phone', 'email', 'personas_kods', 'source', 'status', 'gdpr_consent_at',
+        'name', 'phone', 'email', 'personas_kods', 'birth_date', 'birthday_greeted_at',
+        'address', 'bank_account', 'source', 'status', 'gdpr_consent_at',
         'marketing_consent',
         'gdpr_erased_at', 'notes_md', 'owner_user_id',
     ];
 
-    /** Klienta statuss: parasts klients vai potenciālais pārdevējs (līds). */
+    /** Klienta statuss: parasts klients, līds vai noslēgta darījuma klients. */
     public const STATUSES = [
         'active' => 'Aktīvs',
         'lead' => 'Līds',
+        'laimigs' => 'Laimīgs',
     ];
 
     public function scopeLeads(Builder $query): Builder
@@ -42,6 +45,11 @@ class Client extends Model
     public function isLead(): bool
     {
         return $this->status === 'lead';
+    }
+
+    public function isLaimigs(): bool
+    {
+        return $this->status === 'laimigs';
     }
 
     public function getStatusLabelAttribute(): string
@@ -55,6 +63,8 @@ class Client extends Model
         'gdpr_consent_at' => 'datetime',
         'marketing_consent' => 'boolean',
         'gdpr_erased_at' => 'datetime',
+        'birth_date' => 'date',
+        'birthday_greeted_at' => 'date',
     ];
 
     // Vārds vienmēr tiek normalizēts: tikai pirmie burti lielie
@@ -66,8 +76,65 @@ class Client extends Model
         );
     }
 
+    /**
+     * Latvijas personas kods DDMMYY-XXXXX; 7. cipars norāda gadsimtu
+     * (0 → 18xx, 1 → 19xx, 2 → 20xx). Atgriež null, ja kods nav derīgs.
+     */
+    public static function birthDateFromPersonasKods(?string $code): ?Carbon
+    {
+        $digits = preg_replace('/\D/', '', (string) $code);
+
+        if (strlen($digits) !== 11) {
+            return null;
+        }
+
+        $day = (int) substr($digits, 0, 2);
+        $month = (int) substr($digits, 2, 2);
+        $yearShort = (int) substr($digits, 4, 2);
+        $century = match ((int) $digits[6]) {
+            0 => 1800,
+            1 => 1900,
+            2 => 2000,
+            default => null,
+        };
+
+        if ($century === null) {
+            return null;
+        }
+
+        $year = $century + $yearShort;
+
+        return checkdate($month, $day, $year) ? Carbon::create($year, $month, $day)->startOfDay() : null;
+    }
+
+    /**
+     * Šī gada dzimšanas diena (datums), vai null, ja nav zināms datums.
+     * 29. februāris neizlēciena gadā pārceļas uz 1. martu (Carbon uzvedība).
+     */
+    public function birthdayThisYear(): ?Carbon
+    {
+        if (! $this->birth_date) {
+            return null;
+        }
+
+        return Carbon::create(now()->year, $this->birth_date->month, $this->birth_date->day)->startOfDay();
+    }
+
     protected static function booted(): void
     {
+        // Dzimšanas datumu iegūstam no personas koda, ja tas vēl nav norādīts.
+        // Manuāli ievadīto datumu nekad nepārrakstām.
+        static::saving(function (Client $client): void {
+            if (blank($client->birth_date) && filled($client->personas_kods)) {
+                $client->birth_date = self::birthDateFromPersonasKods($client->personas_kods);
+            }
+        });
+
+        // "Laimīgos" klientus (noslēgts darījums) dzēst nedrīkst — ne ar
+        // mīksto, ne neatgriezenisko dzēšanu, ne adminiem, ne aģentiem.
+        static::deleting(fn (Client $client): bool => ! $client->isLaimigs());
+        static::forceDeleting(fn (Client $client): bool => ! $client->isLaimigs());
+
         static::forceDeleting(function (Client $client): void {
             $client->attachments()->get()->each(function ($attachment): void {
                 Storage::disk($attachment->disk)->delete($attachment->path);

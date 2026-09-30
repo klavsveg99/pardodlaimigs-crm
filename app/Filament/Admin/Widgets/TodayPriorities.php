@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Widgets;
 
 use App\Filament\Concerns\HasUndoableNotifications;
+use App\Models\Client;
 use App\Models\Task;
 use App\Models\Viewing;
 use App\Services\Notices\NoticeCenter;
@@ -89,6 +90,23 @@ class TodayPriorities extends Widget
         $this->notifyUndoable('Apskate atzīmēta kā notikusi', 'viewing-done', ['id' => $viewing->id]);
     }
 
+    /** Ātrā darbība: atzīmēt "Laimīgo" klientu kā apsveiktu dzimšanas dienā. */
+    public function greetBirthday(int $clientId): void
+    {
+        $client = Client::query()
+            ->where('status', 'laimigs')
+            ->when($this->scopeToUser(), fn ($q) => $q->where('owner_user_id', auth()->id()))
+            ->find($clientId);
+
+        if (! $client) {
+            return;
+        }
+
+        $client->update(['birthday_greeted_at' => now()->toDateString()]);
+
+        $this->notifyUndoable('Klients atzīmēts kā apsveikts', 'birthday-greeted', ['id' => $client->id]);
+    }
+
     /**
      * Atsauc iepriekšējo ātro darbību. Ieraksts tiek meklēts no jauna ar to
      * pašu tvērumu, ar kādu tas tika atzīmēts, lai no notikuma datiem
@@ -107,6 +125,9 @@ class TodayPriorities extends Widget
             'viewing-done' => Viewing::query()
                 ->when($this->scopeToUser(), fn ($q) => $q->where('agent_user_id', auth()->id()))
                 ->find($id),
+            'birthday-greeted' => Client::query()
+                ->when($this->scopeToUser(), fn ($q) => $q->where('owner_user_id', auth()->id()))
+                ->find($id),
             default => null,
         };
 
@@ -116,6 +137,8 @@ class TodayPriorities extends Widget
 
         if ($record instanceof Task) {
             $record->update(['completed_at' => null]);
+        } elseif ($record instanceof Client) {
+            $record->update(['birthday_greeted_at' => null]);
         } else {
             $record->update(['status' => 'scheduled']);
         }
@@ -174,6 +197,7 @@ class TodayPriorities extends Widget
             'title' => $notice['title'],
             'url' => $notice['url'],
             'fields' => $notice['fields'],
+            'greet_client_id' => $notice['greet_client_id'] ?? null,
             'timestamp' => null,
             'dismissable' => true,
         ], app(NoticeCenter::class)->forUser($user));

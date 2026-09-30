@@ -67,6 +67,7 @@ class ClientResource extends Resource
                     Forms\Components\TextInput::make('name')->label('Vārds, uzvārds')->required()->maxLength(255),
                     PhoneInput::make('phone')->label('Tālrunis')->maxLength(20)->rule(new Phone),
                     Forms\Components\TextInput::make('email')->label('E-pasts')->email()->maxLength(255),
+                    Forms\Components\TextInput::make('address')->label('Adrese')->maxLength(255),
                     PersonasKodsInput::make('personas_kods')
                         ->label('Personas kods')
                         ->maxLength(12)
@@ -75,6 +76,14 @@ class ClientResource extends Resource
                         ->rule('regex:/^\d{6}-\d{5}$/')
                         ->disabled(fn (string $operation) => $operation === 'view')
                         ->readonly(fn (Client $record) => Str::filled($record->personas_kods)),
+                    Forms\Components\DatePicker::make('birth_date')
+                        ->label('Dzimšanas datums')
+                        ->native(false)
+                        ->displayFormat('d.m.Y')
+                        ->helperText('Aizpildās automātiski no personas koda'),
+                    Forms\Components\TextInput::make('bank_account')
+                        ->label('Bankas konta numurs')
+                        ->maxLength(64),
                     Forms\Components\Select::make('source')
                         ->label('Avots (kā uzzināja)')
                         ->searchable()
@@ -147,6 +156,7 @@ class ClientResource extends Resource
             ->modalHeading('Pārvietot izvēlētos klientus uz "Dzēstie"?')
             ->modalDescription('Klienti paliks sadaļā "Dzēstie" un būs atjaunojami.')
             ->modalSubmitActionLabel('Dzēst')
+            ->before(fn (Actions\DeleteBulkAction $action) => static::warnAboutLaimigs($action))
             ->deselectRecordsAfterCompletion();
         $trashSelected->visible(fn (): bool => ($trashSelected->getLivewire()?->activeTab ?? 'active') !== 'deleted');
 
@@ -157,6 +167,7 @@ class ClientResource extends Resource
             ->modalHeading('Vai tiešām neatgriezeniski dzēst izvēlētos klientus?')
             ->modalDescription('Ieraksti tiks pilnībā izņemti no CRM, un tos vairs nevarēs atjaunot.')
             ->modalSubmitActionLabel('Izdzēst neatgriezeniski')
+            ->before(fn (Actions\ForceDeleteBulkAction $action) => static::warnAboutLaimigs($action))
             ->deselectRecordsAfterCompletion();
         $forceDeleteSelected->visible(fn (): bool => ($forceDeleteSelected->getLivewire()?->activeTab ?? 'active') === 'deleted'
             && (auth()->user()?->can('manage') ?? false));
@@ -167,7 +178,11 @@ class ClientResource extends Resource
                     ->url(fn (Client $record) => $record->trashed() ? null : static::getUrl('view', ['record' => $record])),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')->badge()->sortable()
                     ->formatStateUsing(fn ($state): string => Client::STATUSES[$state] ?? (string) $state)
-                    ->color(fn ($state): string => $state === 'lead' ? 'warning' : 'gray'),
+                    ->color(fn ($state): string => match ($state) {
+                        'lead' => 'warning',
+                        'laimigs' => 'success',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable()
                     ->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
@@ -229,7 +244,7 @@ class ClientResource extends Resource
                     Actions\DeleteAction::make()
                         ->label('Dzēst')
                         ->color('danger')
-                        ->visible(fn (Client $record): bool => ! $record->trashed())
+                        ->visible(fn (Client $record): bool => ! $record->trashed() && ! $record->isLaimigs())
                         ->modalHeading('Pārvietot klientu uz "Dzēstie"?')
                         ->modalDescription('Klients pazudīs no aktīvā saraksta, bet paliks sadaļā "Dzēstie" un būs atjaunojams.')
                         ->modalSubmitActionLabel('Dzēst'),
@@ -243,7 +258,7 @@ class ClientResource extends Resource
                     Actions\ForceDeleteAction::make()
                         ->label('Izdzēst neatgriezeniski')
                         ->color('danger')
-                        ->visible(fn (Client $record): bool => $record->trashed() && (auth()->user()?->can('manage') ?? false))
+                        ->visible(fn (Client $record): bool => $record->trashed() && ! $record->isLaimigs() && (auth()->user()?->can('manage') ?? false))
                         ->modalHeading('Vai tiešām neatgriezeniski dzēst šo klientu?')
                         ->modalDescription('Klients un visi ar to saistītie CRM dati tiks pilnībā izņemti no CRM. To vairs nevarēs atjaunot.')
                         ->modalSubmitActionLabel('Izdzēst neatgriezeniski'),
@@ -257,6 +272,18 @@ class ClientResource extends Resource
             ])
             ->recordUrl(fn (Client $record): ?string => $record->trashed() ? null : static::getUrl('view', ['record' => $record]))
             ->defaultSort('updated_at', 'desc');
+    }
+
+    /** Brīdina, ja starp izvēlētajiem ir "Laimīgie" klienti, kurus dzēst nevar. */
+    protected static function warnAboutLaimigs(Actions\BulkAction $action): void
+    {
+        if ($action->getSelectedRecords()->contains(fn (Client $record): bool => $record->isLaimigs())) {
+            Notification::make()
+                ->title('"Laimīgos" klientus dzēst nevar')
+                ->body('Klienti ar noslēgtu darījumu netiek dzēsti.')
+                ->warning()
+                ->send();
+        }
     }
 
     public static function getRelations(): array

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Models\Client;
 use App\Services\Notices\NoticeCenter;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -27,6 +28,27 @@ class NoticePopup extends Component
 
         if ($user) {
             app(NoticeCenter::class)->dismiss($user, $key);
+        }
+
+        $this->dispatch('notices-changed');
+    }
+
+    /** Atzīmēt "Laimīgo" klientu kā apsveiktu dzimšanas dienā. */
+    public function greetBirthday(int $clientId): void
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return;
+        }
+
+        $client = Client::query()
+            ->where('status', 'laimigs')
+            ->when(! $user->can('manage'), fn ($q) => $q->where('owner_user_id', $user->id))
+            ->find($clientId);
+
+        if ($client) {
+            $client->update(['birthday_greeted_at' => now()->toDateString()]);
         }
 
         $this->dispatch('notices-changed');

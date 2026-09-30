@@ -19,17 +19,17 @@ use Illuminate\Support\Collection;
  * notification_dismissals tabulā, tāpēc abas vietas vienmēr sakrīt.
  *
  * Paziņojumu veidi:
- *  - lead: klienti ar statusu "Līds" (atbildīgajam aģentam);
- *  - stale_property: aktīvi īpašumi, kuru cena/statuss nav mainīti 45 dienas.
+ *  - lead: klienti ar statusu "Līds" (atbildīgajam aģentam), atgriežas katru dienu;
+ *  - stale_property: aktīvi īpašumi, kuru cena/statuss nav mainīti 45 dienas;
+ *  - birthday: "Laimīgo" klientu dzimšanas dienas tuvākajās dienās.
  */
 class NoticeCenter
 {
-    /** Pēc cik dienām aizvērts "līds" atkal parādās (~divas reizes nedēļā). */
-    public const LEAD_RESURFACE_DAYS = 4;
-
     public const LEAD_KEY_PREFIX = 'lead:';
 
     public const STALE_KEY_PREFIX = 'stale_property:';
+
+    public const BIRTHDAY_KEY_PREFIX = 'birthday:';
 
     /** @return array<int, array<string, mixed>> */
     public function forUser(User $user): array
@@ -42,6 +42,7 @@ class NoticeCenter
         return array_values(array_merge(
             $this->leadNotices($user, $dismissals),
             $this->stalePropertyNotices($user, $dismissals),
+            $this->birthdayNotices($user, $dismissals),
         ));
     }
 
@@ -71,7 +72,7 @@ class NoticeCenter
             ->with('owner')
             ->orderBy('updated_at')
             ->get()
-            ->reject(fn (Client $client): bool => $this->leadDismissed($dismissals->get(self::LEAD_KEY_PREFIX.$client->id)))
+            ->reject(fn (Client $client): bool => $this->dismissedToday($dismissals->get(self::LEAD_KEY_PREFIX.$client->id)))
             ->map(fn (Client $client): array => [
                 'key' => self::LEAD_KEY_PREFIX.$client->id,
                 'type' => 'Līds',
@@ -125,13 +126,61 @@ class NoticeCenter
             ->all();
     }
 
-    private function leadDismissed(?NotificationDismissal $dismissal): bool
+    /**
+     * Dzimšanas dienas atgādinājums tikai "Laimīgajiem" klientiem, sākot
+     * no config('crm.birthdays.days_before') dienām pirms dzimšanas dienas
+     * līdz pat dzimšanas dienai. Apsveiktajiem kārtējā gadā vairs nerāda.
+     *
+     * @param  Collection<string, NotificationDismissal>  $dismissals
+     * @return array<int, array<string, mixed>>
+     */
+    private function birthdayNotices(User $user, Collection $dismissals): array
     {
-        if (! $dismissal?->dismissed_at) {
-            return false;
-        }
+        $today = now()->startOfDay();
+        $until = $today->copy()->addDays((int) config('crm.birthdays.days_before', 3));
 
-        return $dismissal->dismissed_at->gt(now()->subDays(self::LEAD_RESURFACE_DAYS));
+        return Client::query()
+            ->where('status', 'laimigs')
+            ->whereNotNull('birth_date')
+            ->when(! $user->can('manage'), fn ($query) => $query->where('owner_user_id', $user->id))
+            ->orderBy('birth_date')
+            ->get()
+            ->filter(function (Client $client) use ($today, $until): bool {
+                $birthday = $client->birthdayThisYear();
+
+                if (! $birthday || ! $birthday->betweenIncluded($today, $until)) {
+                    return false;
+                }
+
+                return $client->birthday_greeted_at?->year !== $today->year;
+            })
+            ->reject(fn (Client $client): bool => $this->dismissedToday($dismissals->get(self::BIRTHDAY_KEY_PREFIX.$client->id)))
+            ->map(fn (Client $client): array => [
+                'key' => self::BIRTHDAY_KEY_PREFIX.$client->id,
+                'type' => 'Dzimšanas diena',
+                'type_color' => 'gray',
+                'icon' => 'heroicon-o-gift',
+                'urgent' => false,
+                'title' => $client->name,
+                'url' => ClientResource::getUrl('view', ['record' => $client]),
+                'greet_client_id' => $client->id,
+                'fields' => array_values(array_filter([
+                    ['label' => 'Dzimšanas diena', 'value' => $client->birth_date?->format('d.m.')],
+                    $client->phone ? ['label' => 'Tālrunis', 'value' => PhoneFormat::display($client->phone)] : null,
+                    $client->email ? ['label' => 'E-pasts', 'value' => $client->email] : null,
+                ])),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Paziņojums ir aizvērts tikai šodien — nākamajā dienā tas parādās
+     * atkal (kamēr pastāv tā pamatnosacījums).
+     */
+    private function dismissedToday(?NotificationDismissal $dismissal): bool
+    {
+        return (bool) $dismissal?->dismissed_at?->isToday();
     }
 
     private function staleDismissed(?NotificationDismissal $dismissal, CrmProperty $property): bool

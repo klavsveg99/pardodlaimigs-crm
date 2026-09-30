@@ -69,7 +69,9 @@
         .pdc-notice-field-value { font-weight: 600; }
 
         .pdc-notice-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-height: 1.5rem; margin-top: 0.5rem; }
+        .pdc-notice-foot-left { display: inline-flex; align-items: center; gap: 0.6rem; }
         .pdc-notice-open { font-size: 0.75rem; font-weight: 600; color: var(--pdc-primary); text-decoration: none; }
+        .pdc-notice-greet { font-size: 0.75rem; font-weight: 600; color: var(--pdc-primary); background: none; border: 0; padding: 0; cursor: pointer; }
         .pdc-notice-nav { display: inline-flex; align-items: center; gap: 0.375rem; }
         .pdc-notice-nav-btn {
             display: inline-flex;
@@ -107,6 +109,7 @@
         .dark .pdc-notice-icon--urgent { background: #450a0a; color: #fca5a5; }
         .dark .pdc-notice-title { color: #f3f4f6; }
         .dark .pdc-notice-open { color: #ffffff; }
+        .dark .pdc-notice-greet { color: #ffffff; }
         .dark .pdc-notice-field { color: #9ca3af; }
         .dark .pdc-notice-field-label { color: #6b7280; }
         .dark .pdc-notice-nav-btn { border-color: #374151; background: #1f2937; color: #e5e7eb; }
@@ -148,7 +151,12 @@
                         @endif
 
                         <div class="pdc-notice-foot">
-                            <a href="{{ $notice['url'] }}" class="pdc-notice-open">Atvērt</a>
+                            <span class="pdc-notice-foot-left">
+                                <a href="{{ $notice['url'] }}" class="pdc-notice-open">Atvērt</a>
+                                @if (! empty($notice['greet_client_id']))
+                                    <button type="button" class="pdc-notice-greet" wire:click="greetBirthday({{ $notice['greet_client_id'] }})">Atzīmēt kā apsveiktu</button>
+                                @endif
+                            </span>
 
                             @if (count($notices) > 1)
                                 <span class="pdc-notice-nav">

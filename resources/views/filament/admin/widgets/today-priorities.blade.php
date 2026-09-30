@@ -22,15 +22,25 @@
             <div style="display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 2rem 1rem; text-align: center;">
                 <x-filament::icon icon="heroicon-o-check-circle" style="width: 2rem; height: 2rem; color: #16a34a;" />
                 <p style="font-size: 0.9rem; font-weight: 600; color: #374151; margin: 0;">Šodien nekas nav jāveic</p>
-                <p style="font-size: 0.8rem; color: #6b7280; margin: 0;">Nav uzdevumu, apskates, līdu vai novecojušu īpašumu.</p>
+                <p style="font-size: 0.8rem; color: #6b7280; margin: 0;">Nav uzdevumu, apskates, līdu, novecojušu īpašumu vai dzimšanas dienu.</p>
             </div>
         @else
             <div style="display: flex; flex-direction: column; gap: 0.6rem;">
                 @foreach ($notifications as $item)
                     @php
-                        $quickMethod = ! empty($item['task_id']) ? 'completeTask' : (! empty($item['viewing_id']) ? 'completeViewing' : null);
-                        $quickId = $item['task_id'] ?? $item['viewing_id'] ?? null;
-                        $quickTitle = ! empty($item['viewing_id']) ? 'Atzīmēt kā notikušu' : 'Atzīmēt kā pabeigtu';
+                        if (! empty($item['task_id'])) {
+                            $quickMethod = 'completeTask';
+                        } elseif (! empty($item['viewing_id'])) {
+                            $quickMethod = 'completeViewing';
+                        } elseif (! empty($item['greet_client_id'])) {
+                            $quickMethod = 'greetBirthday';
+                        } else {
+                            $quickMethod = null;
+                        }
+                        $quickId = $item['task_id'] ?? $item['viewing_id'] ?? $item['greet_client_id'] ?? null;
+                        $quickTitle = ! empty($item['greet_client_id'])
+                            ? 'Atzīmēt kā apsveiktu'
+                            : (! empty($item['viewing_id']) ? 'Atzīmēt kā notikušu' : 'Atzīmēt kā pabeigtu');
                     @endphp
                     <div class="pdc-today-row" wire:key="today-{{ $item['key'] }}" style="display: flex; align-items: stretch; border: 1px solid {{ $item['urgent'] ? '#fca5a5' : '#e5e7eb' }}; border-left: 3px solid {{ $item['urgent'] ? '#dc2626' : 'var(--pdc-primary)' }}; border-radius: 0.7rem; background: #ffffff;">
                         <a

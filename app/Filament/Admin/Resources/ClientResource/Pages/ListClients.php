@@ -40,6 +40,9 @@ class ListClients extends ListRecords
             'lead' => Tab::make('Līdi')
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'lead'))
                 ->badge($count(Client::query()->where('status', 'lead'))),
+            'laimigs' => Tab::make('Laimīgie')
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'laimigs'))
+                ->badge($count(Client::query()->where('status', 'laimigs'))),
             'deleted' => Tab::make('Dzēstie')
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->onlyTrashed())
                 ->badge($count(Client::onlyTrashed())),
