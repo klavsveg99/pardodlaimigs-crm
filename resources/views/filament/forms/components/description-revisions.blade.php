@@ -17,7 +17,6 @@
             <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
             <span>Nav saglabātu apraksta versiju.</span>
         </div>
-        <p style="margin: 0.5rem 0 0; font-size: 0.75rem; color: #9ca3af;">Versija tiek saglabāta katru reizi, kad apraksts tiek mainīts un saglabāts ar "Saglabāt". Pēdējās 30 versijas ir pieejamas.</p>
     </div>
 @else
     <div style="display: flex; flex-direction: column; gap: 0.75rem;">

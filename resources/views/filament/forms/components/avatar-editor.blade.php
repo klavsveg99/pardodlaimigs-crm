@@ -448,7 +448,7 @@
                 </button>
             </template>
         </div>
-        <p style="font-size: 0.75rem; color: #6b7280;">Kvadrātveida foto — 1:1, 1000×1000px, max 5MB. Izmanto redaktoru, lai apgrieztu un apvērstu.</p>
+        <p style="font-size: 0.75rem; color: #6b7280;">Kvadrātveida foto — 1:1, 1000×1000px, max 5MB.</p>
         <template x-if="uploading">
             <div style="width: 100%; padding: 0.7rem 0.9rem; border: 1px solid #bfdbfe; background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); border-radius: 0.55rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <div style="display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.45rem;">

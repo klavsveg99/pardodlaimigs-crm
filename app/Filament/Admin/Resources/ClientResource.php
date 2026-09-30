@@ -79,8 +79,7 @@ class ClientResource extends Resource
                     Forms\Components\DatePicker::make('birth_date')
                         ->label('Dzimšanas datums')
                         ->native(false)
-                        ->displayFormat('d.m.Y')
-                        ->helperText('Aizpildās automātiski no personas koda'),
+                        ->displayFormat('d.m.Y'),
                     Forms\Components\TextInput::make('bank_account')
                         ->label('Bankas konta numurs')
                         ->maxLength(64),
@@ -107,7 +106,6 @@ class ClientResource extends Resource
                         ->required(),
                     Forms\Components\TextInput::make('source_other')
                         ->label('Avots — precizējums')
-                        ->helperText('Precizējiet, kā uzzinājāt par mums')
                         ->maxLength(200)
                         ->visible(fn (callable $get): bool => $get('source') === 'Cits')
                         ->columnSpanFull(),
