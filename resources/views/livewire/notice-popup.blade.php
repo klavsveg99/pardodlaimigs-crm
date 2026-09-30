@@ -10,11 +10,14 @@
     <style>
         [x-cloak] { display: none !important; }
 
+        /* Must stay below the navigation chrome so the mobile/desktop menu
+           and topbar always paint over the notice (sidebar z-20/40, topbar
+           z-30), while remaining above normal page content. */
         .pdc-notice-stack {
             position: fixed;
             bottom: 1rem;
             right: 1rem;
-            z-index: 2147483000;
+            z-index: 10;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
