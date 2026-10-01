@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources;
 
+use App\Filament\Admin\Actions\LawyerDocumentAction;
 use App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 use App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers\ClientsRelationManager;
 use App\Filament\Forms\Components\AttachmentsGrid;
@@ -685,6 +686,7 @@ class CrmPropertyResource extends Resource
                             'propertySlug' => $record->slug ?? $record->getKey(),
                         ]))
                         ->openUrlInNewTab(),
+                    LawyerDocumentAction::make(),
                     Actions\ViewAction::make()->label('Skatīt')->color('gray'),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),
                     // Mīkstā dzēšana (CRM 2.1, #1): statuss "Dzēsts" — dati,

@@ -38,16 +38,29 @@ return [
                 'type' => 'select',
                 'options' => ['Klātienē' => 'Klātienē', 'Attālināti' => 'Attālināti'],
             ],
-            'hand_money_date' => ['label' => 'Rokas naudas iemaksas datums', 'type' => 'date'],
-            'hand_money_amount' => ['label' => 'Rokas naudas summa (€)', 'type' => 'money'],
             'hand_money_contract' => [
                 'label' => 'Rokas naudas līgums noslēgts',
                 'type' => 'select',
                 'options' => ['Jā' => 'Jā', 'Nē' => 'Nē'],
             ],
+            'hand_money_amount' => ['label' => 'Rokas naudas summa (€)', 'type' => 'money'],
+            'hand_money_date' => ['label' => 'Rokas naudas iemaksas datums', 'type' => 'date'],
             'payment_total' => ['label' => 'Pilna pirkuma maksa (€)', 'type' => 'money'],
-            'payment_down' => ['label' => 'Pirmā iemaksa (€)', 'type' => 'money'],
-            'payment_remaining' => ['label' => 'Atlikusī summa/izpirkums', 'type' => 'textarea'],
+            'financing_type' => [
+                'label' => 'Finansējuma veids',
+                'type' => 'select',
+                'options' => [
+                    'Pircēja pašu līdzekļi' => 'Pircēja pašu līdzekļi',
+                    'Bankas kredīts' => 'Bankas kredīts',
+                ],
+            ],
+            'bank_name' => ['label' => 'Bankas nosaukums', 'type' => 'text'],
+            'payment_down' => ['label' => 'Pircēja pašu pirmā iemaksa (€)', 'type' => 'money'],
+            'altum_guarantee' => [
+                'label' => 'Tiek izmantota ALTUM garantija',
+                'type' => 'select',
+                'options' => ['Jā' => 'Jā', 'Nē' => 'Nē'],
+            ],
             'payment_plan' => [
                 'label' => 'Maksājumu grafiks',
                 'type' => 'repeater',
@@ -58,6 +71,7 @@ return [
                 ],
             ],
             'payment_plan_first_day' => ['label' => 'Maksājumi veicami līdz (mēneša diena)', 'type' => 'text'],
+            'payment_remaining' => ['label' => 'Atlikusī summa/izpirkums', 'type' => 'textarea'],
             'release_date' => ['label' => 'Īpašuma atbrīvošanas datums', 'type' => 'date'],
             'seller_spouse' => [
                 'label' => 'Pārdevējam ir laulātais',
@@ -71,6 +85,7 @@ return [
         /*
          | Dokumentu veidi. required = manuālo lauku atslēgas, bez kurām
          | nosūtīšana nav atļauta. Papildu veidus var pievienot šeit.
+         | Lauku redzamību pēc veida nosaka LawyerDocumentAction.
          */
         'documents' => [
             'rokas_nauda' => [
@@ -79,7 +94,11 @@ return [
             ],
             'pirkums' => [
                 'label' => 'Pirkuma līgums',
-                'required' => ['signing_date', 'signing_place', 'payment_total'],
+                'required' => ['signing_date', 'signing_place', 'payment_total', 'financing_type'],
+            ],
+            'pirkums_nomaksa' => [
+                'label' => 'Pirkuma līgums ar nomaksu',
+                'required' => ['signing_date', 'signing_place', 'payment_total', 'financing_type', 'payment_plan'],
             ],
         ],
     ],
