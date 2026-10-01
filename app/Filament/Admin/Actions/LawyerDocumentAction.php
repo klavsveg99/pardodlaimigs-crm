@@ -17,6 +17,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
+use Filament\Support\Enums\Alignment;
 
 /**
  * "Jurista dokuments" darbība: izvēlas dokumenta veidu un juristu, ļauj
@@ -155,6 +156,7 @@ final class LawyerDocumentAction
                         ->all())
                     ->columns(max(1, count($definition['columns'] ?? [])))
                     ->addActionLabel('Pievienot rindu')
+                    ->addActionAlignment(Alignment::Start)
                     ->defaultItems(0),
                 default => Forms\Components\TextInput::make("legal.$key"),
             };
