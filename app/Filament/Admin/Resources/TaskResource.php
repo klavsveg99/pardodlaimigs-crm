@@ -151,6 +151,7 @@ class TaskResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->extraAttributes(['class' => 'pdc-tasks-table'])
             ->columns([
                 Tables\Columns\IconColumn::make('completed')
                     ->label('Izpildīts')

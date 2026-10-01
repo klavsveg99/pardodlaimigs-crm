@@ -25,6 +25,13 @@ class AttachmentsGrid extends Field
     /** Property gallery: show a "Lejupielādēt visus" ZIP button. */
     public bool $downloadable = false;
 
+    /**
+     * Foto galerija (īpašuma bildes). Tikai tai ir atšķirīgs tukšais
+     * stāvoklis ("Galerijas foto nav"); pārējie pielikumu lauki lieto
+     * "Pielikumu nav", arī ja kolekcija ir "gallery".
+     */
+    public bool $gallery = false;
+
     public string $collection = 'gallery';
 
     public static function make(?string $name = null): static
@@ -114,6 +121,18 @@ class AttachmentsGrid extends Field
     public function isDownloadable(): bool
     {
         return $this->downloadable;
+    }
+
+    public function gallery(bool $gallery = true): static
+    {
+        $this->gallery = $gallery;
+
+        return $this;
+    }
+
+    public function isGallery(): bool
+    {
+        return $this->gallery;
     }
 
     public function isReorderable(): bool

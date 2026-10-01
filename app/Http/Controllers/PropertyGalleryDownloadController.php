@@ -36,7 +36,7 @@ class PropertyGalleryDownloadController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        abort_if($attachments->isEmpty(), 404, 'Galerijā nav attēlu.');
+        abort_if($attachments->isEmpty(), 404, 'Galerijas foto nav');
 
         if (! class_exists(\ZipArchive::class)) {
             abort(500, 'ZIP paplašinājums nav pieejams.');

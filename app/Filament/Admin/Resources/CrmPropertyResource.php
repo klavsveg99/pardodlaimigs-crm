@@ -85,6 +85,7 @@ class CrmPropertyResource extends Resource
                         ->deletable()
                         ->multiselect()
                         ->downloadable()
+                        ->gallery()
                         ->collection('gallery')
                         ->columnSpanFull(),
 
@@ -560,6 +561,7 @@ class CrmPropertyResource extends Resource
                     ->deletable()
                     ->multiselect()
                     ->downloadable()
+                    ->gallery()
                     ->collection('gallery')
                     ->columnSpanFull(),
 
@@ -619,6 +621,7 @@ class CrmPropertyResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->extraAttributes(['class' => 'pdc-properties-table'])
             ->reorderable('sort_order')
             ->defaultSort('sort_order', 'asc')
             ->columns([

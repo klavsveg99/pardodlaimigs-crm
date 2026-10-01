@@ -997,6 +997,13 @@ html.dark .rounded-xl .text-emerald-900 {
     }
     .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb:not(:has(img)) { display: none !important; }
 
+    /* Properties un uzdevumi: mobilajā skatā vispirms nosaukums, tad
+       attēls/statuss. Selection šūna paliek pašā sākumā. */
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell,
+    .fi-ta.pdc-tasks-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell { order: -2 !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-title,
+    .fi-ta.pdc-tasks-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-title { order: -1 !important; }
+
     /* Status dropdown (SelectColumn, contact form submissions) gets its own full-width row */
     .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) { grid-column: 1 / -1 !important; }
     .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) select { width: 100% !important; }

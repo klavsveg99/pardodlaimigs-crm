@@ -34,7 +34,7 @@
     $gridDownloadOffset = $isView ? '0.5' : '4.9';
 
     $collection = $getCollection();
-    $isGalleryCollection = $collection === 'gallery';
+    $isGallery = $isGallery();
     $existingAttachments = collect($record?->attachments ?? [])
         ->where('collection', $collection)
         ->sortBy('sort_order')
@@ -1157,8 +1157,8 @@
         class="pdc-empty-state"
     >
         <div class="pdc-empty-state-inner">
-            <i class="{{ $isGalleryCollection ? 'fa-solid fa-image' : 'fa-solid fa-paperclip' }}" aria-hidden="true"></i>
-            <span>{{ $isGalleryCollection ? 'Galerijā nav attēlu.' : 'Nav pielikumu.' }}</span>
+            <i class="{{ $isGallery ? 'fa-solid fa-image' : 'fa-solid fa-paperclip' }}" aria-hidden="true"></i>
+            <span>{{ $isGallery ? 'Galerijas foto nav' : 'Pielikumu nav' }}</span>
         </div>
         @if(!$isView)
             <div style="margin-top: 0.75rem;">

@@ -225,7 +225,7 @@
             <div class="pdc-empty-state">
                 <div class="pdc-empty-state-inner">
                     <i class="fa-solid fa-image" aria-hidden="true"></i>
-                    <span>Galerijā nav attēlu.</span>
+                    <span>Galerijas foto nav</span>
                 </div>
             </div>
         @endif
