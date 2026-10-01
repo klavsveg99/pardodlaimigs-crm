@@ -760,6 +760,29 @@ input[type="checkbox"][checked] {
     border-color: #27303a !important;
 }
 
+/* Filament only gives the modal header a bottom padding in modals WITHOUT
+   content (`.fi-modal-window:not(.fi-modal-window-has-content)`). Every
+   content-bearing modal — "Nosūtīt juristam" and the rest — therefore collapses
+   the header to its text height, so the heading sits flush against the first
+   content row. The close button is absolutely positioned against the window
+   (`top: 1rem`) and so never lines up with a header that has unequal padding.
+   Restore a matching bottom padding and anchor the close button to the header
+   box, so heading and button share one vertical centre line at every width. */
+.fi-modal:not(.fi-modal-has-sticky-header) > .fi-modal-window-ctn > .fi-modal-window > .fi-modal-header {
+    padding-bottom: 1.5rem !important;
+    position: relative;
+}
+
+.fi-modal:not(.fi-modal-has-sticky-header) > .fi-modal-window-ctn > .fi-modal-window > .fi-modal-header > .fi-modal-close-btn {
+    top: 1.5rem;
+    inset-inline-end: 1.5rem;
+}
+
+/* Keep the heading clear of the absolutely positioned close button. */
+.fi-modal-window-has-close-btn > .fi-modal-header > div {
+    padding-inline-end: 3rem;
+}
+
 .dark .fi-modal-footer {
     border-color: #27303a !important;
 }
