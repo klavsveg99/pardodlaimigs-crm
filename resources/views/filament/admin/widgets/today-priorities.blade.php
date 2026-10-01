@@ -2,17 +2,19 @@
     <x-filament::section>
         <x-slot name="heading">Šodien jāizdara</x-slot>
         <x-slot name="description">{{ now()->locale('lv')->translatedFormat('l, d.m.Y') }}</x-slot>
-        <x-slot name="afterHeader">
-            <button
-                type="button"
-                wire:click="toggleOnlyMine"
-                class="fi-btn fi-size-sm fi-outlined {{ $showOnlyMine ? 'fi-color-primary' : 'fi-color-gray' }}"
-                style="display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;"
-            >
-                <x-filament::icon icon="heroicon-o-user" style="width: 1rem; height: 1rem;" />
-                <span>Mani uzdevumi</span>
-            </button>
-        </x-slot>
+        @if (auth()->user()?->can('manage'))
+            <x-slot name="afterHeader">
+                <button
+                    type="button"
+                    wire:click="toggleOnlyMine"
+                    class="fi-btn fi-size-sm fi-outlined {{ $showOnlyMine ? 'fi-color-primary' : 'fi-color-gray' }}"
+                    style="display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;"
+                >
+                    <x-filament::icon icon="heroicon-o-user" style="width: 1rem; height: 1rem;" />
+                    <span>Mani uzdevumi</span>
+                </button>
+            </x-slot>
+        @endif
 
         @php
             $notifications = $this->getNotifications();
