@@ -124,7 +124,6 @@ final class LawyerDocumentAction
             'financing_type' => $isPurchase,
             'bank_name' => $bankCredit,
             'payment_down' => $bankCredit,
-            'altum_guarantee' => $isPurchase,
             'payment_plan' => $isInstallment,
             'payment_plan_first_day' => $isInstallment,
             'payment_remaining' => $isInstallment,
@@ -339,7 +338,7 @@ final class LawyerDocumentAction
         if (! $purchase) {
             foreach ([
                 'payment_total', 'payment_down', 'payment_remaining', 'payment_plan',
-                'payment_plan_first_day', 'financing_type', 'bank_name', 'altum_guarantee',
+                'payment_plan_first_day', 'financing_type', 'bank_name',
                 'release_date',
             ] as $key) {
                 unset($legal[$key]);
