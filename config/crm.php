@@ -56,6 +56,7 @@ return [
             ],
             'bank_name' => ['label' => 'Bankas nosaukums', 'type' => 'text'],
             'payment_down' => ['label' => 'Pircēja pašu pirmā iemaksa (€)', 'type' => 'money'],
+            'release_date' => ['label' => 'Īpašuma atbrīvošanas datums', 'type' => 'date'],
             'altum_guarantee' => [
                 'label' => 'Tiek izmantota ALTUM garantija',
                 'type' => 'select',
@@ -71,8 +72,7 @@ return [
                 ],
             ],
             'payment_plan_first_day' => ['label' => 'Maksājumi veicami līdz (mēneša diena)', 'type' => 'text'],
-            'payment_remaining' => ['label' => 'Atlikusī summa/izpirkums', 'type' => 'textarea'],
-            'release_date' => ['label' => 'Īpašuma atbrīvošanas datums', 'type' => 'date'],
+            'payment_remaining' => ['label' => 'Atlikusī summa/izpirkums', 'type' => 'text'],
             'seller_spouse' => [
                 'label' => 'Pārdevējam ir laulātais',
                 'type' => 'select',

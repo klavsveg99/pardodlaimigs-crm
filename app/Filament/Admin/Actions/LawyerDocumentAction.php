@@ -182,9 +182,9 @@ final class LawyerDocumentAction
                 $component->live();
             }
 
-            // "Atlikusī summa/izpirkums", "Maksājumu grafiks" un "Piezīmes"
-            // aizņem visu rindu, lai 2. kolonna nepaliktu tukša.
-            if (in_array($key, ['payment_remaining', 'payment_plan', 'notes'], true)) {
+            // "Maksājumu grafiks" un "Piezīmes" aizņem visu rindu; pārējie
+            // lauki iet pa pāriem, lai 2. kolonna nepaliktu tukša.
+            if (in_array($key, ['payment_plan', 'notes'], true)) {
                 $component->columnSpanFull();
             }
 
