@@ -6,6 +6,7 @@ namespace App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 
 use App\Filament\Admin\Actions\LawyerDocumentAction;
 use App\Filament\Admin\Resources\CrmPropertyResource;
+use App\Filament\Admin\Resources\Pages\Concerns\HandlesLawyerEmail;
 use App\Filament\Admin\Resources\Pages\Concerns\PievienotKlientuRelationAction;
 use App\Filament\Forms\Components\AttachmentsGrid;
 use Filament\Actions;
@@ -16,6 +17,7 @@ use Livewire\Attributes\On;
 
 class ViewCrmProperty extends ViewRecord
 {
+    use HandlesLawyerEmail;
     use PievienotKlientuRelationAction;
 
     protected static string $resource = CrmPropertyResource::class;

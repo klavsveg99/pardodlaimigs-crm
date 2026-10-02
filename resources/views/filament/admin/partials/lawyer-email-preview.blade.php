@@ -1,13 +1,12 @@
 @php
-    // "Jurista dokuments" pēdējais solis — tāds pats kā klienta pielikumu
-    // e-pasta modālis: saņēmējs, nosūtītājs, pielikumi (ar tukšu stāvokli un
-    // iespēju pievienot failu) un ģenerētais e-pasta saturs. Pilns e-pasts
+    // "Jurista dokuments" pēdējais solis — kā klienta pielikumu e-pasta
+    // modālis: pielikumi (ar tukšu stāvokli un iespēju pievienot failu) un
+    // e-pasta saturs. Pilns e-pasts (saņēmējs, nosūtītājs, pielikumi, saturs)
     // atveras modālī tikai pēc priekšskatījuma pogas nospiešanas.
-    $to = (string) ($to ?? '');
-    $juristName = (string) ($jurist ?? '');
-    $subject = (string) ($subject ?? '');
+    //
+    // Saņēmējs/temats/saturs tiek ģenerēti pēc pieprasījuma (HandlesLawyerEmail),
+    // jo wizard solis renderējas vienreiz, pirms 1. solis ir aizpildīts.
     $body = (string) ($body ?? '');
-    $html = (string) ($html ?? '');
     $candidates = $candidates ?? [];
     $uploadUrl = (string) ($uploadUrl ?? '');
     $deleteUrl = (string) ($deleteUrl ?? '');
@@ -23,31 +22,38 @@
         selected: @js(array_column($candidates, 'id')),
         uploading: [],
         sending: false,
+        loadingPreview: false,
         previewOpen: false,
         error: '',
         uploadUrl: @js($uploadUrl),
         deleteUrl: @js($deleteUrl),
         csrf: @js($csrf),
         maxBytes: {{ $maxBytes }},
+        preview: { to: '', jurist: '', subject: '', html: '' },
         init() {
-            // Darbības formas stāvokļa prefikss (mountedActions.N.data).
-            // Nolasām no jau renderēta lauka, lai nav jāminē indekss.
-            const model = document.querySelector('[wire\\:model^=\"mountedActions\"][wire\\:model$=\".data.document_type\"]');
-            const m = model && model.getAttribute('wire:model').match(/^(.*\\.data)\\.[^.]+$/);
-            this.statePrefix = m ? m[1] : 'mountedActions.0.data';
-            if (this.$refs.editor && this.$refs.editor.innerHTML.trim() === '') {
-                this.$refs.editor.innerHTML = @js($body);
-            }
+            // Saturs redaktorā tiek ielādēts, kad solis kļūst redzams —
+            // servera renderēšanas brīdī 1. solis vēl nav aizpildīts.
+            this.$nextTick(() => this.seedEditor());
+            document.addEventListener('livewire:updated', () => this.seedEditor());
         },
-        pushState() {
-            this.$wire.set(this.statePrefix + '.attachment_ids', this.selected, false);
-            this.$wire.set(this.statePrefix + '.email_body', this.$refs.editor ? this.$refs.editor.innerHTML : '', false);
+        seeded: false,
+        async seedEditor() {
+            if (this.seeded || ! this.$el.offsetParent) { return; }
+            this.seeded = true;
+            try {
+                const p = await this.$wire.call('previewLawyerEmail');
+                if (p && p.body && this.$refs.editor && this.$refs.editor.innerHTML.trim() === '') {
+                    this.$refs.editor.innerHTML = p.body;
+                }
+            } catch (e) { /* redaktors paliek tukšs; var ierakstīt manuāli */ }
+        },
+        editorHtml() {
+            return this.$refs.editor ? this.$refs.editor.innerHTML : '';
         },
         isSel(id) { return this.selected.includes(id); },
         toggle(id) {
             const i = this.selected.indexOf(id);
             if (i === -1) { this.selected.push(id); } else { this.selected.splice(i, 1); }
-            this.pushState();
         },
         sizeLabel(bytes) {
             if (! bytes) return '';
@@ -64,7 +70,6 @@
         execCmd(cmd, value) {
             this.$refs.editor && this.$refs.editor.focus();
             document.execCommand(cmd, false, value || null);
-            this.pushState();
         },
         pickFiles() { this.$refs.fileInput && this.$refs.fileInput.click(); },
         async handleUpload(e) {
@@ -87,7 +92,6 @@
                     if (! resp.ok || ! data.id) { this.error = data.message || ('Augšupielāde neizdevās: ' + file.name); continue; }
                     this.candidates.push({ id: data.id, name: data.name, size: data.size });
                     this.selected.push(data.id);
-                    this.pushState();
                 } catch (err) {
                     this.error = 'Augšupielāde neizdevās: ' + (err.message || file.name);
                 } finally {
@@ -106,30 +110,31 @@
             } catch (e) { return; }
             this.candidates = this.candidates.filter(c => c.id !== id);
             this.selected = this.selected.filter(s => s !== id);
-            this.pushState();
         },
-        openPreview() {
+        async openPreview() {
             this.error = '';
-            this.pushState();
-            this.previewOpen = true;
+            this.loadingPreview = true;
+            try {
+                const p = await this.$wire.call('previewLawyerEmail', this.editorHtml());
+                if (! p) { this.error = 'Priekšskatījumu neizdevās ielādēt.'; return; }
+                this.preview = p;
+                this.previewOpen = true;
+            } catch (e) {
+                this.error = 'Priekšskatījumu neizdevās ielādēt.';
+            } finally {
+                this.loadingPreview = false;
+            }
         },
         submit() {
             this.error = '';
             if (this.totalSelected() > this.maxBytes) { this.error = 'Pielikumi pārsniedz 18 MB — izvēlieties mazāk failu.'; return; }
             this.sending = true;
-            this.pushState();
-            this.$wire.call('callMountedAction').finally(() => { this.sending = false; });
+            this.$wire.call('sendLawyerEmail', this.selected, this.editorHtml()).finally(() => { this.sending = false; });
         },
     }"
     style="display: flex; flex-direction: column; gap: 0.75rem;"
     x-on:keydown.escape.window="previewOpen = false"
 >
-    <div style="font-size: 0.82rem; color: #4b5563; line-height: 1.6;">
-        <div><strong>Saņēmējs:</strong> {{ $to !== '' ? $to : '—' }}@if ($juristName !== '') ({{ $juristName }})@endif</div>
-        <div><strong>Nosūtītājs:</strong> {{ $fromAddress }}@if ($fromName !== '') ({{ $fromName }})@endif</div>
-        <div><strong>Temats:</strong> {{ $subject !== '' ? $subject : '—' }}</div>
-    </div>
-
     <div>
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.35rem;">
             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Pielikumi <span style="color: #6b7280; font-weight: 500;" x-text="'(kopā ' + sizeLabel(totalSelected()) + ')'"></span></span>
@@ -158,9 +163,9 @@
     <div>
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.35rem;">
             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">E-pasta saturs</span>
-            <button type="button" x-on:click="openPreview()" style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.6rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background: #fff; color: #374151; cursor: pointer; font-size: 0.78rem; font-weight: 600;">
+            <button type="button" x-on:click="openPreview()" :disabled="loadingPreview" style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.6rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background: #fff; color: #374151; cursor: pointer; font-size: 0.78rem; font-weight: 600;">
                 <svg style="width: 0.9rem; height: 0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <span>Priekšskatījums</span>
+                <span x-text="loadingPreview ? 'Ielādē…' : 'Priekšskatījums'"></span>
             </button>
         </div>
         <div style="display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 0.5rem 0.5rem 0 0; padding: 0.35rem 0.5rem; background: #f9fafb;">
@@ -173,7 +178,7 @@
             <button type="button" x-on:click="execCmd('insertHorizontalRule')" title="Horizontāla līnija" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem;">—</button>
             <button type="button" x-on:click="execCmd('formatBlock','<blockquote>')" title="Citāts" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem; font-family: Georgia, serif;">„ ”</button>
         </div>
-        <div x-ref="editor" contenteditable="true" x-on:input="pushState()"
+        <div x-ref="editor" contenteditable="true"
             style="min-height: 12rem; padding: 0.7rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0 0 0.5rem 0.5rem; font-size: 0.85rem; line-height: 1.55; overflow-y: auto; max-height: 24rem; background: #fff; color: #1f2937; outline: none;"></div>
         <div style="margin-top: 0.3rem; font-size: 0.7rem; color: #9ca3af; line-height: 1.4;">Nosūtītāja e-pasts: {{ $fromAddress }} · pielikumu limits 18 MB</div>
     </div>
@@ -200,9 +205,9 @@
                 </div>
                 <div style="padding: 1rem 1.1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
                     <div style="font-size: 0.82rem; color: #4b5563; line-height: 1.6;">
-                        <div><strong>Kam:</strong> {{ $to !== '' ? $to : '—' }}@if ($juristName !== '') ({{ $juristName }})@endif</div>
+                        <div><strong>Kam:</strong> <span x-text="preview.to || '—'"></span><template x-if="preview.jurist"><span x-text="' (' + preview.jurist + ')'"></span></template></div>
                         <div><strong>Nosūtītājs:</strong> {{ $fromAddress }}@if ($fromName !== '') ({{ $fromName }})@endif</div>
-                        <div><strong>Temats:</strong> {{ $subject !== '' ? $subject : '—' }}</div>
+                        <div><strong>Temats:</strong> <span x-text="preview.subject || '—'"></span></div>
                         <div><strong>Pielikumi (<span x-text="selected.length"></span>):</strong>
                             <template x-if="selected.length === 0"><span> nav</span></template>
                             <ul x-show="selected.length > 0" style="margin: 0.15rem 0 0 1.1rem; padding: 0;">
@@ -210,7 +215,7 @@
                             </ul>
                         </div>
                     </div>
-                    <iframe title="E-pasta priekšskatījums" srcdoc="{{ $html }}"
+                    <iframe title="E-pasta priekšskatījums" x-bind:srcdoc="preview.html"
                         style="width: 100%; height: 34rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #ffffff;"></iframe>
                 </div>
                 <div style="padding: 0.9rem 1.1rem; border-top: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; background: #ffffff;">

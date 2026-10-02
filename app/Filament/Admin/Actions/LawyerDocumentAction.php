@@ -48,9 +48,10 @@ final class LawyerDocumentAction
                 && ! auth()->user()?->isPhoto())
             ->modalHeading('Nosūtīt juristam')
             ->modalWidth('4xl')
-            ->modalSubmitActionLabel('Nosūtīt')
-            // Divi soļi: datu aizpilde un e-pasta priekšskatījums pirms
-            // nosūtīšanas.
+            // Nosūtīšanu veic pielāgotā poga 2. solī (sendLawyerEmail), jo
+            // pielikumi un rediģētais saturs ir klienta pusē; iebūvētā
+            // apakšējā "Nosūtīt" poga tiktu palaista bez tiem.
+            ->modalSubmitAction(false)
             ->steps(fn (CrmProperty $record): array => self::steps($record))
             ->modifyWizardUsing(fn (Wizard $wizard): Wizard => $wizard
                 ->nextAction(fn (Actions\Action $action): Actions\Action => $action->label('Tālāk'))
@@ -79,29 +80,12 @@ final class LawyerDocumentAction
     private static function preview(CrmProperty $property): View
     {
         return View::make('filament.admin.partials.lawyer-email-preview')
-            ->viewData(function (Get $get) use ($property): array {
-                $service = app(LawyerDocumentService::class);
-                $type = (string) $get('document_type');
-
-                $preview = $service->preview([
-                    'document_type' => $type,
-                    'jurist_id' => $get('jurist_id'),
-                    'legal' => self::sanitizeLegal($type, $get('legal') ?? []),
-                    'seller' => $get('seller') ?? [],
-                    'buyer' => $get('buyer') ?? [],
-                    'property' => $get('property') ?? [],
-                ], $property);
-
+            ->viewData(function () use ($property): array {
                 $slug = $property->slug ?? $property->getKey();
 
                 return [
-                    'to' => $preview['to'],
-                    'jurist' => $preview['jurist'],
-                    'subject' => $preview['subject'],
-                    'body' => $preview['body'],
-                    'html' => $preview['html'],
                     // Visi e-pastam pieejamie faili klienta modāļa formātā.
-                    'candidates' => $service->attachmentCandidates($property),
+                    'candidates' => app(LawyerDocumentService::class)->attachmentCandidates($property),
                     'uploadUrl' => route('properties.attachments.upload', ['propertySlug' => $slug]),
                     'deleteUrl' => route('properties.attachments.destroy', ['propertySlug' => $slug, 'attachment' => ':id']),
                 ];
@@ -330,6 +314,18 @@ final class LawyerDocumentAction
         ];
 
         return $sections;
+    }
+
+    /** Sabiedriskā atslēga: izmanto arī HandlesLawyerEmail (priekšskatījums). */
+    public static function sanitizeLegalData(string $type, array $legal): array
+    {
+        return self::sanitizeLegal($type, $legal);
+    }
+
+    /** Sabiedriskā atslēga: nosūta no HandlesLawyerEmail (ar pielikumiem/saturu). */
+    public static function sendFor(CrmProperty $property, array $data): void
+    {
+        self::send($property, $data);
     }
 
     /** @param  array<string, mixed>  $data */
