@@ -115,6 +115,11 @@ class ClientResource extends Resource
                         ->label('Avots (kā uzzināja)')
                         ->searchable()
                         ->live()
+                        // Fiziskai personai rindā pirms avota ir dzimšanas
+                        // datums, tāpēc avots paliek viens; aizņemam visu
+                        // rindu, lai nepaliktu tukša otrā kolonna. Juridiskai
+                        // personai tas pārojas ar bankas kontu.
+                        ->columnSpan(fn (Get $get): int|string => $get('person_type') === 'juridiska' ? 1 : 'full')
                         ->options([
                             'Tīmekļa vietne' => 'Tīmekļa vietne',
                             'Sociālie tīkli' => 'Sociālie tīkli',
@@ -156,6 +161,7 @@ class ClientResource extends Resource
                     Forms\Components\Checkbox::make('marketing_consent')
                         ->label('Klients atļauj izmantot datus mārketingam')
                         ->inline()
+                        ->columnSpanFull()
                         ->extraAttributes(['class' => 'self-end'])
                         ->extraFieldWrapperAttributes(['class' => 'flex items-end h-full pb-1']),
                 ]),
@@ -186,14 +192,14 @@ class ClientResource extends Resource
                         Forms\Components\TextInput::make('legal_representative.personas_kods')->label('Personas kods')->maxLength(20),
                         Forms\Components\TextInput::make('legal_representative.address')->label('Adrese')->maxLength(255),
                         PhoneInput::make('legal_representative.phone')->label('Tālrunis')->maxLength(20),
-                        Forms\Components\TextInput::make('legal_representative.email')->label('E-pasts')->email()->maxLength(255),
+                        Forms\Components\TextInput::make('legal_representative.email')->label('E-pasts')->email()->maxLength(255)->columnSpanFull(),
                     ]),
                     Fieldset::make('Kontaktpersona')->columns(2)->schema([
                         Forms\Components\TextInput::make('contact_person.name')->label('Vārds, uzvārds')->maxLength(255),
                         Forms\Components\TextInput::make('contact_person.personas_kods')->label('Personas kods')->maxLength(20),
                         Forms\Components\TextInput::make('contact_person.address')->label('Adrese')->maxLength(255),
                         PhoneInput::make('contact_person.phone')->label('Tālrunis')->maxLength(20),
-                        Forms\Components\TextInput::make('contact_person.email')->label('E-pasts')->email()->maxLength(255),
+                        Forms\Components\TextInput::make('contact_person.email')->label('E-pasts')->email()->maxLength(255)->columnSpanFull(),
                     ]),
                 ]),
         ]);

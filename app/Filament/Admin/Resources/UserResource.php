@@ -59,6 +59,7 @@ class UserResource extends Resource
                     ->required()
                     ->native(false)
                     ->live()
+                    ->columnSpanFull()
                     ->dehydrateStateUsing(fn ($state) => $state === 'agent' ? 'aģents' : $state),
             ])->columns(2),
 
