@@ -17,6 +17,7 @@ use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
@@ -285,7 +286,7 @@ final class LawyerDocumentAction
                     ->required()
                     ->live()
                     ->default(array_key_first($documents))
-                    ->afterStateUpdated(function (Get $get, Forms\Components\Utilities\Set $set) use ($property): void {
+                    ->afterStateUpdated(function (Get $get, Set $set) use ($property): void {
                         self::recomputeEmail($get, $set, $property);
                     }),
                 Forms\Components\Select::make('jurist_id')
@@ -294,7 +295,7 @@ final class LawyerDocumentAction
                     ->searchable()
                     ->required()
                     ->live()
-                    ->afterStateUpdated(function (Get $get, Forms\Components\Utilities\Set $set) use ($property): void {
+                    ->afterStateUpdated(function (Get $get, Set $set) use ($property): void {
                         self::recomputeEmail($get, $set, $property);
                     }),
             ]),
@@ -369,7 +370,7 @@ final class LawyerDocumentAction
     }
 
     /** Ģenerē e-pastu no pašreizējiem 1. soļa datiem (saņēmējs/temats/saturs). */
-    private static function recomputeEmail(Get $get, Forms\Components\Utilities\Set $set, CrmProperty $property): void
+    private static function recomputeEmail(Get $get, Set $set, CrmProperty $property): void
     {
         $service = app(LawyerDocumentService::class);
         $type = (string) $get('document_type');
@@ -383,8 +384,8 @@ final class LawyerDocumentAction
             'property' => $get('property') ?? [],
         ], $property);
 
-        $set('email_to', 'TEST-'.($preview['to'] ?? ''));
-        $set('email_subject', 'TEST-'.($preview['subject'] ?? ''));
+        $set('email_to', $preview['to']);
+        $set('email_subject', $preview['subject']);
         $set('email_body', $preview['body']);
     }
 
