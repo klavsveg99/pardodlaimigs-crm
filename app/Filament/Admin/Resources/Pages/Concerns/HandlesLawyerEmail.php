@@ -32,7 +32,9 @@ trait HandlesLawyerEmail
             return ['to' => '', 'jurist' => '', 'subject' => '', 'html' => ''];
         }
 
-        $data = $action->getData();
+        // Darbības datus lasām tieši no Livewire stāvokļa; getData() ne vienmēr
+        // ietver vēlāk aizpildītos laukus.
+        $data = $this->mountedActions[0]['data'] ?? ($action->getData() ?? []);
         $type = (string) ($data['document_type'] ?? '');
         $service = app(LawyerDocumentService::class);
 
