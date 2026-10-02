@@ -17,9 +17,6 @@ use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\View;
-use Filament\Schemas\Components\Wizard;
-use Filament\Schemas\Components\Wizard\Step;
 use Filament\Support\Enums\Alignment;
 
 /**
@@ -49,45 +46,8 @@ final class LawyerDocumentAction
             ->modalHeading('Nosūtīt juristam')
             ->modalWidth('4xl')
             ->modalSubmitActionLabel('Nosūtīt')
-            // Divi soļi: datu aizpilde un e-pasta priekšskatījums pirms
-            // nosūtīšanas.
-            ->steps(fn (CrmProperty $record): array => self::steps($record))
-            ->modifyWizardUsing(fn (Wizard $wizard): Wizard => $wizard
-                ->nextAction(fn (Actions\Action $action): Actions\Action => $action->label('Tālāk'))
-                ->previousAction(fn (Actions\Action $action): Actions\Action => $action->label('Atpakaļ')))
+            ->schema(fn (CrmProperty $record): array => self::formFields($record))
             ->action(fn (array $data, CrmProperty $record) => self::send($record, $data));
-    }
-
-    /** @return array<int, Step> */
-    private static function steps(CrmProperty $property): array
-    {
-        return [
-            Step::make('Dokumenta dati')
-                ->schema(self::formFields($property)),
-            Step::make('Priekšskatījums')
-                ->description('Pārbaudi e-pastu pirms nosūtīšanas')
-                ->schema([self::preview($property)]),
-        ];
-    }
-
-    /** E-pasta priekšskatījums no aizpildītajām formas vērtībām. */
-    private static function preview(CrmProperty $property): View
-    {
-        return View::make('filament.admin.partials.lawyer-email-preview')
-            ->viewData(function (Get $get) use ($property): array {
-                $type = (string) $get('document_type');
-
-                return app(LawyerDocumentService::class)->preview([
-                    'document_type' => $type,
-                    'jurist_id' => $get('jurist_id'),
-                    'legal' => self::sanitizeLegal($type, $get('legal') ?? []),
-                    'seller' => $get('seller') ?? [],
-                    'buyer' => $get('buyer') ?? [],
-                    'property' => $get('property') ?? [],
-                    'attachment_ids' => $get('attachment_ids') ?? [],
-                ], $property);
-            })
-            ->columnSpanFull();
     }
 
     /** @return array<int, mixed> */
