@@ -7,11 +7,7 @@ namespace App\Filament\Admin\Actions;
 use App\Models\Client;
 use App\Models\CrmProperty;
 use App\Models\Izpilditajs;
-use App\Filament\Forms\Components\PersonasKodsInput;
-use App\Filament\Forms\Components\PhoneInput;
-use App\Rules\Phone;
 use App\Services\Lawyer\LawyerDocumentService;
-use App\Services\Mail\EmailSender;
 use App\Services\Mail\EmailTooLargeException;
 use Filament\Actions;
 use Filament\Forms;
@@ -50,6 +46,8 @@ final class LawyerDocumentAction
             ->modalHeading('Nosūtīt juristam')
             ->modalWidth('4xl')
             ->modalSubmitActionLabel('Nosūtīt')
+            // Divi soļi: datu aizpilde un e-pasta priekšskatījums pirms
+            // nosūtīšanas.
             ->steps(fn (CrmProperty $record): array => self::steps($record))
             ->modifyWizardUsing(fn (Wizard $wizard): Wizard => $wizard
                 ->nextAction(fn (Actions\Action $action): Actions\Action => $action->label('Tālāk'))
@@ -65,11 +63,28 @@ final class LawyerDocumentAction
                 ->schema(self::formFields($property)),
             Step::make('Priekšskatījums')
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
-                ->schema([
-                    View::make('filament.admin.partials.lawyer-step2')
-                        ->columnSpanFull(),
-                ]),
+                ->schema([self::preview($property)]),
         ];
+    }
+
+    /** E-pasta priekšskatījums no aizpildītajām formas vērtībām. */
+    private static function preview(CrmProperty $property): View
+    {
+        return View::make('filament.admin.partials.lawyer-email-preview')
+            ->viewData(function (Get $get) use ($property): array {
+                $type = (string) $get('document_type');
+
+                return app(LawyerDocumentService::class)->preview([
+                    'document_type' => $type,
+                    'jurist_id' => $get('jurist_id'),
+                    'legal' => self::sanitizeLegal($type, $get('legal') ?? []),
+                    'seller' => $get('seller') ?? [],
+                    'buyer' => $get('buyer') ?? [],
+                    'property' => $get('property') ?? [],
+                    'attachment_ids' => $get('attachment_ids') ?? [],
+                ], $property);
+            })
+            ->columnSpanFull();
     }
 
     /** @return array<int, mixed> */
@@ -221,8 +236,7 @@ final class LawyerDocumentAction
                     ->label('Jurists')
                     ->options($service->juristOptions())
                     ->searchable()
-                    ->required()
-                    ->live(),
+                    ->required(),
             ]),
 
             Section::make('Juridiskie dati')->columns(2)->schema($manual),
@@ -239,18 +253,16 @@ final class LawyerDocumentAction
                     ->label($personLabel('seller.person_type', 'Vārds, uzvārds', 'Uzņēmuma nosaukums'))
                     ->required()
                     ->default($sellerDefaults['name'] ?? null),
-                PersonasKodsInput::make('seller.personas_kods')
+                Forms\Components\TextInput::make('seller.personas_kods')
                     ->label($personLabel('seller.person_type', 'Personas kods', 'Reģistrācijas numurs'))
                     ->required()
-                    ->plain(fn (Get $get): bool => $get('seller.person_type') === 'juridiska')
-                    ->rules(fn (Get $get): array => $get('seller.person_type') === 'juridiska' ? [] : ['regex:/^\d{6}-\d{5}$/'])
                     ->default($sellerDefaults['personas_kods'] ?? null),
                 Forms\Components\TextInput::make('seller.address')
                     ->label($personLabel('seller.person_type', 'Dzīvesvietas adrese', 'Juridiskā adrese'))
                     ->default($sellerDefaults['address'] ?? null),
                 Forms\Components\TextInput::make('seller.bank_account')->label('Bankas konta numurs')->default($sellerDefaults['bank_account'] ?? null),
                 Forms\Components\TextInput::make('seller.email')->label('E-pasts')->email()->default($sellerDefaults['email'] ?? null),
-                PhoneInput::make('seller.phone')->label('Tālrunis')->maxLength(20)->rule(new Phone)->default($sellerDefaults['phone'] ?? null),
+                Forms\Components\TextInput::make('seller.phone')->label('Tālrunis')->default($sellerDefaults['phone'] ?? null),
             ]),
 
             Section::make('Pircējs')->columns(2)->schema([
@@ -264,17 +276,15 @@ final class LawyerDocumentAction
                 Forms\Components\TextInput::make('buyer.name')
                     ->label($personLabel('buyer.person_type', 'Vārds, uzvārds', 'Uzņēmuma nosaukums'))
                     ->default($buyerDefaults['name'] ?? null),
-                PersonasKodsInput::make('buyer.personas_kods')
+                Forms\Components\TextInput::make('buyer.personas_kods')
                     ->label($personLabel('buyer.person_type', 'Personas kods', 'Reģistrācijas numurs'))
-                    ->plain(fn (Get $get): bool => $get('buyer.person_type') === 'juridiska')
-                    ->rules(fn (Get $get): array => $get('buyer.person_type') === 'juridiska' ? [] : ['regex:/^\d{6}-\d{5}$/'])
                     ->default($buyerDefaults['personas_kods'] ?? null),
                 Forms\Components\TextInput::make('buyer.address')
                     ->label($personLabel('buyer.person_type', 'Dzīvesvietas adrese', 'Juridiskā adrese'))
                     ->default($buyerDefaults['address'] ?? null),
                 Forms\Components\TextInput::make('buyer.bank_account')->label('Bankas konta numurs')->default($buyerDefaults['bank_account'] ?? null),
                 Forms\Components\TextInput::make('buyer.email')->label('E-pasts')->email()->default($buyerDefaults['email'] ?? null),
-                PhoneInput::make('buyer.phone')->label('Tālrunis')->maxLength(20)->rule(new Phone)->default($buyerDefaults['phone'] ?? null),
+                Forms\Components\TextInput::make('buyer.phone')->label('Tālrunis')->default($buyerDefaults['phone'] ?? null),
             ]),
 
             Section::make('Īpašums')->columns(2)->schema([
@@ -285,64 +295,25 @@ final class LawyerDocumentAction
             ]),
         ];
 
-        return $sections;
-    }
+        // Esošie CRM faili, ko var pievienot jurista e-pastam (īpašuma
+        // dokumenti + piesaistītā pārdevēja/pircēja pielikumi).
+        $attachmentOptions = $service->attachmentOptions($property);
 
-    /**
-     * E-pasta priekšskatījums no darbības datiem (2. solis).
-     *
-     * @param  array<string, mixed>  $data
-     * @return array{to: string, jurist: string, subject: string, body: string, html: string, attachments: array<int, string>}
-     */
-    public static function emailPreview(CrmProperty $property, array $data): array
-    {
-        $type = (string) ($data['document_type'] ?? '');
-        $service = app(LawyerDocumentService::class);
-
-        $preview = $service->preview([
-            'document_type' => $type,
-            'jurist_id' => $data['jurist_id'] ?? null,
-            'legal' => self::sanitizeLegal($type, is_array($data['legal'] ?? null) ? $data['legal'] : []),
-            'seller' => is_array($data['seller'] ?? null) ? $data['seller'] : [],
-            'buyer' => is_array($data['buyer'] ?? null) ? $data['buyer'] : [],
-            'property' => is_array($data['property'] ?? null) ? $data['property'] : [],
-        ], $property);
-
-        // "Papildus informācija" tiek pievienota tāpat kā nosūtot.
-        $extraInfo = trim((string) ($data['extra_info'] ?? ''));
-        if ($extraInfo !== '') {
-            $preview['html'] = EmailSender::renderHtml(
-                $preview['body'].'<p style="margin:18px 0 0;white-space:pre-line;">'.e($extraInfo).'</p>',
-                EmailSender::defaultSignature(),
-            );
+        if ($attachmentOptions !== []) {
+            $sections[] = Section::make('Pielikumi e-pastam')->columns(1)->schema([
+                Forms\Components\CheckboxList::make('attachment_ids')
+                    ->label('Pievienot failus')
+                    ->options($attachmentOptions)
+                    ->helperText('Atzīmē failus, kurus pievienot e-pastam. Pēc noklusējuma nav atzīmēts neviens.')
+                    ->columnSpanFull(),
+            ]);
         }
 
-        $ids = is_array($data['attachment_ids'] ?? null) ? $data['attachment_ids'] : [];
-        $preview['attachments'] = $service->selectedAttachments($property, $ids)
-            ->pluck('original_name')
-            ->all();
-
-        return $preview;
+        return $sections;
     }
 
     /** @param  array<string, mixed>  $data */
     private static function send(CrmProperty $property, array $data): void
-    {
-        $juristEmail = app(LawyerDocumentService::class)->jurist($data['jurist_id'] ?? null)?->email ?? '';
-        $type = (string) ($data['document_type'] ?? '');
-
-        self::sendFor($property, $data, (string) $juristEmail, app(LawyerDocumentService::class)->subjectFor(
-            app(LawyerDocumentService::class)->contextFromProperty($property),
-            $type,
-        ));
-    }
-
-    /**
-     * Nosūta jurista dokumenta e-pastu. Atgriež true, ja nosūtīts.
-     *
-     * @param  array<string, mixed>  $data  darbības formas dati
-     */
-    public static function sendFor(CrmProperty $property, array $data, string $to, string $subject): bool
     {
         $type = (string) ($data['document_type'] ?? '');
         $jurist = Izpilditajs::query()
@@ -355,7 +326,7 @@ final class LawyerDocumentAction
                 ->danger()
                 ->send();
 
-            return false;
+            return;
         }
 
         $contactKeys = ['person_type', 'name', 'personas_kods', 'address', 'bank_account', 'email', 'phone'];
@@ -406,16 +377,11 @@ final class LawyerDocumentAction
                 is_array($property->legal_data) ? $property->legal_data : [],
                 auth()->user(),
                 is_array($data['attachment_ids'] ?? null) ? $data['attachment_ids'] : [],
-                [
-                    'to' => $to !== '' ? $to : null,
-                    'subject' => $subject !== '' ? $subject : null,
-                    'extra_info' => (string) ($data['extra_info'] ?? ''),
-                ],
             );
         } catch (EmailTooLargeException $e) {
             Notification::make()->title($e->userMessage())->danger()->send();
 
-            return false;
+            return;
         } catch (\Throwable $e) {
             report($e);
 
@@ -425,7 +391,7 @@ final class LawyerDocumentAction
                 ->danger()
                 ->send();
 
-            return false;
+            return;
         }
 
         Notification::make()
@@ -433,8 +399,6 @@ final class LawyerDocumentAction
             ->body($request->subject)
             ->success()
             ->send();
-
-        return true;
     }
 
     /**
