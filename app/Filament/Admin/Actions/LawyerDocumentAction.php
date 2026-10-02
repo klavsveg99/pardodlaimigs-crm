@@ -18,7 +18,6 @@ use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Support\Enums\Alignment;
@@ -62,24 +61,10 @@ final class LawyerDocumentAction
     {
         return [
             Step::make('Dokumenta dati')
-                ->schema(self::formFields($property))
-                // Pēc 1. soļa pārbaudes saglabājam jurista e-pastu formā, lai
-                // 2. solis to varētu parādīt (2. solis renderējas vienreiz).
-                ->afterValidation(function (Get $get, Set $set): void {
-                    $email = Izpilditajs::query()
-                        ->where('category', 'Jurists')
-                        ->find($get('jurist_id'))?->email;
-
-                    $set('email_to', (string) $email);
-                }),
+                ->schema(self::formFields($property)),
             Step::make('Priekšskatījums')
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
                 ->schema([
-                    Forms\Components\TextInput::make('email_to')
-                        ->label('Saņēmējs')
-                        ->readOnly()
-                        ->dehydrated()
-                        ->columnSpanFull(),
                     self::attachmentsField($property),
                     Forms\Components\Textarea::make('extra_info')
                         ->label('Papildus informācija')
