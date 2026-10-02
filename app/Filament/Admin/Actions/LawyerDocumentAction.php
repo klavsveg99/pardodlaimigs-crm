@@ -375,6 +375,19 @@ final class LawyerDocumentAction
         $property->save();
 
         $set('legal', $legalData);
+
+        // Saņēmējs un temats: noklusējumi no izvēlētā jurista un dokumenta.
+        // Lauku default() tiek vērtēts tikai formas sākotnējā ielādē, kad
+        // jurists vēl nav izvēlēts, tāpēc 2. solī tie jāaizpilda šeit.
+        $jurist = app(LawyerDocumentService::class)->jurist($get('jurist_id'));
+
+        if ($jurist && blank($get('email_to'))) {
+            $set('email_to', (string) $jurist->email);
+        }
+
+        if (blank($get('email_subject'))) {
+            $set('email_subject', self::previewSubject($get, $property));
+        }
     }
 
     /** Esošie īpašuma un piesaistīto klientu faili e-pasta modālim. */
