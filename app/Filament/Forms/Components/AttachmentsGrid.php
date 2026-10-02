@@ -16,6 +16,13 @@ class AttachmentsGrid extends Field
 
     public bool $multiselect = true;
 
+    /**
+     * Kad lauks atrodas šaurā blakus kolonnā (piem. klienta lapā), ar jau
+     * pievienotiem failiem "Pievienot failus" poga tiek līdzināta pa labi,
+     * lai piespiestos kolonnas labajai malai. Citādi paliek pa kreisi.
+     */
+    public bool $addButtonAlignRight = false;
+
     public bool $sendable = false;
 
     public bool $propertySendable = false;
@@ -148,6 +155,18 @@ class AttachmentsGrid extends Field
     public function isMultiselect(): bool
     {
         return $this->multiselect;
+    }
+
+    public function addButtonAlignRight(bool $addButtonAlignRight = true): static
+    {
+        $this->addButtonAlignRight = $addButtonAlignRight;
+
+        return $this;
+    }
+
+    public function isAddButtonAlignRight(): bool
+    {
+        return $this->addButtonAlignRight;
     }
 
     public function isSendable(): bool

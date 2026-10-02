@@ -171,7 +171,8 @@ class ClientResource extends Resource
                         ->reorderable(false)
                         ->multiselect(false)
                         ->deletable()
-                        ->sendable(),
+                        ->sendable()
+                        ->addButtonAlignRight(),
                 ]),
             ]),
 

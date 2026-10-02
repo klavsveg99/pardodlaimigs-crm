@@ -1118,7 +1118,7 @@
         </template>
     </div>
     @if(!$isView)
-        <div x-show="files.length > 0" style="margin-top: 0.5rem;">
+        <div x-show="files.length > 0" style="margin-top: 0.5rem; text-align: {{ $isAddButtonAlignRight() ? 'right' : 'left' }};">
             <button
                 type="button"
                 x-on:click="pickFiles()"
