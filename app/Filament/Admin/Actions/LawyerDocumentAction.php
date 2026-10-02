@@ -18,6 +18,7 @@ use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Support\Enums\Alignment;
@@ -65,6 +66,21 @@ final class LawyerDocumentAction
             Step::make('Priekšskatījums')
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
                 ->schema([
+                    View::make('filament.admin.partials.lawyer-recipient')
+                        ->viewData(function () use ($property): array {
+                            return [
+                                'jurists' => Izpilditajs::query()
+                                    ->where('category', 'Jurists')
+                                    ->orderBy('name')
+                                    ->get()
+                                    ->mapWithKeys(fn (Izpilditajs $j): array => [
+                                        (string) $j->id => ['name' => (string) $j->name, 'email' => (string) $j->email],
+                                    ])
+                                    ->all(),
+                                'juristId' => '',
+                            ];
+                        })
+                        ->columnSpanFull(),
                     self::attachmentsField($property),
                     Forms\Components\Textarea::make('extra_info')
                         ->label('Papildus informācija')
