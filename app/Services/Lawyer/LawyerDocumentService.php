@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Lawyer;
 
+use App\Models\Attachment;
 use App\Models\Client;
 use App\Models\CrmProperty;
 use App\Models\Izpilditajs;
@@ -12,6 +13,7 @@ use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\Mail\EmailSender;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * Juristam nosūtāmo dokumentu pieprasījumu loģika: lauku definīcijas
@@ -73,6 +75,58 @@ class LawyerDocumentService
     }
 
     /**
+     * E-pastam pieejamie CRM faili: īpašuma dokumenti plus piesaistītā
+     * pārdevēja/pircēja pielikumi. Nekas nav atzīmēts pēc noklusējuma.
+     *
+     * @return array<int, string> attachment id => label
+     */
+    public function attachmentOptions(CrmProperty $property): array
+    {
+        $property->loadMissing('attachments', 'clients.attachments');
+
+        $options = [];
+
+        foreach ($property->attachments->where('collection', 'documents') as $attachment) {
+            $options[$attachment->id] = $attachment->original_name.' · Īpašums';
+        }
+
+        $roles = ['seller' => 'Pārdevējs', 'buyer' => 'Pircējs'];
+
+        foreach ($property->clients as $client) {
+            $role = $roles[$client->pivot->relation] ?? 'Klients';
+
+            foreach ($client->attachments as $attachment) {
+                $options[$attachment->id] = $attachment->original_name.' · '.$role;
+            }
+        }
+
+        return $options;
+    }
+
+    /**
+     * Atlasītie pielikumi pēc to ID (īpašuma dokumenti un klientu faili).
+     *
+     * @param  array<int|string>  $ids
+     * @return Collection<int, Attachment>
+     */
+    public function selectedAttachments(CrmProperty $property, array $ids): Collection
+    {
+        if ($ids === []) {
+            return collect();
+        }
+
+        $property->loadMissing('attachments', 'clients.attachments');
+
+        $ids = array_map('intval', $ids);
+
+        return $property->attachments
+            ->where('collection', 'documents')
+            ->concat($property->clients->flatMap(fn (Client $client): array => $client->attachments->all()))
+            ->filter(fn (Attachment $attachment): bool => in_array((int) $attachment->id, $ids, true))
+            ->values();
+    }
+
+    /**
      * Priekšskatījums no formas datiem: kam, temats un gatavais e-pasta HTML.
      *
      * @param  array<string, mixed>  $formData
@@ -86,13 +140,17 @@ class LawyerDocumentService
         $legal = is_array($formData['legal'] ?? null) ? $formData['legal'] : [];
         $context = $this->contextFromForm($formData, $property);
         $jurist = $this->jurist($formData['jurist_id'] ?? null);
+        $selected = $this->selectedAttachments(
+            $property,
+            is_array($formData['attachment_ids'] ?? null) ? $formData['attachment_ids'] : [],
+        );
 
         return [
             'to' => (string) ($jurist?->email ?? ''),
             'jurist' => (string) ($jurist?->name ?? ''),
             'subject' => $this->subjectFor($context, $type),
             'html' => EmailSender::renderHtml($this->buildBody($context, $type, $legal), EmailSender::defaultSignature()),
-            'attachments' => $property->attachments->where('collection', 'documents')->count(),
+            'attachment_names' => $selected->pluck('original_name')->all(),
         ];
     }
 
@@ -102,15 +160,25 @@ class LawyerDocumentService
         string $type,
         array $legal,
         ?User $user = null,
+        array $attachmentIds = [],
     ): LawyerRequest {
         $property->load('clients', 'attachments');
 
+        // Ja pārdevējs/pircējs nav piesaistīts kā klients, datus ņemam no
+        // manuāli aizpildītā bloka (tāpat kā priekšskatījumā).
         $context = $this->contextFromProperty($property);
+
+        if (empty($context['seller']) && ! empty($legal['seller']) && is_array($legal['seller'])) {
+            $context['seller'] = $this->filledContact($legal['seller']);
+        }
+
+        if (empty($context['buyer']) && ! empty($legal['buyer']) && is_array($legal['buyer'])) {
+            $context['buyer'] = $this->filledContact($legal['buyer']);
+        }
+
         $subject = $this->subjectFor($context, $type);
         $body = $this->buildBody($context, $type, $legal);
-        $attachments = $property->attachments
-            ->where('collection', 'documents')
-            ->values();
+        $attachments = $this->selectedAttachments($property, $attachmentIds);
 
         app(EmailSender::class)->send(
             (string) $jurist->email,
@@ -130,6 +198,7 @@ class LawyerDocumentService
                 'legal' => $legal,
                 'seller_id' => $property->clients->firstWhere('pivot.relation', 'seller')?->id,
                 'buyer_id' => $property->clients->firstWhere('pivot.relation', 'buyer')?->id,
+                'attachment_ids' => $attachments->pluck('id')->all(),
             ],
             'status' => 'sent',
             'sent_by_user_id' => $user?->id,
@@ -214,6 +283,7 @@ class LawyerDocumentService
     protected function clientFields(Client $client): array
     {
         return array_filter([
+            'person_type' => (string) ($client->person_type ?? 'fiziska'),
             'name' => (string) $client->name,
             'personas_kods' => (string) $client->personas_kods,
             'address' => (string) $client->address,
@@ -231,7 +301,7 @@ class LawyerDocumentService
     {
         $contact = [];
 
-        foreach (['name', 'personas_kods', 'address', 'bank_account', 'email', 'phone'] as $key) {
+        foreach (['person_type', 'name', 'personas_kods', 'address', 'bank_account', 'email', 'phone'] as $key) {
             $value = $data[$key] ?? null;
             if (is_string($value)) {
                 $value = trim($value);
@@ -319,10 +389,12 @@ class LawyerDocumentService
     /** Kontaktpersonas rindas (no klienta vai manuāli aizpildītiem datiem). */
     protected function contactRows(array $data): array
     {
+        $legal = ($data['person_type'] ?? 'fiziska') === 'juridiska';
+
         $map = [
-            'name' => 'Vārds, uzvārds',
-            'personas_kods' => 'Personas kods',
-            'address' => 'Dzīvesvietas adrese',
+            'name' => $legal ? 'Uzņēmuma nosaukums' : 'Vārds, uzvārds',
+            'personas_kods' => $legal ? 'Reģistrācijas numurs' : 'Personas kods',
+            'address' => $legal ? 'Juridiskā adrese' : 'Dzīvesvietas adrese',
             'bank_account' => 'Bankas konta numurs',
             'email' => 'E-pasts',
             'phone' => 'Tālrunis',

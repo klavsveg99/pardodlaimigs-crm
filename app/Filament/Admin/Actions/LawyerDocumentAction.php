@@ -42,7 +42,6 @@ final class LawyerDocumentAction
             ->color('gray')
             ->visible(fn (?CrmProperty $record): bool => $record !== null
                 && $record->status !== 'deleted'
-                && $record->hasSeller()
                 && ! auth()->user()?->isPhoto())
             ->modalHeading('Nosūtīt juristam')
             ->modalWidth('4xl')
@@ -82,6 +81,7 @@ final class LawyerDocumentAction
                     'seller' => $get('seller') ?? [],
                     'buyer' => $get('buyer') ?? [],
                     'property' => $get('property') ?? [],
+                    'attachment_ids' => $get('attachment_ids') ?? [],
                 ], $property);
             })
             ->columnSpanFull();
@@ -96,10 +96,23 @@ final class LawyerDocumentAction
         $buyer = self::buyerOf($property);
         $legal = is_array($property->legal_data) ? $property->legal_data : [];
 
-        // Ja pircējs nav piesaistīts kā klients, datus ņemam no iepriekš
-        // aizpildītā manuālā bloka.
+        // Ja pārdevējs/pircējs nav piesaistīts kā klients, datus ņemam no
+        // iepriekš aizpildītā manuālā bloka.
+        $sellerDefaults = $seller
+            ? [
+                'person_type' => $seller->person_type ?? 'fiziska',
+                'name' => $seller->name,
+                'personas_kods' => $seller->personas_kods,
+                'address' => $seller->address,
+                'bank_account' => $seller->bank_account,
+                'email' => $seller->email,
+                'phone' => $seller->phone,
+            ]
+            : (is_array($legal['seller'] ?? null) ? $legal['seller'] : []);
+
         $buyerDefaults = $buyer
             ? [
+                'person_type' => $buyer->person_type ?? 'fiziska',
                 'name' => $buyer->name,
                 'personas_kods' => $buyer->personas_kods,
                 'address' => $buyer->address,
@@ -205,7 +218,13 @@ final class LawyerDocumentAction
             $manual[] = $component;
         }
 
-        return [
+        // Vienas un tās pašas datu kolonnas, atšķiras tikai nosaukumi atkarībā
+        // no izvēlētā personas veida (fiziska vai juridiska persona).
+        $personLabel = function (string $path, string $fiziska, string $juridiska): \Closure {
+            return fn (Get $get): string => ($get($path) ?? 'fiziska') === 'juridiska' ? $juridiska : $fiziska;
+        };
+
+        $sections = [
             Section::make()->columns(2)->schema([
                 Forms\Components\Select::make('document_type')
                     ->label('Dokumenta veids')
@@ -223,18 +242,46 @@ final class LawyerDocumentAction
             Section::make('Juridiskie dati')->columns(2)->schema($manual),
 
             Section::make('Pārdevējs')->columns(2)->schema([
-                Forms\Components\TextInput::make('seller.name')->label('Vārds, uzvārds')->required()->default($seller?->name),
-                Forms\Components\TextInput::make('seller.personas_kods')->label('Personas kods')->required()->default($seller?->personas_kods),
-                Forms\Components\TextInput::make('seller.address')->label('Dzīvesvietas adrese')->default($seller?->address),
-                Forms\Components\TextInput::make('seller.bank_account')->label('Bankas konta numurs')->default($seller?->bank_account),
-                Forms\Components\TextInput::make('seller.email')->label('E-pasts')->email()->default($seller?->email),
-                Forms\Components\TextInput::make('seller.phone')->label('Tālrunis')->default($seller?->phone),
+                Forms\Components\Select::make('seller.person_type')
+                    ->label('Personas veids')
+                    ->options(Client::PERSON_TYPES)
+                    ->default($sellerDefaults['person_type'] ?? 'fiziska')
+                    ->required()
+                    ->live()
+                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('seller.name')
+                    ->label($personLabel('seller.person_type', 'Vārds, uzvārds', 'Uzņēmuma nosaukums'))
+                    ->required()
+                    ->default($sellerDefaults['name'] ?? null),
+                Forms\Components\TextInput::make('seller.personas_kods')
+                    ->label($personLabel('seller.person_type', 'Personas kods', 'Reģistrācijas numurs'))
+                    ->required()
+                    ->default($sellerDefaults['personas_kods'] ?? null),
+                Forms\Components\TextInput::make('seller.address')
+                    ->label($personLabel('seller.person_type', 'Dzīvesvietas adrese', 'Juridiskā adrese'))
+                    ->default($sellerDefaults['address'] ?? null),
+                Forms\Components\TextInput::make('seller.bank_account')->label('Bankas konta numurs')->default($sellerDefaults['bank_account'] ?? null),
+                Forms\Components\TextInput::make('seller.email')->label('E-pasts')->email()->default($sellerDefaults['email'] ?? null),
+                Forms\Components\TextInput::make('seller.phone')->label('Tālrunis')->default($sellerDefaults['phone'] ?? null),
             ]),
 
             Section::make('Pircējs')->columns(2)->schema([
-                Forms\Components\TextInput::make('buyer.name')->label('Vārds, uzvārds')->default($buyerDefaults['name'] ?? null),
-                Forms\Components\TextInput::make('buyer.personas_kods')->label('Personas kods')->default($buyerDefaults['personas_kods'] ?? null),
-                Forms\Components\TextInput::make('buyer.address')->label('Dzīvesvietas adrese')->default($buyerDefaults['address'] ?? null),
+                Forms\Components\Select::make('buyer.person_type')
+                    ->label('Personas veids')
+                    ->options(Client::PERSON_TYPES)
+                    ->default($buyerDefaults['person_type'] ?? 'fiziska')
+                    ->required()
+                    ->live()
+                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('buyer.name')
+                    ->label($personLabel('buyer.person_type', 'Vārds, uzvārds', 'Uzņēmuma nosaukums'))
+                    ->default($buyerDefaults['name'] ?? null),
+                Forms\Components\TextInput::make('buyer.personas_kods')
+                    ->label($personLabel('buyer.person_type', 'Personas kods', 'Reģistrācijas numurs'))
+                    ->default($buyerDefaults['personas_kods'] ?? null),
+                Forms\Components\TextInput::make('buyer.address')
+                    ->label($personLabel('buyer.person_type', 'Dzīvesvietas adrese', 'Juridiskā adrese'))
+                    ->default($buyerDefaults['address'] ?? null),
                 Forms\Components\TextInput::make('buyer.bank_account')->label('Bankas konta numurs')->default($buyerDefaults['bank_account'] ?? null),
                 Forms\Components\TextInput::make('buyer.email')->label('E-pasts')->email()->default($buyerDefaults['email'] ?? null),
                 Forms\Components\TextInput::make('buyer.phone')->label('Tālrunis')->default($buyerDefaults['phone'] ?? null),
@@ -247,6 +294,22 @@ final class LawyerDocumentAction
                 Forms\Components\TextInput::make('property.zip')->label('Pasta indekss')->default($property->zip),
             ]),
         ];
+
+        // Esošie CRM faili, ko var pievienot jurista e-pastam (īpašuma
+        // dokumenti + piesaistītā pārdevēja/pircēja pielikumi).
+        $attachmentOptions = $service->attachmentOptions($property);
+
+        if ($attachmentOptions !== []) {
+            $sections[] = Section::make('Pielikumi e-pastam')->columns(1)->schema([
+                Forms\Components\CheckboxList::make('attachment_ids')
+                    ->label('Pievienot failus')
+                    ->options($attachmentOptions)
+                    ->helperText('Atzīmē failus, kurus pievienot e-pastam. Pēc noklusējuma nav atzīmēts neviens.')
+                    ->columnSpanFull(),
+            ]);
+        }
+
+        return $sections;
     }
 
     /** @param  array<string, mixed>  $data */
@@ -266,18 +329,31 @@ final class LawyerDocumentAction
             return;
         }
 
-        self::applyClientUpdates(self::sellerOf($property), is_array($data['seller'] ?? null) ? $data['seller'] : []);
+        $contactKeys = ['person_type', 'name', 'personas_kods', 'address', 'bank_account', 'email', 'phone'];
+
+        $sellerClient = self::sellerOf($property);
+        $sellerData = is_array($data['seller'] ?? null) ? $data['seller'] : [];
+        self::applyClientUpdates($sellerClient, $sellerData);
+
         $buyerClient = self::buyerOf($property);
         $buyerData = is_array($data['buyer'] ?? null) ? $data['buyer'] : [];
         self::applyClientUpdates($buyerClient, $buyerData);
+
         self::applyPropertyUpdates($property, is_array($data['property'] ?? null) ? $data['property'] : []);
 
         $legal = is_array($data['legal'] ?? null) ? $data['legal'] : [];
 
-        // Pircējs nav piesaistīts kā klients — saglabājam manuāli ievadītos
-        // datus, lai tie nepazūd un nonāk e-pastā.
+        // Pārdevējs/pircējs nav piesaistīts kā klients — saglabājam manuāli
+        // ievadītos datus, lai tie nepazūd un nonāk e-pastā.
+        if ($sellerClient === null) {
+            $sellerBlock = self::normalizedFields($sellerData, $contactKeys);
+            if ($sellerBlock !== []) {
+                $legal['seller'] = $sellerBlock;
+            }
+        }
+
         if ($buyerClient === null) {
-            $buyerBlock = self::normalizedFields($buyerData, ['name', 'personas_kods', 'address', 'bank_account', 'email', 'phone']);
+            $buyerBlock = self::normalizedFields($buyerData, $contactKeys);
             if ($buyerBlock !== []) {
                 $legal['buyer'] = $buyerBlock;
             }
@@ -300,6 +376,7 @@ final class LawyerDocumentAction
                 $type,
                 is_array($property->legal_data) ? $property->legal_data : [],
                 auth()->user(),
+                is_array($data['attachment_ids'] ?? null) ? $data['attachment_ids'] : [],
             );
         } catch (EmailTooLargeException $e) {
             Notification::make()->title($e->userMessage())->danger()->send();
@@ -393,7 +470,8 @@ final class LawyerDocumentAction
 
         $updates = [];
 
-        foreach (['name', 'personas_kods', 'address', 'bank_account', 'email', 'phone'] as $key) {
+        // person_type pirmais, lai name mutators redzētu juridisko personu.
+        foreach (['person_type', 'name', 'personas_kods', 'address', 'bank_account', 'email', 'phone'] as $key) {
             if (! array_key_exists($key, $data)) {
                 continue;
             }

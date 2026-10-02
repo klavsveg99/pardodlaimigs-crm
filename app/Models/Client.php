@@ -24,10 +24,16 @@ class Client extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name', 'phone', 'email', 'personas_kods', 'birth_date', 'birthday_greeted_at',
+        'name', 'person_type', 'phone', 'email', 'personas_kods', 'birth_date', 'birthday_greeted_at',
         'address', 'bank_account', 'source', 'status', 'gdpr_consent_at',
         'marketing_consent',
         'gdpr_erased_at', 'notes_md', 'owner_user_id',
+    ];
+
+    /** Personas veids darījumā. */
+    public const PERSON_TYPES = [
+        'fiziska' => 'Fiziska persona',
+        'juridiska' => 'Juridiskā persona',
     ];
 
     /** Klienta statuss: parasts klients, līds vai noslēgta darījuma klients. */
@@ -67,13 +73,33 @@ class Client extends Model
         'birthday_greeted_at' => 'date',
     ];
 
-    // Vārds vienmēr tiek normalizēts: tikai pirmie burti lielie
-    // ("VINETA IVANOVA" → "Vineta Ivanova").
+    /** Vai klients darījumā ir juridiska persona (SIA u.c.). */
+    public function isLegalPerson(): bool
+    {
+        return $this->person_type === 'juridiska';
+    }
+
+    // Vārds tiek normalizēts: tikai pirmie burti lielie
+    // ("VINETA IVANOVA" → "Vineta Ivanova"). Juridisko personu nosaukumus
+    // (piem. "SIA ABC") nemainām, jo MB_CASE_TITLE tos sabojā ("Sia Abc").
     protected function name(): Attribute
     {
-        return Attribute::set(
-            fn ($value): ?string => filled($value) ? mb_convert_case(trim((string) $value), MB_CASE_TITLE, 'UTF-8') : $value,
-        );
+        return Attribute::set(function ($value): ?string {
+            if (! filled($value)) {
+                return $value;
+            }
+
+            $value = trim((string) $value);
+
+            // Juridiskā persona vai nosaukums ar uzņēmuma formas saīsinājumu
+            // (SIA, AS, IK u.c.) paliek lietotāja ievadītajā formā.
+            if (($this->attributes['person_type'] ?? null) === 'juridiska'
+                || preg_match('/^(sia|as|ik|iu|zs|ps|vas)\b/iu', $value)) {
+                return $value;
+            }
+
+            return mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
+        });
     }
 
     /**
