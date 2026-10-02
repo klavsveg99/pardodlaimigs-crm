@@ -66,39 +66,9 @@ final class LawyerDocumentAction
             Step::make('Priekšskatījums')
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
                 ->schema([
-                    View::make('filament.partials.attachment-send-popup')
-                        ->viewData(function () use ($property): array {
-                            return self::lawyerPopupData($property);
-                        })
+                    View::make('filament.admin.partials.lawyer-step2')
                         ->columnSpanFull(),
                 ]),
-        ];
-    }
-
-    /**
-     * Dati klienta pielikumu modāļa atkārtotai izmantošanai "Jurista
-     * dokuments" 2. solī (variant = lawyer).
-     *
-     * @return array<string, mixed>
-     */
-    private static function lawyerPopupData(CrmProperty $property): array
-    {
-        return [
-            'variant' => 'lawyer',
-            'defaultTo' => '',
-            'initialFiles' => [],
-            'defaultSubject' => '',
-            'sendUrl' => route('properties.lawyer.send-email', ['propertySlug' => $property->slug ?? $property->getKey()]),
-            'previewUrl' => route('properties.lawyer.preview', ['propertySlug' => $property->slug ?? $property->getKey()]),
-            'extraInfoName' => 'lawyer_extra_info',
-            'jurists' => Izpilditajs::query()
-                ->where('category', 'Jurists')
-                ->orderBy('name')
-                ->get()
-                ->mapWithKeys(fn (Izpilditajs $j): array => [
-                    (string) $j->id => ['name' => (string) $j->name, 'email' => (string) $j->email],
-                ])
-                ->all(),
         ];
     }
 
