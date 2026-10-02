@@ -86,12 +86,15 @@ final class LawyerDocumentAction
     private static function subjectFor(Get $get, CrmProperty $property): string
     {
         $service = app(LawyerDocumentService::class);
-        $type = (string) $get('document_type');
+        $type = (string) $get('../../document_type');
+        $propertyRaw = $get('../../property') ?? [];
+        $sellerRaw = $get('../../seller') ?? [];
+        $buyerRaw = $get('../../buyer') ?? [];
 
         return $service->subjectFor($service->contextFromForm([
-            'property' => $get('property') ?? [],
-            'seller' => $get('seller') ?? [],
-            'buyer' => $get('buyer') ?? [],
+            'property' => is_array($propertyRaw) ? $propertyRaw : [],
+            'seller' => is_array($sellerRaw) ? $sellerRaw : [],
+            'buyer' => is_array($buyerRaw) ? $buyerRaw : [],
         ], $property), $type);
     }
 
@@ -106,18 +109,22 @@ final class LawyerDocumentAction
             ->viewData(function (Get $get) use ($property): array {
                 $service = app(LawyerDocumentService::class);
 
-                // 2. solis neredz 1. soļa laukus ar relatīvo ceļu, tāpēc
-                // nolasām tos ar absolūto ceļu no darbības formas datiem.
-                $type = (string) ($get('document_type') ?? $get('data.document_type', true));
-                $juristId = $get('jurist_id') ?? $get('data.jurist_id', true);
+                // 2. solis neredz 1. soļa laukus ar vienkāršu ceļu; wizard
+                // soļi ir atsevišķi konteineri, tāpēc kāpjam uz augšu.
+                $type = (string) $get('../../document_type');
+                $juristId = $get('../../jurist_id');
+                $legalRaw = $get('../../legal') ?? [];
+                $sellerRaw = $get('../../seller') ?? [];
+                $buyerRaw = $get('../../buyer') ?? [];
+                $propertyRaw = $get('../../property') ?? [];
 
                 $preview = $service->preview([
                     'document_type' => $type,
                     'jurist_id' => $juristId,
-                    'legal' => self::sanitizeLegal($type, $get('legal') ?? $get('data.legal', true) ?? []),
-                    'seller' => $get('seller') ?? $get('data.seller', true) ?? [],
-                    'buyer' => $get('buyer') ?? $get('data.buyer', true) ?? [],
-                    'property' => $get('property') ?? $get('data.property', true) ?? [],
+                    'legal' => self::sanitizeLegal($type, is_array($legalRaw) ? $legalRaw : []),
+                    'seller' => is_array($sellerRaw) ? $sellerRaw : [],
+                    'buyer' => is_array($buyerRaw) ? $buyerRaw : [],
+                    'property' => is_array($propertyRaw) ? $propertyRaw : [],
                 ], $property);
 
                 // Visi e-pastam pieejamie faili klienta modāļa formātā.
