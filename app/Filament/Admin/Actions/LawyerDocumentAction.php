@@ -74,7 +74,6 @@ final class LawyerDocumentAction
                                 }
                             }),
                     ]),
-                    Forms\Components\Hidden::make('debug_jurist')->default(fn (Get $get) => (string) ($get('jurist_id') ?? 'NULL') . '|' . (string) ($get('data.jurist_id') ?? 'NULL')),
                     self::preview($property),
                 ]),
         ];
