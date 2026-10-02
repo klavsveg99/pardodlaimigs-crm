@@ -74,7 +74,7 @@ final class LawyerDocumentAction
             Step::make('Dokumenta dati')
                 ->schema(self::formFields($property))
                 ->columns(1)
-                ->afterValidation(function (Get $get, Set $set): void {
+                ->afterValidation(function (Get $get, Set $set) use ($property): void {
                     self::prepareEmail($get, $set, $property);
                 }),
 
