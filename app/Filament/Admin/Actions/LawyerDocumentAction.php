@@ -7,6 +7,9 @@ namespace App\Filament\Admin\Actions;
 use App\Models\Client;
 use App\Models\CrmProperty;
 use App\Models\Izpilditajs;
+use App\Filament\Forms\Components\PersonasKodsInput;
+use App\Filament\Forms\Components\PhoneInput;
+use App\Rules\Phone;
 use App\Services\Lawyer\LawyerDocumentService;
 use App\Services\Mail\EmailTooLargeException;
 use Filament\Actions;
@@ -310,16 +313,18 @@ final class LawyerDocumentAction
                     ->label($personLabel('seller.person_type', 'Vārds, uzvārds', 'Uzņēmuma nosaukums'))
                     ->required()
                     ->default($sellerDefaults['name'] ?? null),
-                Forms\Components\TextInput::make('seller.personas_kods')
+                PersonasKodsInput::make('seller.personas_kods')
                     ->label($personLabel('seller.person_type', 'Personas kods', 'Reģistrācijas numurs'))
                     ->required()
+                    ->plain(fn (Get $get): bool => $get('seller.person_type') === 'juridiska')
+                    ->rules(fn (Get $get): array => $get('seller.person_type') === 'juridiska' ? [] : ['regex:/^\d{6}-\d{5}$/'])
                     ->default($sellerDefaults['personas_kods'] ?? null),
                 Forms\Components\TextInput::make('seller.address')
                     ->label($personLabel('seller.person_type', 'Dzīvesvietas adrese', 'Juridiskā adrese'))
                     ->default($sellerDefaults['address'] ?? null),
                 Forms\Components\TextInput::make('seller.bank_account')->label('Bankas konta numurs')->default($sellerDefaults['bank_account'] ?? null),
                 Forms\Components\TextInput::make('seller.email')->label('E-pasts')->email()->default($sellerDefaults['email'] ?? null),
-                Forms\Components\TextInput::make('seller.phone')->label('Tālrunis')->default($sellerDefaults['phone'] ?? null),
+                PhoneInput::make('seller.phone')->label('Tālrunis')->maxLength(20)->rule(new Phone)->default($sellerDefaults['phone'] ?? null),
             ]),
 
             Section::make('Pircējs')->columns(2)->schema([
@@ -333,15 +338,17 @@ final class LawyerDocumentAction
                 Forms\Components\TextInput::make('buyer.name')
                     ->label($personLabel('buyer.person_type', 'Vārds, uzvārds', 'Uzņēmuma nosaukums'))
                     ->default($buyerDefaults['name'] ?? null),
-                Forms\Components\TextInput::make('buyer.personas_kods')
+                PersonasKodsInput::make('buyer.personas_kods')
                     ->label($personLabel('buyer.person_type', 'Personas kods', 'Reģistrācijas numurs'))
+                    ->plain(fn (Get $get): bool => $get('buyer.person_type') === 'juridiska')
+                    ->rules(fn (Get $get): array => $get('buyer.person_type') === 'juridiska' ? [] : ['regex:/^\d{6}-\d{5}$/'])
                     ->default($buyerDefaults['personas_kods'] ?? null),
                 Forms\Components\TextInput::make('buyer.address')
                     ->label($personLabel('buyer.person_type', 'Dzīvesvietas adrese', 'Juridiskā adrese'))
                     ->default($buyerDefaults['address'] ?? null),
                 Forms\Components\TextInput::make('buyer.bank_account')->label('Bankas konta numurs')->default($buyerDefaults['bank_account'] ?? null),
                 Forms\Components\TextInput::make('buyer.email')->label('E-pasts')->email()->default($buyerDefaults['email'] ?? null),
-                Forms\Components\TextInput::make('buyer.phone')->label('Tālrunis')->default($buyerDefaults['phone'] ?? null),
+                PhoneInput::make('buyer.phone')->label('Tālrunis')->maxLength(20)->rule(new Phone)->default($buyerDefaults['phone'] ?? null),
             ]),
 
             Section::make('Īpašums')->columns(2)->schema([
