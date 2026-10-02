@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Lawyer;
 
+use App\Filament\Admin\Resources\CrmPropertyResource;
 use App\Models\Attachment;
 use App\Models\Client;
 use App\Models\CrmProperty;
@@ -72,35 +73,6 @@ class LawyerDocumentService
         return Izpilditajs::query()
             ->where('category', 'Jurists')
             ->find($id);
-    }
-
-    /**
-     * E-pastam pieejamie CRM faili: īpašuma dokumenti plus piesaistītā
-     * pārdevēja/pircēja pielikumi. Nekas nav atzīmēts pēc noklusējuma.
-     *
-     * @return array<int, string> attachment id => label
-     */
-    public function attachmentOptions(CrmProperty $property): array
-    {
-        $property->loadMissing('attachments', 'clients.attachments');
-
-        $options = [];
-
-        foreach ($property->attachments->where('collection', 'documents') as $attachment) {
-            $options[$attachment->id] = $attachment->original_name.' · Īpašums';
-        }
-
-        $roles = ['seller' => 'Pārdevējs', 'buyer' => 'Pircējs'];
-
-        foreach ($property->clients as $client) {
-            $role = $roles[$client->pivot->relation] ?? 'Klients';
-
-            foreach ($client->attachments as $attachment) {
-                $options[$attachment->id] = $attachment->original_name.' · '.$role;
-            }
-        }
-
-        return $options;
     }
 
     /**
@@ -336,7 +308,7 @@ class LawyerDocumentService
     public function crmUrl(CrmProperty $property): string
     {
         try {
-            return \App\Filament\Admin\Resources\CrmPropertyResource::getUrl('view', ['record' => $property]);
+            return CrmPropertyResource::getUrl('view', ['record' => $property]);
         } catch (\Throwable) {
             return rtrim((string) config('app.url'), '/').'/properties/'.($property->slug ?: $property->getKey());
         }

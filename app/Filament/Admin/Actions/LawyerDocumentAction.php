@@ -9,6 +9,7 @@ use App\Filament\Forms\Components\PhoneInput;
 use App\Models\Client;
 use App\Models\CrmProperty;
 use App\Rules\Phone;
+use App\Services\ImageOptimizer;
 use App\Services\Lawyer\LawyerDocumentService;
 use App\Services\Mail\EmailTooLargeException;
 use Filament\Actions;
@@ -21,6 +22,8 @@ use Filament\Schemas\Components\View;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Support\Enums\Alignment;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 /**
  * "Jurista dokuments" darbība: izvēlas dokumenta veidu un juristu, ļauj
@@ -113,6 +116,14 @@ final class LawyerDocumentAction
                     ->options(collect($files)->mapWithKeys(fn (array $f): array => [$f['id'] => $f['name'].($f['size'] ? ' ('.self::sizeLabel($f['size']).')' : '')])->all())
                     ->helperText('Atzīmē failus, kurus pievienot e-pastam.')
                     ->columnSpanFull(),
+                Forms\Components\FileUpload::make('new_files')
+                    ->label('Pievienot jaunus failus')
+                    ->multiple()
+                    ->storeFiles(false)
+                    ->acceptedFileTypes(config('attachments.accepted_file_types', []))
+                    ->maxSize((int) config('attachments.max_size_kb', 25600))
+                    ->helperText('Jaunie faili tiek saglabāti īpašumam un nosūtīti kopā ar e-pastu.')
+                    ->columnSpanFull(),
             ]),
 
             Section::make('E-pasta priekšskatījums')->columns(1)->schema([$preview]),
@@ -121,6 +132,7 @@ final class LawyerDocumentAction
                 Forms\Components\Textarea::make('extra_info')
                     ->label('Papildus informācija')
                     ->rows(3)
+                    ->live()
                     ->helperText('Ja aizpildīts, tiek pievienots e-pasta beigās.')
                     ->columnSpanFull(),
             ]),
@@ -132,7 +144,7 @@ final class LawyerDocumentAction
     {
         $type = (string) $get('document_type');
 
-        return app(LawyerDocumentService::class)->preview([
+        $body = app(LawyerDocumentService::class)->preview([
             'document_type' => $type,
             'jurist_id' => $get('jurist_id'),
             'legal' => self::sanitizeLegal($type, $get('legal') ?? []),
@@ -141,6 +153,16 @@ final class LawyerDocumentAction
             'property' => $get('property') ?? [],
             'attachment_ids' => [],
         ], $property)['body'];
+
+        return $body.self::extraInfoBlock($get('extra_info'));
+    }
+
+    /** "Papildus informācija" kā drošs HTML bloks e-pasta beigās. */
+    private static function extraInfoBlock(mixed $extra): string
+    {
+        $extra = trim((string) $extra);
+
+        return $extra === '' ? '' : '<p>'.nl2br(e($extra)).'</p>';
     }
 
     private static function previewSubject(Get $get, CrmProperty $property): string
@@ -191,7 +213,12 @@ final class LawyerDocumentAction
             return;
         }
 
-        $files = is_array($data['email_files'] ?? null) ? $data['email_files'] : [];
+        $selected = is_array($data['email_files'] ?? null) ? $data['email_files'] : [];
+        $newIds = self::persistUploadedFiles($property->refresh(), $data['new_files'] ?? []);
+        $files = array_values(array_unique(array_merge(
+            array_map('intval', $selected),
+            $newIds,
+        )));
 
         if ($files === []) {
             Notification::make()
@@ -202,11 +229,7 @@ final class LawyerDocumentAction
             return;
         }
 
-        $extra = trim((string) ($data['extra_info'] ?? ''));
-        $body = self::previewBodyFromData($data, $property);
-        if ($extra !== '') {
-            $body .= '<p>'.e($extra).'</p>';
-        }
+        $body = self::previewBodyFromData($data, $property).self::extraInfoBlock($data['extra_info'] ?? '');
 
         try {
             $request = $service->send(
@@ -259,7 +282,69 @@ final class LawyerDocumentAction
         ], $property)['body'];
     }
 
-    /** Sagatavo (un saglabā) 1. soļa datus pirms pārejas uz e-pasta soli. */
+    /**
+     * Saglabā 2. solī augšupielādētos failus kā īpašuma pielikumus un atgriež
+     * to ID. Tā kā faili nonāk pie īpašuma, tie uzreiz ir pieejami arī citur
+     * (tajā pašā plūsmā kā klienta pielikumu augšupielāde).
+     *
+     * @return array<int, int>
+     */
+    private static function persistUploadedFiles(CrmProperty $property, mixed $uploads): array
+    {
+        if (! is_array($uploads)) {
+            return [];
+        }
+
+        $disk = Storage::disk('public');
+        $ids = [];
+
+        foreach ($uploads as $file) {
+            if (! $file instanceof TemporaryUploadedFile) {
+                continue;
+            }
+
+            $originalName = $file->getClientOriginalName();
+            $base = pathinfo($originalName, PATHINFO_FILENAME);
+            $ext = pathinfo($originalName, PATHINFO_EXTENSION);
+
+            $candidate = 'attachments/'.$originalName;
+            if ($disk->exists($candidate)) {
+                $i = 1;
+                do {
+                    $candidate = 'attachments/'.$base.'-'.$i.($ext ? '.'.$ext : '');
+                    $i++;
+                } while ($disk->exists($candidate));
+            }
+
+            $path = $file->storeAs('attachments', basename($candidate), 'public');
+            $size = (int) $disk->size($path);
+
+            try {
+                $abs = $disk->path($path);
+                if (is_file($abs) && str_starts_with((string) $file->getMimeType(), 'image/')) {
+                    $result = app(ImageOptimizer::class)->optimize($abs);
+                    $size = (int) ($result['size'] ?? $size);
+                }
+            } catch (\Throwable) {
+                // Optimizācija nedrīkst bloķēt augšupielādi.
+            }
+
+            $attachment = $property->attachments()->create([
+                'collection' => 'documents',
+                'path' => $path,
+                'disk' => 'public',
+                'original_name' => $originalName,
+                'mime_type' => $file->getMimeType(),
+                'size' => $size,
+                'sort_order' => (int) $property->attachments()->max('sort_order') + 1,
+            ]);
+
+            $ids[] = (int) $attachment->id;
+        }
+
+        return $ids;
+    }
+
     private static function prepareEmail(Get $get, Set $set, CrmProperty $property): void
     {
         $type = (string) $get('document_type');
