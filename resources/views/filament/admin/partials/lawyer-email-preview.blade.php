@@ -1,38 +1,63 @@
 @php
-    // Tiesi priekšskatījuma poga un modālis. Saņēmējs/temats/pielikumi ir
-    // atsevišķi Filament lauki; šeit tikai parāda pilnu e-pastu.
-    $to = (string) ($to ?? '');
-    $juristName = (string) ($jurist ?? '');
-    $subject = (string) ($subject ?? '');
-    $html = (string) ($html ?? '');
-    $fromAddress = (string) config('mail.from.address');
-    $fromName = (string) config('mail.from.name');
+    // "Jurista dokuments" 2. solis: saņēmējs, nosūtītājs, temats un
+    // priekšskatījuma poga. Saņēmējs nāk no izvēlētā jurista (izpilditājs),
+    // tāpēc to parāda uzreiz; pilno e-pastu ielādē tikai pēc pogas.
+    $jurists = $jurists ?? [];
+    $juristId = (string) ($juristId ?? '');
+    $fromAddress = (string) ($fromAddress ?? '');
+    $fromName = (string) ($fromName ?? '');
 @endphp
 
 <div
     x-data="{
+        jurists: @js($jurists),
+        juristId: @js($juristId),
+        loading: false,
         open: false,
-        to: @js($to),
-        jurist: @js($juristName),
-        subject: @js($subject),
-        html: @js($html),
-        names: [],
-        openPreview() {
-            // Pielikumu nosaukumus nolasa no atzīmētajiem CheckboxList laukiem.
-            this.names = [...document.querySelectorAll('input[type=checkbox][id^=\"mountedActionSchema\"][id*=\"attachment_ids\"]')]
-                .filter(cb => cb.checked)
-                .map(cb => cb.closest('label')?.innerText.trim() || '')
-                .filter(Boolean);
-            this.open = true;
+        error: '',
+        preview: { to: '', jurist: '', subject: '', html: '' },
+        init() {
+            // Jurista izvēle ir 1. solī; seko tās izmaiņām, lai saņēmējs
+            // uzreiz atbilstu izvēlētajam juristam.
+            this.juristId = @js($juristId);
+            document.addEventListener('livewire:updated', () => {
+                const el = document.getElementById('mountedActionSchema0.jurist_id');
+                const m = el && el.getAttribute('wire:model');
+                if (m) { this.juristId = String(this.$wire.get(m) ?? ''); }
+            });
+        },
+        get jurist() { return this.jurists[this.juristId] || null; },
+        get to() { return this.preview.to || (this.jurist ? this.jurist.email : ''); },
+        get juristName() { return this.preview.jurist || (this.jurist ? this.jurist.name : ''); },
+        async openPreview() {
+            this.error = '';
+            this.loading = true;
+            try {
+                const extra = this.$wire.get('mountedActions.0.data.extra_info') || '';
+                const p = await this.$wire.call('previewLawyerEmail', extra);
+                if (! p) { this.error = 'Priekšskatījumu neizdevās ielādēt.'; return; }
+                this.preview = p;
+                this.open = true;
+            } catch (e) {
+                this.error = 'Priekšskatījumu neizdevās ielādēt.';
+            } finally {
+                this.loading = false;
+            }
         },
     }"
     x-on:keydown.escape.window="open = false"
 >
-    <div style="display: flex; justify-content: flex-end;">
-        <button type="button" x-on:click="openPreview()"
-            style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.45rem 0.8rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background: #fff; color: #374151; cursor: pointer; font-size: 0.82rem; font-weight: 600;">
+    <div style="font-size: 0.82rem; color: #4b5563; line-height: 1.7;">
+        <div><strong>Saņēmējs:</strong> <span x-text="to || '—'"></span><template x-if="juristName"><span x-text="' (' + juristName + ')'"></span></template></div>
+        <div><strong>Nosūtītājs:</strong> {{ $fromAddress }}@if ($fromName !== '') ({{ $fromName }})@endif</div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.5rem;">
+        <span style="font-size: 0.82rem; color: #b91c1c;" x-show="error" x-text="error"></span>
+        <button type="button" x-on:click="openPreview()" :disabled="loading"
+            style="margin-left: auto; display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.45rem 0.8rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background: #fff; color: #374151; cursor: pointer; font-size: 0.82rem; font-weight: 600; opacity: loading ? 0.7 : 1;">
             <svg style="width: 0.95rem; height: 0.95rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <span>Priekšskatījums</span>
+            <span x-text="loading ? 'Ielādē…' : 'Priekšskatījums'"></span>
         </button>
     </div>
 
@@ -47,12 +72,12 @@
                 </div>
                 <div style="padding: 1rem 1.1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
                     <div style="font-size: 0.82rem; color: #4b5563; line-height: 1.6;">
-                        <div><strong>Kam:</strong> <span x-text="to || '—'"></span><template x-if="jurist"><span x-text="' (' + jurist + ')'"></span></template></div>
+                        <div><strong>Kam:</strong> <span x-text="preview.to || '—'"></span><template x-if="preview.jurist"><span x-text="' (' + preview.jurist + ')'"></span></template></div>
                         <div><strong>Nosūtītājs:</strong> {{ $fromAddress }}@if ($fromName !== '') ({{ $fromName }})@endif</div>
-                        <div><strong>Temats:</strong> <span x-text="subject || '—'"></span></div>
-                        <div><strong>Pielikumi (<span x-text="names.length"></span>):</strong> <span x-text="names.length ? names.join(', ') : 'nav'"></span></div>
+                        <div><strong>Temats:</strong> <span x-text="preview.subject || '—'"></span></div>
+                        <div><strong>Pielikumi:</strong> <span x-text="(this.$wire.get('mountedActions.0.data.attachment_ids') || []).length"></span></div>
                     </div>
-                    <iframe title="E-pasta priekšskatījums" srcdoc="{{ $html }}"
+                    <iframe title="E-pasta priekšskatījums" x-bind:srcdoc="preview.html"
                         style="width: 100%; height: 34rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #ffffff;"></iframe>
                 </div>
                 <div style="padding: 0.9rem 1.1rem; border-top: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; background: #ffffff;">

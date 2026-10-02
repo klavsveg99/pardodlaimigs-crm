@@ -80,62 +80,52 @@ final class LawyerDocumentAction
     }
 
     /**
-     * 2. soļa lasāmie lauki: saņēmējs un temats, un pielikumu izvēle.
+     * 2. soļa saturs: pielikumu izvēle un priekšskatījuma poga.
      *
      * @return array<int, mixed>
      */
     private static function previewReadonly(CrmProperty $property): array
     {
-        $schema = [
-            Section::make()->columns(2)->schema([
-                Forms\Components\TextInput::make('email_to')
-                    ->label('Saņēmējs')
-                    ->disabled()
-                    ->dehydrated(),
-                Forms\Components\TextInput::make('email_subject')
-                    ->label('Temats')
-                    ->disabled()
-                    ->dehydrated(),
-            ]),
-        ];
-
         $options = app(LawyerDocumentService::class)->attachmentCandidates($property);
         $options = collect($options)->mapWithKeys(fn (array $c): array => [$c['id'] => $c['name']])->all();
 
-        $schema[] = Forms\Components\CheckboxList::make('attachment_ids')
-            ->label('Pielikumi')
-            ->options($options)
-            ->helperText($options === []
-                ? 'Nav pievienotu failu. Failus var pievienot īpašuma vai klienta pielikumos.'
-                : 'Atzīmē failus, kurus pievienot e-pastam.')
-            ->columnSpanFull();
-
-        return $schema;
+        return [
+            Forms\Components\CheckboxList::make('attachment_ids')
+                ->label('Pielikumi')
+                ->options($options)
+                ->helperText($options === []
+                    ? 'Nav pievienotu failu. Failus var pievienot īpašuma vai klienta pielikumos.'
+                    : 'Atzīmē failus, kurus pievienot e-pastam.')
+                ->columnSpanFull(),
+        ];
     }
 
     /**
-     * Pēdējais solis — kā klienta pielikumu e-pasta modālis: pielikumi,
-     * ģenerētais saturs, papildu informācija un priekšskatījuma poga. Pilns
-     * e-pasts atveras modālī tikai pēc pogas nospiešanas.
+     * Priekšskatījuma poga un modālis. Saturs tiek ielādēts pēc pieprasījuma
+     * (skat. HandlesLawyerEmail), jo 2. solis renderējas vienreiz.
      */
     private static function preview(CrmProperty $property): View
     {
         return View::make('filament.admin.partials.lawyer-email-preview')
             ->viewData(function (Get $get) use ($property): array {
-                $slug = $property->slug ?? $property->getKey();
-                $candidates = app(LawyerDocumentService::class)->attachmentCandidates($property);
+                $service = app(LawyerDocumentService::class);
+
+                // Juristu saraksts (id => e-pasts/name), lai klienta puse var
+                // uzreiz parādīt saņēmēju bez servera apgrieziena.
+                $jurists = Izpilditajs::query()
+                    ->where('category', 'Jurists')
+                    ->orderBy('name')
+                    ->get()
+                    ->mapWithKeys(fn (Izpilditajs $j): array => [
+                        (string) $j->id => ['name' => (string) $j->name, 'email' => (string) $j->email],
+                    ])
+                    ->all();
 
                 return [
-                    'to' => (string) $get('email_to'),
-                    'jurist' => app(LawyerDocumentService::class)->jurist($get('jurist_id'))?->name ?? '',
-                    'subject' => (string) $get('email_subject'),
-                    'html' => \App\Services\Mail\EmailSender::renderHtml(
-                        (string) $get('email_body'),
-                        \App\Services\Mail\EmailSender::defaultSignature(),
-                    ),
-                    'candidates' => $candidates,
-                    'uploadUrl' => route('properties.attachments.upload', ['propertySlug' => $slug]),
-                    'deleteUrl' => route('properties.attachments.destroy', ['propertySlug' => $slug, 'attachment' => ':id']),
+                    'jurists' => $jurists,
+                    'juristId' => (string) ($get('jurist_id') ?? ''),
+                    'fromAddress' => (string) config('mail.from.address'),
+                    'fromName' => (string) config('mail.from.name'),
                 ];
             })
             ->columnSpanFull();
@@ -285,19 +275,13 @@ final class LawyerDocumentAction
                     ->options($service->documentOptions())
                     ->required()
                     ->live()
-                    ->default(array_key_first($documents))
-                    ->afterStateUpdated(function (Get $get, Set $set) use ($property): void {
-                        self::recomputeEmail($get, $set, $property);
-                    }),
+                    ->default(array_key_first($documents)),
                 Forms\Components\Select::make('jurist_id')
                     ->label('Jurists')
                     ->options($service->juristOptions())
                     ->searchable()
                     ->required()
-                    ->live()
-                    ->afterStateUpdated(function (Get $get, Set $set) use ($property): void {
-                        self::recomputeEmail($get, $set, $property);
-                    }),
+                    ->live(),
             ]),
 
             Section::make('Juridiskie dati')->columns(2)->schema($manual),
@@ -358,35 +342,15 @@ final class LawyerDocumentAction
                 Forms\Components\TextInput::make('property.city')->label('Pilsēta / novads')->default($property->city),
                 Forms\Components\TextInput::make('property.zip')->label('Pasta indekss')->default($property->zip),
             ]),
-
-            // E-pasta lauki tiek ģenerēti 1. solī (šeit redzami visi lauki)
-            // un izmantoti 2. solī un nosūtīšanā.
-            Forms\Components\Hidden::make('email_to'),
-            Forms\Components\Hidden::make('email_subject'),
-            Forms\Components\Hidden::make('email_body'),
         ];
 
         return $sections;
     }
 
-    /** Ģenerē e-pastu no pašreizējiem 1. soļa datiem (saņēmējs/temats/saturs). */
-    private static function recomputeEmail(Get $get, Set $set, CrmProperty $property): void
+    /** Sabiedriskā atslēga: izmanto HandlesLawyerEmail priekšskatījumā. */
+    public static function sanitizeLegalData(string $type, array $legal): array
     {
-        $service = app(LawyerDocumentService::class);
-        $type = (string) $get('document_type');
-
-        $preview = $service->preview([
-            'document_type' => $type,
-            'jurist_id' => $get('jurist_id'),
-            'legal' => self::sanitizeLegal($type, $get('legal') ?? []),
-            'seller' => $get('seller') ?? [],
-            'buyer' => $get('buyer') ?? [],
-            'property' => $get('property') ?? [],
-        ], $property);
-
-        $set('email_to', $preview['to']);
-        $set('email_subject', $preview['subject']);
-        $set('email_body', $preview['body']);
+        return self::sanitizeLegal($type, $legal);
     }
 
     /** @param  array<string, mixed>  $data */
@@ -446,16 +410,6 @@ final class LawyerDocumentAction
         $property->legal_data = $legalData;
         $property->save();
 
-        // Papildu informācija tiek pievienota ģenerētajam saturam; ja tās nav,
-        // serviss pats ģenerē noklusējuma saturu (body = null).
-        $extraInfo = trim((string) ($data['extra_info'] ?? ''));
-        $emailBody = null;
-
-        if ($extraInfo !== '') {
-            $emailBody = (string) ($data['email_body'] ?? '');
-            $emailBody .= '<p style="margin:18px 0 0;white-space:pre-line;">'.e($extraInfo).'</p>';
-        }
-
         try {
             $request = app(LawyerDocumentService::class)->send(
                 $property->refresh(),
@@ -464,7 +418,7 @@ final class LawyerDocumentAction
                 is_array($property->legal_data) ? $property->legal_data : [],
                 auth()->user(),
                 is_array($data['attachment_ids'] ?? null) ? $data['attachment_ids'] : [],
-                ['body' => $emailBody],
+                ['extra_info' => (string) ($data['extra_info'] ?? '')],
             );
         } catch (EmailTooLargeException $e) {
             Notification::make()->title($e->userMessage())->danger()->send();

@@ -250,6 +250,12 @@ class LawyerDocumentService
             ? (string) $email['body']
             : $this->buildBody($context, $type, $legal);
 
+        // "Papildus informācija" tiek pievienota ģenerētajam saturam.
+        $extraInfo = trim((string) ($email['extra_info'] ?? ''));
+        if ($extraInfo !== '') {
+            $body .= '<p style="margin:18px 0 0;white-space:pre-line;">'.e($extraInfo).'</p>';
+        }
+
         $attachments = $this->selectedAttachments($property, $attachmentIds);
 
         app(EmailSender::class)->send(
