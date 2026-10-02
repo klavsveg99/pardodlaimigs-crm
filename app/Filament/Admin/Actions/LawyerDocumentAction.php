@@ -285,12 +285,20 @@ final class LawyerDocumentAction
                     ->options($service->documentOptions())
                     ->required()
                     ->live()
-                    ->default(array_key_first($documents)),
+                    ->default(array_key_first($documents))
+                    ->afterStateUpdated(function (Get $get, Forms\Components\Utilities\Set $set) use ($property): void {
+                        $set('email_subject', self::subjectFor($get, $property));
+                    }),
                 Forms\Components\Select::make('jurist_id')
                     ->label('Jurists')
                     ->options($service->juristOptions())
                     ->searchable()
-                    ->required(),
+                    ->required()
+                    ->live()
+                    ->afterStateUpdated(function ($state, Forms\Components\Utilities\Set $set): void {
+                        // Saņēmējs pēdējā solī seko izvēlētajam juristam.
+                        $set('email_to', app(LawyerDocumentService::class)->jurist($state)?->email);
+                    }),
             ]),
 
             Section::make('Juridiskie dati')->columns(2)->schema($manual),
