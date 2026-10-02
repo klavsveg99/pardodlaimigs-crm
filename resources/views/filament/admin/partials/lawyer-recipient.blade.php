@@ -14,10 +14,17 @@
             const read = () => {
                 const el = document.getElementById('mountedActionSchema0.jurist_id');
                 const m = el && el.getAttribute('wire:model');
-                if (m && this.$wire) { this.juristId = String(this.$wire.get(m) ?? ''); }
+                if (! m) { return; }
+                const wire = (this.$wire && typeof this.$wire.get === 'function')
+                    ? this.$wire
+                    : (window.Livewire ? (window.Livewire.all().find(c => /crm-property/.test(c.name)) || {}).$wire : null);
+                if (wire && typeof wire.get === 'function') {
+                    this.juristId = String(wire.get(m) ?? '');
+                }
             };
             this.$nextTick(read);
             document.addEventListener('livewire:updated', read);
+            read();
         },
         get jurist() { return this.jurists[this.juristId] || null; },
     }"
