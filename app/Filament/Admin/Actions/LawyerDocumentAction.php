@@ -127,6 +127,13 @@ final class LawyerDocumentAction
                     'property' => is_array($propertyRaw) ? $propertyRaw : [],
                 ], $property);
 
+                // DEBUG: parāda, ko Get faktiski atgriež.
+                $preview['subject'] = 'DBG type=['.$type.'] jurist=['.(string) $juristId.'] raw='.json_encode([
+                    'up' => $get('../jurist_id'),
+                    'up2' => $get('../../jurist_id'),
+                    'plain' => $get('jurist_id'),
+                ]);
+
                 // Visi e-pastam pieejamie faili klienta modāļa formātā.
                 $candidates = $service->attachmentCandidates($property);
 
