@@ -67,6 +67,15 @@ final class LawyerDocumentAction
             Step::make('Priekšskatījums')
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
                 ->schema([
+                    Forms\Components\Hidden::make('probe')->default(function (Get $get): string {
+                        return json_encode([
+                            'plain' => $get('jurist_id'),
+                            'up' => $get('../jurist_id'),
+                            'up2' => $get('../../jurist_id'),
+                            'abs1' => $get('/mountedActions.0.data.jurist_id'),
+                            'abs2' => $get('/data.mountedActions.0.data.jurist_id'),
+                        ]);
+                    }),
                     Section::make()->columns(2)->schema([
                         Forms\Components\TextInput::make('email_subject')
                             ->label('Temats')
@@ -126,13 +135,6 @@ final class LawyerDocumentAction
                     'buyer' => is_array($buyerRaw) ? $buyerRaw : [],
                     'property' => is_array($propertyRaw) ? $propertyRaw : [],
                 ], $property);
-
-                // DEBUG: parāda, ko Get faktiski atgriež.
-                $preview['subject'] = 'DBG type=['.$type.'] jurist=['.(string) $juristId.'] raw='.json_encode([
-                    'up' => $get('../jurist_id'),
-                    'up2' => $get('../../jurist_id'),
-                    'plain' => $get('jurist_id'),
-                ]);
 
                 // Visi e-pastam pieejamie faili klienta modāļa formātā.
                 $candidates = $service->attachmentCandidates($property);
