@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 
 use App\Filament\Admin\Resources\CrmPropertyResource;
+use App\Filament\Admin\Resources\Pages\Concerns\PreviewsLawyerEmail;
 use App\Filament\Admin\Resources\Pages\Concerns\RefreshesTabBadges;
 use App\Models\CrmProperty;
 use Filament\Actions;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ListCrmProperties extends ListRecords
 {
+    use PreviewsLawyerEmail;
     use RefreshesTabBadges;
 
     protected static string $resource = CrmPropertyResource::class;

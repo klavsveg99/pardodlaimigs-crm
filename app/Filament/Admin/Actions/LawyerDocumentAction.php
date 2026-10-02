@@ -66,88 +66,25 @@ final class LawyerDocumentAction
                 ->schema(self::formFields($property)),
             Step::make('Priekšskatījums')
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
-                ->schema([
-                    Forms\Components\Hidden::make('probe')->default(function (Get $get): string {
-                        return json_encode([
-                            'plain' => $get('jurist_id'),
-                            'up' => $get('../jurist_id'),
-                            'up2' => $get('../../jurist_id'),
-                            'abs1' => $get('/mountedActions.0.data.jurist_id'),
-                            'abs2' => $get('/data.mountedActions.0.data.jurist_id'),
-                        ]);
-                    }),
-                    Section::make()->columns(2)->schema([
-                        Forms\Components\TextInput::make('email_subject')
-                            ->label('Temats')
-                            ->required()
-                            ->afterStateHydrated(function (Forms\Components\TextInput $component, Get $get) use ($property): void {
-                                if (blank($component->getState())) {
-                                    $component->state(self::subjectFor($get, $property));
-                                }
-                            }),
-                    ]),
-                    self::preview($property),
-                ]),
+                ->schema([self::preview($property)]),
         ];
     }
 
-    /** Temats no formas datiem (noklusējums pēdējā solī). */
-    private static function subjectFor(Get $get, CrmProperty $property): string
-    {
-        $service = app(LawyerDocumentService::class);
-        $type = (string) $get('../document_type');
-        $propertyRaw = $get('../property') ?? [];
-        $sellerRaw = $get('../seller') ?? [];
-        $buyerRaw = $get('../buyer') ?? [];
-
-        return $service->subjectFor($service->contextFromForm([
-            'property' => is_array($propertyRaw) ? $propertyRaw : [],
-            'seller' => is_array($sellerRaw) ? $sellerRaw : [],
-            'buyer' => is_array($buyerRaw) ? $buyerRaw : [],
-        ], $property), $type);
-    }
-
     /**
-     * Pēdējais solis — tāds pats kā klienta pielikumu e-pasta modālis:
-     * pielikumi (ar tukšu stāvokli un iespēju pievienot failu) un
-     * rediģējams e-pasta saturs ar atsevišķu priekšskatījuma pogu.
+     * Pēdējais solis: pielikumi un rediģējams e-pasta saturs ar atsevišķu
+     * priekšskatījuma pogu. Saņēmējs/temats/saturs tiek ģenerēti pēc
+     * pieprasījuma (skat. PreviewsLawyerEmail), jo wizard solis renderējas
+     * vēl pirms 1. soļa aizpildīšanas.
      */
     private static function preview(CrmProperty $property): View
     {
         return View::make('filament.admin.partials.lawyer-email-preview')
-            ->viewData(function (Get $get) use ($property): array {
-                $service = app(LawyerDocumentService::class);
-
-                // 2. solis neredz 1. soļa laukus ar vienkāršu ceļu; wizard
-                // soļi ir atsevišķi konteineri, tāpēc kāpjam uz augšu.
-                $type = (string) $get('../document_type');
-                $juristId = $get('../jurist_id');
-                $legalRaw = $get('../legal') ?? [];
-                $sellerRaw = $get('../seller') ?? [];
-                $buyerRaw = $get('../buyer') ?? [];
-                $propertyRaw = $get('../property') ?? [];
-
-                $preview = $service->preview([
-                    'document_type' => $type,
-                    'jurist_id' => $juristId,
-                    'legal' => self::sanitizeLegal($type, is_array($legalRaw) ? $legalRaw : []),
-                    'seller' => is_array($sellerRaw) ? $sellerRaw : [],
-                    'buyer' => is_array($buyerRaw) ? $buyerRaw : [],
-                    'property' => is_array($propertyRaw) ? $propertyRaw : [],
-                ], $property);
-
-                // Visi e-pastam pieejamie faili klienta modāļa formātā.
-                $candidates = $service->attachmentCandidates($property);
-
+            ->viewData(function () use ($property): array {
                 $slug = $property->slug ?? $property->getKey();
 
                 return [
-                    'to' => $preview['to'],
-                    'jurist' => $preview['jurist'],
-                    'subject' => (string) ($get('email_subject') ?? $preview['subject']),
-                    'body' => $preview['body'],
-                    'html' => $preview['html'],
-                    'candidates' => $candidates,
+                    // Visi e-pastam pieejamie faili klienta modāļa formātā.
+                    'candidates' => app(LawyerDocumentService::class)->attachmentCandidates($property),
                     'uploadUrl' => route('properties.attachments.upload', ['propertySlug' => $slug]),
                     'deleteUrl' => route('properties.attachments.destroy', ['propertySlug' => $slug, 'attachment' => ':id']),
                 ];
@@ -444,8 +381,6 @@ final class LawyerDocumentAction
                 auth()->user(),
                 is_array($data['attachment_ids'] ?? null) ? $data['attachment_ids'] : [],
                 [
-                    'to' => is_string($data['email_to'] ?? null) ? $data['email_to'] : null,
-                    'subject' => is_string($data['email_subject'] ?? null) ? $data['email_subject'] : null,
                     'body' => is_string($data['email_body'] ?? null) ? $data['email_body'] : null,
                 ],
             );
