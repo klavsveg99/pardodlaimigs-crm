@@ -183,6 +183,12 @@
     x-on:keydown.escape.window="previewOpen = false"
 >
     <div>
+        <div style="display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Saņēmējs</span>
+            <div style="font-size: 0.875rem; color: #111827; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; background: #f9fafb;">
+                {{ $to !== '' ? $to : '—' }}@if ($juristName !== '') ({{ $juristName }})@endif
+            </div>
+        </div>
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.35rem;">
             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Pielikumi <span style="color: #6b7280; font-weight: 500;" x-text="'(kopā ' + sizeLabel(totalSelected()) + ')'"></span></span>
             <button type="button" x-on:click="pickFiles()" style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.6rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background: #fff; color: #374151; cursor: pointer; font-size: 0.78rem; font-weight: 600;">

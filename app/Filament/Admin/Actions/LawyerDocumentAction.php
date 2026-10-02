@@ -65,15 +65,6 @@ final class LawyerDocumentAction
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
                 ->schema([
                     Section::make()->columns(2)->schema([
-                        Forms\Components\TextInput::make('email_to')
-                            ->label('Saņēmējs')
-                            ->email()
-                            ->required()
-                            ->afterStateHydrated(function (Forms\Components\TextInput $component, Get $get): void {
-                                if (blank($component->getState())) {
-                                    $component->state(app(LawyerDocumentService::class)->jurist($get('jurist_id'))?->email);
-                                }
-                            }),
                         Forms\Components\TextInput::make('email_subject')
                             ->label('Temats')
                             ->required()
