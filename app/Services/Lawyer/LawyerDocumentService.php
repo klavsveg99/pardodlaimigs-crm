@@ -103,6 +103,47 @@ class LawyerDocumentService
         return $options;
     }
 
+    /**
+     * E-pastam pieejamie CRM faili klienta modāļa formātā (id, nosaukums,
+     * izmērs, avots) — īpašuma dokumenti plus piesaistītā pārdevēja/pircēja
+     * pielikumi. Nekas nav atzīmēts pēc noklusējuma.
+     *
+     * @return array<int, array{id: int, name: string, size: int, source: string}>
+     */
+    public function attachmentCandidates(CrmProperty $property): array
+    {
+        $property->loadMissing('attachments', 'clients.attachments');
+
+        $candidates = [];
+
+        foreach ($property->attachments->where('collection', 'documents') as $attachment) {
+            $candidates[] = $this->candidate($attachment, 'Īpašums');
+        }
+
+        $roles = ['seller' => 'Pārdevējs', 'buyer' => 'Pircējs'];
+
+        foreach ($property->clients as $client) {
+            $role = $roles[$client->pivot->relation] ?? 'Klients';
+
+            foreach ($client->attachments as $attachment) {
+                $candidates[] = $this->candidate($attachment, $role);
+            }
+        }
+
+        return $candidates;
+    }
+
+    /** @return array{id: int, name: string, size: int, source: string} */
+    private function candidate(Attachment $attachment, string $source): array
+    {
+        return [
+            'id' => (int) $attachment->id,
+            'name' => (string) $attachment->original_name,
+            'size' => (int) $attachment->size,
+            'source' => $source,
+        ];
+    }
+
     /** Faila nosaukums ar izmēru un piederību (īpašums/pārdevējs/pircējs). */
     private function attachmentLabel(Attachment $attachment, string $source): string
     {
@@ -183,6 +224,7 @@ class LawyerDocumentService
         array $legal,
         ?User $user = null,
         array $attachmentIds = [],
+        array $email = [],
     ): LawyerRequest {
         $property->load('clients', 'attachments');
 
@@ -198,12 +240,18 @@ class LawyerDocumentService
             $context['buyer'] = $this->filledContact($legal['buyer']);
         }
 
-        $subject = $this->subjectFor($context, $type);
-        $body = $this->buildBody($context, $type, $legal);
+        // Pēdējā solī lietotājs var labot saņēmēju, tematu un saturu; ja
+        // nekas nav mainīts, izmanto automātiski ģenerētos.
+        $to = trim((string) ($email['to'] ?? '')) ?: (string) $jurist->email;
+        $subject = trim((string) ($email['subject'] ?? '')) ?: $this->subjectFor($context, $type);
+        $body = filled($email['body'] ?? null)
+            ? (string) $email['body']
+            : $this->buildBody($context, $type, $legal);
+
         $attachments = $this->selectedAttachments($property, $attachmentIds);
 
         app(EmailSender::class)->send(
-            (string) $jurist->email,
+            $to,
             $subject,
             $body,
             $attachments,
@@ -214,7 +262,7 @@ class LawyerDocumentService
             'crm_property_id' => $property->id,
             'izpilditajs_id' => $jurist->id,
             'document_type' => $type,
-            'recipient_email' => (string) $jurist->email,
+            'recipient_email' => $to,
             'subject' => $subject,
             'payload' => [
                 'legal' => $legal,

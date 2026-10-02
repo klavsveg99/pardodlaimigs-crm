@@ -63,43 +63,23 @@ final class LawyerDocumentAction
                 ->schema(self::formFields($property)),
             Step::make('Priekšskatījums')
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
-                ->schema(self::previewSchema($property)),
+                ->schema([self::preview($property)]),
         ];
     }
 
     /**
-     * Pēdējais solis kā klienta e-pasta modālī: pielikumu izvēle un
-     * ģenerētais e-pasta saturs.
-     *
-     * @return array<int, mixed>
+     * Pēdējais solis — tāds pats kā klienta pielikumu e-pasta modālis:
+     * saņēmējs, temats, pielikumi (ar tukšu stāvokli un iespēju pievienot
+     * failu) un rediģējams e-pasta saturs.
      */
-    private static function previewSchema(CrmProperty $property): array
-    {
-        $schema = [];
-
-        $attachmentOptions = app(LawyerDocumentService::class)->attachmentOptions($property);
-
-        if ($attachmentOptions !== []) {
-            $schema[] = Forms\Components\CheckboxList::make('attachment_ids')
-                ->label('Pielikumi e-pastam')
-                ->options($attachmentOptions)
-                ->helperText('Atzīmē failus, kurus pievienot e-pastam. Pēc noklusējuma nav atzīmēts neviens. Kopējais pielikumu limits 18 MB.')
-                ->columnSpanFull();
-        }
-
-        $schema[] = self::preview($property);
-
-        return $schema;
-    }
-
-    /** E-pasta priekšskatījums no aizpildītajām formas vērtībām. */
     private static function preview(CrmProperty $property): View
     {
         return View::make('filament.admin.partials.lawyer-email-preview')
             ->viewData(function (Get $get) use ($property): array {
                 $type = (string) $get('document_type');
+                $service = app(LawyerDocumentService::class);
 
-                return app(LawyerDocumentService::class)->preview([
+                $preview = $service->preview([
                     'document_type' => $type,
                     'jurist_id' => $get('jurist_id'),
                     'legal' => self::sanitizeLegal($type, $get('legal') ?? []),
@@ -107,6 +87,24 @@ final class LawyerDocumentAction
                     'buyer' => $get('buyer') ?? [],
                     'property' => $get('property') ?? [],
                 ], $property);
+
+                $property->loadMissing('attachments', 'clients.attachments');
+
+                // Visi e-pastam pieejamie faili, saglabājot to pašu izkārtojumu
+                // kā klienta modālī: nosaukums + izmērs.
+                $candidates = $service->attachmentCandidates($property);
+
+                $slug = $property->slug ?? $property->getKey();
+
+                return [
+                    'to' => $preview['to'],
+                    'jurist' => $preview['jurist'],
+                    'subject' => $preview['subject'],
+                    'html' => $preview['html'],
+                    'candidates' => $candidates,
+                    'uploadUrl' => route('properties.attachments.upload', ['propertySlug' => $slug]),
+                    'deleteUrl' => route('properties.attachments.destroy', ['propertySlug' => $slug, 'attachment' => ':id']),
+                ];
             })
             ->columnSpanFull();
     }
@@ -387,6 +385,11 @@ final class LawyerDocumentAction
                 is_array($property->legal_data) ? $property->legal_data : [],
                 auth()->user(),
                 is_array($data['attachment_ids'] ?? null) ? $data['attachment_ids'] : [],
+                [
+                    'to' => is_string($data['email_to'] ?? null) ? $data['email_to'] : null,
+                    'subject' => is_string($data['email_subject'] ?? null) ? $data['email_subject'] : null,
+                    'body' => is_string($data['email_body'] ?? null) ? $data['email_body'] : null,
+                ],
             );
         } catch (EmailTooLargeException $e) {
             Notification::make()->title($e->userMessage())->danger()->send();
