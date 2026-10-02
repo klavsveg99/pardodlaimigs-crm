@@ -87,7 +87,7 @@ class LawyerDocumentService
         $options = [];
 
         foreach ($property->attachments->where('collection', 'documents') as $attachment) {
-            $options[$attachment->id] = $attachment->original_name.' · Īpašums';
+            $options[$attachment->id] = $this->attachmentLabel($attachment, 'Īpašums');
         }
 
         $roles = ['seller' => 'Pārdevējs', 'buyer' => 'Pircējs'];
@@ -96,11 +96,38 @@ class LawyerDocumentService
             $role = $roles[$client->pivot->relation] ?? 'Klients';
 
             foreach ($client->attachments as $attachment) {
-                $options[$attachment->id] = $attachment->original_name.' · '.$role;
+                $options[$attachment->id] = $this->attachmentLabel($attachment, $role);
             }
         }
 
         return $options;
+    }
+
+    /** Faila nosaukums ar izmēru un piederību (īpašums/pārdevējs/pircējs). */
+    private function attachmentLabel(Attachment $attachment, string $source): string
+    {
+        $size = $this->formatBytes((int) $attachment->size);
+
+        return $attachment->original_name
+            .($size !== '' ? ' · '.$size : '')
+            .' · '.$source;
+    }
+
+    private function formatBytes(int $bytes): string
+    {
+        if ($bytes <= 0) {
+            return '';
+        }
+
+        if ($bytes < 1024) {
+            return $bytes.' B';
+        }
+
+        if ($bytes < 1024 * 1024) {
+            return round($bytes / 1024).' KB';
+        }
+
+        return number_format($bytes / 1024 / 1024, 1, '.', ' ').' MB';
     }
 
     /**
@@ -130,27 +157,22 @@ class LawyerDocumentService
      * Priekšskatījums no formas datiem: kam, temats un gatavais e-pasta HTML.
      *
      * @param  array<string, mixed>  $formData
-     * @return array{to: string, jurist: string, subject: string, html: string, attachments: int}
+     * @return array{to: string, jurist: string, subject: string, html: string}
      */
     public function preview(array $formData, CrmProperty $property): array
     {
-        $property->loadMissing('clients', 'attachments');
+        $property->loadMissing('clients');
 
         $type = (string) ($formData['document_type'] ?? '');
         $legal = is_array($formData['legal'] ?? null) ? $formData['legal'] : [];
         $context = $this->contextFromForm($formData, $property);
         $jurist = $this->jurist($formData['jurist_id'] ?? null);
-        $selected = $this->selectedAttachments(
-            $property,
-            is_array($formData['attachment_ids'] ?? null) ? $formData['attachment_ids'] : [],
-        );
 
         return [
             'to' => (string) ($jurist?->email ?? ''),
             'jurist' => (string) ($jurist?->name ?? ''),
             'subject' => $this->subjectFor($context, $type),
             'html' => EmailSender::renderHtml($this->buildBody($context, $type, $legal), EmailSender::defaultSignature()),
-            'attachment_names' => $selected->pluck('original_name')->all(),
         ];
     }
 

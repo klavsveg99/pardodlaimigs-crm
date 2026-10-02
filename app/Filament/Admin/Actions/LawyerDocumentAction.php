@@ -63,8 +63,33 @@ final class LawyerDocumentAction
                 ->schema(self::formFields($property)),
             Step::make('Priekšskatījums')
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
-                ->schema([self::preview($property)]),
+                ->schema(self::previewSchema($property)),
         ];
+    }
+
+    /**
+     * Pēdējais solis kā klienta e-pasta modālī: pielikumu izvēle un
+     * ģenerētais e-pasta saturs.
+     *
+     * @return array<int, mixed>
+     */
+    private static function previewSchema(CrmProperty $property): array
+    {
+        $schema = [];
+
+        $attachmentOptions = app(LawyerDocumentService::class)->attachmentOptions($property);
+
+        if ($attachmentOptions !== []) {
+            $schema[] = Forms\Components\CheckboxList::make('attachment_ids')
+                ->label('Pielikumi e-pastam')
+                ->options($attachmentOptions)
+                ->helperText('Atzīmē failus, kurus pievienot e-pastam. Pēc noklusējuma nav atzīmēts neviens. Kopējais pielikumu limits 18 MB.')
+                ->columnSpanFull();
+        }
+
+        $schema[] = self::preview($property);
+
+        return $schema;
     }
 
     /** E-pasta priekšskatījums no aizpildītajām formas vērtībām. */
@@ -81,7 +106,6 @@ final class LawyerDocumentAction
                     'seller' => $get('seller') ?? [],
                     'buyer' => $get('buyer') ?? [],
                     'property' => $get('property') ?? [],
-                    'attachment_ids' => $get('attachment_ids') ?? [],
                 ], $property);
             })
             ->columnSpanFull();
@@ -294,20 +318,6 @@ final class LawyerDocumentAction
                 Forms\Components\TextInput::make('property.zip')->label('Pasta indekss')->default($property->zip),
             ]),
         ];
-
-        // Esošie CRM faili, ko var pievienot jurista e-pastam (īpašuma
-        // dokumenti + piesaistītā pārdevēja/pircēja pielikumi).
-        $attachmentOptions = $service->attachmentOptions($property);
-
-        if ($attachmentOptions !== []) {
-            $sections[] = Section::make('Pielikumi e-pastam')->columns(1)->schema([
-                Forms\Components\CheckboxList::make('attachment_ids')
-                    ->label('Pievienot failus')
-                    ->options($attachmentOptions)
-                    ->helperText('Atzīmē failus, kurus pievienot e-pastam. Pēc noklusējuma nav atzīmēts neviens.')
-                    ->columnSpanFull(),
-            ]);
-        }
 
         return $sections;
     }

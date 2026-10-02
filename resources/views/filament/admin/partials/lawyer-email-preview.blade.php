@@ -1,15 +1,8 @@
 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
     <div style="font-size: 0.82rem; color: #4b5563; line-height: 1.55;">
         <div><strong>Kam:</strong> {{ $to !== '' ? $to : '—' }}@if ($jurist !== '') ({{ $jurist }})@endif</div>
+        <div><strong>Nosūtītājs:</strong> {{ config('mail.from.address') }}@if (config('mail.from.name')) ({{ config('mail.from.name') }})@endif</div>
         <div><strong>Temats:</strong> {{ $subject !== '' ? $subject : '—' }}</div>
-        @if (! empty($attachment_names))
-            <div><strong>Pielikumi ({{ count($attachment_names) }}):</strong></div>
-            <ul style="margin: 0.15rem 0 0 1.1rem; padding: 0;">
-                @foreach ($attachment_names as $attachmentName)
-                    <li>{{ $attachmentName }}</li>
-                @endforeach
-            </ul>
-        @endif
     </div>
 
     {{-- E-pasts tiek attēlots iframe, lai inline stili un fons izskatītos
