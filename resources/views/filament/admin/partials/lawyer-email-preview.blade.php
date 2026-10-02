@@ -20,13 +20,11 @@
             this.juristId = @js($juristId);
         },
         get component() {
-            if (this.$wire && typeof this.$wire.call === 'function') { return this.$wire; }
-            const el = this.$el.closest('[wire\\:id]');
-            if (el && window.Livewire) { return window.Livewire.find(el.getAttribute('wire:id')); }
             if (window.Livewire) {
-                return window.Livewire.all().find(c => /crm-property/.test(c.name)) || null;
+                const byName = window.Livewire.all().find(c => /crm-property/.test(c.name));
+                if (byName) { return byName; }
             }
-            return null;
+            return this.$wire || null;
         },
         get jurist() { return this.jurists[this.juristId] || null; },
         get to() { return this.preview.to || (this.jurist ? this.jurist.email : ''); },
