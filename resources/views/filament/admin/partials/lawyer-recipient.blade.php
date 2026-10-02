@@ -12,14 +12,11 @@
         juristId: @js($juristId),
         init() {
             const read = () => {
-                const el = document.getElementById('mountedActionSchema0.jurist_id');
-                const m = el && el.getAttribute('wire:model');
-                if (! m) { return; }
                 const wire = (this.$wire && typeof this.$wire.get === 'function')
                     ? this.$wire
                     : (window.Livewire ? (window.Livewire.all().find(c => /crm-property/.test(c.name)) || {}).$wire : null);
                 if (wire && typeof wire.get === 'function') {
-                    this.juristId = String(wire.get(m) ?? '');
+                    this.juristId = String(wire.get('mountedActions.0.data.jurist_id') ?? '');
                 }
             };
             this.$nextTick(read);
