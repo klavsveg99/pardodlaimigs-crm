@@ -229,13 +229,9 @@ class ClientResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable()->weight('bold')
                     ->url(fn (Client $record) => $record->trashed() ? null : static::getUrl('view', ['record' => $record])),
-                Tables\Columns\TextColumn::make('status')->label('Statuss')->badge()->sortable()
-                    ->formatStateUsing(fn ($state): string => Client::STATUSES[$state] ?? (string) $state)
-                    ->color(fn ($state): string => match ($state) {
-                        'lead' => 'warning',
-                        'laimigs' => 'success',
-                        default => 'gray',
-                    }),
+                Tables\Columns\TextColumn::make('person_type')->label('Personas veids')->badge()->sortable()
+                    ->formatStateUsing(fn ($state): string => Client::PERSON_TYPES[$state] ?? (string) $state)
+                    ->color(fn ($state): string => $state === 'juridiska' ? 'success' : 'gray'),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable()
                     ->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
