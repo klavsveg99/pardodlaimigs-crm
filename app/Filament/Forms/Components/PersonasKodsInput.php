@@ -9,11 +9,51 @@ use Filament\Support\View\ComponentAttributeBag;
 
 class PersonasKodsInput extends TextInput
 {
+    /**
+     * Vienkāršs režīms juridiskajām personām: bez personas koda formāta
+     * (XXXXXX-XXXXX) un bez automātiskas dzimšanas datuma atvasināšanas.
+     */
+    protected bool|\Closure $plain = false;
+
+    public function plain(bool|\Closure $condition = true): static
+    {
+        $this->plain = $condition;
+
+        return $this;
+    }
+
+    public function isPlain(): bool
+    {
+        return (bool) $this->evaluate($this->plain);
+    }
+
     public function toEmbeddedHtml(): string
     {
         $statePath = $this->getStatePath();
         $disabledAttr = $this->isDisabled() ? 'disabled' : '';
         $readonlyAttr = $this->isReadOnly() ? 'readonly' : '';
+
+        if ($this->isPlain()) {
+            ob_start(); ?>
+            <input
+                type="text"
+                wire:model.live="<?= e($statePath) ?>"
+                class="fi-input fi-text-input"
+                maxlength="20"
+                <?= $disabledAttr ?>
+                <?= $readonlyAttr ?>
+            />
+            <?php
+            $slotHtml = ob_get_clean();
+
+            return $this->wrapEmbeddedHtml(
+                $this->wrapInputHtml(
+                    $slotHtml,
+                    attributes: (new ComponentAttributeBag)->class(['fi-fo-text-input']),
+                ),
+                inlineLabelVerticalAlignment: \Filament\Support\Enums\VerticalAlignment::Center,
+            );
+        }
 
         ob_start(); ?>
         <div

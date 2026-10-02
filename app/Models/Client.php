@@ -24,7 +24,8 @@ class Client extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name', 'person_type', 'phone', 'email', 'personas_kods', 'birth_date', 'birthday_greeted_at',
+        'name', 'person_type', 'legal_representative', 'contact_person',
+        'phone', 'email', 'personas_kods', 'birth_date', 'birthday_greeted_at',
         'address', 'bank_account', 'source', 'status', 'gdpr_consent_at',
         'marketing_consent',
         'gdpr_erased_at', 'notes_md', 'owner_user_id',
@@ -71,6 +72,8 @@ class Client extends Model
         'gdpr_erased_at' => 'datetime',
         'birth_date' => 'date',
         'birthday_greeted_at' => 'date',
+        'legal_representative' => 'array',
+        'contact_person' => 'array',
     ];
 
     /** Vai klients darījumā ir juridiska persona (SIA u.c.). */
@@ -151,6 +154,12 @@ class Client extends Model
         // Dzimšanas datumu iegūstam no personas koda (DDMMYY-XXXXX), ja tas
         // vēl nav norādīts. Jau esošu datumu nepārrakstām.
         static::saving(function (Client $client): void {
+            // Juridiskajām personām personas koda laukā ir reģistrācijas
+            // numurs, no kura dzimšanas datumu neatvasina.
+            if ($client->isLegalPerson()) {
+                return;
+            }
+
             if (blank($client->birth_date) && filled($client->personas_kods)) {
                 $client->birth_date = self::birthDateFromPersonasKods($client->personas_kods);
             }

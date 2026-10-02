@@ -17,6 +17,7 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -65,21 +66,34 @@ class ClientResource extends Resource
         return $schema->schema([
             Section::make()->columnSpanFull()->columns(['lg' => 2])->schema([
                 Grid::make(['default' => 1, 'md' => 2])->columnSpan(1)->schema([
-                    Forms\Components\TextInput::make('name')->label('Vārds, uzvārds')->required()->maxLength(255),
+                    Forms\Components\Select::make('person_type')
+                        ->label('Personas veids')
+                        ->options(Client::PERSON_TYPES)
+                        ->default('fiziska')
+                        ->required()
+                        ->live(),
+                    Forms\Components\TextInput::make('name')
+                        ->label(fn (Get $get): string => $get('person_type') === 'juridiska' ? 'Uzņēmuma nosaukums' : 'Vārds, uzvārds')
+                        ->required()->maxLength(255),
                     PhoneInput::make('phone')->label('Tālrunis')->maxLength(20)->rule(new Phone),
                     Forms\Components\TextInput::make('email')->label('E-pasts')->email()->maxLength(255),
-                    Forms\Components\TextInput::make('address')->label('Adrese')->maxLength(255),
+                    Forms\Components\TextInput::make('address')
+                        ->label(fn (Get $get): string => $get('person_type') === 'juridiska' ? 'Juridiskā adrese' : 'Adrese')
+                        ->maxLength(255),
                     PersonasKodsInput::make('personas_kods')
-                        ->label('Personas kods')
-                        ->maxLength(12)
-                        // Formāts XXXXXX-XXXXX (11 cipari ar domuzīmi);
-                        // lauks var palikt tukšs.
-                        ->rule('regex:/^\d{6}-\d{5}$/')
+                        ->label(fn (Get $get): string => $get('person_type') === 'juridiska' ? 'Reģistrācijas numurs' : 'Personas kods')
+                        ->plain(fn (Get $get): bool => $get('person_type') === 'juridiska')
+                        ->maxLength(20)
+                        // Formāts XXXXXX-XXXXX (11 cipari ar domuzīmi) tikai
+                        // fiziskām personām; juridiskām — brīvs reģistrācijas
+                        // numurs. Lauks var palikt tukšs.
+                        ->rules(fn (Get $get): array => $get('person_type') === 'juridiska' ? [] : ['regex:/^\d{6}-\d{5}$/'])
                         ->disabled(fn (string $operation) => $operation === 'view')
                         // Dzimšanas datumu aizpilda uzreiz, tiklīdz kods ir
-                        // derīgs — bet tikai tad, ja datums vēl nav norādīts.
+                        // derīgs — bet tikai fiziskai personai un ja datums
+                        // vēl nav norādīts.
                         ->afterStateUpdated(function ($state, Set $set, Get $get): void {
-                            if (filled($get('birth_date'))) {
+                            if ($get('person_type') === 'juridiska' || filled($get('birth_date'))) {
                                 return;
                             }
 
@@ -92,7 +106,8 @@ class ClientResource extends Resource
                     Forms\Components\DatePicker::make('birth_date')
                         ->label('Dzimšanas datums')
                         ->native(false)
-                        ->displayFormat('d.m.Y'),
+                        ->displayFormat('d.m.Y')
+                        ->visible(fn (Get $get): bool => $get('person_type') !== 'juridiska'),
                     Forms\Components\TextInput::make('bank_account')
                         ->label('Bankas konta numurs')
                         ->maxLength(64),
@@ -159,6 +174,27 @@ class ClientResource extends Resource
                         ->sendable(),
                 ]),
             ]),
+
+            Section::make('Juridiskās personas dati')
+                ->columnSpanFull()
+                ->columns(2)
+                ->visible(fn (Get $get): bool => $get('person_type') === 'juridiska')
+                ->schema([
+                    Fieldset::make('Pilnvarotā persona')->columns(2)->schema([
+                        Forms\Components\TextInput::make('legal_representative.name')->label('Vārds, uzvārds')->maxLength(255),
+                        Forms\Components\TextInput::make('legal_representative.personas_kods')->label('Personas kods')->maxLength(20),
+                        Forms\Components\TextInput::make('legal_representative.address')->label('Adrese')->maxLength(255),
+                        PhoneInput::make('legal_representative.phone')->label('Tālrunis')->maxLength(20),
+                        Forms\Components\TextInput::make('legal_representative.email')->label('E-pasts')->email()->maxLength(255),
+                    ]),
+                    Fieldset::make('Kontaktpersona')->columns(2)->schema([
+                        Forms\Components\TextInput::make('contact_person.name')->label('Vārds, uzvārds')->maxLength(255),
+                        Forms\Components\TextInput::make('contact_person.personas_kods')->label('Personas kods')->maxLength(20),
+                        Forms\Components\TextInput::make('contact_person.address')->label('Adrese')->maxLength(255),
+                        PhoneInput::make('contact_person.phone')->label('Tālrunis')->maxLength(20),
+                        Forms\Components\TextInput::make('contact_person.email')->label('E-pasts')->email()->maxLength(255),
+                    ]),
+                ]),
         ]);
     }
 
