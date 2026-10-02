@@ -63,14 +63,40 @@ final class LawyerDocumentAction
                 ->schema(self::formFields($property)),
             Step::make('Priekšskatījums')
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
-                ->schema([self::preview($property)]),
+                ->schema([
+                    Section::make()->columns(2)->schema([
+                        Forms\Components\TextInput::make('email_to')
+                            ->label('Saņēmējs')
+                            ->email()
+                            ->required()
+                            ->default(fn (Get $get) => app(LawyerDocumentService::class)->jurist($get('jurist_id'))?->email),
+                        Forms\Components\TextInput::make('email_subject')
+                            ->label('Temats')
+                            ->required()
+                            ->default(fn (Get $get) => self::subjectFor($get, $property)),
+                    ]),
+                    self::preview($property),
+                ]),
         ];
+    }
+
+    /** Temats no formas datiem (noklusējums pēdējā solī). */
+    private static function subjectFor(Get $get, CrmProperty $property): string
+    {
+        $service = app(LawyerDocumentService::class);
+        $type = (string) $get('document_type');
+
+        return $service->subjectFor($service->contextFromForm([
+            'property' => $get('property') ?? [],
+            'seller' => $get('seller') ?? [],
+            'buyer' => $get('buyer') ?? [],
+        ], $property), $type);
     }
 
     /**
      * Pēdējais solis — tāds pats kā klienta pielikumu e-pasta modālis:
-     * saņēmējs, temats, pielikumi (ar tukšu stāvokli un iespēju pievienot
-     * failu) un rediģējams e-pasta saturs.
+     * pielikumi (ar tukšu stāvokli un iespēju pievienot failu) un
+     * rediģējams e-pasta saturs ar atsevišķu priekšskatījuma pogu.
      */
     private static function preview(CrmProperty $property): View
     {
@@ -88,18 +114,15 @@ final class LawyerDocumentAction
                     'property' => $get('property') ?? [],
                 ], $property);
 
-                $property->loadMissing('attachments', 'clients.attachments');
-
-                // Visi e-pastam pieejamie faili, saglabājot to pašu izkārtojumu
-                // kā klienta modālī: nosaukums + izmērs.
+                // Visi e-pastam pieejamie faili klienta modāļa formātā.
                 $candidates = $service->attachmentCandidates($property);
 
                 $slug = $property->slug ?? $property->getKey();
 
                 return [
-                    'to' => $preview['to'],
+                    'to' => (string) ($get('email_to') ?? $preview['to']),
                     'jurist' => $preview['jurist'],
-                    'subject' => $preview['subject'],
+                    'subject' => (string) ($get('email_subject') ?? $preview['subject']),
                     'body' => $preview['body'],
                     'html' => $preview['html'],
                     'candidates' => $candidates,

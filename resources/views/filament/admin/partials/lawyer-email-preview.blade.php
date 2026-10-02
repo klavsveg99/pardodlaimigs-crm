@@ -84,8 +84,6 @@
         },
         pushState() {
             this.$wire.set('data.attachment_ids', this.selected, false);
-            this.$wire.set('data.email_to', this.to, false);
-            this.$wire.set('data.email_subject', this.subject, false);
             this.$wire.set('data.email_body', this.$refs.editor ? this.$refs.editor.innerHTML : '', false);
         },
         sizeLabel(bytes) {
@@ -184,20 +182,6 @@
     style="display: flex; flex-direction: column; gap: 0.75rem;"
     x-on:keydown.escape.window="previewOpen = false"
 >
-    <div style="display: grid; gap: 0.65rem;">
-        <label style="display: flex; flex-direction: column; gap: 0.25rem;">
-            <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Saņēmējs</span>
-            <input type="email" x-model="to" x-on:change="pushState()" placeholder="e-pasts" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;" />
-            <template x-if="jurist">
-                <span style="font-size: 0.72rem; color: #6b7280;" x-text="'Jurists: ' + jurist"></span>
-            </template>
-        </label>
-        <label style="display: flex; flex-direction: column; gap: 0.25rem;">
-            <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Temats</span>
-            <input type="text" x-model="subject" x-on:change="pushState()" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;" />
-        </label>
-    </div>
-
     <div>
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.35rem;">
             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Pielikumi <span style="color: #6b7280; font-weight: 500;" x-text="'(kopā ' + sizeLabel(totalSelected()) + ')'"></span></span>
