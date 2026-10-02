@@ -285,14 +285,18 @@ final class LawyerDocumentAction
                     ->required()
                     ->live()
                     ->default(array_key_first($documents))
-                    ->afterStateUpdated(fn (Get $get, Forms\Components\Utilities\Set $set) => self::recomputeEmail($get, $set, $property)),
+                    ->afterStateUpdated(function (Get $get, Forms\Components\Utilities\Set $set) use ($property): void {
+                        self::recomputeEmail($get, $set, $property);
+                    }),
                 Forms\Components\Select::make('jurist_id')
                     ->label('Jurists')
                     ->options($service->juristOptions())
                     ->searchable()
                     ->required()
                     ->live()
-                    ->afterStateUpdated(fn (Get $get, Forms\Components\Utilities\Set $set) => self::recomputeEmail($get, $set, $property)),
+                    ->afterStateUpdated(function (Get $get, Forms\Components\Utilities\Set $set) use ($property): void {
+                        self::recomputeEmail($get, $set, $property);
+                    }),
             ]),
 
             Section::make('Juridiskie dati')->columns(2)->schema($manual),
