@@ -1,9 +1,13 @@
 @php
-    // "Jurista dokuments" pēdējais solis: pielikumi un rediģējams e-pasta
-    // saturs ar atsevišķu priekšskatījuma pogu. Priekšskatījuma modālis
-    // (saņēmējs, nosūtītājs, pielikumi, pilns e-pasts) atveras tikai pēc
-    // pogas nospiešanas; saturs tiek ģenerēts pēc pieprasījuma no darbības
-    // datiem, jo wizard solis renderējas pirms 1. soļa aizpildīšanas.
+    // "Jurista dokuments" pēdējais solis — tāds pats kā klienta pielikumu
+    // e-pasta modālis: saņēmējs, nosūtītājs, pielikumi (ar tukšu stāvokli un
+    // iespēju pievienot failu) un ģenerētais e-pasta saturs. Pilns e-pasts
+    // atveras modālī tikai pēc priekšskatījuma pogas nospiešanas.
+    $to = (string) ($to ?? '');
+    $juristName = (string) ($jurist ?? '');
+    $subject = (string) ($subject ?? '');
+    $body = (string) ($body ?? '');
+    $html = (string) ($html ?? '');
     $candidates = $candidates ?? [];
     $uploadUrl = (string) ($uploadUrl ?? '');
     $deleteUrl = (string) ($deleteUrl ?? '');
@@ -19,44 +23,25 @@
         selected: @js(array_column($candidates, 'id')),
         uploading: [],
         sending: false,
-        loadingPreview: false,
         previewOpen: false,
-        prefilled: false,
         error: '',
         uploadUrl: @js($uploadUrl),
         deleteUrl: @js($deleteUrl),
         csrf: @js($csrf),
         maxBytes: {{ $maxBytes }},
-        preview: { to: '', jurist: '', subject: '', html: '' },
         init() {
-            // Kad 2. solis kļūst aktīvs, vienreiz ielādē ģenerēto saturu
-            // redaktorā (bez modāļa — priekšskatījums paliek uz pogas).
-            this.$nextTick(() => this.maybePrefill());
-            document.addEventListener('livewire:updated', () => this.maybePrefill());
-        },
-        maybePrefill() {
-            if (this.prefilled) { return; }
-            if (! this.$el.offsetParent) { return; }
-            this.prefilled = true;
-            this.fetchPreview().then((p) => {
-                if (! p) { return; }
-                this.preview = p;
-                if (this.$refs.editor && this.$refs.editor.innerHTML.trim() === '') {
-                    this.$refs.editor.innerHTML = p.body || p.html || '';
-                }
-            });
-        },
-        async fetchPreview() {
-            try {
-                const p = await this.$wire.call('previewLawyerEmail');
-                return p || null;
-            } catch (e) {
-                return null;
+            // Darbības formas stāvokļa prefikss (mountedActions.N.data).
+            // Nolasām no jau renderēta lauka, lai nav jāminē indekss.
+            const model = document.querySelector('[wire\\:model^=\"mountedActions\"][wire\\:model$=\".data.document_type\"]');
+            const m = model && model.getAttribute('wire:model').match(/^(.*\\.data)\\.[^.]+$/);
+            this.statePrefix = m ? m[1] : 'mountedActions.0.data';
+            if (this.$refs.editor && this.$refs.editor.innerHTML.trim() === '') {
+                this.$refs.editor.innerHTML = @js($body);
             }
         },
         pushState() {
-            this.$wire.set('data.attachment_ids', this.selected, false);
-            this.$wire.set('data.email_body', this.$refs.editor ? this.$refs.editor.innerHTML : '', false);
+            this.$wire.set(this.statePrefix + '.attachment_ids', this.selected, false);
+            this.$wire.set(this.statePrefix + '.email_body', this.$refs.editor ? this.$refs.editor.innerHTML : '', false);
         },
         isSel(id) { return this.selected.includes(id); },
         toggle(id) {
@@ -123,19 +108,13 @@
             this.selected = this.selected.filter(s => s !== id);
             this.pushState();
         },
-        async openPreview() {
+        openPreview() {
             this.error = '';
-            this.loadingPreview = true;
             this.pushState();
-            const p = await this.fetchPreview();
-            this.loadingPreview = false;
-            if (! p) { this.error = 'Priekšskatījumu neizdevās ielādēt.'; return; }
-            this.preview = p;
             this.previewOpen = true;
         },
         submit() {
             this.error = '';
-            if (! this.preview.to || ! /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(this.preview.to)) { this.error = 'Norādiet derīgu e-pasta adresi.'; return; }
             if (this.totalSelected() > this.maxBytes) { this.error = 'Pielikumi pārsniedz 18 MB — izvēlieties mazāk failu.'; return; }
             this.sending = true;
             this.pushState();
@@ -145,6 +124,12 @@
     style="display: flex; flex-direction: column; gap: 0.75rem;"
     x-on:keydown.escape.window="previewOpen = false"
 >
+    <div style="font-size: 0.82rem; color: #4b5563; line-height: 1.6;">
+        <div><strong>Saņēmējs:</strong> {{ $to !== '' ? $to : '—' }}@if ($juristName !== '') ({{ $juristName }})@endif</div>
+        <div><strong>Nosūtītājs:</strong> {{ $fromAddress }}@if ($fromName !== '') ({{ $fromName }})@endif</div>
+        <div><strong>Temats:</strong> {{ $subject !== '' ? $subject : '—' }}</div>
+    </div>
+
     <div>
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.35rem;">
             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Pielikumi <span style="color: #6b7280; font-weight: 500;" x-text="'(kopā ' + sizeLabel(totalSelected()) + ')'"></span></span>
@@ -173,9 +158,9 @@
     <div>
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.35rem;">
             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">E-pasta saturs</span>
-            <button type="button" x-on:click="openPreview()" :disabled="loadingPreview" style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.6rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background: #fff; color: #374151; cursor: pointer; font-size: 0.78rem; font-weight: 600;">
+            <button type="button" x-on:click="openPreview()" style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.6rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background: #fff; color: #374151; cursor: pointer; font-size: 0.78rem; font-weight: 600;">
                 <svg style="width: 0.9rem; height: 0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <span x-text="loadingPreview ? 'Ielādē…' : 'Priekšskatījums'"></span>
+                <span>Priekšskatījums</span>
             </button>
         </div>
         <div style="display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 0.5rem 0.5rem 0 0; padding: 0.35rem 0.5rem; background: #f9fafb;">
@@ -203,6 +188,7 @@
         </button>
     </div>
 
+    {{-- Priekšskatījuma modālis: saņēmējs, nosūtītājs, pielikumi un pilns e-pasts. --}}
     <template x-if="previewOpen">
         <div style="position: fixed; inset: 0; z-index: 2147483646; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); padding: 1rem;" x-on:click.self="previewOpen = false">
             <div style="background: #ffffff; border-radius: 0.75rem; width: 100%; max-width: 720px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.35);">
@@ -214,9 +200,9 @@
                 </div>
                 <div style="padding: 1rem 1.1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
                     <div style="font-size: 0.82rem; color: #4b5563; line-height: 1.6;">
-                        <div><strong>Kam:</strong> <span x-text="preview.to || '—'"></span><template x-if="preview.jurist"><span x-text="' (' + preview.jurist + ')'"></span></template></div>
+                        <div><strong>Kam:</strong> {{ $to !== '' ? $to : '—' }}@if ($juristName !== '') ({{ $juristName }})@endif</div>
                         <div><strong>Nosūtītājs:</strong> {{ $fromAddress }}@if ($fromName !== '') ({{ $fromName }})@endif</div>
-                        <div><strong>Temats:</strong> <span x-text="preview.subject || '—'"></span></div>
+                        <div><strong>Temats:</strong> {{ $subject !== '' ? $subject : '—' }}</div>
                         <div><strong>Pielikumi (<span x-text="selected.length"></span>):</strong>
                             <template x-if="selected.length === 0"><span> nav</span></template>
                             <ul x-show="selected.length > 0" style="margin: 0.15rem 0 0 1.1rem; padding: 0;">
@@ -224,8 +210,7 @@
                             </ul>
                         </div>
                     </div>
-                    <iframe x-ref="previewFrame" title="E-pasta priekšskatījums"
-                        x-bind:srcdoc="preview.html"
+                    <iframe title="E-pasta priekšskatījums" srcdoc="{{ $html }}"
                         style="width: 100%; height: 34rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #ffffff;"></iframe>
                 </div>
                 <div style="padding: 0.9rem 1.1rem; border-top: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; background: #ffffff;">

@@ -71,20 +71,37 @@ final class LawyerDocumentAction
     }
 
     /**
-     * Pēdējais solis: pielikumi un rediģējams e-pasta saturs ar atsevišķu
-     * priekšskatījuma pogu. Saņēmējs/temats/saturs tiek ģenerēti pēc
-     * pieprasījuma (skat. PreviewsLawyerEmail), jo wizard solis renderējas
-     * vēl pirms 1. soļa aizpildīšanas.
+     * Pēdējais solis — kā klienta pielikumu e-pasta modālis: saņēmējs,
+     * nosūtītājs, pielikumi (ar tukšu stāvokli un iespēju pievienot failu)
+     * un ģenerētais e-pasta saturs. Pilns e-pasts atveras modālī tikai pēc
+     * priekšskatījuma pogas nospiešanas.
      */
     private static function preview(CrmProperty $property): View
     {
         return View::make('filament.admin.partials.lawyer-email-preview')
-            ->viewData(function () use ($property): array {
+            ->viewData(function (Get $get) use ($property): array {
+                $service = app(LawyerDocumentService::class);
+                $type = (string) $get('document_type');
+
+                $preview = $service->preview([
+                    'document_type' => $type,
+                    'jurist_id' => $get('jurist_id'),
+                    'legal' => self::sanitizeLegal($type, $get('legal') ?? []),
+                    'seller' => $get('seller') ?? [],
+                    'buyer' => $get('buyer') ?? [],
+                    'property' => $get('property') ?? [],
+                ], $property);
+
                 $slug = $property->slug ?? $property->getKey();
 
                 return [
+                    'to' => $preview['to'],
+                    'jurist' => $preview['jurist'],
+                    'subject' => $preview['subject'],
+                    'body' => $preview['body'],
+                    'html' => $preview['html'],
                     // Visi e-pastam pieejamie faili klienta modāļa formātā.
-                    'candidates' => app(LawyerDocumentService::class)->attachmentCandidates($property),
+                    'candidates' => $service->attachmentCandidates($property),
                     'uploadUrl' => route('properties.attachments.upload', ['propertySlug' => $slug]),
                     'deleteUrl' => route('properties.attachments.destroy', ['propertySlug' => $slug, 'attachment' => ':id']),
                 ];
