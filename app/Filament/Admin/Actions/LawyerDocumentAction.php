@@ -353,6 +353,12 @@ final class LawyerDocumentAction
                 Forms\Components\TextInput::make('property.city')->label('Pilsēta / novads')->default($property->city),
                 Forms\Components\TextInput::make('property.zip')->label('Pasta indekss')->default($property->zip),
             ]),
+
+            // E-pasta lauki tiek ģenerēti 1. solī (šeit redzami visi lauki)
+            // un izmantoti 2. solī un nosūtīšanā.
+            Forms\Components\Hidden::make('email_to'),
+            Forms\Components\Hidden::make('email_subject'),
+            Forms\Components\Hidden::make('email_body'),
         ];
 
         return $sections;
