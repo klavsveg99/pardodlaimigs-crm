@@ -54,6 +54,12 @@ trait HandlesLawyerEmail
             );
         }
 
+        // Atlasīto pielikumu nosaukumi modāļa sarakstam.
+        $ids = is_array($data['attachment_ids'] ?? null) ? $data['attachment_ids'] : [];
+        $preview['attachments'] = $service->selectedAttachments($property, $ids)
+            ->pluck('original_name')
+            ->all();
+
         return $preview;
     }
 }

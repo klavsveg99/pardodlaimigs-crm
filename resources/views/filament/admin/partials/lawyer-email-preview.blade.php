@@ -17,14 +17,12 @@
         error: '',
         preview: { to: '', jurist: '', subject: '', html: '' },
         init() {
-            // Jurista izvēle ir 1. solī; seko tās izmaiņām, lai saņēmējs
-            // uzreiz atbilstu izvēlētajam juristam.
             this.juristId = @js($juristId);
-            document.addEventListener('livewire:updated', () => {
-                const el = document.getElementById('mountedActionSchema0.jurist_id');
-                const m = el && el.getAttribute('wire:model');
-                if (m) { this.juristId = String(this.$wire.get(m) ?? ''); }
-            });
+        },
+        get component() {
+            if (this.$wire) { return this.$wire; }
+            const id = this.$el.closest('[wire\\:id]')?.getAttribute('wire:id');
+            return id ? window.Livewire.find(id) : null;
         },
         get jurist() { return this.jurists[this.juristId] || null; },
         get to() { return this.preview.to || (this.jurist ? this.jurist.email : ''); },
@@ -33,8 +31,10 @@
             this.error = '';
             this.loading = true;
             try {
-                const extra = this.$wire.get('mountedActions.0.data.extra_info') || '';
-                const p = await this.$wire.call('previewLawyerEmail', extra);
+                const c = this.component;
+                if (! c) { this.error = 'Priekšskatījumu neizdevās ielādēt.'; return; }
+                const extra = c.get('mountedActions.0.data.extra_info') || '';
+                const p = await c.call('previewLawyerEmail', extra);
                 if (! p) { this.error = 'Priekšskatījumu neizdevās ielādēt.'; return; }
                 this.preview = p;
                 this.open = true;
@@ -75,7 +75,7 @@
                         <div><strong>Kam:</strong> <span x-text="preview.to || '—'"></span><template x-if="preview.jurist"><span x-text="' (' + preview.jurist + ')'"></span></template></div>
                         <div><strong>Nosūtītājs:</strong> {{ $fromAddress }}@if ($fromName !== '') ({{ $fromName }})@endif</div>
                         <div><strong>Temats:</strong> <span x-text="preview.subject || '—'"></span></div>
-                        <div><strong>Pielikumi:</strong> <span x-text="(this.$wire.get('mountedActions.0.data.attachment_ids') || []).length"></span></div>
+                        <div><strong>Pielikumi:</strong> <span x-text="(preview.attachments && preview.attachments.length) ? preview.attachments.join(', ') : 'nav'"></span></div>
                     </div>
                     <iframe title="E-pasta priekšskatījums" x-bind:srcdoc="preview.html"
                         style="width: 100%; height: 34rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #ffffff;"></iframe>
