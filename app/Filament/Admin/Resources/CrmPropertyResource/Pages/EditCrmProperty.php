@@ -226,14 +226,6 @@ class EditCrmProperty extends EditRecord
             $save,
             $this->getAttachSellerAction(),
             $this->getAttachBuyerAction(),
-            Actions\Action::make('pdf_generator')
-                ->label('PDF mārketings')
-                ->icon('heroicon-o-document-arrow-down')
-                ->color('gray')
-                ->url(fn (): string => route('properties.marketing', [
-                    'propertySlug' => $this->record->slug ?? $this->record->getKey(),
-                ]))
-                ->openUrlInNewTab(),
             Actions\Action::make('open_site')
                 ->label('Atvērt mājaslapā')
                 ->icon('heroicon-o-arrow-top-right-on-square')
