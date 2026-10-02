@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClientAttachmentEmailController;
+use App\Http\Controllers\LawyerDocumentEmailController;
 use App\Http\Controllers\PropertyAttachmentEmailController;
 use App\Http\Controllers\PropertyGalleryDownloadController;
 use App\Http\Controllers\PropertyMarketingController;
@@ -267,6 +268,15 @@ Route::post('/properties/{propertySlug}/attachments/send-email',
 Route::delete('/properties/{propertySlug}/attachments/{attachment}',
     [PropertyAttachmentEmailController::class, 'destroy']
 )->middleware(['auth', 'web'])->name('properties.attachments.destroy');
+
+// ── "Jurista dokuments" e-pasts (no tās pašas modāļa) ──────────
+Route::post('/properties/{propertySlug}/lawyer/preview',
+    [LawyerDocumentEmailController::class, 'preview']
+)->middleware(['auth', 'web'])->name('properties.lawyer.preview');
+
+Route::post('/properties/{propertySlug}/lawyer/send-email',
+    [LawyerDocumentEmailController::class, 'send']
+)->middleware(['auth', 'web'])->name('properties.lawyer.send-email');
 
 // ── Property gallery: "Lejupielādēt visus" ZIP ────────────────
 Route::get('/properties/{propertySlug}/gallery/download',

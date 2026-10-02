@@ -65,56 +65,40 @@ final class LawyerDocumentAction
             Step::make('Priekšskatījums')
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
                 ->schema([
-                    self::attachmentsField($property),
-                    Forms\Components\Textarea::make('extra_info')
-                        ->label('Papildus informācija')
-                        ->helperText('Pēc izvēles. Tiks pievienota e-pasta saturam.')
-                        ->rows(2)
-                        ->columnSpanFull()
-                        ->hintAction(self::previewAction($property)),
+                    View::make('filament.partials.attachment-send-popup')
+                        ->viewData(function () use ($property): array {
+                            return self::lawyerPopupData($property);
+                        })
+                        ->columnSpanFull(),
                 ]),
         ];
     }
 
-    /** Pielikumu izvēle 2. solī. */
-    private static function attachmentsField(CrmProperty $property): Forms\Components\CheckboxList
-    {
-        $options = app(LawyerDocumentService::class)->attachmentCandidates($property);
-        $options = collect($options)->mapWithKeys(fn (array $c): array => [$c['id'] => $c['name']])->all();
-
-        return Forms\Components\CheckboxList::make('attachment_ids')
-            ->label('Pielikumi')
-            ->options($options)
-            ->helperText($options === []
-                ? 'Nav pievienotu failu. Failus var pievienot īpašuma vai klienta pielikumos.'
-                : 'Atzīmē failus, kurus pievienot e-pastam.')
-            ->columnSpanFull();
-    }
-
     /**
-     * "Priekšskatījums" poga (Filament hintAction) ar modāli, kurā redzams
-     * saņēmējs, nosūtītājs, pielikumi un pilns e-pasts. Saturs tiek būvēts
-     * modāļa atvēršanas brīdī no aktuālajiem darbības datiem.
+     * Dati klienta pielikumu modāļa atkārtotai izmantošanai "Jurista
+     * dokuments" 2. solī (variant = lawyer).
+     *
+     * @return array<string, mixed>
      */
-    private static function previewAction(CrmProperty $property): Actions\Action
+    private static function lawyerPopupData(CrmProperty $property): array
     {
-        return Actions\Action::make('preview_lawyer_email')
-            ->label('Priekšskatījums')
-            ->icon('heroicon-o-eye')
-            ->color('gray')
-            ->modalHeading('E-pasta priekšskatījums')
-            ->modalWidth('4xl')
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Aizvērt')
-            ->modalContent(function (\Livewire\Component $livewire) use ($property): \Illuminate\Contracts\View\View {
-                $data = $livewire->mountedActions[0]['data'] ?? [];
-
-                return view('filament.admin.partials.lawyer-email-preview', [
-                    'preview' => self::emailPreview($property, is_array($data) ? $data : []),
-                    'fromAddress' => (string) config('mail.from.address'),
-                    'fromName' => (string) config('mail.from.name'),
-                ]);
-            });
+        return [
+            'variant' => 'lawyer',
+            'defaultTo' => '',
+            'initialFiles' => [],
+            'defaultSubject' => '',
+            'sendUrl' => route('properties.lawyer.send-email', ['propertySlug' => $property->slug ?? $property->getKey()]),
+            'previewUrl' => route('properties.lawyer.preview', ['propertySlug' => $property->slug ?? $property->getKey()]),
+            'extraInfoName' => 'lawyer_extra_info',
+            'jurists' => Izpilditajs::query()
+                ->where('category', 'Jurists')
+                ->orderBy('name')
+                ->get()
+                ->mapWithKeys(fn (Izpilditajs $j): array => [
+                    (string) $j->id => ['name' => (string) $j->name, 'email' => (string) $j->email],
+                ])
+                ->all(),
+        ];
     }
 
     /** @return array<int, mixed> */
@@ -373,6 +357,22 @@ final class LawyerDocumentAction
     /** @param  array<string, mixed>  $data */
     private static function send(CrmProperty $property, array $data): void
     {
+        $juristEmail = app(LawyerDocumentService::class)->jurist($data['jurist_id'] ?? null)?->email ?? '';
+        $type = (string) ($data['document_type'] ?? '');
+
+        self::sendFor($property, $data, (string) $juristEmail, app(LawyerDocumentService::class)->subjectFor(
+            app(LawyerDocumentService::class)->contextFromProperty($property),
+            $type,
+        ));
+    }
+
+    /**
+     * Nosūta jurista dokumenta e-pastu. Atgriež true, ja nosūtīts.
+     *
+     * @param  array<string, mixed>  $data  darbības formas dati
+     */
+    public static function sendFor(CrmProperty $property, array $data, string $to, string $subject): bool
+    {
         $type = (string) ($data['document_type'] ?? '');
         $jurist = Izpilditajs::query()
             ->where('category', 'Jurists')
@@ -384,7 +384,7 @@ final class LawyerDocumentAction
                 ->danger()
                 ->send();
 
-            return;
+            return false;
         }
 
         $contactKeys = ['person_type', 'name', 'personas_kods', 'address', 'bank_account', 'email', 'phone'];
@@ -435,12 +435,16 @@ final class LawyerDocumentAction
                 is_array($property->legal_data) ? $property->legal_data : [],
                 auth()->user(),
                 is_array($data['attachment_ids'] ?? null) ? $data['attachment_ids'] : [],
-                ['extra_info' => (string) ($data['extra_info'] ?? '')],
+                [
+                    'to' => $to !== '' ? $to : null,
+                    'subject' => $subject !== '' ? $subject : null,
+                    'extra_info' => (string) ($data['extra_info'] ?? ''),
+                ],
             );
         } catch (EmailTooLargeException $e) {
             Notification::make()->title($e->userMessage())->danger()->send();
 
-            return;
+            return false;
         } catch (\Throwable $e) {
             report($e);
 
@@ -450,7 +454,7 @@ final class LawyerDocumentAction
                 ->danger()
                 ->send();
 
-            return;
+            return false;
         }
 
         Notification::make()
@@ -458,6 +462,8 @@ final class LawyerDocumentAction
             ->body($request->subject)
             ->success()
             ->send();
+
+        return true;
     }
 
     /**
