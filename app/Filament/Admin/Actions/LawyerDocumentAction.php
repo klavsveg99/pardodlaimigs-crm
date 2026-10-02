@@ -69,11 +69,19 @@ final class LawyerDocumentAction
                             ->label('Saņēmējs')
                             ->email()
                             ->required()
-                            ->default(fn (Get $get) => app(LawyerDocumentService::class)->jurist($get('jurist_id'))?->email),
+                            ->afterStateHydrated(function (Forms\Components\TextInput $component, Get $get): void {
+                                if (blank($component->getState())) {
+                                    $component->state(app(LawyerDocumentService::class)->jurist($get('jurist_id'))?->email);
+                                }
+                            }),
                         Forms\Components\TextInput::make('email_subject')
                             ->label('Temats')
                             ->required()
-                            ->default(fn (Get $get) => self::subjectFor($get, $property)),
+                            ->afterStateHydrated(function (Forms\Components\TextInput $component, Get $get) use ($property): void {
+                                if (blank($component->getState())) {
+                                    $component->state(self::subjectFor($get, $property));
+                                }
+                            }),
                     ]),
                     self::preview($property),
                 ]),
