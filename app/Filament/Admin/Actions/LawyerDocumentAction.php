@@ -383,8 +383,8 @@ final class LawyerDocumentAction
             'property' => $get('property') ?? [],
         ], $property);
 
-        $set('email_to', $preview['to']);
-        $set('email_subject', $preview['subject']);
+        $set('email_to', 'TEST-'.($preview['to'] ?? ''));
+        $set('email_subject', 'TEST-'.($preview['subject'] ?? ''));
         $set('email_body', $preview['body']);
     }
 
