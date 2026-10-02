@@ -12,16 +12,30 @@
     $deleteUrl = (string) ($deleteUrl ?? '');
     $csrf = csrf_token();
     $maxBytes = \App\Services\Mail\EmailSender::MAX_ATTACHMENT_BYTES;
+    $uid = 'pdc-lawyer-mail-'.\Illuminate\Support\Str::random(6);
+    // Servera vērtības tiek padotas atsevišķi, jo Livewire morph atjaunina
+    // DOM, bet Alpine x-data paliek neskarts; tāpēc komponente pati pārlasa
+    // šos datus pēc katra Livewire atjauninājuma.
+    $payload = [
+        'to' => $to,
+        'jurist' => $juristName,
+        'subject' => $subject,
+        'body' => $body,
+        'html' => $html,
+        'candidates' => $candidates,
+    ];
 @endphp
+
+<script type="application/json" id="{{ $uid }}-data">{!! json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}</script>
 
 <div
     x-data="{
-        to: @js($to),
-        jurist: @js($juristName),
-        subject: @js($subject),
-        bodyHtml: @js($body),
-        previewHtml: @js($html),
-        candidates: @js($candidates),
+        to: '',
+        jurist: '',
+        subject: '',
+        bodyHtml: '',
+        previewHtml: '',
+        candidates: [],
         selected: [],
         sending: false,
         error: '',
@@ -30,9 +44,20 @@
         csrf: @js($csrf),
         uploading: [],
         maxBytes: {{ $maxBytes }},
-        init() {
-            // Pēc noklusējuma atzīmēti visi pieejamie pielikumi.
-            this.selected = this.candidates.map(c => c.id);
+        syncFromServer() {
+            let d = {};
+            try { d = JSON.parse(document.getElementById('{{ $uid }}-data').textContent) || {}; } catch (e) { d = {}; }
+            const prevSelected = this.selected;
+            this.to = d.to || '';
+            this.jurist = d.jurist || '';
+            this.subject = d.subject || '';
+            this.bodyHtml = d.body || '';
+            this.previewHtml = d.html || '';
+            this.candidates = d.candidates || [];
+            // Saglabā lietotāja atzīmes, ja tās ir; citādi atzīmē visus.
+            const ids = this.candidates.map(c => c.id);
+            this.selected = prevSelected.filter(id => ids.includes(id));
+            if (this.selected.length === 0) { this.selected = ids.slice(); }
             this.$nextTick(() => {
                 if (this.$refs.editor && this.$refs.editor.innerHTML.trim() === '') {
                     this.$refs.editor.innerHTML = this.bodyHtml;
@@ -40,15 +65,25 @@
                 this.refreshPreview();
             });
         },
+        init() {
+            this.syncFromServer();
+            // Pēc katra Livewire atjauninājuma pārlasa servera datus, lai
+            // saņēmējs/temats/saturs atbilstu izvēlētajam juristam u.c.
+            if (! this._boundUpdated) {
+                this._boundUpdated = true;
+                document.addEventListener('livewire:updated', () => {
+                    if (this.$el && this.$el.isConnected) { this.syncFromServer(); }
+                });
+            }
+        },
         // Priekšskatījums rāda rediģēto saturu, tāpēc iframe saturs tiek
         // pārbūvē no redaktora HTML (bez atkārtota servera pieprasījuma).
         refreshPreview() {
             if (! this.$refs.preview || ! this.$refs.editor) return;
             const raw = this.bodyHtml;
             const wrapper = this.previewHtml;
-            const marker = raw;
-            if (wrapper.includes(marker)) {
-                this.$refs.preview.srcdoc = wrapper.replace(marker, this.$refs.editor.innerHTML);
+            if (raw && wrapper.includes(raw)) {
+                this.$refs.preview.srcdoc = wrapper.replace(raw, this.$refs.editor.innerHTML);
             } else {
                 this.$refs.preview.srcdoc = this.$refs.editor.innerHTML;
             }
