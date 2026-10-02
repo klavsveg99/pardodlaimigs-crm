@@ -198,7 +198,7 @@ class LawyerDocumentService
      * Priekšskatījums no formas datiem: kam, temats un gatavais e-pasta HTML.
      *
      * @param  array<string, mixed>  $formData
-     * @return array{to: string, jurist: string, subject: string, html: string}
+     * @return array{to: string, jurist: string, subject: string, body: string, html: string}
      */
     public function preview(array $formData, CrmProperty $property): array
     {
@@ -208,12 +208,14 @@ class LawyerDocumentService
         $legal = is_array($formData['legal'] ?? null) ? $formData['legal'] : [];
         $context = $this->contextFromForm($formData, $property);
         $jurist = $this->jurist($formData['jurist_id'] ?? null);
+        $body = $this->buildBody($context, $type, $legal);
 
         return [
             'to' => (string) ($jurist?->email ?? ''),
             'jurist' => (string) ($jurist?->name ?? ''),
             'subject' => $this->subjectFor($context, $type),
-            'html' => EmailSender::renderHtml($this->buildBody($context, $type, $legal), EmailSender::defaultSignature()),
+            'body' => $body,
+            'html' => EmailSender::renderHtml($body, EmailSender::defaultSignature()),
         ];
     }
 

@@ -5,6 +5,7 @@
     $to = (string) ($to ?? '');
     $juristName = (string) ($jurist ?? '');
     $subject = (string) ($subject ?? '');
+    $body = (string) ($body ?? '');
     $html = (string) ($html ?? '');
     $candidates = $candidates ?? [];
     $uploadUrl = (string) ($uploadUrl ?? '');
@@ -18,7 +19,8 @@
         to: @js($to),
         jurist: @js($juristName),
         subject: @js($subject),
-        bodyHtml: @js($html),
+        bodyHtml: @js($body),
+        previewHtml: @js($html),
         candidates: @js($candidates),
         selected: [],
         sending: false,
@@ -31,11 +33,24 @@
         init() {
             // Pēc noklusējuma atzīmēti visi pieejamie pielikumi.
             this.selected = this.candidates.map(c => c.id);
-            this.$nextTick(() => this.syncEditor());
+            this.$nextTick(() => {
+                if (this.$refs.editor && this.$refs.editor.innerHTML.trim() === '') {
+                    this.$refs.editor.innerHTML = this.bodyHtml;
+                }
+                this.refreshPreview();
+            });
         },
-        syncEditor() {
-            if (this.$refs.editor && this.$refs.editor.innerHTML.trim() !== this.bodyHtml.trim()) {
-                this.$refs.editor.innerHTML = this.bodyHtml;
+        // Priekšskatījums rāda rediģēto saturu, tāpēc iframe saturs tiek
+        // pārbūvē no redaktora HTML (bez atkārtota servera pieprasījuma).
+        refreshPreview() {
+            if (! this.$refs.preview || ! this.$refs.editor) return;
+            const raw = this.bodyHtml;
+            const wrapper = this.previewHtml;
+            const marker = raw;
+            if (wrapper.includes(marker)) {
+                this.$refs.preview.srcdoc = wrapper.replace(marker, this.$refs.editor.innerHTML);
+            } else {
+                this.$refs.preview.srcdoc = this.$refs.editor.innerHTML;
             }
         },
         isSel(id) { return this.selected.includes(id); },
@@ -58,6 +73,7 @@
         execCmd(cmd, value) {
             this.$refs.editor && this.$refs.editor.focus();
             document.execCommand(cmd, false, value || null);
+            this.refreshPreview();
         },
         pickFiles() { this.$refs.fileInput && this.$refs.fileInput.click(); },
         async handleUpload(e) {
@@ -65,7 +81,7 @@
             const files = Array.from(input.files || []);
             input.value = '';
             for (const file of files) {
-                const track = { id: 'up-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7), name: file.name, progress: 0 };
+                const track = { id: 'up-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7), name: file.name };
                 this.uploading.push(track);
                 try {
                     const fd = new FormData();
@@ -81,7 +97,7 @@
                         this.error = data.message || ('Augšupielāde neizdevās: ' + file.name);
                         continue;
                     }
-                    this.candidates.push({ id: data.id, name: data.name, size: data.size });
+                    this.candidates.push({ id: data.id, name: data.name, size: data.size, source: 'Īpašums' });
                     this.selected.push(data.id);
                 } catch (err) {
                     this.error = 'Augšupielāde neizdevās: ' + (err.message || file.name);
@@ -173,9 +189,15 @@
             <button type="button" x-on:click="execCmd('insertHorizontalRule')" title="Horizontāla līnija" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem;">—</button>
             <button type="button" x-on:click="execCmd('formatBlock','<blockquote>')" title="Citāts" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem; font-family: Georgia, serif;">„ ”</button>
         </div>
-        <div x-ref="editor" contenteditable="true"
+        <div x-ref="editor" contenteditable="true" x-on:input="refreshPreview()" x-on:blur="refreshPreview()"
             style="min-height: 7rem; padding: 0.7rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0 0 0.5rem 0.5rem; font-size: 0.85rem; line-height: 1.55; overflow-y: auto; max-height: 16rem; background: #fff; color: #1f2937; outline: none;"></div>
         <div style="margin-top: 0.3rem; font-size: 0.7rem; color: #9ca3af; line-height: 1.4;">Nosūtītāja e-pasts: {{ config('mail.from.address') }} · pielikumu limits 18 MB</div>
+    </div>
+
+    <div>
+        <span style="font-size: 0.8rem; font-weight: 600; color: #374151; display: block; margin-bottom: 0.35rem;">E-pasta priekšskatījums</span>
+        <iframe x-ref="preview" title="E-pasta priekšskatījums"
+            style="width: 100%; height: 28rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #ffffff;"></iframe>
     </div>
 
     <div x-show="error" x-cloak style="background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 0.5rem 0.7rem; border-radius: 0.45rem; font-size: 0.8rem;" x-text="error"></div>

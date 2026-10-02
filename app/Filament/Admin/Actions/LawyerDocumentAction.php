@@ -100,6 +100,7 @@ final class LawyerDocumentAction
                     'to' => $preview['to'],
                     'jurist' => $preview['jurist'],
                     'subject' => $preview['subject'],
+                    'body' => $preview['body'],
                     'html' => $preview['html'],
                     'candidates' => $candidates,
                     'uploadUrl' => route('properties.attachments.upload', ['propertySlug' => $slug]),
