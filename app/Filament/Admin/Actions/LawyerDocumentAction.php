@@ -86,10 +86,10 @@ final class LawyerDocumentAction
     private static function subjectFor(Get $get, CrmProperty $property): string
     {
         $service = app(LawyerDocumentService::class);
-        $type = (string) $get('../../document_type');
-        $propertyRaw = $get('../../property') ?? [];
-        $sellerRaw = $get('../../seller') ?? [];
-        $buyerRaw = $get('../../buyer') ?? [];
+        $type = (string) $get('../document_type');
+        $propertyRaw = $get('../property') ?? [];
+        $sellerRaw = $get('../seller') ?? [];
+        $buyerRaw = $get('../buyer') ?? [];
 
         return $service->subjectFor($service->contextFromForm([
             'property' => is_array($propertyRaw) ? $propertyRaw : [],
@@ -111,12 +111,12 @@ final class LawyerDocumentAction
 
                 // 2. solis neredz 1. soļa laukus ar vienkāršu ceļu; wizard
                 // soļi ir atsevišķi konteineri, tāpēc kāpjam uz augšu.
-                $type = (string) $get('../../document_type');
-                $juristId = $get('../../jurist_id');
-                $legalRaw = $get('../../legal') ?? [];
-                $sellerRaw = $get('../../seller') ?? [];
-                $buyerRaw = $get('../../buyer') ?? [];
-                $propertyRaw = $get('../../property') ?? [];
+                $type = (string) $get('../document_type');
+                $juristId = $get('../jurist_id');
+                $legalRaw = $get('../legal') ?? [];
+                $sellerRaw = $get('../seller') ?? [];
+                $buyerRaw = $get('../buyer') ?? [];
+                $propertyRaw = $get('../property') ?? [];
 
                 $preview = $service->preview([
                     'document_type' => $type,
