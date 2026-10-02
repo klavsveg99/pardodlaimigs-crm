@@ -101,16 +101,20 @@ final class LawyerDocumentAction
     {
         return View::make('filament.admin.partials.lawyer-email-preview')
             ->viewData(function (Get $get) use ($property): array {
-                $type = (string) $get('document_type');
                 $service = app(LawyerDocumentService::class);
+
+                // 2. solis neredz 1. soļa laukus ar relatīvo ceļu, tāpēc
+                // nolasām tos ar absolūto ceļu no darbības formas datiem.
+                $type = (string) ($get('document_type') ?? $get('data.document_type', true));
+                $juristId = $get('jurist_id') ?? $get('data.jurist_id', true);
 
                 $preview = $service->preview([
                     'document_type' => $type,
-                    'jurist_id' => $get('jurist_id'),
-                    'legal' => self::sanitizeLegal($type, $get('legal') ?? []),
-                    'seller' => $get('seller') ?? [],
-                    'buyer' => $get('buyer') ?? [],
-                    'property' => $get('property') ?? [],
+                    'jurist_id' => $juristId,
+                    'legal' => self::sanitizeLegal($type, $get('legal') ?? $get('data.legal', true) ?? []),
+                    'seller' => $get('seller') ?? $get('data.seller', true) ?? [],
+                    'buyer' => $get('buyer') ?? $get('data.buyer', true) ?? [],
+                    'property' => $get('property') ?? $get('data.property', true) ?? [],
                 ], $property);
 
                 // Visi e-pastam pieejamie faili klienta modāļa formātā.
@@ -119,7 +123,7 @@ final class LawyerDocumentAction
                 $slug = $property->slug ?? $property->getKey();
 
                 return [
-                    'to' => (string) ($get('email_to') ?? $preview['to']),
+                    'to' => $preview['to'],
                     'jurist' => $preview['jurist'],
                     'subject' => (string) ($get('email_subject') ?? $preview['subject']),
                     'body' => $preview['body'],
