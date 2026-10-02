@@ -127,10 +127,13 @@ class LawyerDocumentService
     }
 
     /**
-     * Priekšskatījums no formas datiem: kam, temats un gatavais e-pasta HTML.
+     * Priekšskatījums no formas datiem: kam, temats un e-pasta pamatteksts.
+     *
+     * Atgriež nesatītu HTML (bez paraksta un kājenes), jo tos pievieno
+     * EmailSender::send() nosūtīšanas brīdī.
      *
      * @param  array<string, mixed>  $formData
-     * @return array{to: string, jurist: string, subject: string, html: string, attachments: int}
+     * @return array{to: string, jurist: string, subject: string, body: string, attachment_names: array<int, string>}
      */
     public function preview(array $formData, CrmProperty $property): array
     {
@@ -149,7 +152,7 @@ class LawyerDocumentService
             'to' => (string) ($jurist?->email ?? ''),
             'jurist' => (string) ($jurist?->name ?? ''),
             'subject' => $this->subjectFor($context, $type),
-            'html' => EmailSender::renderHtml($this->buildBody($context, $type, $legal), EmailSender::defaultSignature()),
+            'body' => $this->buildBody($context, $type, $legal),
             'attachment_names' => $selected->pluck('original_name')->all(),
         ];
     }
@@ -161,6 +164,9 @@ class LawyerDocumentService
         array $legal,
         ?User $user = null,
         array $attachmentIds = [],
+        ?string $to = null,
+        ?string $subject = null,
+        ?string $body = null,
     ): LawyerRequest {
         $property->load('clients', 'attachments');
 
@@ -176,12 +182,15 @@ class LawyerDocumentService
             $context['buyer'] = $this->filledContact($legal['buyer']);
         }
 
-        $subject = $this->subjectFor($context, $type);
-        $body = $this->buildBody($context, $type, $legal);
+        // E-pasta modāļa ļauj saņēmēju, tematu un saturu labot pirms
+        // nosūtīšanas; ja tie nav padoti, lieto ģenerētos.
+        $recipient = filled($to) ? trim((string) $to) : (string) $jurist->email;
+        $subject = filled($subject) ? trim((string) $subject) : $this->subjectFor($context, $type);
+        $body = filled($body) ? (string) $body : $this->buildBody($context, $type, $legal);
         $attachments = $this->selectedAttachments($property, $attachmentIds);
 
         app(EmailSender::class)->send(
-            (string) $jurist->email,
+            $recipient,
             $subject,
             $body,
             $attachments,
@@ -192,7 +201,7 @@ class LawyerDocumentService
             'crm_property_id' => $property->id,
             'izpilditajs_id' => $jurist->id,
             'document_type' => $type,
-            'recipient_email' => (string) $jurist->email,
+            'recipient_email' => $recipient,
             'subject' => $subject,
             'payload' => [
                 'legal' => $legal,
@@ -208,7 +217,7 @@ class LawyerDocumentService
         app(AuditLogger::class)->activity('lawyer_request_sent', [
             'property_id' => $property->id,
             'document_type' => $type,
-            'to' => (string) $jurist->email,
+            'to' => $recipient,
             'subject' => $subject,
         ]);
 

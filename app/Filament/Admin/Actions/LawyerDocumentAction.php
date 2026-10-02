@@ -8,15 +8,16 @@ use App\Filament\Forms\Components\PersonasKodsInput;
 use App\Filament\Forms\Components\PhoneInput;
 use App\Models\Client;
 use App\Models\CrmProperty;
-use App\Models\Izpilditajs;
 use App\Rules\Phone;
 use App\Services\Lawyer\LawyerDocumentService;
-use App\Services\Mail\EmailTooLargeException;
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\View;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
 use Filament\Support\Enums\Alignment;
 
 /**
@@ -45,9 +46,124 @@ final class LawyerDocumentAction
                 && ! auth()->user()?->isPhoto())
             ->modalHeading('Nosūtīt juristam')
             ->modalWidth('4xl')
-            ->modalSubmitActionLabel('Nosūtīt')
+            ->modalSubmitAction(false)
+            ->modalCancelAction(false)
             ->schema(fn (CrmProperty $record): array => self::formFields($record))
-            ->action(fn (array $data, CrmProperty $record) => self::send($record, $data));
+            ->steps(fn (CrmProperty $record): array => self::steps($record));
+    }
+
+    /**
+     * Divi soļi: datu aizpilde, tad e-pasts. Soļu navigācija augšā netiek
+     * rādīta (modifyWizardUsing), pārejas notiek ar pogām apakšā.
+     *
+     * @return array<int, Step>
+     */
+    private static function steps(CrmProperty $property): array
+    {
+        return [
+            Step::make('Dokumenta dati')
+                ->schema(self::formFields($property))
+                ->columns(1)
+                ->afterValidation(function (Get $get, Set $set): void {
+                    self::prepareEmail($get, $set, $property);
+                }),
+
+            Step::make('E-pasts')
+                ->schema([
+                    View::make('filament.admin.partials.lawyer-email-step')
+                        ->viewData(function (Get $get) use ($property): array {
+                            $service = app(LawyerDocumentService::class);
+                            $type = (string) $get('document_type');
+                            $data = [
+                                'document_type' => $type,
+                                'jurist_id' => $get('jurist_id'),
+                                'legal' => self::sanitizeLegal($type, $get('legal') ?? []),
+                                'seller' => $get('seller') ?? [],
+                                'buyer' => $get('buyer') ?? [],
+                                'property' => $get('property') ?? [],
+                                'attachment_ids' => [],
+                            ];
+                            $preview = $service->preview($data, $property);
+
+                            return [
+                                'to' => $preview['to'],
+                                'subject' => $preview['subject'],
+                                'bodyHtml' => $preview['body'],
+                                'files' => self::emailFiles($property),
+                                'sendUrl' => route('properties.lawyer.send-email', ['propertySlug' => self::propertyParam($property)]),
+                                'uploadUrl' => route('properties.attachments.upload', ['propertySlug' => self::propertyParam($property)]),
+                                'deleteUrl' => route('properties.attachments.destroy', ['propertySlug' => self::propertyParam($property), 'attachment' => ':id']),
+                            ];
+                        })
+                        ->columnSpanFull(),
+                ]),
+        ];
+    }
+
+    /** Sagatavo (un saglabā) 1. soļa datus pirms pārejas uz e-pasta soli. */
+    private static function prepareEmail(Get $get, Set $set, CrmProperty $property): void
+    {
+        $type = (string) $get('document_type');
+        $legal = is_array($get('legal')) ? $get('legal') : [];
+
+        self::applyClientUpdates(self::sellerOf($property), is_array($get('seller')) ? $get('seller') : []);
+        self::applyClientUpdates(self::buyerOf($property), is_array($get('buyer')) ? $get('buyer') : []);
+        self::applyPropertyUpdates($property, is_array($get('property')) ? $get('property') : []);
+
+        foreach (['seller', 'buyer'] as $role) {
+            $client = $role === 'seller' ? self::sellerOf($property) : self::buyerOf($property);
+            $form = is_array($get($role)) ? $get($role) : [];
+
+            if ($client === null) {
+                $block = self::normalizedFields($form, ['person_type', 'name', 'personas_kods', 'address', 'bank_account', 'email', 'phone']);
+                if ($block !== []) {
+                    $legal[$role] = $block;
+                }
+            }
+        }
+
+        $legalData = self::sanitizeLegal($type, array_merge(
+            is_array($property->legal_data) ? $property->legal_data : [],
+            $legal,
+        ));
+
+        $property->legal_data = $legalData;
+        $property->save();
+
+        $set('legal', $legalData);
+    }
+
+    /** Esošie īpašuma un piesaistīto klientu faili e-pasta modālim. */
+    private static function emailFiles(CrmProperty $property): array
+    {
+        $property->loadMissing('attachments', 'clients.attachments');
+
+        $roles = ['seller' => 'Pārdevējs', 'buyer' => 'Pircējs'];
+
+        $files = $property->attachments
+            ->where('collection', 'documents')
+            ->map(fn ($a): array => [
+                'id' => (int) $a->id,
+                'name' => (string) $a->original_name,
+                'size' => (int) $a->size,
+            ]);
+
+        foreach ($property->clients as $client) {
+            $role = $roles[$client->pivot->relation] ?? 'Klients';
+
+            $files = $files->concat($client->attachments->map(fn ($a): array => [
+                'id' => (int) $a->id,
+                'name' => (string) $a->original_name.' · '.$role,
+                'size' => (int) $a->size,
+            ]));
+        }
+
+        return $files->values()->all();
+    }
+
+    private static function propertyParam(CrmProperty $property): string
+    {
+        return (string) ($property->slug ?: $property->getKey());
     }
 
     /** @return array<int, mixed> */
@@ -262,110 +378,7 @@ final class LawyerDocumentAction
             ]),
         ];
 
-        // Esošie CRM faili, ko var pievienot jurista e-pastam (īpašuma
-        // dokumenti + piesaistītā pārdevēja/pircēja pielikumi).
-        $attachmentOptions = $service->attachmentOptions($property);
-
-        if ($attachmentOptions !== []) {
-            $sections[] = Section::make('Pielikumi e-pastam')->columns(1)->schema([
-                Forms\Components\CheckboxList::make('attachment_ids')
-                    ->label('Pievienot failus')
-                    ->options($attachmentOptions)
-                    ->helperText('Atzīmē failus, kurus pievienot e-pastam. Pēc noklusējuma nav atzīmēts neviens.')
-                    ->columnSpanFull(),
-            ]);
-        }
-
         return $sections;
-    }
-
-    /** @param  array<string, mixed>  $data */
-    private static function send(CrmProperty $property, array $data): void
-    {
-        $type = (string) ($data['document_type'] ?? '');
-        $jurist = Izpilditajs::query()
-            ->where('category', 'Jurists')
-            ->find($data['jurist_id'] ?? 0);
-
-        if (! $jurist || blank($jurist->email)) {
-            Notification::make()
-                ->title('Jurists nav atrasts vai tam nav norādīts e-pasts')
-                ->danger()
-                ->send();
-
-            return;
-        }
-
-        $contactKeys = ['person_type', 'name', 'personas_kods', 'address', 'bank_account', 'email', 'phone'];
-
-        $sellerClient = self::sellerOf($property);
-        $sellerData = is_array($data['seller'] ?? null) ? $data['seller'] : [];
-        self::applyClientUpdates($sellerClient, $sellerData);
-
-        $buyerClient = self::buyerOf($property);
-        $buyerData = is_array($data['buyer'] ?? null) ? $data['buyer'] : [];
-        self::applyClientUpdates($buyerClient, $buyerData);
-
-        self::applyPropertyUpdates($property, is_array($data['property'] ?? null) ? $data['property'] : []);
-
-        $legal = is_array($data['legal'] ?? null) ? $data['legal'] : [];
-
-        // Pārdevējs/pircējs nav piesaistīts kā klients — saglabājam manuāli
-        // ievadītos datus, lai tie nepazūd un nonāk e-pastā.
-        if ($sellerClient === null) {
-            $sellerBlock = self::normalizedFields($sellerData, $contactKeys);
-            if ($sellerBlock !== []) {
-                $legal['seller'] = $sellerBlock;
-            }
-        }
-
-        if ($buyerClient === null) {
-            $buyerBlock = self::normalizedFields($buyerData, $contactKeys);
-            if ($buyerBlock !== []) {
-                $legal['buyer'] = $buyerBlock;
-            }
-        }
-
-        // Apvienojam ar jau saglabātajiem datiem un izmetam laukus, kas
-        // izvēlētajam dokumenta veidam vairs nav aktuāli (piem. bankas dati
-        // pārslēdzoties uz pašu līdzekļiem), lai vecās vērtības nepaliek
-        // e-pastā.
-        $legalData = array_merge(is_array($property->legal_data) ? $property->legal_data : [], $legal);
-        $legalData = self::sanitizeLegal($type, $legalData);
-
-        $property->legal_data = $legalData;
-        $property->save();
-
-        try {
-            $request = app(LawyerDocumentService::class)->send(
-                $property->refresh(),
-                $jurist,
-                $type,
-                is_array($property->legal_data) ? $property->legal_data : [],
-                auth()->user(),
-                is_array($data['attachment_ids'] ?? null) ? $data['attachment_ids'] : [],
-            );
-        } catch (EmailTooLargeException $e) {
-            Notification::make()->title($e->userMessage())->danger()->send();
-
-            return;
-        } catch (\Throwable $e) {
-            report($e);
-
-            Notification::make()
-                ->title('Nosūtīšana neizdevās')
-                ->body($e->getMessage())
-                ->danger()
-                ->send();
-
-            return;
-        }
-
-        Notification::make()
-            ->title('Nosūtīts juristam: '.$jurist->name)
-            ->body($request->subject)
-            ->success()
-            ->send();
     }
 
     /**
