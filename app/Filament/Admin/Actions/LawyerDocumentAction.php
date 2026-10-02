@@ -67,7 +67,17 @@ final class LawyerDocumentAction
                 ->schema(self::formFields($property)),
             Step::make('Priekšskatījums')
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
-                ->schema([self::preview($property)]),
+                ->schema([
+                    Forms\Components\Hidden::make('email_probe')->afterStateHydrated(function (Forms\Components\Hidden $c, Get $get): void {
+                        $c->state(json_encode([
+                            'doc' => $get('document_type'),
+                            'jurist' => $get('jurist_id'),
+                            'signing' => $get('legal.signing_date'),
+                            'seller_name' => $get('seller.name'),
+                        ]));
+                    }),
+                    self::preview($property),
+                ]),
         ];
     }
 
