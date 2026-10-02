@@ -11,14 +11,13 @@ use App\Filament\Forms\Components\PersonasKodsInput;
 use App\Filament\Forms\Components\PhoneInput;
 use App\Rules\Phone;
 use App\Services\Lawyer\LawyerDocumentService;
+use App\Services\Mail\EmailSender;
 use App\Services\Mail\EmailTooLargeException;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\View;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Support\Enums\Alignment;
@@ -65,70 +64,57 @@ final class LawyerDocumentAction
                 ->schema(self::formFields($property)),
             Step::make('Priekšskatījums')
                 ->description('Pārbaudi e-pastu pirms nosūtīšanas')
-                ->schema(array_merge(
-                    self::previewReadonly($property),
-                    [
-                        Forms\Components\Textarea::make('extra_info')
-                            ->label('Papildus informācija')
-                            ->helperText('Pēc izvēles. Tiks pievienota e-pasta saturam.')
-                            ->rows(2)
-                            ->columnSpanFull(),
-                        self::preview($property),
-                    ],
-                )),
+                ->schema([
+                    self::attachmentsField($property),
+                    Forms\Components\Textarea::make('extra_info')
+                        ->label('Papildus informācija')
+                        ->helperText('Pēc izvēles. Tiks pievienota e-pasta saturam.')
+                        ->rows(2)
+                        ->columnSpanFull()
+                        ->hintAction(self::previewAction($property)),
+                ]),
         ];
     }
 
-    /**
-     * 2. soļa saturs: pielikumu izvēle un priekšskatījuma poga.
-     *
-     * @return array<int, mixed>
-     */
-    private static function previewReadonly(CrmProperty $property): array
+    /** Pielikumu izvēle 2. solī. */
+    private static function attachmentsField(CrmProperty $property): Forms\Components\CheckboxList
     {
         $options = app(LawyerDocumentService::class)->attachmentCandidates($property);
         $options = collect($options)->mapWithKeys(fn (array $c): array => [$c['id'] => $c['name']])->all();
 
-        return [
-            Forms\Components\CheckboxList::make('attachment_ids')
-                ->label('Pielikumi')
-                ->options($options)
-                ->helperText($options === []
-                    ? 'Nav pievienotu failu. Failus var pievienot īpašuma vai klienta pielikumos.'
-                    : 'Atzīmē failus, kurus pievienot e-pastam.')
-                ->columnSpanFull(),
-        ];
+        return Forms\Components\CheckboxList::make('attachment_ids')
+            ->label('Pielikumi')
+            ->options($options)
+            ->helperText($options === []
+                ? 'Nav pievienotu failu. Failus var pievienot īpašuma vai klienta pielikumos.'
+                : 'Atzīmē failus, kurus pievienot e-pastam.')
+            ->columnSpanFull();
     }
 
     /**
-     * Priekšskatījuma poga un modālis. Saturs tiek ielādēts pēc pieprasījuma
-     * (skat. HandlesLawyerEmail), jo 2. solis renderējas vienreiz.
+     * "Priekšskatījums" poga (Filament hintAction) ar modāli, kurā redzams
+     * saņēmējs, nosūtītājs, pielikumi un pilns e-pasts. Saturs tiek būvēts
+     * modāļa atvēršanas brīdī no aktuālajiem darbības datiem.
      */
-    private static function preview(CrmProperty $property): View
+    private static function previewAction(CrmProperty $property): Actions\Action
     {
-        return View::make('filament.admin.partials.lawyer-email-preview')
-            ->viewData(function (Get $get) use ($property): array {
-                $service = app(LawyerDocumentService::class);
+        return Actions\Action::make('preview_lawyer_email')
+            ->label('Priekšskatījums')
+            ->icon('heroicon-o-eye')
+            ->color('gray')
+            ->modalHeading('E-pasta priekšskatījums')
+            ->modalWidth('4xl')
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Aizvērt')
+            ->modalContent(function (\Livewire\Component $livewire) use ($property): \Illuminate\Contracts\View\View {
+                $data = $livewire->mountedActions[0]['data'] ?? [];
 
-                // Juristu saraksts (id => e-pasts/name), lai klienta puse var
-                // uzreiz parādīt saņēmēju bez servera apgrieziena.
-                $jurists = Izpilditajs::query()
-                    ->where('category', 'Jurists')
-                    ->orderBy('name')
-                    ->get()
-                    ->mapWithKeys(fn (Izpilditajs $j): array => [
-                        (string) $j->id => ['name' => (string) $j->name, 'email' => (string) $j->email],
-                    ])
-                    ->all();
-
-                return [
-                    'jurists' => $jurists,
-                    'juristId' => (string) ($get('jurist_id') ?? ''),
+                return view('filament.admin.partials.lawyer-email-preview', [
+                    'preview' => self::emailPreview($property, is_array($data) ? $data : []),
                     'fromAddress' => (string) config('mail.from.address'),
                     'fromName' => (string) config('mail.from.name'),
-                ];
-            })
-            ->columnSpanFull();
+                ]);
+            });
     }
 
     /** @return array<int, mixed> */
@@ -347,10 +333,41 @@ final class LawyerDocumentAction
         return $sections;
     }
 
-    /** Sabiedriskā atslēga: izmanto HandlesLawyerEmail priekšskatījumā. */
-    public static function sanitizeLegalData(string $type, array $legal): array
+    /**
+     * E-pasta priekšskatījums no darbības datiem (2. solis).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{to: string, jurist: string, subject: string, body: string, html: string, attachments: array<int, string>}
+     */
+    public static function emailPreview(CrmProperty $property, array $data): array
     {
-        return self::sanitizeLegal($type, $legal);
+        $type = (string) ($data['document_type'] ?? '');
+        $service = app(LawyerDocumentService::class);
+
+        $preview = $service->preview([
+            'document_type' => $type,
+            'jurist_id' => $data['jurist_id'] ?? null,
+            'legal' => self::sanitizeLegal($type, is_array($data['legal'] ?? null) ? $data['legal'] : []),
+            'seller' => is_array($data['seller'] ?? null) ? $data['seller'] : [],
+            'buyer' => is_array($data['buyer'] ?? null) ? $data['buyer'] : [],
+            'property' => is_array($data['property'] ?? null) ? $data['property'] : [],
+        ], $property);
+
+        // "Papildus informācija" tiek pievienota tāpat kā nosūtot.
+        $extraInfo = trim((string) ($data['extra_info'] ?? ''));
+        if ($extraInfo !== '') {
+            $preview['html'] = EmailSender::renderHtml(
+                $preview['body'].'<p style="margin:18px 0 0;white-space:pre-line;">'.e($extraInfo).'</p>',
+                EmailSender::defaultSignature(),
+            );
+        }
+
+        $ids = is_array($data['attachment_ids'] ?? null) ? $data['attachment_ids'] : [];
+        $preview['attachments'] = $service->selectedAttachments($property, $ids)
+            ->pluck('original_name')
+            ->all();
+
+        return $preview;
     }
 
     /** @param  array<string, mixed>  $data */
