@@ -15,6 +15,7 @@ use App\Services\Mail\EmailTooLargeException;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Actions as SchemaActions;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -53,9 +54,16 @@ final class LawyerDocumentAction
             ->modalWidth('4xl')
             ->modalSubmitActionLabel('Nosūtīt')
             ->modalCancelAction(false)
-            ->modifyWizardUsing(fn (Wizard $wizard): Wizard => $wizard
+            ->modifyWizardUsing(fn (Wizard $wizard, CrmProperty $record): Wizard => $wizard
                 ->hiddenHeader()
-                ->nextAction(fn (Actions\Action $action): Actions\Action => $action->label('Tālāk'))
+                ->nextAction(function (Actions\Action $action) use ($wizard, $record): Actions\Action {
+                    $gate = self::gateActive($wizard, $record);
+
+                    return $action
+                        ->label('Tālāk')
+                        ->disabled($gate)
+                        ->extraAttributes($gate ? ['class' => 'fi-hidden'] : []);
+                })
                 ->previousAction(fn (Actions\Action $action): Actions\Action => $action->label('Atpakaļ')))
             ->steps(fn (CrmProperty $record): array => self::steps($record))
             ->action(fn (array $data, CrmProperty $record) => self::sendFromForm($record, $data));
@@ -66,13 +74,18 @@ final class LawyerDocumentAction
      * paslēpta; pārejas notiek ar Filament kājienes pogām (Atpakaļ/Tālāk),
      * pēdējā solī — "Nosūtīt".
      *
+     * Ja īpašumam jau ir nosūtīts pieprasījums, 1. solī vispirms redz tikai
+     * paziņojumu un pogu "Sūtīt vēlreiz"; forma atveras tikai pēc tās.
+     *
      * @return array<int, Step>
      */
     private static function steps(CrmProperty $property): array
     {
+        $sent = self::alreadySent($property);
+
         return [
             Step::make('Dokumenta dati')
-                ->schema(self::formFields($property))
+                ->schema(fn (Get $get): array => self::documentStepSchema($property, $sent, (bool) $get('resend_confirmed')))
                 ->columns(1)
                 ->afterValidation(function (Get $get, Set $set) use ($property): void {
                     self::prepareEmail($get, $set, $property);
@@ -81,6 +94,54 @@ final class LawyerDocumentAction
             Step::make('E-pasts')
                 ->schema(self::emailFields($property)),
         ];
+    }
+
+    /**
+     * 1. soļa saturs. Ja pieprasījums jau nosūtīts un atkārtota sūtīšana nav
+     * apstiprināta, rāda tikai paziņojumu un pogu "Sūtīt vēlreiz".
+     *
+     * @return array<int, mixed>
+     */
+    private static function documentStepSchema(CrmProperty $property, bool $sent, bool $resendConfirmed): array
+    {
+        if (! $sent || $resendConfirmed) {
+            return self::formFields($property);
+        }
+
+        $lastSent = $property->lawyerRequests()->first()?->sent_at;
+
+        return [
+            View::make('filament.admin.partials.lawyer-sent-notice')
+                ->viewData(['sentAt' => $lastSent?->format('d.m.Y H:i')]),
+            Forms\Components\Hidden::make('resend_confirmed')->default(false),
+            SchemaActions::make([
+                Actions\Action::make('resend')
+                    ->label('Sūtīt vēlreiz')
+                    ->color('primary')
+                    ->action(fn (Set $set) => $set('resend_confirmed', true)),
+            ]),
+        ];
+    }
+
+    /** Vai īpašumam jau ir nosūtīts pieprasījums juristam. */
+    private static function alreadySent(CrmProperty $property): bool
+    {
+        return $property->lawyerRequests()->exists();
+    }
+
+    /**
+     * Vai 1. solī pašlaik redzams "nosūtīts" paziņojums (forma vēl nav
+     * atvērta). Tādā stāvoklī "Tālāk" poga tiek paslēpta.
+     */
+    private static function gateActive(Wizard $wizard, CrmProperty $record): bool
+    {
+        if (! self::alreadySent($record)) {
+            return false;
+        }
+
+        $livewire = $wizard->getLivewire();
+
+        return ! (bool) data_get($livewire?->mountedActions, '0.data.resend_confirmed');
     }
 
     /**
