@@ -45,7 +45,9 @@ final class LawyerDocumentAction
     {
         return Actions\Action::make('lawyer_document')
             ->label('Jurista dokuments')
-            ->icon('heroicon-o-scale')
+            ->icon(fn (?CrmProperty $record): string => $record !== null && self::alreadySent($record)
+                ? 'heroicon-o-check-circle'
+                : 'heroicon-o-scale')
             ->color('gray')
             ->visible(fn (?CrmProperty $record): bool => $record !== null
                 && $record->status !== 'deleted'
