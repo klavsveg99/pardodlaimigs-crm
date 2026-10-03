@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Lawyer;
 
-use App\Filament\Admin\Resources\CrmPropertyResource;
 use App\Models\Attachment;
 use App\Models\Client;
 use App\Models\CrmProperty;
@@ -167,6 +166,7 @@ class LawyerDocumentService
             $body,
             $attachments,
             $user?->name,
+            internal: true,
         );
 
         $request = LawyerRequest::create([
@@ -218,7 +218,6 @@ class LawyerDocumentService
             'final_price_eur' => $property->final_price_eur,
             'commission_eur' => $property->commission_eur,
             'sold_at' => $property->sold_at,
-            'url' => $this->crmUrl($property),
             'seller' => $seller ? $this->clientFields($seller) : null,
             'buyer' => $buyer ? $this->clientFields($buyer) : null,
         ];
@@ -302,16 +301,7 @@ class LawyerDocumentService
             (string) ($context['city'] ?? ''),
         ])));
 
-        return 'CRM – '.$this->documentLabel($type).' – '.($address ?: (string) ($context['title'] ?? ''));
-    }
-
-    public function crmUrl(CrmProperty $property): string
-    {
-        try {
-            return CrmPropertyResource::getUrl('view', ['record' => $property]);
-        } catch (\Throwable) {
-            return rtrim((string) config('app.url'), '/').'/properties/'.($property->slug ?: $property->getKey());
-        }
+        return $this->documentLabel($type).' - '.($address ?: (string) ($context['title'] ?? ''));
     }
 
     /**
@@ -358,12 +348,6 @@ class LawyerDocumentService
 
         $html .= $this->renderLegal($legal);
 
-        $url = (string) ($context['url'] ?? '');
-        if ($url !== '') {
-            $html .= '<p style="margin:18px 0 0;font-size:13px;color:#6b7280;">'
-                .'Saite uz darījumu CRM: <a href="'.e($url).'" style="color:#285854;">'.e($url).'</a></p>';
-        }
-
         return $html;
     }
 
@@ -403,8 +387,8 @@ class LawyerDocumentService
 
         foreach ($rows as $label => $value) {
             $html .= '<tr>'
-                .'<td style="padding:3px 10px 3px 0;color:#6b7280;white-space:nowrap;vertical-align:top;">'.e($label).'</td>'
-                .'<td style="padding:3px 0;color:#111827;font-weight:600;">'.e((string) $value).'</td>'
+                .'<td style="width:50%;padding:5px 12px 5px 0;color:#6b7280;vertical-align:top;">'.e($label).'</td>'
+                .'<td style="width:50%;padding:5px 0;color:#111827;font-weight:600;">'.e((string) $value).'</td>'
                 .'</tr>';
         }
 

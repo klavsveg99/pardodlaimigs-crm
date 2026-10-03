@@ -53,6 +53,7 @@ class EmailSender
         iterable $attachments = [],
         ?string $fromName = null,
         ?string $signature = null,
+        bool $internal = false,
     ): void {
         $files = collect($attachments);
         $totalSize = (int) $files->sum('size');
@@ -65,7 +66,7 @@ class EmailSender
         // (ja nav padots tieši), citādi e-pasts izskatās vienādi visiem.
         $signature ??= self::defaultSignature();
 
-        $html = self::renderHtml($body, $signature);
+        $html = self::renderHtml($body, $signature, ! $internal);
         $to = trim($to);
         $subject = trim($subject);
         $name = trim((string) $fromName) ?: $this->fromName();
@@ -103,9 +104,9 @@ class EmailSender
      * strip dangerous elements and wrap it in a minimal branded template.
      *
      * Struktūra: saturs → lietotāja paraksts → atsevišķa kājene ar logotipu
-     * un saiti uz pardodlaimigs.lv.
+     * un saiti uz pardodlaimigs.lv. Iekšējiem e-pastiem kājeni izlaiž.
      */
-    public static function renderHtml(string $body, ?string $signature = null): string
+    public static function renderHtml(string $body, ?string $signature = null, bool $includeFooter = true): string
     {
         $body = self::sanitize($body);
         if (trim($body) === '') {
@@ -122,15 +123,17 @@ class EmailSender
 
         $logo = e(url('images/favicon-32x32.jpg'));
         $reviewUrl = e(self::GOOGLE_REVIEW_URL);
-        $footer = '<hr style="border:none;border-top:1px solid #e2e8e6;margin:20px 0 12px;">'
-            .'<p style="font-size:12px;color:#6b7280;margin:0;">'
-            .'<img src="'.$logo.'" alt="Pārdod Laimīgs" width="18" height="18" '
-            .'style="vertical-align:middle;margin-right:6px;border-radius:4px;border:0;">'
-            .'Pārdod Laimīgs · <a href="https://pardodlaimigs.lv" style="color:#285854;">pardodlaimigs.lv</a>'
-            .'</p>'
-            .'<p style="font-size:12px;color:#6b7280;margin:6px 0 0;">'
-            .'<a href="'.$reviewUrl.'" style="color:#285854;">Atstājiet atsauksmi Google</a>'
-            .'</p>';
+        $footer = $includeFooter
+            ? '<hr style="border:none;border-top:1px solid #e2e8e6;margin:20px 0 12px;">'
+                .'<p style="font-size:12px;color:#6b7280;margin:0;">'
+                .'<img src="'.$logo.'" alt="Pārdod Laimīgs" width="18" height="18" '
+                .'style="vertical-align:middle;margin-right:6px;border-radius:4px;border:0;">'
+                .'Pārdod Laimīgs · <a href="https://pardodlaimigs.lv" style="color:#285854;">pardodlaimigs.lv</a>'
+                .'</p>'
+                .'<p style="font-size:12px;color:#6b7280;margin:6px 0 0;">'
+                .'<a href="'.$reviewUrl.'" style="color:#285854;">Atstājiet atsauksmi Google</a>'
+                .'</p>'
+            : '';
 
         return '<!DOCTYPE html><html><head><meta charset="utf-8"></head>'
             .'<body style="margin:0;padding:24px;background:#f5f7f6;">'

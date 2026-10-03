@@ -106,6 +106,7 @@ final class LawyerDocumentAction
                     ->label('Saņēmējs')
                     ->email()
                     ->required()
+                    ->readOnly()
                     ->default(fn (Get $get): string => (string) (app(LawyerDocumentService::class)->jurist($get('jurist_id'))?->email ?? '')),
                 Forms\Components\TextInput::make('email_subject')
                     ->label('Temats')
@@ -114,7 +115,9 @@ final class LawyerDocumentAction
                 Forms\Components\CheckboxList::make('email_files')
                     ->label('Faili')
                     ->options(collect($files)->mapWithKeys(fn (array $f): array => [$f['id'] => $f['name'].($f['size'] ? ' ('.self::sizeLabel($f['size']).')' : '')])->all())
-                    ->helperText('Atzīmē failus, kurus pievienot e-pastam.')
+                    ->helperText($files === []
+                        ? 'Īpašumam vai piesaistītajiem klientiem nav pievienotu failu.'
+                        : 'Atzīmē failus, kurus pievienot e-pastam.')
                     ->columnSpanFull(),
                 Forms\Components\FileUpload::make('new_files')
                     ->label('Pievienot jaunus failus')
@@ -133,7 +136,6 @@ final class LawyerDocumentAction
                     ->label('Papildus informācija')
                     ->rows(3)
                     ->live()
-                    ->helperText('Ja aizpildīts, tiek pievienots e-pasta beigās.')
                     ->columnSpanFull(),
             ]),
         ];
