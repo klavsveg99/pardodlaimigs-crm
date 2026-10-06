@@ -2,8 +2,8 @@
 
 /**
  * Plugin Name: Pārdod Laimīgs Google atsauksmes
- * Description: Peldošs "Google atsauksmes" widgets vietnes kreisajā malā ar saiti uz Google atsauksmju lapu.
- * Version: 1.0.0
+ * Description: Peldošs "Google atsauksmes" widgets lapas apakšā centrā ar saiti uz Google atsauksmju lapu.
+ * Version: 1.1.0
  * Author: Pārdod Laimīgs
  */
 if (! defined('ABSPATH')) {
@@ -15,7 +15,9 @@ define('PDC_GOOGLE_REVIEW_URL', 'https://g.page/r/CRZd6XZu2hhmEAE/review');
 /**
  * Peldošs Google atsauksmju widgets frontendā. Izvade ir tikai CSS + JS
  * (widgets tiek izveidots ar JavaScript), tāpēc tas nav saistīts ar tēmu
- * vai lapas saturu un parādās visā vietnē.
+ * vai lapas saturu un parādās visā vietnē. Novietots lapas apakšā centrā;
+ * mobilajā skatā paliek tikai ikona, lai tas nepārklātos ar citiem
+ * peldošajiem elementiem (tērzēšanas poga labajā pusē) līdz pat 320px.
  */
 add_action('wp_footer', function (): void {
     if (is_admin() || is_feed()) {
@@ -25,29 +27,40 @@ add_action('wp_footer', function (): void {
     <style>
         .pdc-greview {
             position: fixed;
-            top: 50%;
-            left: 0;
-            transform: translateY(-50%);
+            left: 50%;
+            bottom: 18px;
+            transform: translateX(-50%);
             z-index: 9998;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.6rem 0.85rem 0.6rem 0.65rem;
+            max-width: calc(100vw - 24px);
+            box-sizing: border-box;
+            padding: 0.55rem 0.9rem 0.55rem 0.65rem;
             background: #ffffff;
             border: 1px solid #e5e7eb;
-            border-left: 0;
-            border-radius: 0 0.65rem 0.65rem 0;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
-            text-decoration: none;
+            border-radius: 999px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             line-height: 1.1;
+            text-decoration: none !important;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
 
         .pdc-greview:hover,
+        .pdc-greview:focus,
         .pdc-greview:focus-visible {
-            transform: translateY(-50%) translateX(2px);
+            transform: translateX(-50%) translateY(-2px);
             box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+            text-decoration: none !important;
+        }
+
+        .pdc-greview,
+        .pdc-greview:hover,
+        .pdc-greview:focus,
+        .pdc-greview:focus-visible,
+        .pdc-greview * {
+            text-decoration: none !important;
         }
 
         .pdc-greview__logo {
@@ -60,21 +73,25 @@ add_action('wp_footer', function (): void {
             display: flex;
             flex-direction: column;
             gap: 1px;
+            min-width: 0;
         }
 
         .pdc-greview__title {
             font-size: 12px;
             font-weight: 700;
             color: #1f2937;
+            white-space: nowrap;
         }
 
         .pdc-greview__sub {
             font-size: 11px;
             color: #6b7280;
+            white-space: nowrap;
         }
 
         @media (max-width: 600px) {
             .pdc-greview {
+                bottom: 14px;
                 padding: 0.5rem;
             }
 
