@@ -28,7 +28,7 @@ add_action('wp_footer', function (): void {
         .pdc-greview {
             position: fixed;
             left: 50%;
-            bottom: 18px;
+            bottom: 15px;
             transform: translateX(-50%);
             z-index: 9998;
             display: inline-flex;
@@ -91,13 +91,20 @@ add_action('wp_footer', function (): void {
 
         @media (max-width: 600px) {
             .pdc-greview {
-                bottom: 14px;
                 padding: 0.5rem;
             }
 
             .pdc-greview__text {
                 display: none;
             }
+        }
+
+        /* Buttonizer kontaktpoga (apakšā labajā stūrī): tāds pats attālums no
+           apakšas un malas (15px) kā Google atsauksmju widgetam un sīkdatņu
+           pogai (cky 15px). Buttonizer pats liek 50px (20px mobilajā). */
+        .buttonizer-group {
+            bottom: 15px !important;
+            right: 15px !important;
         }
     </style>
     <script>
