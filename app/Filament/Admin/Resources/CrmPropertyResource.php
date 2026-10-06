@@ -618,6 +618,30 @@ class CrmPropertyResource extends Resource
         return array_filter($rows, fn ($v): bool => $v !== null && $v !== '');
     }
 
+    /**
+     * Ātrās darbības "Nosūtīt paldies" adresāts: pārdevējs (īpašuma
+     * īpašnieks), ja tam ir e-pasts; citādi pirmais piesaistītais klients
+     * ar e-pastu.
+     */
+    private static function thanksClient(CrmProperty $record): ?Client
+    {
+        return $record->clients()
+            ->wherePivot('relation', 'seller')
+            ->whereNotNull('email')->where('email', '!=', '')
+            ->first()
+            ?? $record->clients()
+                ->whereNotNull('email')->where('email', '!=', '')
+                ->first();
+    }
+
+    /** Vai pateicības e-pasts šim īpašumam jau nosūtīts (darbību žurnālā). */
+    private static function thanksAlreadySent(CrmProperty $record): bool
+    {
+        $client = self::thanksClient($record);
+
+        return $client !== null && $record->clientEmailSentAt($client->id) !== null;
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -680,20 +704,14 @@ class CrmPropertyResource extends Resource
                     // atsauksmes saite). Adresāts: pārdevējs, ja tam ir
                     // e-pasts; citādi pirmais piesaistītais klients ar e-pastu.
                     Actions\Action::make('send_thanks')
-                        ->label('Nosūtīt paldies')
-                        ->icon('heroicon-o-hand-thumb-up')
+                        ->label(fn (CrmProperty $record): string => self::thanksAlreadySent($record) ? 'Paldies nosūtīts' : 'Nosūtīt paldies')
+                        ->icon(fn (CrmProperty $record): string => self::thanksAlreadySent($record) ? 'heroicon-o-check-circle' : 'heroicon-o-hand-thumb-up')
                         ->color('gray')
                         ->visible(fn (CrmProperty $record): bool => $record->status === 'sold'
                             && ! auth()->user()?->isPhoto()
-                            && $record->clients()->whereNotNull('email')->where('email', '!=', '')->exists())
+                            && self::thanksClient($record) !== null)
                         ->action(function (CrmProperty $record, $livewire): void {
-                            $client = $record->clients()
-                                ->wherePivot('relation', 'seller')
-                                ->whereNotNull('email')->where('email', '!=', '')
-                                ->first()
-                                ?? $record->clients()
-                                    ->whereNotNull('email')->where('email', '!=', '')
-                                    ->first();
+                            $client = self::thanksClient($record);
 
                             if (! $client) {
                                 return;

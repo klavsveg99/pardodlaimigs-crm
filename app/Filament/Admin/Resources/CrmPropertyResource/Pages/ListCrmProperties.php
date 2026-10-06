@@ -11,6 +11,7 @@ use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
+use Livewire\Attributes\On;
 
 class ListCrmProperties extends ListRecords
 {
@@ -27,6 +28,17 @@ class ListCrmProperties extends ListRecords
         return [
             Actions\CreateAction::make()->label('Jauns īpašums')->color('gray'),
         ];
+    }
+
+    /**
+     * Pēc pateicības e-pasta nosūtīšanas pārzīmējam tabulu, lai ātrā darbība
+     * uzreiz rādītu "Paldies nosūtīts" ar ķeksīti (stāvoklis nāk no darbību
+     * žurnāla).
+     */
+    #[On('pdc-client-email-sent')]
+    public function clientEmailSent(): void
+    {
+        // Atkārtots renderējums.
     }
 
     public function getTabs(): array
