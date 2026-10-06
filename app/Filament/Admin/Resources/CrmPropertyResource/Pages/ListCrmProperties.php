@@ -18,6 +18,10 @@ class ListCrmProperties extends ListRecords
 
     protected static string $resource = CrmPropertyResource::class;
 
+    // Custom view, lai saraksta lapā būtu pieejams koplietotais
+    // "Paldies par sadarbību" modālis (ātrā darbība "Nosūtīt paldies").
+    protected string $view = 'filament.admin.resources.crm-property-resource.pages.list-crm-properties';
+
     protected function getHeaderActions(): array
     {
         return [

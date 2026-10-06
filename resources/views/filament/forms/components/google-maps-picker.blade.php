@@ -95,71 +95,67 @@
                 setPin(e.latLng, true);
             });
 
-            const input = this.$refs.searchBox;
-            const autocomplete = new google.maps.places.Autocomplete(input);
-            autocomplete.bindTo('bounds', this.map);
-            autocomplete.addListener('place_changed', () => {
-                const place = autocomplete.getPlace();
-                if (!place.geometry || !place.geometry.location) return;
-                this.map.setCenter(place.geometry.location);
-                this.map.setZoom(17);
-                if (place.formatted_address) {
-                    this.fillFromPlace(place);
-                }
-                setPin(place.geometry.location, !place.formatted_address);
+            // Kartes meklēšanas lauks: Places API (New) ieteikumi.
+            window.pdcPlaceAutocomplete(this.$refs.searchBox, (place) => {
+                this.applyPlace(place);
             });
 
             // Pilnās adreses lauka Google ieteikumi: izvēloties adresi,
             // pārnesam to uz karti (kartes meklēšana + pin + koordinātas).
             const addressInput = document.getElementById('pdc-crm-address-input');
             if (addressInput) {
-                const autocomplete2 = new google.maps.places.Autocomplete(addressInput, {
-                    types: ['address'],
-                    fields: ['address_components', 'geometry', 'formatted_address'],
-                });
-                autocomplete2.addListener('place_changed', () => {
-                    const place = autocomplete2.getPlace();
-                    if (!place.geometry || !place.geometry.location) return;
-                    if (place.formatted_address) {
-                        this.$wire.set('data.{{ $addressField }}', place.formatted_address);
-                        addressInput.value = place.formatted_address;
-                        this.$refs.searchBox.value = place.formatted_address;
+                window.pdcPlaceAutocomplete(addressInput, (place) => {
+                    if (place.formattedAddress) {
+                        this.$wire.set('data.{{ $addressField }}', place.formattedAddress);
+                        addressInput.value = place.formattedAddress;
                     }
-                    this.fillFromPlace(place);
-                    this.map.setCenter(place.geometry.location);
-                    this.map.setZoom(17);
-                    setPin(place.geometry.location, false);
+                    this.applyPlace(place);
                 });
             }
+        },
+        applyPlace(place) {
+            if (!place || !place.location) return;
+            this.fillFromNewPlace(place);
+            this.map.setCenter(place.location);
+            this.map.setZoom(17);
+            this.setPin(place.location, false);
         },
         sync() {
             this.$wire.set('data.{{ $latField }}', this.lat);
             this.$wire.set('data.{{ $lngField }}', this.lng);
         },
-        fillFromPlace(place) {
+        fillFromNewPlace(place) {
+            const components = place.addressComponents || [];
             let city = '';
             let zip = '';
-            if (place.address_components) {
-                for (const compItem of place.address_components) {
-                    if (compItem.types.includes('locality')) { city = compItem.long_name; break; }
+            for (const component of components) {
+                if (!zip && component.types.includes('postal_code')) zip = component.longText;
+                if (!city && component.types.includes('locality')) city = component.longText;
+            }
+            if (!city) {
+                for (const component of components) {
+                    if (component.types.includes('postal_town')) { city = component.longText; break; }
                 }
             }
-            if (place.address_components) {
-                for (const compItem of place.address_components) {
-                    if (compItem.types.includes('postal_code')) { zip = compItem.long_name; break; }
+            if (!city) {
+                for (const component of components) {
+                    if (component.types.includes('administrative_area_level_2')) { city = component.longText; break; }
+                }
+            }
+            if (!city) {
+                for (const component of components) {
+                    if (component.types.includes('administrative_area_level_1')) { city = component.longText; break; }
                 }
             }
             if (zip) {
                 this.$wire.set('data.{{ $zipField }}', zip);
             }
-            const fullAddress = place.formatted_address || place.name || '';
+            const fullAddress = place.formattedAddress || '';
             if (fullAddress) {
                 this.$wire.set('data.{{ $addressField }}', fullAddress);
             }
             if (city) {
                 this.$wire.set('data.{{ $cityField }}', city);
-            } else if (place.vicinity) {
-                this.$wire.set('data.{{ $cityField }}', place.vicinity);
             }
         },
         fillFromGeocode(results) {
@@ -214,6 +210,7 @@
         x-ref="searchBox"
         type="text"
         placeholder="Meklēt adresi..."
+        autocomplete="off"
         @focus="this.classList.add('map-search-focus')"
         @blur="this.classList.remove('map-search-focus')"
     />
@@ -236,6 +233,178 @@
         </span>
     </div>
 </div>
+
+{{-- Places API (New) autocomplete. Google 2025. gada 1. martā pārtrauca
+     likt pieejamu veco `google.maps.places.Autocomplete` jauniem projektiem,
+     tāpēc ieteikumus ņemam ar AutocompleteSuggestion un renderējam savā
+     sarakstā (native ievades lauks paliek Filament stila). --}}
+<script>
+if (! window.pdcPlaceAutocomplete) {
+    window.pdcPlaceAutocomplete = function (input, onPlace) {
+        if (! input || input.dataset.pdcPaBound) {
+            return;
+        }
+        input.dataset.pdcPaBound = '1';
+
+        const panel = document.createElement('div');
+        panel.className = 'pdc-pa-panel';
+        document.body.appendChild(panel);
+
+        let items = [];
+        let active = -1;
+        let token = null;
+        let seq = 0;
+        let timer = null;
+
+        const hide = () => {
+            panel.style.display = 'none';
+            active = -1;
+        };
+
+        const position = () => {
+            const rect = input.getBoundingClientRect();
+            panel.style.left = rect.left + 'px';
+            panel.style.top = (rect.bottom + 2) + 'px';
+            panel.style.width = rect.width + 'px';
+        };
+
+        const render = () => {
+            if (! items.length) {
+                hide();
+                return;
+            }
+            panel.innerHTML = '';
+            items.forEach((item, index) => {
+                const prediction = item.placePrediction;
+                if (! prediction) {
+                    return;
+                }
+                const row = document.createElement('button');
+                row.type = 'button';
+                row.className = 'pdc-pa-item' + (index === active ? ' is-active' : '');
+                const main = document.createElement('span');
+                main.className = 'pdc-pa-main';
+                main.textContent = prediction.mainText ? prediction.mainText.text : (prediction.text ? prediction.text.text : '');
+                row.appendChild(main);
+                const secondary = prediction.secondaryText ? prediction.secondaryText.text : '';
+                if (secondary) {
+                    const sub = document.createElement('span');
+                    sub.className = 'pdc-pa-secondary';
+                    sub.textContent = secondary;
+                    row.appendChild(sub);
+                }
+                row.addEventListener('mousedown', (event) => {
+                    event.preventDefault();
+                    choose(index);
+                });
+                row.addEventListener('mouseenter', () => {
+                    active = index;
+                });
+                panel.appendChild(row);
+            });
+            position();
+            panel.style.display = 'block';
+        };
+
+        const choose = (index) => {
+            const item = items[index];
+            if (! item || ! item.placePrediction) {
+                return;
+            }
+            const prediction = item.placePrediction;
+            if (prediction.text) {
+                input.value = prediction.text.text;
+            }
+            hide();
+            const place = prediction.toPlace();
+            place.fetchFields({ fields: ['addressComponents', 'location', 'formattedAddress', 'displayName'] })
+                .then(() => {
+                    if (typeof onPlace === 'function') {
+                        onPlace(place);
+                    }
+                    token = null;
+                })
+                .catch(() => {});
+        };
+
+        const fetchSuggestions = async (query) => {
+            const mySeq = ++seq;
+            try {
+                const placesLibrary = await google.maps.importLibrary('places');
+                const AutocompleteSuggestion = placesLibrary.AutocompleteSuggestion
+                    || (google.maps.places && google.maps.places.AutocompleteSuggestion);
+                if (! AutocompleteSuggestion) {
+                    return;
+                }
+                if (! token) {
+                    token = new google.maps.places.AutocompleteSessionToken();
+                }
+                const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+                    input: query,
+                    sessionToken: token,
+                });
+                if (mySeq !== seq) {
+                    return;
+                }
+                items = suggestions || [];
+                active = -1;
+                render();
+            } catch (error) {
+                items = [];
+                hide();
+            }
+        };
+
+        input.addEventListener('input', () => {
+            const query = input.value.trim();
+            window.clearTimeout(timer);
+            if (query.length < 3) {
+                items = [];
+                hide();
+                return;
+            }
+            timer = window.setTimeout(() => fetchSuggestions(query), 180);
+        });
+        input.addEventListener('focus', () => {
+            if (items.length) {
+                render();
+            }
+        });
+        input.addEventListener('blur', () => window.setTimeout(hide, 150));
+        input.addEventListener('keydown', (event) => {
+            if (panel.style.display === 'none' || ! items.length) {
+                return;
+            }
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                active = (active + 1) % items.length;
+                render();
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                active = (active - 1 + items.length) % items.length;
+                render();
+            } else if (event.key === 'Enter') {
+                if (active >= 0) {
+                    event.preventDefault();
+                    choose(active);
+                }
+            } else if (event.key === 'Escape') {
+                hide();
+            }
+        });
+        window.addEventListener('scroll', () => {
+            if (panel.style.display !== 'none') {
+                position();
+            }
+        }, true);
+        window.addEventListener('resize', () => {
+            if (panel.style.display !== 'none') {
+                position();
+            }
+        });
+    };
+}
+</script>
 
 @if(config('services.google_maps.key'))
     <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&libraries=places&callback=Function.prototype" async defer></script>

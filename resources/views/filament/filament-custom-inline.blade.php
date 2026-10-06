@@ -365,6 +365,65 @@ a.fi-link:not(.fi-btn):not(.fi-color-primary) .fi-link-label {
     color: #9ca3af !important;
 }
 
+/* Places API (New) adrešu ieteikumu saraksts (skat. google-maps-picker). */
+.pdc-pa-panel {
+    position: fixed;
+    z-index: 2147483000;
+    display: none;
+    max-height: 18rem;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.pdc-pa-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 0.7rem;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+.pdc-pa-item.is-active {
+    background: #f3f4f6;
+}
+
+.pdc-pa-main {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.pdc-pa-secondary {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.dark .pdc-pa-panel {
+    background: #111827;
+    border-color: #27303a;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark .pdc-pa-item.is-active {
+    background: #1f2937;
+}
+
+.dark .pdc-pa-main {
+    color: #f3f4f6;
+}
+
+.dark .pdc-pa-secondary {
+    color: #9ca3af;
+}
+
 /* Keep data cells readable without wrapping column headings or clipping cards. */
 .fi-ta-ctn,
 .fi-ta-content-ctn,
@@ -997,12 +1056,35 @@ html.dark .rounded-xl .text-emerald-900 {
     }
     .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb:not(:has(img)) { display: none !important; }
 
-    /* Properties un uzdevumi: mobilajā skatā vispirms nosaukums, tad
-       attēls/statuss. Selection šūna paliek pašā sākumā. */
-    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell,
+    /* Uzdevumi: mobilajā skatā vispirms nosaukums, tad statuss.
+       Selection šūna paliek pašā sākumā. */
     .fi-ta.pdc-tasks-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell { order: -2 !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-title,
     .fi-ta.pdc-tasks-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-title { order: -1 !important; }
+
+    /* Īpašumi: mobilajā skatā pirmā rinda ir attēls pilnā platumā ar atlases
+       ķeksīti pie labās malas (vertikāli centrēts pret attēlu), otrā rinda ir
+       nosaukums pilnā platumā. Pārējās šūnas seko zem tām. */
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb {
+        grid-column: 1 / -1 !important;
+        grid-row: 1 !important;
+        align-self: center !important;
+        justify-content: flex-start !important;
+    }
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell {
+        grid-column: 1 / -1 !important;
+        grid-row: 1 !important;
+        align-self: center !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        position: relative !important;
+        z-index: 2 !important;
+        padding-inline: 1rem !important;
+    }
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-title {
+        grid-column: 1 / -1 !important;
+        grid-row: 2 !important;
+    }
 
     /* Status dropdown (SelectColumn, contact form submissions) gets its own full-width row */
     .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-select) { grid-column: 1 / -1 !important; }

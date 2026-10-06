@@ -640,7 +640,7 @@ class CrmPropertyResource extends Resource
                     })
                     ->height(40)
                     ->width(60)
-                    ->extraAttributes(['style' => 'object-fit: cover; border-radius: 0.375rem;']),
+                    ->extraImgAttributes(['style' => 'border-radius: 4px;']),
                 Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->sortable()->weight('bold')
                     ->url(fn (CrmProperty $record) => static::getUrl('view', ['record' => $record]))
                     ->description(fn (CrmProperty $record): ?string => $record->clients()
@@ -675,6 +675,41 @@ class CrmPropertyResource extends Resource
             ->filtersFormColumns(3)
             ->actions([
                 Actions\ActionGroup::make([
+                    // Ātrā darbība pārdotiem īpašumiem: vienā klikšķī atver
+                    // jau esošo "Paldies par sadarbību" e-pastu (Google
+                    // atsauksmes saite). Adresāts: pārdevējs, ja tam ir
+                    // e-pasts; citādi pirmais piesaistītais klients ar e-pastu.
+                    Actions\Action::make('send_thanks')
+                        ->label('Nosūtīt paldies')
+                        ->icon('heroicon-o-hand-thumb-up')
+                        ->color('gray')
+                        ->visible(fn (CrmProperty $record): bool => $record->status === 'sold'
+                            && ! auth()->user()?->isPhoto()
+                            && $record->clients()->whereNotNull('email')->where('email', '!=', '')->exists())
+                        ->action(function (CrmProperty $record, $livewire): void {
+                            $client = $record->clients()
+                                ->wherePivot('relation', 'seller')
+                                ->whereNotNull('email')->where('email', '!=', '')
+                                ->first()
+                                ?? $record->clients()
+                                    ->whereNotNull('email')->where('email', '!=', '')
+                                    ->first();
+
+                            if (! $client) {
+                                return;
+                            }
+
+                            $livewire->dispatch(
+                                'pdc-open-client-email',
+                                id: $client->id,
+                                name: $client->name,
+                                email: $client->email,
+                                url: route('properties.clients.send-email', [
+                                    'propertySlug' => $record->slug ?? $record->getKey(),
+                                    'client' => $client->id,
+                                ]),
+                            );
+                        }),
                     Actions\Action::make('open_site')
                         ->label('Atvērt mājaslapā')
                         ->icon('heroicon-o-arrow-top-right-on-square')
