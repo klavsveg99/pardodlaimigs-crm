@@ -2,8 +2,8 @@
 
 /**
  * Plugin Name: Pārdod Laimīgs Google atsauksmes
- * Description: Peldošs "Google atsauksmes" widgets lapas apakšā centrā ar saiti uz Google atsauksmju lapu.
- * Version: 1.1.0
+ * Description: Kompakta apaļa "Google atsauksmes" poga ar Google "G" ikonu, novietota tieši virs sīkdatņu ikonas (apakšā pa kreisi).
+ * Version: 1.2.0
  * Author: Pārdod Laimīgs
  */
 if (! defined('ABSPATH')) {
@@ -13,11 +13,11 @@ if (! defined('ABSPATH')) {
 define('PDC_GOOGLE_REVIEW_URL', 'https://g.page/r/CRZd6XZu2hhmEAE/review');
 
 /**
- * Peldošs Google atsauksmju widgets frontendā. Izvade ir tikai CSS + JS
- * (widgets tiek izveidots ar JavaScript), tāpēc tas nav saistīts ar tēmu
- * vai lapas saturu un parādās visā vietnē. Novietots lapas apakšā centrā;
- * mobilajā skatā paliek tikai ikona, lai tas nepārklātos ar citiem
- * peldošajiem elementiem (tērzēšanas poga labajā pusē) līdz pat 320px.
+ * Peldoša Google atsauksmju poga frontendā. Izvade ir tikai CSS + JS
+ * (poga tiek izveidota ar JavaScript), tāpēc tas nav saistīts ar tēmu
+ * vai lapas saturu. Poga ir 45x45 apaļa, 15px no kreisās malas un 15px
+ * virs sīkdatņu (cky) ikonas, kas arī ir 45x45 ar 15px atkāpēm, tāpēc
+ * abas ikonas stāv vienā vertikālā rindā gan datorā, gan mobilajā.
  */
 add_action('wp_footer', function (): void {
     if (is_admin() || is_feed()) {
@@ -27,22 +27,20 @@ add_action('wp_footer', function (): void {
     <style>
         .pdc-greview {
             position: fixed;
-            left: 50%;
-            bottom: 15px;
-            transform: translateX(-50%);
+            left: 15px;
+            /* 15px (apakša) + 45px (sīkdatņu ikona) + 15px (atstarpe) */
+            bottom: 75px;
             z-index: 9998;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            max-width: calc(100vw - 24px);
+            justify-content: center;
+            width: 45px;
+            height: 45px;
             box-sizing: border-box;
-            padding: 0.55rem 0.9rem 0.55rem 0.65rem;
             background: #ffffff;
             border: 1px solid #e5e7eb;
-            border-radius: 999px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            line-height: 1.1;
+            border-radius: 50%;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
             text-decoration: none !important;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
@@ -50,8 +48,8 @@ add_action('wp_footer', function (): void {
         .pdc-greview:hover,
         .pdc-greview:focus,
         .pdc-greview:focus-visible {
-            transform: translateX(-50%) translateY(-2px);
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
             text-decoration: none !important;
         }
 
@@ -66,42 +64,12 @@ add_action('wp_footer', function (): void {
         .pdc-greview__logo {
             width: 24px;
             height: 24px;
-            flex: none;
-        }
-
-        .pdc-greview__text {
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
-            min-width: 0;
-        }
-
-        .pdc-greview__title {
-            font-size: 12px;
-            font-weight: 700;
-            color: #1f2937;
-            white-space: nowrap;
-        }
-
-        .pdc-greview__sub {
-            font-size: 11px;
-            color: #6b7280;
-            white-space: nowrap;
-        }
-
-        @media (max-width: 600px) {
-            .pdc-greview {
-                padding: 0.5rem;
-            }
-
-            .pdc-greview__text {
-                display: none;
-            }
+            display: block;
         }
 
         /* Buttonizer kontaktpoga (apakšā labajā stūrī): tāds pats attālums no
-           apakšas un malas (15px) kā Google atsauksmju widgetam un sīkdatņu
-           pogai (cky 15px). Buttonizer pats liek 50px (20px mobilajā). */
+           apakšas un malas (15px) kā Google atsauksmju pogai un sīkdatņu pogai.
+           Buttonizer pats liek 50px (20px mobilajā). */
         .buttonizer-group {
             bottom: 15px !important;
             right: 15px !important;
@@ -128,11 +96,7 @@ add_action('wp_footer', function (): void {
                     + '<path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/>'
                     + '<path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/>'
                     + '<path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/>'
-                    + '</svg>'
-                    + '<span class="pdc-greview__text">'
-                    + '<span class="pdc-greview__title">Google atsauksmes</span>'
-                    + '<span class="pdc-greview__sub">Atstāt atsauksmi</span>'
-                    + '</span>';
+                    + '</svg>';
 
                 if (document.body) {
                     document.body.appendChild(link);
