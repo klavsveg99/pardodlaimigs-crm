@@ -1073,6 +1073,11 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell {
         grid-column: 1 / -1 !important;
         grid-row: 1 !important;
+        /* Filament novieto atlases šūnu absolūti (top:0; inset-inline-end)
+           un dod tai fiksētu 0.25rem platumu. Mēs to atgriežam plūsmā, lai
+           ķeksītis stāvētu attēla rindā pie labās malas, vertikāli centrēts. */
+        inset: auto !important;
+        width: 100% !important;
         align-self: center !important;
         display: flex !important;
         align-items: center !important;
