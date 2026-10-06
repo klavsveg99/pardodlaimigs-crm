@@ -2,8 +2,8 @@
 
 /**
  * Plugin Name: Pārdod Laimīgs Google atsauksmes
- * Description: Kompakta apaļa "Google atsauksmes" poga ar Google "G" ikonu, novietota tieši virs sīkdatņu ikonas (apakšā pa kreisi).
- * Version: 1.2.0
+ * Description: Google atsauksmju saites: apaļa "G" ikonas poga virs sīkdatņu ikonas un "G" ikona galvenajā ēdienā blakus Facebook.
+ * Version: 1.3.0
  * Author: Pārdod Laimīgs
  */
 if (! defined('ABSPATH')) {
@@ -11,6 +11,32 @@ if (! defined('ABSPATH')) {
 }
 
 define('PDC_GOOGLE_REVIEW_URL', 'https://g.page/r/CRZd6XZu2hhmEAE/review');
+
+/**
+ * Google atsauksmju ikona galvenajā ēdienā (hederī) blakus Facebook ikonai.
+ * Sociālās ikonas ir parasta izvēlne ar <i class="fa-brands ..."> elementiem,
+ * tāpēc pievienojam jaunu <li> tieši aiz Facebook <li> (filtrs nostrādā gan
+ * galvenajā hederī, gan mobilajā izvēlnē).
+ */
+add_filter('wp_nav_menu_items', function ($items, $args) {
+    if (is_admin() || stripos($items, 'fa-facebook') === false || strpos($items, 'pdc-google-menu-item') !== false) {
+        return $items;
+    }
+
+    $item = '<li class="social-menu menu-item pdc-google-menu-item">'
+        .'<a class="menu-link" target="_blank" rel="noopener" href="'.esc_url(PDC_GOOGLE_REVIEW_URL).'" aria-label="Google atsauksmes">'
+        .'<i class="fa-brands fa-google" aria-hidden="true"></i>'
+        .'</a></li>';
+
+    $facebook = stripos($items, 'fa-facebook');
+    $end = strpos($items, '</li>', $facebook);
+
+    if ($end === false) {
+        return $items.$item;
+    }
+
+    return substr($items, 0, $end + 5).$item.substr($items, $end + 5);
+}, 10, 2);
 
 /**
  * Peldoša Google atsauksmju poga frontendā. Izvade ir tikai CSS + JS
