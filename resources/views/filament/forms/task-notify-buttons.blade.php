@@ -115,7 +115,8 @@
         window.pdcTaskNotify = function (el) {
             if (el.disabled) return;
             const lastEmail = window.pdcParseLastEmail(el.dataset.pdcLastEmail);
-            if (lastEmail && window.pdcResendConfirm) {
+            const isResend = el.classList.contains('pdc-task-notify-sent') || !!lastEmail;
+            if (isResend && window.pdcResendConfirm) {
                 window.pdcResendConfirm(lastEmail, () => window.pdcTaskNotifySend(el));
                 return;
             }

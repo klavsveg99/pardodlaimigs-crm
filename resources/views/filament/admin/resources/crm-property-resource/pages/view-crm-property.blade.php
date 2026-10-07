@@ -283,7 +283,7 @@
                                 data-client-email="{{ $client->email }}"
                                 data-send-url="{{ route('properties.clients.send-email', ['propertySlug' => $record->slug ?? $record->getKey(), 'client' => $client->id]) }}"
                                 data-last-email="{{ json_encode($lastEmailData) }}"
-                                x-on:click="window.dispatchEvent(new CustomEvent('pdc-open-client-email', { detail: { id: Number($el.dataset.clientId), name: $el.dataset.clientName, email: $el.dataset.clientEmail, url: $el.dataset.sendUrl, lastEmail: JSON.parse($el.dataset.lastEmail || 'null') } }))"
+                                x-on:click="window.dispatchEvent(new CustomEvent('pdc-open-client-email', { detail: { id: Number($el.dataset.clientId), name: $el.dataset.clientName, email: $el.dataset.clientEmail, url: $el.dataset.sendUrl, resend: true, lastEmail: JSON.parse($el.dataset.lastEmail || 'null') } }))"
                                 class="pdc-client-sent pdc-client-sent--clickable"
                                 title="Nosūtīts {{ $sentAt->format('d.m.Y') }} · nospied, lai nosūtītu vēlreiz"
                             >

@@ -718,6 +718,8 @@ class CrmPropertyResource extends Resource
                                 return;
                             }
 
+                            $sent = self::thanksAlreadySent($record);
+
                             $livewire->dispatch(
                                 'pdc-open-client-email',
                                 id: $client->id,
@@ -727,7 +729,8 @@ class CrmPropertyResource extends Resource
                                     'propertySlug' => $record->slug ?? $record->getKey(),
                                     'client' => $client->id,
                                 ]),
-                                lastEmail: EmailLog::lastClientThanks($record->id, $client->id)?->preview(),
+                                resend: $sent,
+                                lastEmail: $sent ? EmailLog::lastClientThanks($record->id, $client->id)?->preview() : null,
                             );
                         }),
                     Actions\Action::make('open_site')

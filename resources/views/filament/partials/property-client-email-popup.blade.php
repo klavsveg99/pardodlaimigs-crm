@@ -39,9 +39,9 @@
             this.subject = this.savedSubject;
             this.error = '';
             // Ja šim klientam jau sūtīts, vispirms apstiprina atkārtotu
-            // nosūtīšanu, parādot pēdējo e-pastu.
-            if (detail.lastEmail && window.pdcResendConfirm) {
-                window.pdcResendConfirm(detail.lastEmail, () => this.openEditor());
+            // nosūtīšanu, parādot pēdējo e-pastu (ja tāds saglabāts).
+            if (detail.resend && window.pdcResendConfirm) {
+                window.pdcResendConfirm(detail.lastEmail || null, () => this.openEditor());
                 return;
             }
             this.openEditor();

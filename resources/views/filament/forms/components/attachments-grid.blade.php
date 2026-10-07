@@ -398,11 +398,11 @@
                 detail: { file: { id: file.id, name: file.name }, all },
             }));
         },
-        // Ja fails jau reiz nosūtīts, vispirms apstiprina ar pēdējā e-pasta saturu.
+        // Ja fails jau reiz nosūtīts, vienmēr apstiprina (ar pēdējo e-pastu, ja saglabāts).
         resendFile(file) {
             if (!file || typeof file.id !== 'number') return;
             const last = file.lastEmail || null;
-            if (last && window.pdcResendConfirm) {
+            if (window.pdcResendConfirm) {
                 window.pdcResendConfirm(last, () => this.sendFile(file));
                 return;
             }
