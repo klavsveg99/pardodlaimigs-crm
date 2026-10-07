@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Mail;
 
 use App\Models\Attachment;
+use App\Models\EmailLog;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -57,6 +58,7 @@ class EmailSender
         ?string $fromName = null,
         ?string $signature = null,
         bool $internal = false,
+        array $context = [],
     ): void {
         $files = collect($attachments);
         $totalSize = (int) $files->sum('size');
@@ -92,6 +94,46 @@ class EmailSender
                 ]);
             }
         });
+
+        self::log($to, $subject, $body, $name, $files, $context);
+    }
+
+    /**
+     * Record the sent email in the (lean) history table. Attachments are kept
+     * as an id list only; the body is capped so the table cannot grow with
+     * unusually large messages. Logging never blocks sending.
+     *
+     * @param  \Illuminate\Support\Collection<int, Attachment>  $files
+     */
+    private static function log(string $to, string $subject, string $body, string $name, $files, array $context): void
+    {
+        try {
+            $storedBody = $body;
+            if (mb_strlen($storedBody) > 60000) {
+                $storedBody = mb_substr($storedBody, 0, 60000);
+            }
+
+            EmailLog::create([
+                'user_id' => auth()->id(),
+                'from_name' => $name !== '' ? $name : null,
+                'to_email' => $to,
+                'subject' => $subject,
+                'body' => $storedBody,
+                'context' => $context['context'] ?? null,
+                'client_id' => $context['client_id'] ?? null,
+                'property_id' => $context['property_id'] ?? null,
+                'task_id' => $context['task_id'] ?? null,
+                'viewing_id' => $context['viewing_id'] ?? null,
+                'recipient_role' => $context['recipient_role'] ?? null,
+                'attachment_ids' => ! empty($context['attachment_ids'])
+                    ? array_values(array_map('intval', (array) $context['attachment_ids']))
+                    : null,
+                'attachment_count' => $files->count(),
+                'created_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /** Lietotāja saglabātais e-pasta paraksts (ja tāds ir). */

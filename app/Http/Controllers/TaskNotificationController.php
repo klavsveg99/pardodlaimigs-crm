@@ -56,6 +56,9 @@ class TaskNotificationController extends Controller
                 'recipient' => $recipient,
                 'message' => $message,
                 'to' => $to,
+                'lastEmail' => $error === null
+                    ? \App\Models\EmailLog::lastTaskNotice($task->getKey(), $recipient)?->preview()
+                    : null,
             ], $error === null ? 200 : 422);
         }
 

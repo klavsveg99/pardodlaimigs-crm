@@ -142,6 +142,13 @@ class TaskResource extends Resource
                             // Saglabātais "Nosūtīts" statuss (ne tikai pēc POST).
                             'agentNotifiedAt' => $schema->getRecord()?->agent_notified_at,
                             'izpilditajsNotifiedAt' => $schema->getRecord()?->izpilditajs_notified_at,
+                            // Pēdējais nosūtītais e-pasts katram saņēmējam.
+                            'lastEmailAgent' => $schema->getRecord()
+                                ? \App\Models\EmailLog::lastTaskNotice($schema->getRecord()->getKey(), 'agent')?->preview()
+                                : null,
+                            'lastEmailIzpilditajs' => $schema->getRecord()
+                                ? \App\Models\EmailLog::lastTaskNotice($schema->getRecord()->getKey(), 'izpilditajs')?->preview()
+                                : null,
                         ])
                         ->columnSpanFull(),
                 ]),

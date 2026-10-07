@@ -139,7 +139,7 @@ class Task extends Model
             return 'Aģentam nav norādīts e-pasts.';
         }
 
-        $error = $this->sendAssignmentEmail($user->email, 'Aģents: '.$user->name);
+        $error = $this->sendAssignmentEmail($user->email, 'Aģents: '.$user->name, 'agent');
         if ($error === null) {
             $this->forceFill(['agent_notified_at' => now()])->saveQuietly();
         }
@@ -161,7 +161,7 @@ class Task extends Model
             return 'Izpildītājam nav norādīts e-pasts.';
         }
 
-        $error = $this->sendAssignmentEmail($sub->email, 'Izpildītājs: '.$sub->name);
+        $error = $this->sendAssignmentEmail($sub->email, 'Izpildītājs: '.$sub->name, 'izpilditajs');
         if ($error === null) {
             $this->forceFill(['izpilditajs_notified_at' => now()])->saveQuietly();
         }
@@ -174,7 +174,7 @@ class Task extends Model
      * template matches every other outgoing email. Attachments of the task are
      * included.
      */
-    private function sendAssignmentEmail(string $to, string $recipientLabel): ?string
+    private function sendAssignmentEmail(string $to, string $recipientLabel, string $role): ?string
     {
         $due = $this->due_display ?? '—';
 
@@ -199,6 +199,11 @@ class Task extends Model
                 subject: 'Jauns uzdevums: '.$this->title,
                 body: $body,
                 attachments: $this->attachments()->get(),
+                context: [
+                    'context' => 'task_notification',
+                    'task_id' => $this->id,
+                    'recipient_role' => $role,
+                ],
             );
         } catch (\Throwable $e) {
             Log::warning('Task assignment email failed', ['task' => $this->id, 'error' => $e->getMessage()]);

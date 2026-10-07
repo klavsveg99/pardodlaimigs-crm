@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\CrmProperty;
+use App\Models\EmailLog;
 use App\Services\AuditLogger;
 use App\Services\ImageOptimizer;
 use App\Services\Mail\EmailSender;
@@ -165,7 +166,12 @@ class PropertyAttachmentEmailController extends Controller
         $fromName = (string) ($request->user()?->name ?? '');
 
         try {
-            app(EmailSender::class)->send($to, $subject, $data['body'], $selected, $fromName);
+            app(EmailSender::class)->send($to, $subject, $data['body'], $selected, $fromName, context: [
+                'context' => 'attachment',
+                'property_id' => $property->id,
+                'client_id' => $client->id,
+                'attachment_ids' => $selected->pluck('id')->all(),
+            ]);
         } catch (EmailTooLargeException $e) {
             return response()->json(['message' => $e->userMessage()], 422);
         } catch (\Throwable $e) {
@@ -189,6 +195,7 @@ class PropertyAttachmentEmailController extends Controller
             'to_client' => strcasecmp($to, trim((string) $client->email)) === 0,
             'marked' => $selected->pluck('id')->all(),
             'sentAt' => now()->format('d.m.Y'),
+            'lastEmail' => EmailLog::lastForAttachment((int) $selected->first()->id)?->preview(),
         ]);
     }
 
@@ -222,7 +229,11 @@ class PropertyAttachmentEmailController extends Controller
         $fromName = (string) ($request->user()?->name ?? '');
 
         try {
-            app(EmailSender::class)->send($to, $subject, $data['body'], [], $fromName);
+            app(EmailSender::class)->send($to, $subject, $data['body'], [], $fromName, context: [
+                'context' => 'client_thanks',
+                'property_id' => $property->id,
+                'client_id' => $clientModel->id,
+            ]);
         } catch (\Throwable $e) {
             report($e);
 

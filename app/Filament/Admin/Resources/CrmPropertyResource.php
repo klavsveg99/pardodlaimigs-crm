@@ -10,6 +10,7 @@ use App\Filament\Admin\Resources\CrmPropertyResource\RelationManagers\ClientsRel
 use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Models\Client;
 use App\Models\CrmProperty;
+use App\Models\EmailLog;
 use App\Services\Ai\DescriptionGenerator;
 use App\Support\AgentField;
 use Filament\Actions;
@@ -726,6 +727,7 @@ class CrmPropertyResource extends Resource
                                     'propertySlug' => $record->slug ?? $record->getKey(),
                                     'client' => $client->id,
                                 ]),
+                                lastEmail: EmailLog::lastClientThanks($record->id, $client->id)?->preview(),
                             );
                         }),
                     Actions\Action::make('open_site')

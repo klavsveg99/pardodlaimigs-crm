@@ -9,6 +9,8 @@
     $izpilditajsEmail = $izpilditajsEmail ?? null;
     $agentNotifiedAt = $agentNotifiedAt ?? null;
     $izpilditajsNotifiedAt = $izpilditajsNotifiedAt ?? null;
+    $lastEmailAgent = $lastEmailAgent ?? null;
+    $lastEmailIzpilditajs = $lastEmailIzpilditajs ?? null;
     $result = session('task_notify_result');
     $csrf = csrf_token();
     // "Nosūtīts" tiek saglabāts datubāzē (agent_notified_at /
@@ -17,6 +19,8 @@
     $izpilditajsSent = (bool) $izpilditajsNotifiedAt;
     $failed = $result !== null && ! $result['ok'];
 @endphp
+
+@include('filament.partials.email-resend-confirm')
 
 <div class="pdc-task-notify">
     @if($failed)
@@ -39,10 +43,17 @@
                 @endif
             </div>
             @if($agentSent)
-                <div class="pdc-task-notify-sent" title="Nosūtīts">
+                <button type="button"
+                    class="pdc-task-notify-sent"
+                    style="cursor: pointer;"
+                    title="Nosūtīts · nospied, lai nosūtītu vēlreiz"
+                    onclick="pdcTaskNotify(this)"
+                    data-pdc-notify-url="{{ $sendUrlAgent }}"
+                    data-pdc-notify-token="{{ $csrf }}"
+                    data-pdc-last-email="{{ $lastEmailAgent ? json_encode($lastEmailAgent) : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5"/></svg>
                     <span>Nosūtīts</span>
-                </div>
+                </button>
             @elseif($agentName && $agentEmail && $sendUrlAgent)
                 <button type="button"
                     class="pdc-task-notify-btn"
@@ -66,10 +77,17 @@
                 @endif
             </div>
             @if($izpilditajsSent)
-                <div class="pdc-task-notify-sent" title="Nosūtīts">
+                <button type="button"
+                    class="pdc-task-notify-sent"
+                    style="cursor: pointer;"
+                    title="Nosūtīts · nospied, lai nosūtītu vēlreiz"
+                    onclick="pdcTaskNotify(this)"
+                    data-pdc-notify-url="{{ $sendUrlIzpilditajs }}"
+                    data-pdc-notify-token="{{ $csrf }}"
+                    data-pdc-last-email="{{ $lastEmailIzpilditajs ? json_encode($lastEmailIzpilditajs) : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5"/></svg>
                     <span>Nosūtīts</span>
-                </div>
+                </button>
             @elseif($izpilditajsName && $izpilditajsEmail && $sendUrlIzpilditajs)
                 <button type="button"
                     class="pdc-task-notify-btn"
@@ -84,23 +102,32 @@
     </div>
 </div>
 
-<template data-pdc-notify-sent-tpl>
-    <div class="pdc-task-notify-sent" title="Nosūtīts">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5"/></svg>
-        <span>Nosūtīts</span>
-    </div>
-</template>
-
 <script>
     // POST caur fetch (nevis formas submit) — poga uzreiz tiek aizstāta ar
-    // "Nosūtīts" bez lapas pārlādes. Statuss paliek arī datubāzē.
+    // "Nosūtīts" bez lapas pārlādes. Statuss paliek arī datubāzē. Ja e-pasts
+    // jau reiz sūtīts, vispirms apstiprina atkārtotu sūtīšanu ar pēdējā
+    // e-pasta saturu.
     if (! window.pdcTaskNotify) {
+        window.pdcParseLastEmail = function (value) {
+            try { return value ? JSON.parse(value) : null; } catch (e) { return null; }
+        };
+
         window.pdcTaskNotify = function (el) {
+            if (el.disabled) return;
+            const lastEmail = window.pdcParseLastEmail(el.dataset.pdcLastEmail);
+            if (lastEmail && window.pdcResendConfirm) {
+                window.pdcResendConfirm(lastEmail, () => window.pdcTaskNotifySend(el));
+                return;
+            }
+            window.pdcTaskNotifySend(el);
+        };
+
+        window.pdcTaskNotifySend = function (el) {
             if (el.disabled) return;
             el.disabled = true;
 
+            const url = el.dataset.pdcNotifyUrl;
             const result = document.querySelector('[data-pdc-notify-result]');
-            const tpl = document.querySelector('template[data-pdc-notify-sent-tpl]');
 
             const showResult = (message, ok) => {
                 if (! result) return;
@@ -111,7 +138,7 @@
                 result.style.color = ok ? 'var(--pdc-primary, #285854)' : '#b91c1c';
             };
 
-            fetch(el.dataset.pdcNotifyUrl, {
+            fetch(url, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': el.dataset.pdcNotifyToken,
@@ -126,8 +153,13 @@
                         showResult(data.message || 'Nosūtīšana neizdevās.', false);
                         return;
                     }
-                    if (tpl) {
-                        el.replaceWith(tpl.content.cloneNode(true));
+                    el.disabled = false;
+                    if (data.lastEmail) {
+                        el.dataset.pdcLastEmail = JSON.stringify(data.lastEmail);
+                    }
+                    if (! el.classList.contains('pdc-task-notify-sent')) {
+                        // Pirmā nosūtīšana: poga kļūst par klikšķējamu "Nosūtīts".
+                        el.replaceWith(window.pdcBuildSentButton(url, el.dataset.pdcNotifyToken, data.lastEmail || null));
                     }
                     showResult(data.message || 'Nosūtīts.', true);
                 })
@@ -135,6 +167,23 @@
                     el.disabled = false;
                     showResult('Nosūtīšana neizdevās.', false);
                 });
+        };
+
+        window.pdcBuildSentButton = function (url, token, lastEmail) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'pdc-task-notify-sent';
+            b.style.cursor = 'pointer';
+            b.title = 'Nosūtīts · nospied, lai nosūtītu vēlreiz';
+            b.setAttribute('data-pdc-notify-url', url || '');
+            b.setAttribute('data-pdc-notify-token', token || '');
+            if (lastEmail) {
+                b.setAttribute('data-pdc-last-email', JSON.stringify(lastEmail));
+            }
+            b.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5"/></svg><span>Nosūtīts</span>';
+            b.addEventListener('click', () => window.pdcTaskNotify(b));
+
+            return b;
         };
     }
 </script>

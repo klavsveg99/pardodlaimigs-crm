@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\EmailLog;
 use App\Models\Task;
 use App\Models\Viewing;
 use App\Services\AuditLogger;
@@ -218,7 +219,14 @@ class RecordAttachmentEmailController extends Controller
         $fromName = (string) ($request->user()?->name ?? '');
 
         try {
-            app(EmailSender::class)->send($to, $subject, $data['body'], $selected, $fromName);
+            $context = [
+                'context' => 'attachment',
+                'client_id' => $client->id,
+                'attachment_ids' => $selected->pluck('id')->all(),
+            ];
+            $context[$type === 'viewing' ? 'viewing_id' : 'task_id'] = $record->getKey();
+
+            app(EmailSender::class)->send($to, $subject, $data['body'], $selected, $fromName, context: $context);
         } catch (EmailTooLargeException $e) {
             return response()->json(['message' => $e->userMessage()], 422);
         } catch (\Throwable $e) {
@@ -242,6 +250,7 @@ class RecordAttachmentEmailController extends Controller
             'to_client' => strcasecmp($to, trim((string) $client->email)) === 0,
             'marked' => $selected->pluck('id')->all(),
             'sentAt' => now()->format('d.m.Y'),
+            'lastEmail' => EmailLog::lastForAttachment((int) $selected->first()->id)?->preview(),
         ]);
     }
 }

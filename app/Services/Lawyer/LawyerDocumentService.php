@@ -167,6 +167,11 @@ class LawyerDocumentService
             $attachments,
             $user?->name,
             internal: true,
+            context: [
+                'context' => 'lawyer_request',
+                'property_id' => $property->id,
+                'attachment_ids' => $attachments->pluck('id')->all(),
+            ],
         );
 
         $request = LawyerRequest::create([

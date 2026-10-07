@@ -111,10 +111,11 @@ final class LawyerDocumentAction
         }
 
         $lastSent = $property->lawyerRequests()->first()?->sent_at;
+        $lastEmail = \App\Models\EmailLog::lastLawyer($property->id)?->preview();
 
         return [
             View::make('filament.admin.partials.lawyer-sent-notice')
-                ->viewData(['sentAt' => $lastSent?->format('d.m.Y H:i')]),
+                ->viewData(['sentAt' => $lastSent?->format('d.m.Y H:i'), 'lastEmail' => $lastEmail]),
             Forms\Components\Hidden::make('resend_confirmed')->default(false),
             SchemaActions::make([
                 Actions\Action::make('resend')

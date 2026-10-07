@@ -270,6 +270,9 @@
                         @php
                             $sentAt = $record->clientEmailSentAt($client->id);
                             $canSend = $client->email && ! auth()->user()?->isPhoto() && $record->status === 'sold';
+                            $lastEmailData = $sentAt
+                                ? \App\Models\EmailLog::lastClientThanks($record->id, $client->id)?->preview()
+                                : null;
                         @endphp
                         @if ($sentAt && $canSend)
                             {{-- Jau nosūtīts, bet klikšķis atver to pašu modāli, lai var nosūtīt vēlreiz. --}}
@@ -279,7 +282,8 @@
                                 data-client-name="{{ $client->name }}"
                                 data-client-email="{{ $client->email }}"
                                 data-send-url="{{ route('properties.clients.send-email', ['propertySlug' => $record->slug ?? $record->getKey(), 'client' => $client->id]) }}"
-                                x-on:click="window.dispatchEvent(new CustomEvent('pdc-open-client-email', { detail: { id: Number($el.dataset.clientId), name: $el.dataset.clientName, email: $el.dataset.clientEmail, url: $el.dataset.sendUrl } }))"
+                                data-last-email="{{ json_encode($lastEmailData) }}"
+                                x-on:click="window.dispatchEvent(new CustomEvent('pdc-open-client-email', { detail: { id: Number($el.dataset.clientId), name: $el.dataset.clientName, email: $el.dataset.clientEmail, url: $el.dataset.sendUrl, lastEmail: JSON.parse($el.dataset.lastEmail || 'null') } }))"
                                 class="pdc-client-sent pdc-client-sent--clickable"
                                 title="Nosūtīts {{ $sentAt->format('d.m.Y') }} · nospied, lai nosūtītu vēlreiz"
                             >

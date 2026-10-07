@@ -106,7 +106,34 @@
             });
     }
 
-    $attachmentsJson = $existingAttachments->map(function ($a) use ($sentAtByAttachment): array {
+    // Pēdējais nosūtītais e-pasts katram failam (no e-pastu žurnāla), lai
+    // "Nosūtīts" atzīme varētu piedāvāt atkārtotu sūtīšanu ar saturu.
+    $lastEmailByAttachment = [];
+    if ($record && ($isSendable || $isPropertySendable || $isRecordSendable)) {
+        \App\Models\EmailLog::query()
+            ->where('context', 'attachment')
+            ->when(
+                $isPropertySendable,
+                fn ($q) => $q->where('property_id', $record->id),
+                fn ($q) => $isRecordSendable
+                    ? $q->where($record instanceof \App\Models\Viewing ? 'viewing_id' : 'task_id', $record->getKey())
+                    : $q->where('client_id', $record->id),
+            )
+            ->latest('id')
+            ->limit(50)
+            ->get()
+            ->each(function ($log) use (&$lastEmailByAttachment): void {
+                $preview = $log->preview();
+                foreach ((array) $log->attachment_ids as $id) {
+                    $id = (int) $id;
+                    if ($id > 0 && ! isset($lastEmailByAttachment[$id])) {
+                        $lastEmailByAttachment[$id] = $preview;
+                    }
+                }
+            });
+    }
+
+    $attachmentsJson = $existingAttachments->map(function ($a) use ($sentAtByAttachment, $lastEmailByAttachment): array {
         $sent = $sentAtByAttachment[$a->id] ?? null;
 
         return [
@@ -118,6 +145,7 @@
             'size' => $a->size,
             'sentAt' => $sent['at'] ?? null,
             'sentToClient' => (bool) ($sent['toClient'] ?? false),
+            'lastEmail' => $lastEmailByAttachment[$a->id] ?? null,
             'created' => $a->created_at?->format('d.m.Y'),
         ];
     })->values()->toJson();
@@ -188,6 +216,8 @@
             .'x-on:touchend="onTouchEnd($event, index)"'
         : '';
 @endphp
+
+@include('filament.partials.email-resend-confirm')
 
 <script type="application/json" id="{{ $uid }}-data">{!! $attachmentsJson !!}</script>
 
@@ -368,13 +398,27 @@
                 detail: { file: { id: file.id, name: file.name }, all },
             }));
         },
+        // Ja fails jau reiz nosūtīts, vispirms apstiprina ar pēdējā e-pasta saturu.
+        resendFile(file) {
+            if (!file || typeof file.id !== 'number') return;
+            const last = file.lastEmail || null;
+            if (last && window.pdcResendConfirm) {
+                window.pdcResendConfirm(last, () => this.sendFile(file));
+                return;
+            }
+            this.sendFile(file);
+        },
         // Marks files as sent after the popup sends. sentToClient is true only
         // when the recipient was the client's own e-mail address.
         markSent(detail) {
             if (!detail) return;
             (detail.marked || []).forEach(id => {
                 const f = this.files.find(x => x.id === id);
-                if (f) { f.sentAt = detail.sentAt || ''; f.sentToClient = !!detail.toClient; }
+                if (f) {
+                    f.sentAt = detail.sentAt || '';
+                    f.sentToClient = !!detail.toClient;
+                    if (detail.lastEmail) { f.lastEmail = detail.lastEmail; }
+                }
             });
         },
         init() {
@@ -1020,11 +1064,11 @@
                     <span style="background: var(--pdc-primary); color: white; font-size: 0.72rem; font-weight: 600; padding: 0.22rem 0.5rem; border-radius: 0.35rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; max-width: 100%; box-shadow: 0 1px 4px rgba(0,0,0,0.25);" x-text="file.name"></span>
                 </div>
 
-                <div x-show="file.sentAt" x-bind:title="file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts'"
-                    style="position: absolute; bottom: 0.5rem; left: 0.5rem; z-index: 11; height: 1.6rem; width: 1.6rem; border-radius: 9999px; background: var(--pdc-primary, #285854); color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.35); box-shadow: 0 1px 4px rgba(0,0,0,0.3);"
+                <button type="button" x-show="file.sentAt" x-on:click.stop="resendFile(file)" x-bind:title="(file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts') + ' · nospied, lai nosūtītu vēlreiz'"
+                    style="position: absolute; bottom: 0.5rem; left: 0.5rem; z-index: 11; height: 1.6rem; width: 1.6rem; padding: 0; border-radius: 9999px; background: var(--pdc-primary, #285854); color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.35); box-shadow: 0 1px 4px rgba(0,0,0,0.3); cursor: pointer;"
                     x-cloak>
                     <svg x-show="file.sentAt" style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-                </div>
+                </button>
 
                 @if($isReorderable)
                     <div x-show="index === 0" class="pdc-thumb-main-badge" style="position: absolute; bottom: 0.5rem; left: 0.5rem; z-index: 10; background: var(--pdc-primary); color: white; font-size: 0.68rem; font-weight: 700; padding: 0.28rem 0.55rem; border-radius: 0.4rem; letter-spacing: 0.04em; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.2); line-height: 1;">GALVENĀ</div>
@@ -1071,10 +1115,10 @@
                         <span x-show="file.created && sizeLabel(file.size)">·</span>
                         <span x-show="sizeLabel(file.size)" x-text="sizeLabel(file.size)"></span>
                         @if($isRowMode)
-                        <span x-bind:style="{ display: file.sentAt ? 'inline-flex' : 'none' }" x-bind:title="file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts'" class="fi-badge fi-color-success fi-color" style="display: inline-flex; align-items: center; gap: 0.25rem;" x-cloak>
+                        <button type="button" x-on:click.stop="resendFile(file)" x-bind:style="{ display: file.sentAt ? 'inline-flex' : 'none' }" x-bind:title="(file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts') + ' · nospied, lai nosūtītu vēlreiz'" class="fi-badge fi-color-success fi-color" style="display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer;" x-cloak>
                             <svg style="width: 0.8rem; height: 0.8rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                             <span x-text="file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts'">Nosūtīts klientam</span>
-                        </span>
+                        </button>
                         @endif
                     </div>
                 </div>

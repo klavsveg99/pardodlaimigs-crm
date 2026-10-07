@@ -18,6 +18,8 @@
     $savedBody = filled($user?->client_email_body) ? (string) $user->client_email_body : $defaultBody;
 @endphp
 
+@include('filament.partials.email-resend-confirm')
+
 <div
     data-pdc-client-email-popup
     x-data="{
@@ -36,6 +38,15 @@
             this.to = detail.email || '';
             this.subject = this.savedSubject;
             this.error = '';
+            // Ja šim klientam jau sūtīts, vispirms apstiprina atkārtotu
+            // nosūtīšanu, parādot pēdējo e-pastu.
+            if (detail.lastEmail && window.pdcResendConfirm) {
+                window.pdcResendConfirm(detail.lastEmail, () => this.openEditor());
+                return;
+            }
+            this.openEditor();
+        },
+        openEditor() {
             this.open = true;
             document.body.style.overflow = 'hidden';
             this.$nextTick(() => {
