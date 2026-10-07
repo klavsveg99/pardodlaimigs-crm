@@ -26,6 +26,10 @@
         }
         .pdc-client-sent svg { width: 0.9rem; height: 0.9rem; flex: none; }
         .dark .pdc-client-sent { background: rgba(40, 88, 84, 0.28); border-color: rgba(108, 157, 151, 0.45); color: #98bcb8; }
+        /* Nosūtīts-pill ļauj nosūtīt vēlreiz ar vienu klikšķi. */
+        .pdc-client-sent--clickable { cursor: pointer; font-family: inherit; }
+        .pdc-client-sent--clickable:hover { background: #e6efee; border-color: #a8c7c3; }
+        .dark .pdc-client-sent--clickable:hover { background: rgba(40, 88, 84, 0.42); border-color: rgba(108, 157, 151, 0.62); }
     </style>
 
     <x-filament::section heading="Pamatdati">
@@ -265,13 +269,29 @@
                         </a>
                         @php
                             $sentAt = $record->clientEmailSentAt($client->id);
+                            $canSend = $client->email && ! auth()->user()?->isPhoto() && $record->status === 'sold';
                         @endphp
-                        @if ($sentAt)
+                        @if ($sentAt && $canSend)
+                            {{-- Jau nosūtīts, bet klikšķis atver to pašu modāli, lai var nosūtīt vēlreiz. --}}
+                            <button
+                                type="button"
+                                data-client-id="{{ $client->id }}"
+                                data-client-name="{{ $client->name }}"
+                                data-client-email="{{ $client->email }}"
+                                data-send-url="{{ route('properties.clients.send-email', ['propertySlug' => $record->slug ?? $record->getKey(), 'client' => $client->id]) }}"
+                                x-on:click="window.dispatchEvent(new CustomEvent('pdc-open-client-email', { detail: { id: Number($el.dataset.clientId), name: $el.dataset.clientName, email: $el.dataset.clientEmail, url: $el.dataset.sendUrl } }))"
+                                class="pdc-client-sent pdc-client-sent--clickable"
+                                title="Nosūtīts {{ $sentAt->format('d.m.Y') }} · nospied, lai nosūtītu vēlreiz"
+                            >
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                <span>Nosūtīts</span>
+                            </button>
+                        @elseif ($sentAt)
                             <span class="pdc-client-sent" title="Nosūtīts {{ $sentAt->format('d.m.Y') }}">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5"/></svg>
                                 <span>Nosūtīts</span>
                             </span>
-                        @elseif ($client->email && ! auth()->user()?->isPhoto() && $record->status === 'sold')
+                        @elseif ($canSend)
                             <button
                                 type="button"
                                 data-client-id="{{ $client->id }}"
