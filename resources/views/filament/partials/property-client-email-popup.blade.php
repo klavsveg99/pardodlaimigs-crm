@@ -1,13 +1,21 @@
 @php
     // "Paldies par sadarbību" e-pasts saistītajam klientam. Atverams ar
     // notikumu `pdc-open-client-email` (detail {id, name, email, url}).
-    $defaultSubject = 'Paldies par sadarbību';
+    // Lietotāja pielāgotais temats/saturs tiek saglabāts viņa profilā pēc
+    // nosūtīšanas (PropertyAttachmentEmailController::sendToClient).
     $reviewUrl = \App\Services\Mail\EmailSender::GOOGLE_REVIEW_URL;
+    $facebookUrl = \App\Services\Mail\EmailSender::FACEBOOK_REVIEW_URL;
+    $defaultSubject = 'Paldies par sadarbību';
     $defaultBody = '<p>Sveiki,</p>'
         .'<p>Pateicamies par uzticēšanos Jūsu īpašuma pārdošanā.</p>'
         .'<p>Novērtēsim, ja atstāsiet atsauksmi par mūsu sadarbību šeit:<br>'
         .'<a href="'.$reviewUrl.'">'.$reviewUrl.'</a></p>'
+        .'<p>Vai arī Facebook:<br>'
+        .'<a href="'.$facebookUrl.'">'.$facebookUrl.'</a></p>'
         .'<p>Jūsu nekustamā īpašuma birojs,<br>Pārdod Laimīgs</p>';
+    $user = auth()->user();
+    $savedSubject = filled($user?->client_email_subject) ? (string) $user->client_email_subject : $defaultSubject;
+    $savedBody = filled($user?->client_email_body) ? (string) $user->client_email_body : $defaultBody;
 @endphp
 
 <div
@@ -18,19 +26,21 @@
         error: '',
         client: null,
         to: '',
-        subject: @js($defaultSubject),
+        subject: @js($savedSubject),
+        savedSubject: @js($savedSubject),
+        savedBody: @js($savedBody),
         init() {},
         openWith(detail) {
             if (! detail) return;
             this.client = detail;
             this.to = detail.email || '';
-            this.subject = @js($defaultSubject);
+            this.subject = this.savedSubject;
             this.error = '';
             this.open = true;
             document.body.style.overflow = 'hidden';
             this.$nextTick(() => {
                 if (this.$refs.editor) {
-                    this.$refs.editor.innerHTML = @js($defaultBody);
+                    this.$refs.editor.innerHTML = this.savedBody;
                 }
             });
         },
@@ -72,6 +82,9 @@
                 }
                 const to = this.to;
                 const sentClientId = this.client ? this.client.id : null;
+                // Saglabā pielāgoto saturu nākamajai atvēršanai (arī serverī).
+                this.savedSubject = this.subject;
+                this.savedBody = this.$refs.editor ? this.$refs.editor.innerHTML : this.savedBody;
                 this.open = false;
                 this.client = null;
                 document.body.style.overflow = '';

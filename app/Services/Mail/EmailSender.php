@@ -23,6 +23,9 @@ class EmailSender
     /** Google review link shown in every outgoing email footer. */
     public const GOOGLE_REVIEW_URL = 'https://g.page/r/CRZd6XZu2hhmEAE/review';
 
+    /** Facebook review link shown next to the Google one. */
+    public const FACEBOOK_REVIEW_URL = 'https://www.facebook.com/PardodLaimigs/reviews/?id=100067131518867&sk=reviews';
+
     public function __construct(
         private readonly ?string $fromAddress = null,
         private readonly ?string $fromName = null,
@@ -123,6 +126,7 @@ class EmailSender
 
         $logo = e(url('images/favicon-32x32.jpg'));
         $reviewUrl = e(self::GOOGLE_REVIEW_URL);
+        $facebookUrl = e(self::FACEBOOK_REVIEW_URL);
         $footer = $includeFooter
             ? '<hr style="border:none;border-top:1px solid #e2e8e6;margin:20px 0 12px;">'
                 .'<p style="font-size:12px;color:#6b7280;margin:0;">'
@@ -132,6 +136,9 @@ class EmailSender
                 .'</p>'
                 .'<p style="font-size:12px;color:#6b7280;margin:6px 0 0;">'
                 .'<a href="'.$reviewUrl.'" style="color:#285854;">Atstājiet atsauksmi Google</a>'
+                .'</p>'
+                .'<p style="font-size:12px;color:#6b7280;margin:6px 0 0;">'
+                .'<a href="'.$facebookUrl.'" style="color:#285854;">Atstājiet atsauksmi Facebook</a>'
                 .'</p>'
             : '';
 

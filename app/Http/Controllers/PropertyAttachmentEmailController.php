@@ -236,6 +236,13 @@ class PropertyAttachmentEmailController extends Controller
             'subject' => $subject,
         ]);
 
+        // Pateicības e-pasta pielāgoto tematu/saturu saglabā lietotāja profilā,
+        // lai nākamreiz tas atvērtos ar viņa versiju (nevis noklusējumu).
+        $request->user()?->update([
+            'client_email_subject' => $subject,
+            'client_email_body' => $data['body'],
+        ]);
+
         return response()->json([
             'ok' => true,
             'to' => $to,
