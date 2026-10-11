@@ -230,6 +230,53 @@
         background-color: #f9fafb !important;
     }
 
+    /* ── "Pievienot jaunu..." hover hint ───────────────────────── */
+    /* Uzklikšķinot dienas/laika šūnu, var uzreiz pievienot uzdevumu
+       vai apskati. Mājiņa parādās tikai uz peles uzlikšanas un ir
+       dekoratīva (pointer-events: none), tāpēc nebloķē dateClick. */
+    .fc .fc-daygrid-day-frame,
+    .fc .fc-timegrid-slot-lane {
+        position: relative;
+    }
+
+    .fc .fc-daygrid-day-frame::after,
+    .fc .fc-timegrid-slot-lane::after {
+        content: "Pievienot jaunu...";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+        display: inline-block;
+        padding: 0.22rem 0.5rem 0.22rem 1.4rem;
+        border-radius: 9999px;
+        background-color: rgba(40, 88, 84, 0.1);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23285854' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M10 4v12M4 10h12'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: 0.45rem center;
+        background-size: 0.85rem 0.85rem;
+        color: var(--pdc-primary);
+        font-size: 0.7rem;
+        font-weight: 600;
+        line-height: 1.1;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.12s ease;
+        pointer-events: none;
+    }
+
+    .fc .fc-daygrid-day:hover .fc-daygrid-day-frame::after,
+    .fc .fc-timegrid-slot-lane:hover::after {
+        opacity: 1;
+    }
+
+    .dark .fc .fc-daygrid-day-frame::after,
+    .dark .fc .fc-timegrid-slot-lane::after {
+        background-color: rgba(40, 88, 84, 0.35);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2334d399' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M10 4v12M4 10h12'/%3E%3C/svg%3E");
+        color: #34d399;
+    }
+
     /* ── Events ────────────────────────────────────────────────── */
     .fc .fc-event {
         border-radius: 0.25rem !important;
