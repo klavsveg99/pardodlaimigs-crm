@@ -76,7 +76,11 @@
 
                         </a>
 
-                        <div style="flex: none; display: inline-flex; align-items: center; gap: 0.4rem; padding-right: 0.6rem;">
+                        {{-- Vienoti labās puses darbību izmēri, atstarpes un
+                             līdzinājums visiem ierakstiem (līdi, uzdevumi,
+                             apskates): visi pogu lauki ir 1.7rem, vienāds
+                             gap, un "Atvērt" bulta vienmēr ir galējā labajā. --}}
+                        <div style="flex: none; display: inline-flex; align-items: center; justify-content: flex-end; gap: 0.4rem; padding-left: 0.3rem; padding-right: 0.6rem;">
                             @if ($quickMethod)
                                 <button
                                     type="button"
@@ -84,32 +88,35 @@
                                     x-on:click="if (busy) return; busy = true; $el.closest('.pdc-today-row').classList.add('is-completing'); $wire.{{ $quickMethod }}({{ $quickId }}).catch(() => { busy = false; $el.closest('.pdc-today-row').classList.remove('is-completing'); })"
                                     x-bind:disabled="busy"
                                     title="{{ $quickTitle }}"
+                                    aria-label="{{ $quickTitle }}"
                                     style="width: 1.7rem; height: 1.7rem; border-radius: 9999px; background: #f1f6f5; color: var(--pdc-primary, #285854); border: 1px solid #bfd6d3; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 0;"
                                 >
                                     <svg x-show="!busy" style="width: 0.95rem; height: 0.95rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4.5 12.75 6 6 9-13.5"/></svg>
                                     <svg x-show="busy" x-cloak class="pdc-today-spinner" style="width: 0.95rem; height: 0.95rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a9 9 0 1 0 9 9"/></svg>
                                 </button>
                             @endif
+
+                            @if (! empty($item['dismissable']))
+                                <button
+                                    type="button"
+                                    wire:click="dismiss(@js($item['key']))"
+                                    title="Aizvērt"
+                                    aria-label="Aizvērt"
+                                    style="width: 1.7rem; height: 1.7rem; border-radius: 9999px; background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 0;"
+                                >
+                                    <svg style="width: 0.85rem; height: 0.85rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            @endif
+
                             <a
                                 href="{{ $item['url'] }}"
                                 title="Atvērt"
                                 aria-label="Atvērt"
-                                style="display: inline-flex; align-items: center; justify-content: center; color: #9ca3af; text-decoration: none; cursor: pointer;"
+                                style="width: 1.7rem; height: 1.7rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; color: #9ca3af; text-decoration: none; cursor: pointer;"
                             >
                                 <x-filament::icon icon="heroicon-o-chevron-right" style="flex: none; width: 1.1rem; height: 1.1rem;" />
                             </a>
                         </div>
-
-                        @if (! empty($item['dismissable']))
-                            <button
-                                type="button"
-                                wire:click="dismiss(@js($item['key']))"
-                                title="Aizvērt"
-                                style="flex: none; align-self: center; margin: 0 0.6rem 0 0; width: 1.7rem; height: 1.7rem; border-radius: 9999px; background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 0;"
-                            >
-                                <svg style="width: 0.85rem; height: 0.85rem; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                            </button>
-                        @endif
                     </div>
                 @endforeach
             </div>
