@@ -3,6 +3,7 @@
 <style>
     /* ── Container ─────────────────────────────────────────────── */
     .fc-calendar-wrapper {
+        position: relative;
         border: 1px solid var(--fi-color-base-200, #e5e7eb);
         border-radius: var(--fi-radius-lg, 0.75rem);
         background: var(--fi-color-base-50, #fff);
@@ -232,49 +233,32 @@
 
     /* ── "Pievienot jaunu..." hover hint ───────────────────────── */
     /* Uzklikšķinot dienas/laika šūnu, var uzreiz pievienot uzdevumu
-       vai apskati. Mājiņa parādās tikai uz peles uzlikšanas un ir
-       dekoratīva (pointer-events: none), tāpēc nebloķē dateClick. */
-    .fc .fc-daygrid-day-frame,
-    .fc .fc-timegrid-slot-lane {
-        position: relative;
-    }
-
-    .fc .fc-daygrid-day-frame::after,
-    .fc .fc-timegrid-slot-lane::after {
-        content: "Pievienot jaunu...";
+       vai apskati. Mājiņa seko kursoram pār klikšķināmajām vietām un
+       ir dekoratīva (pointer-events: none), tāpēc nebloķē dateClick. */
+    .pdc-cal-add-hint {
         position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 2;
-        display: inline-block;
-        padding: 0.22rem 0.5rem 0.22rem 1.4rem;
+        top: 0;
+        left: 0;
+        display: none;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.3rem 0.6rem;
         border-radius: 9999px;
-        background-color: rgba(40, 88, 84, 0.1);
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23285854' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M10 4v12M4 10h12'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: 0.45rem center;
-        background-size: 0.85rem 0.85rem;
-        color: var(--pdc-primary);
-        font-size: 0.7rem;
+        background: var(--pdc-primary);
+        color: #ffffff;
+        font-size: 0.72rem;
         font-weight: 600;
         line-height: 1.1;
         white-space: nowrap;
-        opacity: 0;
-        transition: opacity 0.12s ease;
         pointer-events: none;
+        z-index: 6;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
     }
 
-    .fc .fc-daygrid-day:hover .fc-daygrid-day-frame::after,
-    .fc .fc-timegrid-slot-lane:hover::after {
-        opacity: 1;
-    }
-
-    .dark .fc .fc-daygrid-day-frame::after,
-    .dark .fc .fc-timegrid-slot-lane::after {
-        background-color: rgba(40, 88, 84, 0.35);
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2334d399' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M10 4v12M4 10h12'/%3E%3C/svg%3E");
-        color: #34d399;
+    .pdc-cal-add-hint svg {
+        width: 0.85rem;
+        height: 0.85rem;
+        flex: 0 0 auto;
     }
 
     /* ── Events ────────────────────────────────────────────────── */
@@ -698,6 +682,55 @@
                         expandRows: false,
                     });
                     this.calendar.render();
+                    this.attachAddHint();
+                },
+                // Pelēm pārvietojoties pār klikšķināmajām dienas/laika
+                // vietām, parādām mājiņu "+ Pievienot jaunu...", lai ātrā
+                // pievienošana būtu pamanāma. Darbojas gan mēneša (daygrid),
+                // gan nedēļas/dienas (timegrid) skatā.
+                attachAddHint() {
+                    if (this._addHintAttached) return;
+                    this._addHintAttached = true;
+
+                    const wrapper = this.$el.closest('.fc-calendar-wrapper') || this.$el;
+                    const hint = document.createElement('div');
+                    hint.className = 'pdc-cal-add-hint';
+                    hint.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg><span>Pievienot jaunu...</span>';
+                    wrapper.appendChild(hint);
+
+                    const hide = () => { hint.style.display = 'none'; };
+
+                    this.$el.addEventListener('mousemove', (e) => {
+                        const target = e.target;
+                        if (! (target instanceof Element)
+                            || target.closest('.fc-event, .fc-more-link, .fc-daygrid-day-top')
+                            || ! target.closest('.fc-daygrid-day, .fc-timegrid-slot-lane')) {
+                            hide();
+                            return;
+                        }
+
+                        if (hint.style.display !== 'inline-flex') {
+                            hint.style.display = 'inline-flex';
+                        }
+
+                        const wr = wrapper.getBoundingClientRect();
+                        const hw = hint.offsetWidth;
+                        const hh = hint.offsetHeight;
+                        let x = e.clientX - wr.left + 12;
+                        let y = e.clientY - wr.top + 14;
+
+                        if (x + hw > wr.width - 6) {
+                            x = Math.max(6, wr.width - hw - 6);
+                        }
+                        if (y + hh > wr.height - 6) {
+                            y = y - hh - 28;
+                        }
+
+                        hint.style.left = x + 'px';
+                        hint.style.top = y + 'px';
+                    });
+
+                    this.$el.addEventListener('mouseleave', hide);
                 },
             }));
         });
