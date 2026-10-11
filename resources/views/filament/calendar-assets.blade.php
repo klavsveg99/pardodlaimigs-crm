@@ -689,6 +689,12 @@
                 // pievienošana būtu pamanāma. Darbojas gan mēneša (daygrid),
                 // gan nedēļas/dienas (timegrid) skatā.
                 attachAddHint() {
+                    // Skārienierīcēs nav īstas peles uzlikšanas, tāpēc
+                    // mājiņu vispār neveidojam - rādam tikai ierīcēs, kur
+                    // hover ir iespējams (dators ar peli).
+                    if (! window.matchMedia('(hover: hover)').matches) {
+                        return;
+                    }
                     if (this._addHintAttached) return;
                     this._addHintAttached = true;
 
