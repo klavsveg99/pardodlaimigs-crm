@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CalendarQuickAddController;
 use App\Http\Controllers\ClientAttachmentEmailController;
 use App\Http\Controllers\PropertyAttachmentEmailController;
 use App\Http\Controllers\PropertyGalleryDownloadController;
@@ -305,6 +306,13 @@ foreach (['viewings' => 'Viewing', 'tasks' => 'Task'] as $segment => $suffix) {
         [RecordAttachmentEmailController::class, "send{$suffix}"]
     )->middleware(['auth', 'web'])->name("{$segment}.attachments.send-email");
 }
+
+// ── Calendar quick-add (click a day/time cell → task or viewing) ──
+Route::get('/calendar/quick-add/options', [CalendarQuickAddController::class, 'options'])
+    ->middleware(['auth', 'web'])->name('calendar.quick-add.options');
+
+Route::post('/calendar/quick-add', [CalendarQuickAddController::class, 'store'])
+    ->middleware(['auth', 'web'])->name('calendar.quick-add.store');
 
 // ── Task assignment notification (manual, from the task page section) ──
 Route::post('/tasks/{id}/notify/agent',

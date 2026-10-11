@@ -154,6 +154,12 @@ class CrmPropertyResource extends Resource
                                 ->minValue(0)
                                 ->prefix('€')
                                 ->placeholder('Ievadi gala cenu')
+                                // Obligāti, tiklīdz statuss ir "Pārdots" - gan
+                                // šeit, gan ātrajā darbībā "Pārdots".
+                                ->required(fn (Get $get): bool => $get('status') === 'sold')
+                                ->validationMessages([
+                                    'required' => 'Gala cena ir obligāta, atzīmējot īpašumu kā pārdotu.',
+                                ])
                                 ->live(onBlur: false),
                             Forms\Components\TextInput::make('commission_eur')
                                 ->label('Komisijas summa (€)')
@@ -161,6 +167,10 @@ class CrmPropertyResource extends Resource
                                 ->minValue(0)
                                 ->prefix('€')
                                 ->placeholder('Ievadi komisiju')
+                                ->required(fn (Get $get): bool => $get('status') === 'sold')
+                                ->validationMessages([
+                                    'required' => 'Komisijas summa ir obligāta, atzīmējot īpašumu kā pārdotu.',
+                                ])
                                 ->live(onBlur: false),
                             Forms\Components\Placeholder::make('commission_percent_display')
                                 ->label('Komisija %')
@@ -700,6 +710,65 @@ class CrmPropertyResource extends Resource
             ->filtersFormColumns(3)
             ->actions([
                 Actions\ActionGroup::make([
+                    // Ātrā darbība "Pārdots": darījuma reģistrēšana vienā
+                    // klikšķī (gala cena + komisija), bez pilnas rediģēšanas
+                    // formas. Statuss kļūst "Pārdots".
+                    Actions\Action::make('mark_sold')
+                        ->label('Pārdots')
+                        ->icon('heroicon-o-check-badge')
+                        ->color('success')
+                        ->visible(fn (CrmProperty $record): bool => $record->status !== 'sold'
+                            && $record->status !== 'deleted'
+                            && ! auth()->user()?->isPhoto())
+                        ->modalHeading('Reģistrēt darījumu')
+                        ->modalDescription('Atzīmēt īpašumu kā pārdotu. Norādi gala cenu un komisijas summu.')
+                        ->modalSubmitActionLabel('Atzīmēt kā pārdotu')
+                        ->form([
+                            Forms\Components\TextInput::make('final_price_eur')
+                                ->label('Gala cena (€)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->prefix('€')
+                                ->required()
+                                ->validationMessages([
+                                    'required' => 'Gala cena ir obligāta.',
+                                ]),
+                            Forms\Components\TextInput::make('commission_eur')
+                                ->label('Komisijas summa (€)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->prefix('€')
+                                ->required()
+                                ->validationMessages([
+                                    'required' => 'Komisijas summa ir obligāta.',
+                                ]),
+                        ])
+                        ->action(function (CrmProperty $record, array $data, $livewire): void {
+                            // Pārdotu īpašumu nevar reģistrēt bez pārdevēja.
+                            if (! $record->hasSeller()) {
+                                Notification::make()
+                                    ->title('Nav piesaistīta pārdevēja')
+                                    ->body('Īpašumu nevar atzīmēt kā "Pārdots" bez piesaistīta pārdevēja. Vispirms piesaisti pārdevēju.')
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $record->update([
+                                'status' => 'sold',
+                                'final_price_eur' => $data['final_price_eur'],
+                                'commission_eur' => $data['commission_eur'],
+                            ]);
+
+                            Notification::make()
+                                ->title('Īpašums atzīmēts kā pārdots')
+                                ->success()
+                                ->send();
+
+                            $livewire->dispatch('pdc-property-sold', title: $record->title);
+                        }),
+
                     // Ātrā darbība pārdotiem īpašumiem: vienā klikšķī atver
                     // jau esošo "Paldies par sadarbību" e-pastu (Google
                     // atsauksmes saite). Adresāts: pārdevējs, ja tam ir

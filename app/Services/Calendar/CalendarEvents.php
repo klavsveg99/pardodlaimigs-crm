@@ -30,27 +30,33 @@ final class CalendarEvents
             ->whereNotNull('scheduled_at')
             ->when(! auth()->user()?->can('manage'), fn ($q) => $q->where('agent_user_id', auth()->id()))
             ->get()
-            ->map(fn (Viewing $viewing): array => [
-                'id' => 'viewing-'.$viewing->id,
-                'type' => 'viewing',
-                'title' => $viewing->property?->title ?? '—',
-                'client' => $viewing->client?->name ?? '—',
-                'agent' => $viewing->agent?->name ?? '—',
-                'agentId' => $viewing->agent_user_id,
-                'start' => $viewing->scheduled_at?->toIso8601String(),
-                'end' => $viewing->scheduled_at?->copy()->addMinutes($viewing->duration_min ?? 30)->toIso8601String(),
-                // Slēpjam tikai laika tekstu; notikuma izskats nemainās.
-                'noTime' => ! $viewing->scheduledHasTime(),
-                'status' => $viewing->status,
-                'color' => match ($viewing->status) {
-                    'scheduled' => '#236D63',
-                    'done' => '#0f7d60',
-                    'cancelled' => '#cf2e2e',
-                    'no_show' => '#966830',
-                    default => '#414042',
-                },
-                'url' => route('filament.admin.resources.viewings.edit', $viewing),
-            ]);
+            ->map(fn (Viewing $viewing): array => $this->viewingEvent($viewing));
+    }
+
+    /** Vienas apskates notikuma masīvs (tāds pats kā kalendārā). */
+    public function viewingEvent(Viewing $viewing): array
+    {
+        return [
+            'id' => 'viewing-'.$viewing->id,
+            'type' => 'viewing',
+            'title' => $viewing->property?->title ?? '—',
+            'client' => $viewing->client?->name ?? '—',
+            'agent' => $viewing->agent?->name ?? '—',
+            'agentId' => $viewing->agent_user_id,
+            'start' => $viewing->scheduled_at?->toIso8601String(),
+            'end' => $viewing->scheduled_at?->copy()->addMinutes($viewing->duration_min ?? 30)->toIso8601String(),
+            // Slēpjam tikai laika tekstu; notikuma izskats nemainās.
+            'noTime' => ! $viewing->scheduledHasTime(),
+            'status' => $viewing->status,
+            'color' => match ($viewing->status) {
+                'scheduled' => '#236D63',
+                'done' => '#0f7d60',
+                'cancelled' => '#cf2e2e',
+                'no_show' => '#966830',
+                default => '#414042',
+            },
+            'url' => route('filament.admin.resources.viewings.edit', $viewing),
+        ];
     }
 
     private function tasks(): Collection
@@ -59,21 +65,27 @@ final class CalendarEvents
             ->whereNotNull('due_at')
             ->when(! auth()->user()?->can('manage'), fn ($q) => $q->where('assigned_user_id', auth()->id()))
             ->get()
-            ->map(fn (Task $task): array => [
-                'id' => 'task-'.$task->id,
-                'type' => 'task',
-                'title' => $task->title,
-                'client' => $task->client?->name ?? '—',
-                'agent' => $task->assignedTo?->name ?? '—',
-                'agentId' => $task->assigned_user_id,
-                'start' => $task->effectiveDueAt()?->toIso8601String(),
-                'end' => $task->effectiveDueAt()?->toIso8601String(),
-                // Datuma-tikai uzdevumiem slēpjam tikai laika tekstu; 12:00 ir
-                // aprēķinu vērtība un nedrīkst parādīties kalendārā.
-                'noTime' => ! $task->dueHasTime(),
-                'status' => $task->completed_at ? 'done' : ($task->isOverdue() ? 'overdue' : 'open'),
-                'color' => $task->completed_at ? '#9ca3af' : ($task->isOverdue() ? '#cf2e2e' : '#285854'),
-                'url' => route('filament.admin.resources.tasks.edit', $task),
-            ]);
+            ->map(fn (Task $task): array => $this->taskEvent($task));
+    }
+
+    /** Viena uzdevuma notikuma masīvs (tāds pats kā kalendārā). */
+    public function taskEvent(Task $task): array
+    {
+        return [
+            'id' => 'task-'.$task->id,
+            'type' => 'task',
+            'title' => $task->title,
+            'client' => $task->client?->name ?? '—',
+            'agent' => $task->assignedTo?->name ?? '—',
+            'agentId' => $task->assigned_user_id,
+            'start' => $task->effectiveDueAt()?->toIso8601String(),
+            'end' => $task->effectiveDueAt()?->toIso8601String(),
+            // Datuma-tikai uzdevumiem slēpjam tikai laika tekstu; 12:00 ir
+            // aprēķinu vērtība un nedrīkst parādīties kalendārā.
+            'noTime' => ! $task->dueHasTime(),
+            'status' => $task->completed_at ? 'done' : ($task->isOverdue() ? 'overdue' : 'open'),
+            'color' => $task->completed_at ? '#9ca3af' : ($task->isOverdue() ? '#cf2e2e' : '#285854'),
+            'url' => route('filament.admin.resources.tasks.edit', $task),
+        ];
     }
 }

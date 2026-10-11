@@ -147,10 +147,10 @@ class EditCrmProperty extends EditRecord
      */
     protected function afterSave(): void
     {
-        $shouldPrompt = $this->statusChangedToSold && ! $this->isAutosaveRun;
+        $changedToSold = $this->statusChangedToSold && ! $this->isAutosaveRun;
         $this->statusChangedToSold = false;
 
-        if (! $shouldPrompt) {
+        if (! $changedToSold) {
             return;
         }
 
@@ -159,6 +159,10 @@ class EditCrmProperty extends EditRecord
         if (! $record instanceof CrmProperty) {
             return;
         }
+
+        // Svinību animācija (konfeti + "Īpašums pārdots") abos ceļos:
+        // gan šeit, gan ātrajā darbībā "Pārdots".
+        $this->dispatch('pdc-property-sold', title: $record->title);
 
         if ($record->clients()->wherePivot('relation', 'buyer')->exists()) {
             return;

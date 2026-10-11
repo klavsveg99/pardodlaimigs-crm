@@ -549,6 +549,15 @@
                         this.agentId = e.detail?.agentId ? String(e.detail.agentId) : null;
                         this.refreshEvents();
                     });
+
+                    // Ātrā pievienošana: pēc ieraksta izveides to uzreiz
+                    // ieliekam kalendārā bez lapas pārlādes.
+                    window.addEventListener('pdc-calendar-event-created', (e) => {
+                        const event = e.detail?.event;
+                        if (! event) return;
+                        this.events.push(event);
+                        this.refreshEvents();
+                    });
                 },
                 filteredEvents() {
                     if (!this.agentId) return this.events;
@@ -617,6 +626,13 @@
                         dayMaxEvents: window.innerWidth < 640 ? 2 : 3,
                         nowIndicator: true,
                         events: this.toFcEvents(),
+                        // Uzklikšķinot uz dienas/laika šūnas, atveram ātrās
+                        // pievienošanas modāli (uzdevums vai apskate).
+                        dateClick: (info) => {
+                            window.dispatchEvent(new CustomEvent('pdc-calendar-quick-add', {
+                                detail: { date: info.dateStr, allDay: !!info.allDay },
+                            }));
+                        },
                         eventClick: (info) => {
                             if (info.event.url) {
                                 window.location.href = info.event.url;
