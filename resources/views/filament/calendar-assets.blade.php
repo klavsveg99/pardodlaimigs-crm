@@ -703,7 +703,7 @@
                     this.$el.addEventListener('mousemove', (e) => {
                         const target = e.target;
                         if (! (target instanceof Element)
-                            || target.closest('.fc-event, .fc-more-link, .fc-daygrid-day-top')
+                            || target.closest('.fc-event, .fc-more-link')
                             || ! target.closest('.fc-daygrid-day, .fc-timegrid-slot-lane')) {
                             hide();
                             return;
