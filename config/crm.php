@@ -11,11 +11,10 @@ return [
     | Automātiski klientu apsveikumi
     |--------------------------------------------------------------------------
     |
-    | Nosūta e-pastus klientiem, kuri devuši piekrišanu (clients.greetings_enabled),
-    | dzimšanas dienā, vārdadienā un valsts svētkos. Sūtīšanu ikdienā palaiž
-    | komanda pdc:send-greetings 09:00 (skat. routes/console.php). Piekrišanu
-    | ieslēdz/izslēdz klienta kartītē; noklusējumā tā ir izslēgta, bet
-    | "Laimīgajiem" tā tiek ieslēgta automātiski. {vārds} = klienta vārds.
+    | NOKLUSĒJUMI. Šos tekstus glabā datubāzē (email_settings) un rediģē CRM
+    | sadaļā "Sistēma" -> "Iestatījumi". Šeit ir tikai sākotnējie
+    | noklusējumi, ar kuriem ieraksts tiek izveidots pirmajā reizē.
+    | Īskods {name} tekstā aizstāj klienta vārdu.
     |
     */
     'greetings' => [
@@ -23,12 +22,12 @@ return [
 
         'birthday' => [
             'subject' => 'Daudz laimes dzimšanas dienā!',
-            'body' => 'Sirsnīgi sveicam dzimšanas dienā, {vārds}! Lai skaisti notikumi, prieks un piepildīti sapņi!',
+            'body' => 'Sirsnīgi sveicam dzimšanas dienā, {name}! Lai skaisti notikumi, prieks un piepildīti sapņi!',
         ],
 
         'name_day' => [
             'subject' => 'Daudz laimes vārdadienā!',
-            'body' => 'Sirsnīgi sveicam vārdadienā, {vārds}!',
+            'body' => 'Sirsnīgi sveicam vārdadienā, {name}!',
         ],
 
         /*
@@ -42,13 +41,13 @@ return [
                 'date' => '01.01',
                 'label' => 'Jaungada diena',
                 'subject' => 'Laimīgu Jauno gadu!',
-                'body' => 'Laimīgu Jauno gadu, {vārds}! Lai jaunais gads nes veiksmi un prieku.',
+                'body' => 'Laimīgu Jauno gadu, {name}! Lai jaunais gads nes veiksmi un prieku.',
             ],
             [
                 'date' => '18.11',
                 'label' => 'Latvijas Republikas proklamēšanas diena',
                 'subject' => 'Sveicam Latvijas dzimšanas dienā!',
-                'body' => 'Sirsnīgi sveicieni Latvijas Republikas proklamēšanas dienā, {vārds}!',
+                'body' => 'Sirsnīgi sveicieni Latvijas Republikas proklamēšanas dienā, {name}!',
             ],
         ],
     ],

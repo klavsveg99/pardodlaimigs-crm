@@ -6,7 +6,9 @@ namespace App\Console\Commands;
 
 use App\Models\Client;
 use App\Models\EmailLog;
+use App\Models\EmailSetting;
 use App\Services\Mail\EmailSender;
+use App\Support\EmailShortcodes;
 use App\Support\LatvianCalendar;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -33,7 +35,7 @@ class SendGreetings extends Command
 
     public function handle(): int
     {
-        $config = config('crm.greetings', []);
+        $config = (array) (EmailSetting::current()->data['greetings'] ?? []);
 
         if (! ($config['enabled'] ?? false)) {
             $this->info('Apsveikumu sūtīšana ir izslēgta (crm.greetings.enabled).');
@@ -188,7 +190,12 @@ class SendGreetings extends Command
 
     private function send(Client $client, string $subject, string $body, string $context): bool
     {
-        $text = str_replace('{vārds}', (string) $client->name, $body);
+        $values = [
+            'name' => (string) $client->name,
+            'vārds' => (string) $client->name,
+        ];
+
+        $text = EmailShortcodes::replace($body, $values);
 
         try {
             app(EmailSender::class)->send(

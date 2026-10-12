@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Services\AuditLogger;
 use App\Services\Mail\EmailSender;
+use App\Support\EmailShortcodes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -178,12 +179,32 @@ class Task extends Model
     {
         $due = $this->due_display ?? '—';
 
-        $rows = ['<p>Jums piešķirts jauns uzdevums: <strong>'.$this->title.'</strong></p>'];
+        $settings = (array) (EmailSetting::current()->data['task_notification'] ?? []);
+        $subjectTemplate = (string) ($settings['subject'] ?? 'Jauns uzdevums: {task}');
+        $bodyTemplate = (string) ($settings['body'] ?? "Jums piešķirts jauns uzdevums: {task}\n{description}");
 
-        if (filled($this->body)) {
-            $rows[] = '<p>'.nl2br(e((string) $this->body)).'</p>';
+        $values = [
+            'task' => (string) $this->title,
+            'due' => (string) $due,
+            'description' => (string) ($this->body ?? ''),
+            'agent' => (string) ($this->assignedTo?->name ?? ''),
+            'executor' => (string) ($this->izpilditajs?->name ?? ''),
+            'client' => (string) ($this->client?->name ?? ''),
+            'property' => (string) ($this->property?->title ?? ''),
+        ];
+
+        $subject = EmailShortcodes::replace($subjectTemplate, $values);
+
+        // Sagatave ir vienkāršs teksts; katrs tukšais lauciņš kļūst par
+        // atsevišķu rindkopu. Uzdevuma datu rindas pievieno automātiski.
+        $paragraphs = [];
+        foreach (preg_split('/\r\n|\r|\n/', EmailShortcodes::replace($bodyTemplate, $values)) ?: [] as $line) {
+            if (trim($line) !== '') {
+                $paragraphs[] = '<p>'.nl2br(e($line)).'</p>';
+            }
         }
 
+        $rows = $paragraphs;
         $rows[] = '<p><strong>Termiņš:</strong> '.e($due).'</p>';
         $rows[] = '<p><strong>'.$recipientLabel.'</strong></p>';
         $rows[] = $this->assignedTo ? '<p><strong>Aģents:</strong> '.e($this->assignedTo->name).'</p>' : '';
@@ -196,7 +217,7 @@ class Task extends Model
         try {
             app(EmailSender::class)->send(
                 to: $to,
-                subject: 'Jauns uzdevums: '.$this->title,
+                subject: $subject,
                 body: $body,
                 attachments: $this->attachments()->get(),
                 context: [
