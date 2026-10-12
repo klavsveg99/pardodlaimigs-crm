@@ -16,13 +16,7 @@ Schedule::job(new SyncWpForms)
     ->name('wpforms-sync')
     ->withoutOverlapping();
 
-// Reminder emails daily at 08:00
-Schedule::command('pdc:send-reminders')
-    ->dailyAt('08:00')
-    ->name('send-reminders')
-    ->withoutOverlapping();
-
-// Automātiski klientu apsveikumi (dzimšanas dienās un svētkos) daily at 09:00
+// Automātiski klientu apsveikumi (dzimšanas dienās, vārdadienās un svētkos) daily at 09:00
 Schedule::command('pdc:send-greetings')
     ->dailyAt('09:00')
     ->name('send-greetings')

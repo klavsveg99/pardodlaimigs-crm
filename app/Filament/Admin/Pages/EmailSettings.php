@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Pages;
 
 use App\Models\EmailSetting;
-use App\Support\EmailShortcodes;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
@@ -22,9 +21,8 @@ use UnitEnum;
 
 /**
  * "Iestatījumi" — tikai administratoram. Rediģē automātisko e-pastu tekstus
- * (apsveikumi, uzdevuma paziņojums, kavētā uzdevuma atgādinājums), kas citādi
- * ir iekodēti un nav rediģējami e-pasta modāļos. Īskodus skat.
- * App\Support\EmailShortcodes.
+ * (apsveikumi, svētki, uzdevuma paziņojums), kas citādi ir iekodēti un nav
+ * rediģējami e-pasta modāļos.
  */
 class EmailSettings extends Page
 {
@@ -76,8 +74,9 @@ class EmailSettings extends Page
         return $schema
             ->schema([
                 Section::make('Apsveikumi')
-                    ->description(EmailShortcodes::hint(EmailShortcodes::GREETING_LABELS))
                     ->columns(2)
+                    ->collapsible()
+                    ->collapsed()
                     ->schema([
                         Toggle::make('greetings.enabled')
                             ->label('Automātiski sūtīt apsveikumus')
@@ -100,8 +99,13 @@ class EmailSettings extends Page
                             ->label('Vārdadiena - teksts')
                             ->rows(3)
                             ->columnSpanFull(),
+                    ]),
+
+                Section::make('Svētki')
+                    ->collapsible()
+                    ->collapsed()
+                    ->schema([
                         Repeater::make('greetings.holidays')
-                            ->label('Svētki')
                             ->addActionLabel('Pievienot svētkus')
                             ->columns(2)
                             ->reorderable(false)
@@ -126,13 +130,13 @@ class EmailSettings extends Page
                                     ->label('Teksts')
                                     ->rows(2)
                                     ->columnSpanFull(),
-                            ])
-                            ->columnSpanFull(),
+                            ]),
                     ]),
 
                 Section::make('Uzdevuma paziņojums')
-                    ->description(EmailShortcodes::hint(EmailShortcodes::TASK_LABELS))
                     ->columns(1)
+                    ->collapsible()
+                    ->collapsed()
                     ->schema([
                         TextInput::make('task_notification.subject')
                             ->label('Temats')
@@ -140,21 +144,7 @@ class EmailSettings extends Page
                             ->maxLength(255),
                         Textarea::make('task_notification.body')
                             ->label('Teksts')
-                            ->rows(4)
-                            ->helperText('Katrs tukšais lauciņš (rinda) kļūst par atsevišķu rindkopu. Uzdevuma dati tiek pievienoti automātiski.'),
-                    ]),
-
-                Section::make('Kavētā uzdevuma atgādinājums')
-                    ->description(EmailShortcodes::hint(EmailShortcodes::OVERDUE_LABELS))
-                    ->columns(1)
-                    ->schema([
-                        TextInput::make('overdue_reminder.subject')
-                            ->label('Temats')
-                            ->required()
-                            ->maxLength(255),
-                        Textarea::make('overdue_reminder.body')
-                            ->label('Teksts')
-                            ->rows(3),
+                            ->rows(4),
                     ]),
             ]);
     }

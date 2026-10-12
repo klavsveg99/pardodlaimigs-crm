@@ -8,7 +8,6 @@ use App\Models\Client;
 use App\Models\EmailLog;
 use App\Models\EmailSetting;
 use App\Services\Mail\EmailSender;
-use App\Support\EmailShortcodes;
 use App\Support\LatvianCalendar;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -190,18 +189,11 @@ class SendGreetings extends Command
 
     private function send(Client $client, string $subject, string $body, string $context): bool
     {
-        $values = [
-            'name' => (string) $client->name,
-            'vārds' => (string) $client->name,
-        ];
-
-        $text = EmailShortcodes::replace($body, $values);
-
         try {
             app(EmailSender::class)->send(
                 to: (string) $client->email,
                 subject: $subject,
-                body: nl2br(e($text)),
+                body: nl2br(e($body)),
                 internal: true,
                 context: ['context' => $context, 'client_id' => $client->id],
             );

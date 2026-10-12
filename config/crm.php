@@ -14,7 +14,6 @@ return [
     | NOKLUSĒJUMI. Šos tekstus glabā datubāzē (email_settings) un rediģē CRM
     | sadaļā "Sistēma" -> "Iestatījumi". Šeit ir tikai sākotnējie
     | noklusējumi, ar kuriem ieraksts tiek izveidots pirmajā reizē.
-    | Īskods {name} tekstā aizstāj klienta vārdu.
     |
     */
     'greetings' => [
@@ -22,12 +21,12 @@ return [
 
         'birthday' => [
             'subject' => 'Daudz laimes dzimšanas dienā!',
-            'body' => 'Sirsnīgi sveicam dzimšanas dienā, {name}! Lai skaisti notikumi, prieks un piepildīti sapņi!',
+            'body' => 'Sirsnīgi sveicam dzimšanas dienā! Lai skaisti notikumi, prieks un piepildīti sapņi!',
         ],
 
         'name_day' => [
             'subject' => 'Daudz laimes vārdadienā!',
-            'body' => 'Sirsnīgi sveicam vārdadienā, {name}!',
+            'body' => 'Sirsnīgi sveicam vārdadienā!',
         ],
 
         /*
@@ -41,13 +40,13 @@ return [
                 'date' => '01.01',
                 'label' => 'Jaungada diena',
                 'subject' => 'Laimīgu Jauno gadu!',
-                'body' => 'Laimīgu Jauno gadu, {name}! Lai jaunais gads nes veiksmi un prieku.',
+                'body' => 'Laimīgu Jauno gadu! Lai jaunais gads nes veiksmi un prieku.',
             ],
             [
                 'date' => '18.11',
                 'label' => 'Latvijas Republikas proklamēšanas diena',
                 'subject' => 'Sveicam Latvijas dzimšanas dienā!',
-                'body' => 'Sirsnīgi sveicieni Latvijas Republikas proklamēšanas dienā, {name}!',
+                'body' => 'Sirsnīgi sveicieni Latvijas Republikas proklamēšanas dienā!',
             ],
         ],
     ],
