@@ -30,7 +30,11 @@
                     </div>
 
                     <div class="pdc-qa-body">
-                        <template x-if="type === 'task'">
+                        <template x-if="! optionsLoaded">
+                            <div class="pdc-qa-loading">Ielādē...</div>
+                        </template>
+
+                        <template x-if="optionsLoaded && type === 'task'">
                             <div class="pdc-qa-fields">
                                 <label class="pdc-qa-field">
                                     <span>Nosaukums</span>
@@ -42,39 +46,19 @@
                                 </label>
                                 <label class="pdc-qa-field" x-show="canPickAgent">
                                     <span>Aģents</span>
-                                    <select x-model="form.assigned_user_id">
-                                        <option value="">Izvēlies</option>
-                                        <template x-for="a in optionLists.agents" :key="a.id">
-                                            <option :value="a.id" x-text="a.name"></option>
-                                        </template>
-                                    </select>
+                                    @include('filament.partials.quick-add-select', ['field' => 'assigned_user_id', 'placeholder' => 'Izvēlies'])
                                 </label>
                                 <label class="pdc-qa-field">
                                     <span>Izpildītājs</span>
-                                    <select x-model="form.izpilditajs_id">
-                                        <option value="">Nav</option>
-                                        <template x-for="i in optionLists.izpilditajs" :key="i.id">
-                                            <option :value="i.id" x-text="i.name"></option>
-                                        </template>
-                                    </select>
+                                    @include('filament.partials.quick-add-select', ['field' => 'izpilditajs_id', 'placeholder' => 'Nav'])
                                 </label>
                                 <label class="pdc-qa-field">
                                     <span>Klients</span>
-                                    <select x-model="form.client_id">
-                                        <option value="">Nav</option>
-                                        <template x-for="c in optionLists.clients" :key="c.id">
-                                            <option :value="c.id" x-text="c.name"></option>
-                                        </template>
-                                    </select>
+                                    @include('filament.partials.quick-add-select', ['field' => 'client_id', 'placeholder' => 'Nav'])
                                 </label>
                                 <label class="pdc-qa-field">
                                     <span>Īpašums</span>
-                                    <select x-model="form.property_id">
-                                        <option value="">Nav</option>
-                                        <template x-for="p in optionLists.properties" :key="p.id">
-                                            <option :value="p.id" x-text="p.name"></option>
-                                        </template>
-                                    </select>
+                                    @include('filament.partials.quick-add-select', ['field' => 'property_id', 'placeholder' => 'Nav'])
                                 </label>
                                 <label class="pdc-qa-field pdc-qa-field-full">
                                     <span>Apraksts</span>
@@ -83,25 +67,15 @@
                             </div>
                         </template>
 
-                        <template x-if="type === 'viewing'">
+                        <template x-if="optionsLoaded && type === 'viewing'">
                             <div class="pdc-qa-fields">
                                 <label class="pdc-qa-field">
                                     <span>Īpašums</span>
-                                    <select x-model="form.property_id">
-                                        <option value="">Izvēlies</option>
-                                        <template x-for="p in optionLists.properties" :key="p.id">
-                                            <option :value="p.id" x-text="p.name"></option>
-                                        </template>
-                                    </select>
+                                    @include('filament.partials.quick-add-select', ['field' => 'property_id', 'placeholder' => 'Izvēlies'])
                                 </label>
                                 <label class="pdc-qa-field">
                                     <span>Klients</span>
-                                    <select x-model="form.client_id">
-                                        <option value="">Izvēlies</option>
-                                        <template x-for="c in optionLists.clients" :key="c.id">
-                                            <option :value="c.id" x-text="c.name"></option>
-                                        </template>
-                                    </select>
+                                    @include('filament.partials.quick-add-select', ['field' => 'client_id', 'placeholder' => 'Izvēlies'])
                                 </label>
                                 <label class="pdc-qa-field">
                                     <span>Kad</span>
@@ -113,21 +87,11 @@
                                 </label>
                                 <label class="pdc-qa-field" x-show="canPickAgent">
                                     <span>Aģents</span>
-                                    <select x-model="form.agent_user_id">
-                                        <option value="">Izvēlies</option>
-                                        <template x-for="a in optionLists.agents" :key="a.id">
-                                            <option :value="a.id" x-text="a.name"></option>
-                                        </template>
-                                    </select>
+                                    @include('filament.partials.quick-add-select', ['field' => 'agent_user_id', 'placeholder' => 'Izvēlies'])
                                 </label>
                                 <label class="pdc-qa-field">
                                     <span>Statuss</span>
-                                    <select x-model="form.status">
-                                        <option value="scheduled">Ieplānota</option>
-                                        <option value="done">Notikusi</option>
-                                        <option value="cancelled">Atcelta</option>
-                                        <option value="no_show">Neatnāca</option>
-                                    </select>
+                                    @include('filament.partials.quick-add-select', ['field' => 'status', 'placeholder' => 'Statuss', 'state' => 'form.status', 'searchable' => false])
                                 </label>
                                 <label class="pdc-qa-field pdc-qa-field-full">
                                     <span>Piezīmes</span>
@@ -258,9 +222,9 @@
             color: #374151;
         }
 
-        .pdc-qa-field input,
-        .pdc-qa-field select,
-        .pdc-qa-field textarea {
+        .pdc-qa-field > input,
+        .pdc-qa-field > select,
+        .pdc-qa-field > textarea {
             width: 100%;
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
@@ -269,6 +233,17 @@
             background: #ffffff;
             color: #111827;
             font-family: inherit;
+        }
+
+        .pdc-qa-field .fi-input-wrp {
+            width: 100%;
+        }
+
+        .pdc-qa-loading {
+            padding: 1.5rem 0;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.85rem;
         }
 
         .pdc-qa-field textarea {
@@ -356,12 +331,16 @@
             color: #d1d5db;
         }
 
-        .dark .pdc-qa-field input,
-        .dark .pdc-qa-field select,
-        .dark .pdc-qa-field textarea {
+        .dark .pdc-qa-field > input,
+        .dark .pdc-qa-field > select,
+        .dark .pdc-qa-field > textarea {
             background: #0b0f14;
             border-color: #27303a;
             color: #f3f4f6;
+        }
+
+        .dark .pdc-qa-loading {
+            color: #9ca3af;
         }
 
         .dark .pdc-qa-error {
@@ -454,6 +433,36 @@
                         // Sarakstus neizdevās ielādēt - lauki paliek tukši.
                     }
                 },
+                // Opcijas Filament select komponentei (static, bez Livewire).
+                optionsFor(field) {
+                    if (field === 'status') {
+                        return [
+                            { label: 'Ieplānota', value: 'scheduled', isDisabled: false },
+                            { label: 'Notikusi', value: 'done', isDisabled: false },
+                            { label: 'Atcelta', value: 'cancelled', isDisabled: false },
+                            { label: 'Neatnāca', value: 'no_show', isDisabled: false },
+                        ];
+                    }
+                    const lists = {
+                        assigned_user_id: this.optionLists.agents,
+                        agent_user_id: this.optionLists.agents,
+                        izpilditajs_id: this.optionLists.izpilditajs,
+                        client_id: this.optionLists.clients,
+                        property_id: this.optionLists.properties,
+                    };
+                    return (lists[field] || []).map((o) => ({ label: o.name, value: String(o.id), isDisabled: false }));
+                },
+                // Nolasa Filament select komponentu atlasītās vērtības.
+                readSelects() {
+                    const out = {};
+                    this.$el.querySelectorAll('[data-pdc-select]').forEach((el) => {
+                        const field = el.getAttribute('data-pdc-select');
+                        const inner = el.querySelector('[x-data]');
+                        const data = inner && window.Alpine ? window.Alpine.$data(inner) : null;
+                        out[field] = data && data.state != null ? String(data.state) : '';
+                    });
+                    return out;
+                },
                 close() {
                     if (this.saving) return;
                     this.open = false;
@@ -461,6 +470,8 @@
                 async submit() {
                     if (this.saving) return;
                     this.error = '';
+
+                    Object.assign(this.form, this.readSelects());
 
                     if (this.type === 'task' && ! this.form.title.trim()) {
                         this.error = 'Nosaukums ir obligāts.';
