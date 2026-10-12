@@ -86,8 +86,6 @@ class ClientsRelationManager extends RelationManager
                         'contacted' => 'Sazināts',
                         default => $state,
                     }),
-                Tables\Columns\IconColumn::make('marketing_consent')
-                    ->label('Mārketings')->boolean(),
             ])
             ->filters([])
             ->defaultSort(null)

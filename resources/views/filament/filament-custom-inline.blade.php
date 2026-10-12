@@ -20,31 +20,17 @@
     --teal-50: var(--pdc-primary) !important; --teal-100: var(--pdc-primary) !important; --teal-200: var(--pdc-primary) !important; --teal-300: var(--pdc-primary) !important; --teal-400: var(--pdc-primary) !important; --teal-500: var(--pdc-primary) !important; --teal-600: var(--pdc-primary-darker) !important; --teal-700: var(--pdc-primary-darker) !important; --teal-800: var(--pdc-primary-darker) !important; --teal-900: var(--pdc-primary-darker) !important; --teal-950: var(--pdc-primary-darker) !important;
 }
 
-/* Marketing consent checkbox – bottom-align its own field only.
-   NOTE: never target `.fi-sc-component:has(#form.marketing_consent)` — that
-   matches every ancestor (incl. the whole section wrapper) and bottom-aligns
-   the form columns. */
-.fi-fo-field:has(#form\.marketing_consent) {
-    display: flex !important;
-    align-items: end !important;
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-}
-.fi-fo-field:has(#form\.marketing_consent) .fi-fo-field-label-col,
-.fi-fo-field:has(#form\.marketing_consent) .fi-fo-field-label-ctn {
-    display: flex !important;
-    align-items: end !important;
-}
-/* GDPR checkbox bg – force primary, kill teal #008078 even when disabled/checked */
-#form\.marketing_consent:checked,
-.fi-fo-field:has(#form\.marketing_consent) .fi-checkbox-input:checked,
-.fi-fo-field:has(#form\.marketing_consent) input[type="checkbox"]:checked {
+/* GDPR/notification consent checkbox - force brand primary, kill the default
+   teal #008078 even when checked and disabled (view mode). */
+#form\.greetings_enabled:checked,
+.fi-fo-field:has(#form\.greetings_enabled) .fi-checkbox-input:checked,
+.fi-fo-field:has(#form\.greetings_enabled) input[type="checkbox"]:checked {
     background-color: var(--pdc-primary) !important;
     border-color: var(--pdc-primary) !important;
     accent-color: var(--pdc-primary) !important;
 }
-#form\.marketing_consent:checked:disabled,
-.fi-fo-field:has(#form\.marketing_consent) .fi-checkbox-input:checked:disabled {
+#form\.greetings_enabled:checked:disabled,
+.fi-fo-field:has(#form\.greetings_enabled) .fi-checkbox-input:checked:disabled {
     background-color: var(--pdc-primary) !important;
     border-color: var(--pdc-primary) !important;
     opacity: 1 !important;

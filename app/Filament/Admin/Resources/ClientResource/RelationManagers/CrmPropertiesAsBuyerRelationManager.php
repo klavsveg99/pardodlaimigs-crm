@@ -132,12 +132,6 @@ class CrmPropertiesAsBuyerRelationManager extends RelationManager
                                     'data.relation' => 'Īpašumam vispirms jābūt piesaistītam pārdevējam.',
                                 ]);
                             }
-
-                            if (! $livewire->getOwnerRecord()->marketing_consent) {
-                                throw ValidationException::withMessages([
-                                    'data.relation' => 'Lai piesaistītu pircēju pārdotam īpašumam, klientam jābūt mārketinga piekrišanai.',
-                                ]);
-                            }
                         }
                     }),
             ])

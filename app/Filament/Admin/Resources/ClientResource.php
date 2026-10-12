@@ -158,14 +158,8 @@ class ClientResource extends Resource
                             ->visible(AgentField::visible())
                             ->disabled(AgentField::disabled()),
                     ]),
-                    Forms\Components\Checkbox::make('marketing_consent')
-                        ->label('Klients atļauj izmantot datus mārketingam')
-                        ->inline()
-                        ->columnSpanFull()
-                        ->extraAttributes(['class' => 'self-end'])
-                        ->extraFieldWrapperAttributes(['class' => 'flex items-end h-full pb-1']),
                     Forms\Components\Checkbox::make('greetings_enabled')
-                        ->label('Klients saņem apsveikumus (dzimšanas dienā, vārdadienā un svētkos)')
+                        ->label('Klients var saņemt apsveikumus un paziņojumus (GDPR piekrišana)')
                         ->inline()
                         ->default(false)
                         ->columnSpanFull(),

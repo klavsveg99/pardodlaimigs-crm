@@ -115,19 +115,10 @@
     background-color: var(--pdc-primary) !important;
 }
 
-/* Marketing consent – bottom align its own field only.
-   NOTE: do NOT target `.fi-sc-component:has(#form.marketing_consent)` — that
-   also matches every ancestor (including the whole section wrapper) and
-   bottom-aligns the form columns. */
-.fi-fo-field:has(#form\.marketing_consent) {
-    display: flex !important;
-    align-items: end !important;
-    height: 100% !important;
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-}
-#form\.marketing_consent:checked,
-.fi-fo-field:has(#form\.marketing_consent) .fi-checkbox-input:checked {
+/* GDPR/notification consent checkbox - force brand primary, kill the default
+   teal #008078 even when checked. */
+#form\.greetings_enabled:checked,
+.fi-fo-field:has(#form\.greetings_enabled) .fi-checkbox-input:checked {
     background-color: var(--pdc-primary) !important;
     border-color: var(--pdc-primary) !important;
     accent-color: var(--pdc-primary) !important;

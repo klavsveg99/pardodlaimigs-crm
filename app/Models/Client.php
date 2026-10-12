@@ -27,7 +27,7 @@ class Client extends Model
         'name', 'person_type', 'legal_representative', 'contact_person',
         'phone', 'email', 'personas_kods', 'birth_date', 'birthday_greeted_at',
         'address', 'bank_account', 'source', 'status', 'gdpr_consent_at',
-        'marketing_consent', 'greetings_enabled',
+        'greetings_enabled',
         'gdpr_erased_at', 'notes_md', 'owner_user_id',
     ];
 
@@ -68,7 +68,6 @@ class Client extends Model
 
     protected $casts = [
         'gdpr_consent_at' => 'datetime',
-        'marketing_consent' => 'boolean',
         'greetings_enabled' => 'boolean',
         'gdpr_erased_at' => 'datetime',
         'birth_date' => 'date',
