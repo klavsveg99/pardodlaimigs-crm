@@ -14,14 +14,16 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Automātiski nosūta apsveikumu e-pastus "Laimīgajiem" klientiem:
+ * Automātiski nosūta apsveikumu e-pastus klientiem, kuriem ieslēgti
+ * apsveikumi (clients.greetings_enabled):
  *  - dzimšanas dienā (clients.birth_date);
  *  - vārdadienā (latviešu kalendārvārdi, config/name_days.php);
  *  - valsts svētkos (config('crm.greetings.holidays'), arī kustīgajos).
  *
- * Klientam jābūt ar e-pastu un ieslēgtu clients.greetings_enabled. Komandu
- * ikdienā palaiž plānotājs; tā ir droša pret dubultu palaišanu (dzimšanas
- * dienai birthday_greeted_at, pārējiem email_logs ieraksts par konkrēto dienu).
+ * Klientam jābūt ar e-pastu un ieslēgtu clients.greetings_enabled. "Laimīgajiem"
+ * klientiem tas tiek ieslēgts automātiski, bet atzīmēt var arī jebkuru citu.
+ * Komandu ikdienā palaiž plānotājs; tā ir droša pret dubultu palaišanu
+ * (dzimšanas dienai birthday_greeted_at, pārējiem email_logs ieraksts).
  */
 class SendGreetings extends Command
 {
@@ -162,7 +164,6 @@ class SendGreetings extends Command
     private function eligibleClients(): Collection
     {
         return Client::query()
-            ->where('status', 'laimigs')
             ->where('greetings_enabled', true)
             ->whereNotNull('email')
             ->where('email', '!=', '')

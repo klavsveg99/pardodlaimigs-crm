@@ -166,6 +166,15 @@ class Client extends Model
             }
         });
 
+        // Kad klients kļūst "Laimīgs" (noslēgts darījums), apsveikumi tiek
+        // ieslēgti automātiski. Manuāla izslēgšana paliek spēkā, tāpēc
+        // ieslēdzam tikai brīdī, kad statuss mainās uz "laimigs".
+        static::saving(function (Client $client): void {
+            if ($client->status === 'laimigs' && $client->isDirty('status')) {
+                $client->greetings_enabled = true;
+            }
+        });
+
         // "Laimīgos" klientus (noslēgts darījums) dzēst nedrīkst — ne ar
         // mīksto, ne neatgriezenisko dzēšanu, ne adminiem, ne aģentiem.
         static::deleting(fn (Client $client): bool => ! $client->isLaimigs());

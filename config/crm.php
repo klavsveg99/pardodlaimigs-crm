@@ -33,8 +33,8 @@ return [
         /*
          | Valsts svētki. 'date' => 'DD.MM' (fiksēts) vai 'rule' =>
          | easter (Pirmās Lieldienas), easter+1 (Otrās Lieldienas),
-         | mothers_day (Mātes diena, 2. maija svētdiena). Lielā Piektdiena
-         | apzināti nav iekļauta, jo tas nav apsveikuma gadījums.
+         | mothers_day (Mātes diena). Šobrīd sūtām tikai Latvijas
+         | dzimšanas dienā un Jaunajā gadā.
          */
         'holidays' => [
             [
@@ -44,76 +44,10 @@ return [
                 'body' => 'Laimīgu Jauno gadu, {vārds}! Lai jaunais gads nes veiksmi un prieku.',
             ],
             [
-                'date' => '01.05',
-                'label' => 'Darba svētki',
-                'subject' => 'Sveicam Darba svētkos!',
-                'body' => 'Sirsnīgi sveicam Darba svētkos, {vārds}!',
-            ],
-            [
-                'date' => '04.05',
-                'label' => 'Latvijas Republikas Neatkarības atjaunošanas diena',
-                'subject' => 'Sveicam Latvijas svētkos!',
-                'body' => 'Sirsnīgi sveicieni Latvijas svētkos, {vārds}! Lai lepnums par mūsu zemi, miers un gaišas domas!',
-            ],
-            [
-                'rule' => 'mothers_day',
-                'label' => 'Mātes diena',
-                'subject' => 'Sveicam Mātes dienā!',
-                'body' => 'Sirsnīgi sveicam Mātes dienā, {vārds}!',
-            ],
-            [
-                'rule' => 'easter',
-                'label' => 'Pirmās Lieldienas',
-                'subject' => 'Priecīgas Lieldienas!',
-                'body' => 'Priecīgas Lieldienas, {vārds}!',
-            ],
-            [
-                'rule' => 'easter+1',
-                'label' => 'Otrās Lieldienas',
-                'subject' => 'Priecīgas Lieldienas!',
-                'body' => 'Priecīgas Lieldienas, {vārds}!',
-            ],
-            [
-                'date' => '23.06',
-                'label' => 'Līgo diena',
-                'subject' => 'Priecīgus Līgo svētkus!',
-                'body' => 'Priecīgus Līgo svētkus, {vārds}!',
-            ],
-            [
-                'date' => '24.06',
-                'label' => 'Jāņi',
-                'subject' => 'Priecīgus Jāņus!',
-                'body' => 'Priecīgus Jāņus, {vārds}!',
-            ],
-            [
                 'date' => '18.11',
                 'label' => 'Latvijas Republikas proklamēšanas diena',
                 'subject' => 'Sveicam Latvijas dzimšanas dienā!',
                 'body' => 'Sirsnīgi sveicieni Latvijas Republikas proklamēšanas dienā, {vārds}!',
-            ],
-            [
-                'date' => '24.12',
-                'label' => 'Ziemassvētku vakars',
-                'subject' => 'Priecīgus Ziemassvētkus!',
-                'body' => 'Priecīgus Ziemassvētkus, {vārds}!',
-            ],
-            [
-                'date' => '25.12',
-                'label' => 'Pirmie Ziemassvētki',
-                'subject' => 'Priecīgus Ziemassvētkus!',
-                'body' => 'Priecīgus Ziemassvētkus, {vārds}!',
-            ],
-            [
-                'date' => '26.12',
-                'label' => 'Otrie Ziemassvētki',
-                'subject' => 'Priecīgus Ziemassvētkus!',
-                'body' => 'Priecīgus Ziemassvētkus, {vārds}!',
-            ],
-            [
-                'date' => '31.12',
-                'label' => 'Vecgada vakars',
-                'subject' => 'Laimīgu Vecgada vakaru!',
-                'body' => 'Laimīgu Vecgada vakaru, {vārds}!',
             ],
         ],
     ],

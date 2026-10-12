@@ -165,9 +165,9 @@ class ClientResource extends Resource
                         ->extraAttributes(['class' => 'self-end'])
                         ->extraFieldWrapperAttributes(['class' => 'flex items-end h-full pb-1']),
                     Forms\Components\Checkbox::make('greetings_enabled')
-                        ->label('Klients saņem apsveikumus (dzimšanas dienā un svētkos)')
+                        ->label('Klients saņem apsveikumus (dzimšanas dienā, vārdadienā un svētkos)')
                         ->inline()
-                        ->default(true)
+                        ->default(false)
                         ->columnSpanFull(),
                 ]),
                 Grid::make(1)->columnSpan(1)->schema([
