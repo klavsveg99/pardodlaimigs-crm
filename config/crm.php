@@ -11,10 +11,11 @@ return [
     | Automātiski klientu apsveikumi
     |--------------------------------------------------------------------------
     |
-    | Nosūta e-pastus "Laimīgajiem" klientiem dzimšanas dienā un svētkos.
-    | Sūtīšanu ikdienā palaiž komanda pdc:send-greetings 09:00 (skat.
-    | routes/console.php). Katram klientam to var atslēgt klienta kartītē
-    | (clients.greetings_enabled). {vārds} tekstā aizstāj klienta vārdu.
+    | Nosūta e-pastus klientiem, kuri devuši piekrišanu (clients.greetings_enabled),
+    | dzimšanas dienā, vārdadienā un valsts svētkos. Sūtīšanu ikdienā palaiž
+    | komanda pdc:send-greetings 09:00 (skat. routes/console.php). Piekrišanu
+    | ieslēdz/izslēdz klienta kartītē; noklusējumā tā ir izslēgta, bet
+    | "Laimīgajiem" tā tiek ieslēgta automātiski. {vārds} = klienta vārds.
     |
     */
     'greetings' => [
