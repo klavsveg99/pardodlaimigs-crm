@@ -45,7 +45,7 @@ class EmailLog extends Model
     {
         return match (true) {
             str_starts_with((string) $context, 'greeting_birthday') => 'Dzimšanas diena',
-            str_starts_with((string) $context, 'greeting_nameday') => 'Vārdadiena',
+            str_starts_with((string) $context, 'greeting_nameday') => 'Vārda diena',
             default => 'Svētki',
         };
     }

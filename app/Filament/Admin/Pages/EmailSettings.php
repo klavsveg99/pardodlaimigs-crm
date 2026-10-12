@@ -94,6 +94,18 @@ class EmailSettings extends Page
                                     ->rows(3),
                             ]),
 
+                        Section::make('Vārda diena')
+                            ->columns(1)
+                            ->schema([
+                                TextInput::make('greetings.name_day.subject')
+                                    ->label('Temats')
+                                    ->required()
+                                    ->maxLength(255),
+                                Textarea::make('greetings.name_day.body')
+                                    ->label('Teksts')
+                                    ->rows(3),
+                            ]),
+
                         Section::make('Svētki')
                             ->columns(1)
                             ->schema([
@@ -132,20 +144,6 @@ class EmailSettings extends Page
 
                         Livewire::make(GreetingHistoryTable::class)
                             ->columnSpanFull(),
-                    ]),
-
-                Section::make('Vārda diena')
-                    ->collapsible()
-                    ->collapsed()
-                    ->columns(1)
-                    ->schema([
-                        TextInput::make('greetings.name_day.subject')
-                            ->label('Temats')
-                            ->required()
-                            ->maxLength(255),
-                        Textarea::make('greetings.name_day.body')
-                            ->label('Teksts')
-                            ->rows(3),
                     ]),
             ]);
     }
