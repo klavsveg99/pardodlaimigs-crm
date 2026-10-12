@@ -16,6 +16,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use UnitEnum;
@@ -57,13 +58,6 @@ class EmailSettings extends Page
         return 'Iestatījumi';
     }
 
-    protected function getFooterWidgets(): array
-    {
-        return [
-            GreetingHistoryTable::class,
-        ];
-    }
-
     public function mount(): void
     {
         $this->form->fill(EmailSetting::current()->data ?? []);
@@ -96,18 +90,6 @@ class EmailSettings extends Page
                                     ->required()
                                     ->maxLength(255),
                                 Textarea::make('greetings.birthday.body')
-                                    ->label('Teksts')
-                                    ->rows(3),
-                            ]),
-
-                        Section::make('Vārda diena')
-                            ->columns(1)
-                            ->schema([
-                                TextInput::make('greetings.name_day.subject')
-                                    ->label('Temats')
-                                    ->required()
-                                    ->maxLength(255),
-                                Textarea::make('greetings.name_day.body')
                                     ->label('Teksts')
                                     ->rows(3),
                             ]),
@@ -147,6 +129,23 @@ class EmailSettings extends Page
                                     ])
                                     ->columnSpanFull(),
                             ]),
+
+                        Livewire::make(GreetingHistoryTable::class)
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Vārda diena')
+                    ->collapsible()
+                    ->collapsed()
+                    ->columns(1)
+                    ->schema([
+                        TextInput::make('greetings.name_day.subject')
+                            ->label('Temats')
+                            ->required()
+                            ->maxLength(255),
+                        Textarea::make('greetings.name_day.body')
+                            ->label('Teksts')
+                            ->rows(3),
                     ]),
             ]);
     }
