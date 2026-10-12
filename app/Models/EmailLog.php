@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * One sent outgoing email. Written by EmailSender for every message so the
@@ -25,6 +27,28 @@ class EmailLog extends Model
         'attachment_ids' => 'array',
         'created_at' => 'datetime',
     ];
+
+    /** Saistītais klients (ja e-pasts sūtīts klientam). */
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class, 'client_id');
+    }
+
+    /** Tikai automātisko apsveikumu e-pasti. */
+    public function scopeGreetings(Builder $query): Builder
+    {
+        return $query->where('context', 'like', 'greeting%');
+    }
+
+    /** Cilvēkam lasāms apsveikuma veids no context. */
+    public static function greetingTypeLabel(?string $context): string
+    {
+        return match (true) {
+            str_starts_with((string) $context, 'greeting_birthday') => 'Dzimšanas diena',
+            str_starts_with((string) $context, 'greeting_nameday') => 'Vārdadiena',
+            default => 'Svētki',
+        };
+    }
 
     /** Compact shape used by the resend-confirmation modal in the browser. */
     public function preview(): array

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Pages;
 
+use App\Filament\Admin\Widgets\GreetingHistoryTable;
 use App\Models\EmailSetting;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Repeater;
@@ -54,6 +55,13 @@ class EmailSettings extends Page
     public function getTitle(): string
     {
         return 'Iestatījumi';
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            GreetingHistoryTable::class,
+        ];
     }
 
     public function mount(): void
