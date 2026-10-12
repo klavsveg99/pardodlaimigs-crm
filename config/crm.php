@@ -1,22 +1,87 @@
 <?php
 
 /**
- * CRM uzlabojumu konfigurācija: "Laimīgo" klientu dzimšanas dienu
- * atgādinājumi un juristam nosūtāmo dokumentu lauki.
+ * CRM uzlabojumu konfigurācija: automātiskie klientu apsveikumi un
+ * juristam nosūtāmo dokumentu lauki.
  */
 return [
 
     /*
     |--------------------------------------------------------------------------
-    | Dzimšanas dienu atgādinājumi
+    | Automātiski klientu apsveikumi
     |--------------------------------------------------------------------------
     |
-    | Cik dienas pirms dzimšanas dienas sāk rādīt atgādinājumu (ieskaitot
-    | pašu dzimšanas dienu). Attiecas tikai uz "Laimīgajiem" klientiem.
+    | Nosūta e-pastus "Laimīgajiem" klientiem dzimšanas dienā un svētkos.
+    | Sūtīšanu ikdienā palaiž komanda pdc:send-greetings 09:00 (skat.
+    | routes/console.php). Katram klientam to var atslēgt klienta kartītē
+    | (clients.greetings_enabled). {vārds} tekstā aizstāj klienta vārdu.
     |
     */
-    'birthdays' => [
-        'days_before' => (int) env('CRM_BIRTHDAY_DAYS_BEFORE', 3),
+    'greetings' => [
+        'enabled' => true,
+
+        'birthday' => [
+            'subject' => 'Daudz laimes dzimšanas dienā!',
+            'body' => 'Sirsnīgi sveicam dzimšanas dienā, {vārds}! Lai skaisti notikumi, prieks un piepildīti sapņi!',
+        ],
+
+        // Fiksētie Latvijas svētki; datums formātā DD.MM.
+        'holidays' => [
+            [
+                'date' => '01.01',
+                'label' => 'Jaungada diena',
+                'subject' => 'Laimīgu Jauno gadu!',
+                'body' => 'Laimīgu Jauno gadu, {vārds}! Lai jaunais gads nes veiksmi un prieku.',
+            ],
+            [
+                'date' => '01.05',
+                'label' => 'Darba svētki',
+                'subject' => 'Sveicam Darba svētkos!',
+                'body' => 'Sirsnīgi sveicam Darba svētkos, {vārds}!',
+            ],
+            [
+                'date' => '04.05',
+                'label' => 'Latvijas Republikas Neatkarības atjaunošanas diena',
+                'subject' => 'Sveicam Latvijas svētkos!',
+                'body' => 'Sirsnīgi sveicieni Latvijas svētkos, {vārds}! Lai lepnums par mūsu zemi, miers un gaišas domas!',
+            ],
+            [
+                'date' => '23.06',
+                'label' => 'Līgo diena',
+                'subject' => 'Priecīgus Līgo svētkus!',
+                'body' => 'Priecīgus Līgo svētkus, {vārds}!',
+            ],
+            [
+                'date' => '24.06',
+                'label' => 'Jāņi',
+                'subject' => 'Priecīgus Jāņus!',
+                'body' => 'Priecīgus Jāņus, {vārds}!',
+            ],
+            [
+                'date' => '18.11',
+                'label' => 'Latvijas Republikas proklamēšanas diena',
+                'subject' => 'Sveicam Latvijas dzimšanas dienā!',
+                'body' => 'Sirsnīgi sveicieni Latvijas Republikas proklamēšanas dienā, {vārds}!',
+            ],
+            [
+                'date' => '24.12',
+                'label' => 'Ziemassvētku vakars',
+                'subject' => 'Priecīgus Ziemassvētkus!',
+                'body' => 'Priecīgus Ziemassvētkus, {vārds}!',
+            ],
+            [
+                'date' => '25.12',
+                'label' => 'Pirmie Ziemassvētki',
+                'subject' => 'Priecīgus Ziemassvētkus!',
+                'body' => 'Priecīgus Ziemassvētkus, {vārds}!',
+            ],
+            [
+                'date' => '31.12',
+                'label' => 'Vecgada vakars',
+                'subject' => 'Laimīgu Vecgada vakaru!',
+                'body' => 'Laimīgu Vecgada vakaru, {vārds}!',
+            ],
+        ],
     ],
 
     /*

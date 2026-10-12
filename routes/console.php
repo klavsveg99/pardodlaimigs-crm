@@ -22,6 +22,12 @@ Schedule::command('pdc:send-reminders')
     ->name('send-reminders')
     ->withoutOverlapping();
 
+// Automātiski klientu apsveikumi (dzimšanas dienās un svētkos) daily at 09:00
+Schedule::command('pdc:send-greetings')
+    ->dailyAt('09:00')
+    ->name('send-greetings')
+    ->withoutOverlapping();
+
 // Full-data backup daily at 00:00 (APP_TIMEZONE, i.e. Europe/Riga on prod).
 // Scheduler is HTTP-triggered via /cron-schedule, so the first post-midnight
 // ping runs it; runs once per day and keeps config('backup.keep') copies.

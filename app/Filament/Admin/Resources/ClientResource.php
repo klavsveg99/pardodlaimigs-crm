@@ -164,6 +164,11 @@ class ClientResource extends Resource
                         ->columnSpanFull()
                         ->extraAttributes(['class' => 'self-end'])
                         ->extraFieldWrapperAttributes(['class' => 'flex items-end h-full pb-1']),
+                    Forms\Components\Checkbox::make('greetings_enabled')
+                        ->label('Klients saņem apsveikumus (dzimšanas dienā un svētkos)')
+                        ->inline()
+                        ->default(true)
+                        ->columnSpanFull(),
                 ]),
                 Grid::make(1)->columnSpan(1)->schema([
                     Forms\Components\Textarea::make('notes_md')->label('Piezīmes')->rows(8),
@@ -350,6 +355,7 @@ class ClientResource extends Resource
             RelationManagers\ViewingsRelationManager::class,
             RelationManagers\TasksRelationManager::class,
             RelationManagers\WpformEntriesRelationManager::class,
+            RelationManagers\GreetingLogsRelationManager::class,
         ];
     }
 

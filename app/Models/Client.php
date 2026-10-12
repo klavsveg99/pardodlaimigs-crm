@@ -27,7 +27,7 @@ class Client extends Model
         'name', 'person_type', 'legal_representative', 'contact_person',
         'phone', 'email', 'personas_kods', 'birth_date', 'birthday_greeted_at',
         'address', 'bank_account', 'source', 'status', 'gdpr_consent_at',
-        'marketing_consent',
+        'marketing_consent', 'greetings_enabled',
         'gdpr_erased_at', 'notes_md', 'owner_user_id',
     ];
 
@@ -69,6 +69,7 @@ class Client extends Model
     protected $casts = [
         'gdpr_consent_at' => 'datetime',
         'marketing_consent' => 'boolean',
+        'greetings_enabled' => 'boolean',
         'gdpr_erased_at' => 'datetime',
         'birth_date' => 'date',
         'birthday_greeted_at' => 'date',
@@ -229,5 +230,13 @@ class Client extends Model
     public function wpformEntries(): HasMany
     {
         return $this->hasMany(WpformEntry::class)->orderByDesc('created_at');
+    }
+
+    /** Nosūtītie apsveikumu e-pasti (dzimšanas diena, svētki). */
+    public function greetingLogs(): HasMany
+    {
+        return $this->hasMany(EmailLog::class, 'client_id')
+            ->where('context', 'like', 'greeting%')
+            ->orderByDesc('created_at');
     }
 }
