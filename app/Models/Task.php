@@ -178,26 +178,12 @@ class Task extends Model
     {
         $due = $this->due_display ?? '—';
 
-        $settings = (array) (EmailSetting::current()->data['task_notification'] ?? []);
-        $subjectText = trim((string) ($settings['subject'] ?? 'Jauns uzdevums'));
-        $bodyText = (string) ($settings['body'] ?? 'Jums piešķirts jauns uzdevums.');
-
-        $subject = ($subjectText !== '' ? $subjectText.': ' : '').$this->title;
-
-        // Sagatave ir vienkāršs teksts; katrs tukšais lauciņš kļūst par
-        // atsevišķu rindkopu. Uzdevuma datu rindas pievieno automātiski.
-        $rows = [];
-        foreach (preg_split('/\r\n|\r|\n/', $bodyText) ?: [] as $line) {
-            if (trim($line) !== '') {
-                $rows[] = '<p>'.nl2br(e($line)).'</p>';
-            }
-        }
+        $rows = ['<p>Jums piešķirts jauns uzdevums: <strong>'.$this->title.'</strong></p>'];
 
         if (filled($this->body)) {
             $rows[] = '<p>'.nl2br(e((string) $this->body)).'</p>';
         }
 
-        $rows[] = '<p><strong>Uzdevums:</strong> '.e((string) $this->title).'</p>';
         $rows[] = '<p><strong>Termiņš:</strong> '.e($due).'</p>';
         $rows[] = '<p><strong>'.$recipientLabel.'</strong></p>';
         $rows[] = $this->assignedTo ? '<p><strong>Aģents:</strong> '.e($this->assignedTo->name).'</p>' : '';
@@ -210,7 +196,7 @@ class Task extends Model
         try {
             app(EmailSender::class)->send(
                 to: $to,
-                subject: $subject,
+                subject: 'Jauns uzdevums: '.$this->title,
                 body: $body,
                 attachments: $this->attachments()->get(),
                 context: [

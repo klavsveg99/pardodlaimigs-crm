@@ -1839,15 +1839,18 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
 @keyframes pdc-spin {
     to { transform: rotate(360deg); }
 }
-/* --- Iestatījumi: svētku repeater ---
-   Repeater item header/content have a 16px inset that pushes their fields
-   to the right of every other field. Flatten the items so they line up. */
+/* --- Iestatījumi ---
+   Svētku repeater ierakstiem skaidra apmale. Kolapsētām sadaļām Filament
+   atstāj apakšējo atkāpi 0, tāpēc virsraksts pielīp apakšmalai; pievienojam
+   to, lai virsraksts ir vertikāli centrēts. */
 .pdc-holidays .fi-fo-repeater-item {
-    background: transparent;
-    box-shadow: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.6rem;
 }
-.pdc-holidays .fi-fo-repeater-item-header,
-.pdc-holidays .fi-fo-repeater-item-content {
-    padding-inline: 0;
+.dark .pdc-holidays .fi-fo-repeater-item {
+    border-color: #27303a;
+}
+.fi-section.fi-collapsed .fi-section-header {
+    padding-bottom: 1.25rem;
 }
 </style>

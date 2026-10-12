@@ -28,10 +28,6 @@ class EmailSetting extends Model
     {
         return [
             'greetings' => config('crm.greetings', []),
-            'task_notification' => [
-                'subject' => 'Jauns uzdevums',
-                'body' => 'Jums piešķirts jauns uzdevums.',
-            ],
         ];
     }
 }

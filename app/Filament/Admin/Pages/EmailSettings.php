@@ -20,9 +20,9 @@ use Filament\Schemas\Schema;
 use UnitEnum;
 
 /**
- * "Iestatījumi" — tikai administratoram. Rediģē automātisko e-pastu tekstus
- * (apsveikumi, svētki, uzdevuma paziņojums), kas citādi ir iekodēti un nav
- * rediģējami e-pasta modāļos.
+ * "Iestatījumi" — tikai administratoram. Rediģē automātisko apsveikumu
+ * e-pastu tekstus (dzimšanas diena, vārdadiena, svētki). Uzdevuma
+ * paziņojums paliek iekodēts Task modelī.
  */
 class EmailSettings extends Page
 {
@@ -74,79 +74,71 @@ class EmailSettings extends Page
         return $schema
             ->schema([
                 Section::make('Apsveikumi')
-                    ->columns(2)
                     ->collapsible()
                     ->collapsed()
                     ->schema([
                         Toggle::make('greetings.enabled')
-                            ->label('Automātiski sūtīt apsveikumus')
-                            ->columnSpanFull(),
-                        TextInput::make('greetings.birthday.subject')
-                            ->label('Dzimšanas diena - temats')
-                            ->required()
-                            ->maxLength(255)
-                            ->columnSpanFull(),
-                        Textarea::make('greetings.birthday.body')
-                            ->label('Dzimšanas diena - teksts')
-                            ->rows(3)
-                            ->columnSpanFull(),
-                        TextInput::make('greetings.name_day.subject')
-                            ->label('Vārdadiena - temats')
-                            ->required()
-                            ->maxLength(255)
-                            ->columnSpanFull(),
-                        Textarea::make('greetings.name_day.body')
-                            ->label('Vārdadiena - teksts')
-                            ->rows(3)
-                            ->columnSpanFull(),
-                    ]),
+                            ->label('Automātiski sūtīt apsveikumus'),
 
-                Section::make('Svētki')
-                    ->collapsible()
-                    ->collapsed()
-                    ->schema([
-                        Repeater::make('greetings.holidays')
-                            ->hiddenLabel()
-                            ->extraAttributes(['class' => 'pdc-holidays'])
-                            ->addActionLabel('Pievienot svētkus')
-                            ->columns(2)
-                            ->reorderable(false)
-                            ->collapsible()
-                            ->itemLabel(fn (array $state): ?string => $state['label'] ?? null)
+                        Section::make('Dzimšanas diena')
+                            ->columns(1)
                             ->schema([
-                                TextInput::make('date')
-                                    ->label('Datums')
-                                    ->placeholder('DD.MM')
-                                    ->required()
-                                    ->rules(['regex:/^\d{2}\.\d{2}$/']),
-                                TextInput::make('label')
-                                    ->label('Nosaukums')
-                                    ->required()
-                                    ->maxLength(100),
-                                TextInput::make('subject')
+                                TextInput::make('greetings.birthday.subject')
                                     ->label('Temats')
                                     ->required()
-                                    ->maxLength(255)
-                                    ->columnSpanFull(),
-                                Textarea::make('body')
+                                    ->maxLength(255),
+                                Textarea::make('greetings.birthday.body')
                                     ->label('Teksts')
-                                    ->rows(2)
+                                    ->rows(3),
+                            ]),
+
+                        Section::make('Vārda diena')
+                            ->columns(1)
+                            ->schema([
+                                TextInput::make('greetings.name_day.subject')
+                                    ->label('Temats')
+                                    ->required()
+                                    ->maxLength(255),
+                                Textarea::make('greetings.name_day.body')
+                                    ->label('Teksts')
+                                    ->rows(3),
+                            ]),
+
+                        Section::make('Svētki')
+                            ->columns(1)
+                            ->schema([
+                                Repeater::make('greetings.holidays')
+                                    ->hiddenLabel()
+                                    ->extraAttributes(['class' => 'pdc-holidays'])
+                                    ->addActionLabel('Pievienot svētkus')
+                                    ->columns(2)
+                                    ->reorderable(false)
+                                    ->collapsible()
+                                    ->collapseAllAction(fn (Action $action): Action => $action->hidden())
+                                    ->expandAllAction(fn (Action $action): Action => $action->hidden())
+                                    ->itemLabel(fn (array $state): ?string => $state['label'] ?? null)
+                                    ->schema([
+                                        TextInput::make('date')
+                                            ->label('Datums')
+                                            ->placeholder('DD.MM')
+                                            ->required()
+                                            ->rules(['regex:/^\d{2}\.\d{2}$/']),
+                                        TextInput::make('label')
+                                            ->label('Nosaukums')
+                                            ->required()
+                                            ->maxLength(100),
+                                        TextInput::make('subject')
+                                            ->label('Temats')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->columnSpanFull(),
+                                        Textarea::make('body')
+                                            ->label('Teksts')
+                                            ->rows(2)
+                                            ->columnSpanFull(),
+                                    ])
                                     ->columnSpanFull(),
                             ]),
-                    ]),
-
-                Section::make('Uzdevuma paziņojums')
-                    ->columns(1)
-                    ->collapsible()
-                    ->collapsed()
-                    ->schema([
-                        TextInput::make('task_notification.subject')
-                            ->label('Temats')
-                            ->required()
-                            ->maxLength(255),
-                        Textarea::make('task_notification.body')
-                            ->label('Teksts')
-                            ->rows(4),
                     ]),
             ]);
     }
