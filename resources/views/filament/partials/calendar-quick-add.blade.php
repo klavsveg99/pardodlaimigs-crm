@@ -15,7 +15,7 @@
         x-cloak
     >
         <template x-if="open">
-            <div class="pdc-qa-overlay" x-on:click.self="close()">
+            <div class="pdc-qa-overlay fi-fixed-positioning-context" x-on:click.self="close()">
                 <div class="pdc-qa-modal" x-on:keydown.escape.window="close()">
                     <div class="pdc-qa-head">
                         <span x-text="type === 'task' ? 'Jauns uzdevums' : 'Jauna apskate'"></span>

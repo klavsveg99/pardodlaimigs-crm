@@ -24,6 +24,7 @@
         <div
             x-load
             x-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('select', 'filament/forms') }}"
+            class="fi-select-input"
             x-data="selectFormComponent({
                 canOptionLabelsWrap: true,
                 canSelectPlaceholder: true,
