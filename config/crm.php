@@ -25,7 +25,17 @@ return [
             'body' => 'Sirsnīgi sveicam dzimšanas dienā, {vārds}! Lai skaisti notikumi, prieks un piepildīti sapņi!',
         ],
 
-        // Fiksētie Latvijas svētki; datums formātā DD.MM.
+        'name_day' => [
+            'subject' => 'Daudz laimes vārdadienā!',
+            'body' => 'Sirsnīgi sveicam vārdadienā, {vārds}!',
+        ],
+
+        /*
+         | Valsts svētki. 'date' => 'DD.MM' (fiksēts) vai 'rule' =>
+         | easter (Pirmās Lieldienas), easter+1 (Otrās Lieldienas),
+         | mothers_day (Mātes diena, 2. maija svētdiena). Lielā Piektdiena
+         | apzināti nav iekļauta, jo tas nav apsveikuma gadījums.
+         */
         'holidays' => [
             [
                 'date' => '01.01',
@@ -44,6 +54,24 @@ return [
                 'label' => 'Latvijas Republikas Neatkarības atjaunošanas diena',
                 'subject' => 'Sveicam Latvijas svētkos!',
                 'body' => 'Sirsnīgi sveicieni Latvijas svētkos, {vārds}! Lai lepnums par mūsu zemi, miers un gaišas domas!',
+            ],
+            [
+                'rule' => 'mothers_day',
+                'label' => 'Mātes diena',
+                'subject' => 'Sveicam Mātes dienā!',
+                'body' => 'Sirsnīgi sveicam Mātes dienā, {vārds}!',
+            ],
+            [
+                'rule' => 'easter',
+                'label' => 'Pirmās Lieldienas',
+                'subject' => 'Priecīgas Lieldienas!',
+                'body' => 'Priecīgas Lieldienas, {vārds}!',
+            ],
+            [
+                'rule' => 'easter+1',
+                'label' => 'Otrās Lieldienas',
+                'subject' => 'Priecīgas Lieldienas!',
+                'body' => 'Priecīgas Lieldienas, {vārds}!',
             ],
             [
                 'date' => '23.06',
@@ -72,6 +100,12 @@ return [
             [
                 'date' => '25.12',
                 'label' => 'Pirmie Ziemassvētki',
+                'subject' => 'Priecīgus Ziemassvētkus!',
+                'body' => 'Priecīgus Ziemassvētkus, {vārds}!',
+            ],
+            [
+                'date' => '26.12',
+                'label' => 'Otrie Ziemassvētki',
                 'subject' => 'Priecīgus Ziemassvētkus!',
                 'body' => 'Priecīgus Ziemassvētkus, {vārds}!',
             ],

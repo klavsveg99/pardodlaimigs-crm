@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Models\Client;
 use App\Models\EmailLog;
 use App\Services\Mail\EmailSender;
+use App\Support\LatvianCalendar;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -14,18 +15,19 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Automātiski nosūta apsveikumu e-pastus "Laimīgajiem" klientiem:
- *  - dzimšanas dienā (ja clients.birth_date norādīts un vēl nav apsveikts šogad);
- *  - svētkos (config('crm.greetings.holidays')).
+ *  - dzimšanas dienā (clients.birth_date);
+ *  - vārdadienā (latviešu kalendārvārdi, config/name_days.php);
+ *  - valsts svētkos (config('crm.greetings.holidays'), arī kustīgajos).
  *
  * Klientam jābūt ar e-pastu un ieslēgtu clients.greetings_enabled. Komandu
- * ikdienā palaiž plānotājs; bez withoutOverlapping tā ir droša pret dubultu
- * palaišanu (dzimšanas dienai birthday_greeted_at, svētkiem email_logs ieraksts).
+ * ikdienā palaiž plānotājs; tā ir droša pret dubultu palaišanu (dzimšanas
+ * dienai birthday_greeted_at, pārējiem email_logs ieraksts par konkrēto dienu).
  */
 class SendGreetings extends Command
 {
     protected $signature = 'pdc:send-greetings';
 
-    protected $description = 'Nosūta automātiskos apsveikumus klientiem (dzimšanas dienās un svētkos).';
+    protected $description = 'Nosūta automātiskos apsveikumus klientiem (dzimšanas dienās, vārdadienās un svētkos).';
 
     public function handle(): int
     {
@@ -39,9 +41,10 @@ class SendGreetings extends Command
 
         $today = now()->startOfDay();
         $birthdays = $this->sendBirthdays($config['birthday'] ?? [], $today);
+        $namedays = $this->sendNamedays($config['name_day'] ?? [], $today);
         $holidays = $this->sendHolidays($config['holidays'] ?? [], $today);
 
-        $this->info("Nosūtīti apsveikumi: {$birthdays} dzimšanas dienās, {$holidays} svētkos.");
+        $this->info("Nosūtīti apsveikumi: {$birthdays} dzimšanas dienās, {$namedays} vārdadienās, {$holidays} svētkos.");
 
         return self::SUCCESS;
     }
@@ -78,14 +81,59 @@ class SendGreetings extends Command
         return $sent;
     }
 
+    /** @param array<string, mixed> $template */
+    private function sendNamedays(array $template, Carbon $today): int
+    {
+        $subject = $template['subject'] ?? null;
+        $body = $template['body'] ?? null;
+
+        if (blank($subject) || blank($body)) {
+            return 0;
+        }
+
+        $names = LatvianCalendar::nameDays($today);
+
+        if ($names === []) {
+            return 0;
+        }
+
+        $normalized = array_map(fn (string $name): string => mb_strtolower($name, 'UTF-8'), $names);
+        $context = 'greeting_nameday:'.$today->format('m-d');
+        $sent = 0;
+
+        foreach ($this->eligibleClients() as $client) {
+            if ($client->isLegalPerson()) {
+                continue;
+            }
+
+            $first = mb_strtolower($this->firstName((string) $client->name), 'UTF-8');
+
+            if ($first === '' || ! in_array($first, $normalized, true)) {
+                continue;
+            }
+
+            if ($this->alreadySent($client, $context, $today)) {
+                continue;
+            }
+
+            if ($this->send($client, $subject, $body, $context)) {
+                $sent++;
+            }
+        }
+
+        return $sent;
+    }
+
     /** @param array<int, array<string, mixed>> $holidays */
     private function sendHolidays(array $holidays, Carbon $today): int
     {
-        $todayKey = $today->format('d.m');
+        $context = 'greeting_holiday:'.$today->format('m-d');
         $sent = 0;
 
         foreach ($holidays as $holiday) {
-            if (($holiday['date'] ?? null) !== $todayKey) {
+            $date = LatvianCalendar::holidayDate($holiday, $today->year);
+
+            if (! $date || ! $date->isSameDay($today)) {
                 continue;
             }
 
@@ -95,8 +143,6 @@ class SendGreetings extends Command
             if (blank($subject) || blank($body)) {
                 continue;
             }
-
-            $context = 'greeting_holiday:'.$todayKey;
 
             foreach ($this->eligibleClients() as $client) {
                 if ($this->alreadySent($client, $context, $today)) {
@@ -130,6 +176,13 @@ class SendGreetings extends Command
             ->where('context', $context)
             ->whereYear('created_at', $today->year)
             ->exists();
+    }
+
+    private function firstName(string $name): string
+    {
+        $parts = preg_split('/\s+/u', trim($name)) ?: [];
+
+        return $parts[0] ?? '';
     }
 
     private function send(Client $client, string $subject, string $body, string $context): bool

@@ -32,9 +32,11 @@ class GreetingLogsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')->label('Nosūtīts')->dateTime('d.m.Y H:i')->sortable(),
                 Tables\Columns\TextColumn::make('context')->label('Veids')->badge()
-                    ->formatStateUsing(fn ($state): string => str_starts_with((string) $state, 'greeting_birthday')
-                        ? 'Dzimšanas diena'
-                        : 'Svētki'),
+                    ->formatStateUsing(fn ($state): string => match (true) {
+                        str_starts_with((string) $state, 'greeting_birthday') => 'Dzimšanas diena',
+                        str_starts_with((string) $state, 'greeting_nameday') => 'Vārdadiena',
+                        default => 'Svētki',
+                    }),
                 Tables\Columns\TextColumn::make('subject')->label('Temats')->wrap(),
             ])
             ->defaultSort('created_at', 'desc')
