@@ -106,6 +106,8 @@ class EmailSettings extends Page
                     ->collapsed()
                     ->schema([
                         Repeater::make('greetings.holidays')
+                            ->hiddenLabel()
+                            ->extraAttributes(['class' => 'pdc-holidays'])
                             ->addActionLabel('Pievienot svētkus')
                             ->columns(2)
                             ->reorderable(false)

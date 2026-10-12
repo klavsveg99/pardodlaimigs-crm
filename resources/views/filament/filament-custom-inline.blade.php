@@ -1839,4 +1839,15 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
 @keyframes pdc-spin {
     to { transform: rotate(360deg); }
 }
+/* --- Iestatījumi: svētku repeater ---
+   Repeater item header/content have a 16px inset that pushes their fields
+   to the right of every other field. Flatten the items so they line up. */
+.pdc-holidays .fi-fo-repeater-item {
+    background: transparent;
+    box-shadow: none;
+}
+.pdc-holidays .fi-fo-repeater-item-header,
+.pdc-holidays .fi-fo-repeater-item-content {
+    padding-inline: 0;
+}
 </style>
