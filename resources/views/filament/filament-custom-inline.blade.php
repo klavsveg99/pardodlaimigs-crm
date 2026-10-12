@@ -1851,6 +1851,6 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     border-color: #27303a;
 }
 .fi-section.fi-collapsed .fi-section-header {
-    padding-bottom: 1.25rem;
+    padding-bottom: 1.25rem !important;
 }
 </style>
