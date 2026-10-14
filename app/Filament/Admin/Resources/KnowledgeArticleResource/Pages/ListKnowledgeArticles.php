@@ -12,6 +12,11 @@ class ListKnowledgeArticles extends ListRecords
 {
     protected static string $resource = KnowledgeArticleResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Zināšanu bāze';
+    }
+
     protected function getHeaderActions(): array
     {
         return [Actions\CreateAction::make()->label('Jauns materiāls')->color('gray')];

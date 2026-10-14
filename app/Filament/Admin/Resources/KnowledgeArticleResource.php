@@ -13,6 +13,7 @@ use Filament\Forms;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
@@ -90,6 +91,7 @@ class KnowledgeArticleResource extends Resource
                             Forms\Components\RichEditor::make('body')->label('Saturs')->columnSpanFull(),
                         ])
                         ->default([])
+                        ->addActionLabel('Pievienot soli')
                         ->reorderableWithButtons()
                         ->collapsible()
                         ->columnSpanFull(),
@@ -111,8 +113,15 @@ class KnowledgeArticleResource extends Resource
         $record = $schema->getRecord();
 
         return $schema->components([
-            TextEntry::make('title')->label('')->size('lg')->weight('bold')->columnSpanFull(),
-            TextEntry::make('summary')->label('')->placeholder('')->columnSpanFull(),
+            TextEntry::make('title')->hiddenLabel()->size('lg')->weight('bold')->columnSpanFull(),
+            TextEntry::make('summary')->hiddenLabel()->placeholder('')->columnSpanFull(),
+            Grid::make(2)->schema([
+                TextEntry::make('type')->hiddenLabel()->badge()->color('gray')
+                    ->formatStateUsing(fn (string $state): string => KnowledgeArticle::TYPES[$state] ?? $state),
+                TextEntry::make('category.name')->hiddenLabel()->badge()->color('gray')
+                    ->placeholder('')
+                    ->visible(fn (?string $state): bool => filled($state)),
+            ])->columnSpanFull(),
             View::make('filament.infolists.knowledge-video')
                 ->viewData([
                     'url' => $record?->video_url,
@@ -124,13 +133,14 @@ class KnowledgeArticleResource extends Resource
             RepeatableEntry::make('steps')
                 ->label('Soļi')
                 ->schema([
-                    TextEntry::make('title')->label('')->weight('bold'),
+                    TextEntry::make('title')->hiddenLabel()->weight('bold'),
                     TextEntry::make('video_url')
-                        ->label('Video')
+                        ->hiddenLabel()
                         ->url(fn (?string $state): ?string => $state)
                         ->openUrlInNewTab()
+                        ->formatStateUsing(fn (): string => 'Atvērt video')
                         ->visible(fn (?string $state): bool => filled($state)),
-                    TextEntry::make('body')->label('')->html()->prose()->columnSpanFull(),
+                    TextEntry::make('body')->hiddenLabel()->html()->prose()->columnSpanFull(),
                 ])
                 ->visible(fn ($state): bool => is_array($state) && count($state) > 0)
                 ->columnSpanFull(),
