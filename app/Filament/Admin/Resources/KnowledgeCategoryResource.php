@@ -75,7 +75,11 @@ class KnowledgeCategoryResource extends Resource
             Tables\Columns\TextColumn::make('articles_count')->label('Materiāli')->counts('articles'),
         ])->actions([
             Actions\EditAction::make()->label('Rediģēt')->color('gray'),
-            Actions\DeleteAction::make()->label('Dzēst')->color('danger'),
+            Actions\DeleteAction::make()
+                ->label('Dzēst')
+                ->color('danger')
+                ->modalHeading('Dzēst kategoriju?')
+                ->modalDescription('Kategorija tiks dzēsta. Tās materiāli paliks zināšanu bāzē bez kategorijas.'),
         ])->defaultSort('name');
     }
 

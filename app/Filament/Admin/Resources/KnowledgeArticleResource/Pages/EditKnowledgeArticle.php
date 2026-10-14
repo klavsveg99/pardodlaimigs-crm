@@ -29,7 +29,12 @@ class EditKnowledgeArticle extends EditRecord
     {
         return [
             Actions\ViewAction::make()->label('Skatīt materiālu')->color('gray'),
-            Actions\DeleteAction::make()->label('Dzēst materiālu')->color('danger'),
+            Actions\DeleteAction::make()
+                ->label('Dzēst materiālu')
+                ->color('danger')
+                ->modalHeading('Dzēst materiālu?')
+                ->modalDescription('Materiāls, tā faili un visi piešķīrumi tiks neatgriezeniski dzēsti.')
+                ->successRedirectUrl(KnowledgeArticleResource::getUrl('index')),
         ];
     }
 }

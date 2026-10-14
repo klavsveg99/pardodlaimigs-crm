@@ -185,7 +185,11 @@ class KnowledgeArticleResource extends Resource
             ->actions([
                 Actions\ViewAction::make()->label('Atvērt')->color('gray'),
                 Actions\EditAction::make()->label('Rediģēt')->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
-                Actions\DeleteAction::make()->label('Dzēst')->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
+                Actions\DeleteAction::make()
+                    ->label('Dzēst')
+                    ->visible(fn (): bool => auth()->user()?->can('manage') ?? false)
+                    ->modalHeading('Dzēst materiālu?')
+                    ->modalDescription('Materiāls, tā faili un visi piešķīrumi tiks neatgriezeniski dzēsti.'),
             ])
             ->defaultSort('title')
             ->searchPlaceholder('Meklēt materiālos')

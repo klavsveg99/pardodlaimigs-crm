@@ -77,7 +77,11 @@ class ViewKnowledgeArticle extends ViewRecord
             }
 
             $actions[] = Actions\EditAction::make()->label('Rediģēt materiālu')->color('gray');
-            $actions[] = Actions\DeleteAction::make()->label('Dzēst materiālu')->color('danger');
+            $actions[] = Actions\DeleteAction::make()
+                ->label('Dzēst materiālu')
+                ->color('danger')
+                ->modalHeading('Dzēst materiālu?')
+                ->modalDescription('Materiāls, tā faili un visi piešķīrumi tiks neatgriezeniski dzēsti.');
         }
 
         $actions[] = Actions\Action::make('complete_assignment')
