@@ -129,7 +129,9 @@ class KnowledgeArticleResource extends Resource
                 ])
                 ->visible(fn (): bool => filled($record?->video_url))
                 ->columnSpanFull(),
-            TextEntry::make('body')->label('Saturs')->html()->prose()->columnSpanFull(),
+            TextEntry::make('body')->label('Saturs')->html()->prose()
+                ->visible(fn (?string $state): bool => filled(strip_tags((string) $state)))
+                ->columnSpanFull(),
             RepeatableEntry::make('steps')
                 ->label('Soļi')
                 ->schema([

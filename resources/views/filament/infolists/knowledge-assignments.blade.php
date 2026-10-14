@@ -6,6 +6,9 @@
 
 <section style="display: grid; gap: 0.6rem;">
     <h2 style="font-size: 1rem; font-weight: 700; margin: 0;">{{ $isAdmin ? 'Piešķīrumi' : 'Jūsu piešķīrumi' }}</h2>
+    @if ($visibleAssignments->isEmpty())
+        <p style="font-size: 0.85rem; color: #6b7280; margin: 0;">Materiāls vēl nav piešķirts nevienam aģentam.</p>
+    @endif
     @foreach ($visibleAssignments as $assignment)
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: 0.65rem 0.8rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
             <div style="display: grid; gap: 0.15rem;">
