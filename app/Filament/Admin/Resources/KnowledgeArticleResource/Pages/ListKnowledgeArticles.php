@@ -19,6 +19,11 @@ class ListKnowledgeArticles extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [Actions\CreateAction::make()->label('Jauns materiāls')->color('gray')];
+        return [
+            Actions\CreateAction::make()
+                ->label('Jauns materiāls')
+                ->color('gray')
+                ->visible(fn (): bool => KnowledgeArticleResource::canCreate()),
+        ];
     }
 }
