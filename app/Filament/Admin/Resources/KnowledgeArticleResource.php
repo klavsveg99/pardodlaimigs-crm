@@ -10,13 +10,15 @@ use App\Models\KnowledgeArticle;
 use App\Models\KnowledgeCategory;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -51,6 +53,26 @@ class KnowledgeArticleResource extends Resource
         return auth()->user()?->can('manage') ?? false;
     }
 
+    public static function canRestore(Model $record): bool
+    {
+        return auth()->user()?->can('manage') ?? false;
+    }
+
+    public static function canRestoreAny(): bool
+    {
+        return auth()->user()?->can('manage') ?? false;
+    }
+
+    public static function canForceDelete(Model $record): bool
+    {
+        return auth()->user()?->can('manage') ?? false;
+    }
+
+    public static function canForceDeleteAny(): bool
+    {
+        return auth()->user()?->can('manage') ?? false;
+    }
+
     public static function canEdit(Model $record): bool
     {
         return auth()->user()?->can('manage') ?? false;
@@ -63,49 +85,55 @@ class KnowledgeArticleResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->when(! auth()->user()?->can('manage'), fn (Builder $query) => $query->where('is_published', true))
-            ->with('category');
+        return parent::getEloquentQuery()->with('category');
     }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Materiāls')
-                ->columns(2)
+            TextInput::make('title')->label('Nosaukums')->required()->maxLength(255)->columnSpanFull(),
+            Forms\Components\Select::make('type')
+                ->label('Veids')
+                ->options(KnowledgeArticle::TYPES)
+                ->required()
+                ->default('material')
+                ->live(),
+            Forms\Components\Select::make('knowledge_category_id')
+                ->label('Kategorija')
+                ->options(fn (): array => KnowledgeCategory::query()->orderBy('name')->pluck('name', 'id')->all())
+                ->searchable()->preload()->nullable(),
+            Forms\Components\Textarea::make('summary')->label('Īss apraksts')->rows(2)->columnSpanFull(),
+            Forms\Components\RichEditor::make('body')->label('Saturs')->columnSpanFull(),
+            Forms\Components\Repeater::make('video_urls')
+                ->label('Video saites')
+                ->simple(TextInput::make('video_url')->label('Video saite')->url()->required()->maxLength(2048))
+                ->default([])
+                ->addActionLabel('Pievienot video')
+                ->reorderableWithButtons()
+                ->columnSpanFull(),
+            Forms\Components\Repeater::make('steps')
+                ->label('Soļi')
                 ->schema([
-                    Forms\Components\TextInput::make('title')->label('Nosaukums')->required()->maxLength(255)->columnSpanFull(),
-                    Forms\Components\Select::make('type')->label('Veids')->options(KnowledgeArticle::TYPES)->required()->default('material'),
-                    Forms\Components\Select::make('knowledge_category_id')
-                        ->label('Kategorija')
-                        ->options(fn (): array => KnowledgeCategory::query()->orderBy('name')->pluck('name', 'id')->all())
-                        ->searchable()->preload()->nullable(),
-                    Forms\Components\Textarea::make('summary')->label('Īss apraksts')->rows(2)->columnSpanFull(),
+                    TextInput::make('title')->label('Soļa nosaukums')->required()->maxLength(255),
+                    TextInput::make('video_url')->label('Video saite')->url()->maxLength(2048),
                     Forms\Components\RichEditor::make('body')->label('Saturs')->columnSpanFull(),
-                    Forms\Components\TextInput::make('video_url')->label('Video saite')->url()->maxLength(2048)->columnSpanFull(),
-                    Forms\Components\Repeater::make('steps')
-                        ->label('Soļi')
-                        ->schema([
-                            Forms\Components\TextInput::make('title')->label('Soļa nosaukums')->required()->maxLength(255),
-                            Forms\Components\TextInput::make('video_url')->label('Video saite')->url()->maxLength(2048),
-                            Forms\Components\RichEditor::make('body')->label('Saturs')->columnSpanFull(),
-                        ])
-                        ->default([])
-                        ->addActionLabel('Pievienot soli')
-                        ->reorderableWithButtons()
-                        ->collapsible()
-                        ->columnSpanFull(),
-                    Forms\Components\Toggle::make('is_published')->label('Publicēts')->default(false),
-                    AttachmentsGrid::make('attachments')
-                        ->label('Faili un video')
-                        ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
-                            .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
-                        ->reorderable(false)
-                        ->multiselect(false)
-                        ->collection('knowledge')
-                        ->columnSpanFull(),
-                ]),
-        ]);
+                ])
+                ->default([])
+                ->addActionLabel('Pievienot soli')
+                ->addActionAlignment(Alignment::Start)
+                ->reorderableWithButtons()
+                ->collapsible()
+                ->visible(fn (Get $get): bool => $get('type') === 'course')
+                ->columnSpanFull(),
+            AttachmentsGrid::make('attachments')
+                ->label('Faili un video')
+                ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
+                    .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
+                ->reorderable(false)
+                ->multiselect(false)
+                ->collection('knowledge')
+                ->columnSpanFull(),
+        ])->columns(2);
     }
 
     public static function infolist(Schema $schema): Schema
@@ -124,10 +152,10 @@ class KnowledgeArticleResource extends Resource
             ])->columnSpanFull(),
             View::make('filament.infolists.knowledge-video')
                 ->viewData([
-                    'url' => $record?->video_url,
-                    'embedUrl' => $record && filled($record->video_url) ? $record->getVideoEmbedUrl($record->video_url) : null,
+                    'videoUrls' => $record?->video_urls ?? [],
+                    'article' => $record,
                 ])
-                ->visible(fn (): bool => filled($record?->video_url))
+                ->visible(fn (): bool => filled($record?->video_urls))
                 ->columnSpanFull(),
             TextEntry::make('body')->label('Saturs')->html()->prose()
                 ->visible(fn (?string $state): bool => filled(strip_tags((string) $state)))
@@ -144,7 +172,7 @@ class KnowledgeArticleResource extends Resource
                         ->visible(fn (?string $state): bool => filled($state)),
                     TextEntry::make('body')->hiddenLabel()->html()->prose()->columnSpanFull(),
                 ])
-                ->visible(fn ($state): bool => is_array($state) && count($state) > 0)
+                ->visible(fn ($state): bool => $record?->type === 'course' && is_array($state) && count($state) > 0)
                 ->columnSpanFull(),
             View::make('filament.infolists.knowledge-attachments')
                 ->viewData(fn (): array => [
@@ -168,29 +196,56 @@ class KnowledgeArticleResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->sortable()->weight('bold')->wrap()
-                    ->url(fn (KnowledgeArticle $record): string => static::getUrl('view', ['record' => $record])),
+                    ->url(fn (KnowledgeArticle $record): ?string => $record->trashed()
+                        ? null
+                        : static::getUrl('view', ['record' => $record])),
                 Tables\Columns\TextColumn::make('type')->label('Veids')->badge()->formatStateUsing(fn (string $state): string => KnowledgeArticle::TYPES[$state] ?? $state)->color('gray'),
                 Tables\Columns\TextColumn::make('category.name')->label('Kategorija')->placeholder('-')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('summary')->label('Apraksts')->searchable()->limit(90)->wrap()->toggleable(),
                 Tables\Columns\TextColumn::make('body')->label('Saturs')->searchable()->formatStateUsing(fn (?string $state): string => strip_tags((string) $state))->limit(100)->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('is_published')->label('Publicēts')->boolean()->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('knowledge_category_id')->label('Kategorija')
                     ->options(fn (): array => KnowledgeCategory::query()->orderBy('name')->pluck('name', 'id')->all()),
                 Tables\Filters\SelectFilter::make('type')->label('Veids')->options(KnowledgeArticle::TYPES),
-                Tables\Filters\TernaryFilter::make('is_published')->label('Publicēšana')
+                Tables\Filters\TrashedFilter::make()
+                    ->label('Dzēstie')
+                    ->placeholder('Aktīvie materiāli')
+                    ->trueLabel('Visi materiāli')
+                    ->falseLabel('Tikai dzēstie')
                     ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
             ])
             ->actions([
-                Actions\ViewAction::make()->label('Atvērt')->color('gray'),
-                Actions\EditAction::make()->label('Rediģēt')->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
-                Actions\DeleteAction::make()
-                    ->label('Dzēst')
-                    ->visible(fn (): bool => auth()->user()?->can('manage') ?? false)
-                    ->modalHeading('Dzēst materiālu?')
-                    ->modalDescription('Materiāls, tā faili un visi piešķīrumi tiks neatgriezeniski dzēsti.'),
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make()->label('Atvērt')->color('gray')
+                        ->visible(fn (KnowledgeArticle $record): bool => ! $record->trashed()),
+                    Actions\EditAction::make()->label('Rediģēt')->color('gray')
+                        ->visible(fn (KnowledgeArticle $record): bool => ! $record->trashed()
+                            && (auth()->user()?->can('manage') ?? false)),
+                    Actions\DeleteAction::make()
+                        ->label('Dzēst')
+                        ->color('danger')
+                        ->visible(fn (KnowledgeArticle $record): bool => ! $record->trashed()
+                            && (auth()->user()?->can('manage') ?? false))
+                        ->modalHeading('Pārvietot materiālu uz dzēstajiem?')
+                        ->modalDescription('Materiālu varēs atjaunot no dzēsto materiālu saraksta.')
+                        ->modalSubmitActionLabel('Dzēst'),
+                    Actions\RestoreAction::make()->label('Atjaunot')->color('gray')
+                        ->visible(fn (KnowledgeArticle $record): bool => $record->trashed()
+                            && (auth()->user()?->can('manage') ?? false)),
+                    Actions\ForceDeleteAction::make()
+                        ->label('Izdzēst neatgriezeniski')
+                        ->color('danger')
+                        ->visible(fn (KnowledgeArticle $record): bool => $record->trashed()
+                            && (auth()->user()?->can('manage') ?? false))
+                        ->modalHeading('Izdzēst materiālu neatgriezeniski?')
+                        ->modalDescription('Materiāls, tā faili un piešķīrumi tiks neatgriezeniski dzēsti.')
+                        ->modalSubmitActionLabel('Izdzēst neatgriezeniski'),
+                ])->color('gray'),
             ])
+            ->recordUrl(fn (KnowledgeArticle $record): ?string => $record->trashed()
+                ? null
+                : static::getUrl('view', ['record' => $record]))
             ->defaultSort('title')
             ->searchPlaceholder('Meklēt materiālos')
             ->emptyStateHeading('Materiālu vēl nav');

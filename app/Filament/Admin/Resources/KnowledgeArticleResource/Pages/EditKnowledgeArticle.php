@@ -32,8 +32,9 @@ class EditKnowledgeArticle extends EditRecord
             Actions\DeleteAction::make()
                 ->label('Dzēst materiālu')
                 ->color('danger')
-                ->modalHeading('Dzēst materiālu?')
-                ->modalDescription('Materiāls, tā faili un visi piešķīrumi tiks neatgriezeniski dzēsti.')
+                ->modalHeading('Pārvietot materiālu uz dzēstajiem?')
+                ->modalDescription('Materiālu varēs atjaunot no dzēsto materiālu saraksta.')
+                ->modalSubmitActionLabel('Dzēst')
                 ->successRedirectUrl(KnowledgeArticleResource::getUrl('index')),
         ];
     }

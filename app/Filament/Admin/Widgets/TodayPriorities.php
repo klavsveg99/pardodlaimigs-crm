@@ -98,7 +98,6 @@ class TodayPriorities extends Widget
         $assignment = KnowledgeAssignment::query()
             ->where('assigned_user_id', auth()->id())
             ->whereNull('completed_at')
-            ->whereHas('article', fn ($query) => $query->where('is_published', true))
             ->find($assignmentId);
 
         if (! $assignment) {
@@ -297,7 +296,6 @@ class TodayPriorities extends Widget
         return KnowledgeAssignment::query()
             ->whereNull('completed_at')
             ->when($this->scopeToUser(), fn ($query) => $query->where('assigned_user_id', auth()->id()))
-            ->whereHas('article', fn ($query) => $query->where('is_published', true))
             ->with(['article', 'assignedTo'])
             ->get()
             ->map(function (KnowledgeAssignment $assignment): array {

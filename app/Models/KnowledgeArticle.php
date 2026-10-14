@@ -8,27 +8,30 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
 class KnowledgeArticle extends Model
 {
+    use SoftDeletes;
+
     public const TYPES = [
         'material' => 'Materiāls',
         'course' => 'Kurss',
     ];
 
     protected $fillable = [
-        'knowledge_category_id', 'title', 'type', 'summary', 'body', 'video_url', 'steps', 'is_published',
+        'knowledge_category_id', 'title', 'type', 'summary', 'body', 'video_urls', 'steps',
     ];
 
     protected $casts = [
+        'video_urls' => 'array',
         'steps' => 'array',
-        'is_published' => 'boolean',
     ];
 
     protected static function booted(): void
     {
-        static::deleting(function (self $article): void {
+        static::forceDeleted(function (self $article): void {
             $article->attachments()->get()->each(function (Attachment $attachment): void {
                 Storage::disk($attachment->disk)->delete($attachment->path);
                 $attachment->delete();
