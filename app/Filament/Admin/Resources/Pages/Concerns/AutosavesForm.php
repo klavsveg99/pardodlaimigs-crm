@@ -86,7 +86,7 @@ trait AutosavesForm
         } catch (\Throwable $e) {
             $this->autosaveState = 'error';
             $this->autosaveError = 'Pagaidu saglabāšana neizdevās.';
-            Log::warning('Autosave failed', ['msg' => $e->getMessage()]);
+            Log::warning('Autosave failed', ['msg' => $e->getMessage(), 'exception' => $e]);
         } finally {
             AuditLogger::$suppressUpdates = false;
             $this->isAutosaveRun = false;

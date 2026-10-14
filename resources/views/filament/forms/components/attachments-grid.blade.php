@@ -863,13 +863,28 @@
                             });
                             this.sync();
                         } else {
-                            window.alert('Augšupielāde neizdevās: ' + file.name);
+                            console.error('Attachment upload failed', {
+                                status: xhr.status,
+                                url: this.uploadUrl,
+                                message: r.message || r.error || null,
+                            });
+                            window.alert('Augšupielāde neizdevās: ' + (r.message || file.name));
                         }
                     } catch (err) {
+                        console.error('Attachment upload response could not be read', {
+                            status: xhr.status,
+                            url: this.uploadUrl,
+                            error: err,
+                        });
                         window.alert('Augšupielāde neizdevās: ' + file.name + '\n' + err.message);
                     }
                 });
                 xhr.addEventListener('error', () => {
+                    console.error('Attachment upload request failed', {
+                        status: xhr.status,
+                        url: this.uploadUrl,
+                        size: file.size,
+                    });
                     window.alert('Augšupielāde neizdevās: ' + file.name);
                 });
                 xhr.addEventListener('loadend', () => {

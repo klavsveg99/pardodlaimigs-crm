@@ -12,6 +12,7 @@ use App\Services\Mail\EmailSender;
 use App\Services\Mail\EmailTooLargeException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -40,7 +41,13 @@ class ClientAttachmentEmailController extends Controller
         }
 
         $file = $request->file('file');
-        if (! $file) {
+        if (! $file || ! $file->isValid()) {
+            Log::warning('Client attachment upload received no valid file', [
+                'client_id' => $client->getKey(),
+                'upload_error_code' => $file?->getError() ?? ($_FILES['file']['error'] ?? UPLOAD_ERR_NO_FILE),
+                'content_length' => (int) $request->server('CONTENT_LENGTH', 0),
+            ]);
+
             return response()->json(['message' => 'Nav faila.'], 422);
         }
 
@@ -54,51 +61,69 @@ class ClientAttachmentEmailController extends Controller
             return response()->json(['message' => 'Fails ir pārāk liels.'], 422);
         }
 
-        $originalName = $file->getClientOriginalName();
-        $disk = Storage::disk('public');
-        $base = pathinfo($originalName, PATHINFO_FILENAME);
-        $ext = pathinfo($originalName, PATHINFO_EXTENSION);
-
-        $candidate = 'attachments/'.$originalName;
-        if ($disk->exists($candidate)) {
-            $i = 1;
-            do {
-                $candidate = 'attachments/'.$base.'-'.$i.($ext ? '.'.$ext : '');
-                $i++;
-            } while ($disk->exists($candidate));
-        }
-        $path = $file->storeAs('attachments', basename($candidate), 'public');
-
-        $size = (int) $disk->size($path);
-
         try {
-            $abs = $disk->path($path);
-            if (is_file($abs) && str_starts_with((string) $file->getMimeType(), 'image/')) {
-                $result = app(ImageOptimizer::class)->optimize($abs);
-                $size = (int) ($result['size'] ?? $size);
+            $originalName = $file->getClientOriginalName();
+            $disk = Storage::disk('public');
+            $base = pathinfo($originalName, PATHINFO_FILENAME);
+            $ext = pathinfo($originalName, PATHINFO_EXTENSION);
+
+            $candidate = 'attachments/'.$originalName;
+            if ($disk->exists($candidate)) {
+                $i = 1;
+                do {
+                    $candidate = 'attachments/'.$base.'-'.$i.($ext ? '.'.$ext : '');
+                    $i++;
+                } while ($disk->exists($candidate));
             }
-        } catch (\Throwable) {
-            // Optimisation must never block the upload.
+            $path = $file->storeAs('attachments', basename($candidate), 'public');
+            if (! $path) {
+                throw new \RuntimeException('Attachment could not be stored.');
+            }
+
+            $size = (int) $disk->size($path);
+
+            try {
+                $abs = $disk->path($path);
+                if (is_file($abs) && str_starts_with((string) $file->getMimeType(), 'image/')) {
+                    $result = app(ImageOptimizer::class)->optimize($abs);
+                    $size = (int) ($result['size'] ?? $size);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Client attachment image optimization failed', [
+                    'client_id' => $client->getKey(),
+                    'file_size' => $size,
+                    'exception' => $e,
+                ]);
+            }
+
+            $attachment = $client->attachments()->create([
+                'collection' => 'gallery',
+                'path' => $path,
+                'disk' => 'public',
+                'original_name' => $originalName,
+                'mime_type' => $file->getMimeType(),
+                'size' => $size,
+                'sort_order' => (int) $client->attachments()->max('sort_order') + 1,
+            ]);
+
+            return response()->json([
+                'id' => $attachment->id,
+                'path' => $path,
+                'url' => $disk->url($path),
+                'name' => $originalName,
+                'size' => $size,
+                'created' => $attachment->created_at?->format('d.m.Y'),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Client attachment upload failed', [
+                'client_id' => $client->getKey(),
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'exception' => $e,
+            ]);
+
+            return response()->json(['message' => 'Neizdevās augšupielādēt pielikumu.'], 500);
         }
-
-        $attachment = $client->attachments()->create([
-            'collection' => 'gallery',
-            'path' => $path,
-            'disk' => 'public',
-            'original_name' => $originalName,
-            'mime_type' => $file->getMimeType(),
-            'size' => $size,
-            'sort_order' => (int) $client->attachments()->max('sort_order') + 1,
-        ]);
-
-        return response()->json([
-            'id' => $attachment->id,
-            'path' => $path,
-            'url' => $disk->url($path),
-            'name' => $originalName,
-            'size' => $size,
-            'created' => $attachment->created_at?->format('d.m.Y'),
-        ]);
     }
 
     /**
