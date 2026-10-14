@@ -9,7 +9,7 @@ return [
 
     'accepted_mimes' => [
         'jpg', 'jpeg', 'png', 'webp', 'gif', 'svg',
-        'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt',
+        'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt', 'mp4', 'webm',
     ],
 
     'accepted_file_types' => [
@@ -25,5 +25,7 @@ return [
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'text/csv',
         'text/plain',
+        'video/mp4',
+        'video/webm',
     ],
 ];

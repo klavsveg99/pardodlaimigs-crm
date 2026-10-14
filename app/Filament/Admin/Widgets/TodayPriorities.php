@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Resources\KnowledgeArticleResource;
 use App\Filament\Concerns\HasUndoableNotifications;
+use App\Models\KnowledgeArticle;
+use App\Models\KnowledgeAssignment;
 use App\Models\Task;
 use App\Models\Viewing;
 use App\Services\Notices\NoticeCenter;
@@ -15,9 +18,9 @@ use Livewire\Attributes\On;
 /**
  * "Šodien jāizdara" — notikumu saraksts bez fiksētām kolonnām. Katrs
  * ieraksts pats nes sev līdzi datus (nosaukums, lauki, saite), tāpēc
- * uzdevumus, apskates un aizveramos paziņojumus (līdi, novecojuši īpašumi)
- * var rādīt vienā plūsmā. Paziņojumu aizvēršana sinhronizējas ar augšējā
- * labā stūra paziņojumiem (notification_dismissals tabula).
+ * uzdevumus, apskates, mācību piešķīrumus un aizveramos paziņojumus (līdi,
+ * novecojuši īpašumi) var rādīt vienā plūsmā. Paziņojumu aizvēršana
+ * sinhronizējas ar augšējā labā stūra paziņojumiem (notification_dismissals).
  */
 class TodayPriorities extends Widget
 {
@@ -89,6 +92,24 @@ class TodayPriorities extends Widget
         $this->notifyUndoable('Apskate atzīmēta kā notikusi', 'viewing-done', ['id' => $viewing->id]);
     }
 
+    /** Atzīmēt paša lietotāja zināšanu materiāla piešķīrumu kā pabeigtu. */
+    public function completeKnowledgeAssignment(int $assignmentId): void
+    {
+        $assignment = KnowledgeAssignment::query()
+            ->where('assigned_user_id', auth()->id())
+            ->whereNull('completed_at')
+            ->whereHas('article', fn ($query) => $query->where('is_published', true))
+            ->find($assignmentId);
+
+        if (! $assignment) {
+            return;
+        }
+
+        $assignment->update(['completed_at' => now()]);
+
+        $this->notifyUndoable('Materiāls pabeigts', 'knowledge-assignment-completed', ['id' => $assignment->id]);
+    }
+
     /**
      * Atsauc iepriekšējo ātro darbību. Ieraksts tiek meklēts no jauna ar to
      * pašu tvērumu, ar kādu tas tika atzīmēts, lai no notikuma datiem
@@ -107,6 +128,9 @@ class TodayPriorities extends Widget
             'viewing-done' => Viewing::query()
                 ->when($this->scopeToUser(), fn ($q) => $q->where('agent_user_id', auth()->id()))
                 ->find($id),
+            'knowledge-assignment-completed' => KnowledgeAssignment::query()
+                ->where('assigned_user_id', auth()->id())
+                ->find($id),
             default => null,
         };
 
@@ -116,8 +140,10 @@ class TodayPriorities extends Widget
 
         if ($record instanceof Task) {
             $record->update(['completed_at' => null]);
-        } else {
+        } elseif ($record instanceof Viewing) {
             $record->update(['status' => 'scheduled']);
+        } else {
+            $record->update(['completed_at' => null]);
         }
 
         return true;
@@ -132,6 +158,7 @@ class TodayPriorities extends Widget
             $this->noticeNotifications(),
             $this->taskNotifications(),
             $this->viewingNotifications(),
+            $this->knowledgeNotifications(),
         );
 
         usort($records, function (array $a, array $b): int {
@@ -259,6 +286,40 @@ class TodayPriorities extends Widget
                     'status' => $overdue ? 'Nokavēts' : 'Ieplānota',
                     'status_color' => $overdue ? 'danger' : 'gray',
                     'timestamp' => $viewing->effectiveScheduledAt(),
+                ];
+            })
+            ->all();
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    protected function knowledgeNotifications(): array
+    {
+        return KnowledgeAssignment::query()
+            ->whereNull('completed_at')
+            ->when($this->scopeToUser(), fn ($query) => $query->where('assigned_user_id', auth()->id()))
+            ->whereHas('article', fn ($query) => $query->where('is_published', true))
+            ->with(['article', 'assignedTo'])
+            ->get()
+            ->map(function (KnowledgeAssignment $assignment): array {
+                return [
+                    'key' => 'knowledge-'.$assignment->id,
+                    'knowledge_assignment_id' => $assignment->id,
+                    'can_complete' => $assignment->assigned_user_id === auth()->id(),
+                    'type' => KnowledgeArticle::TYPES[$assignment->article->type] ?? 'Materiāls',
+                    'type_color' => 'gray',
+                    'icon' => 'heroicon-o-academic-cap',
+                    'urgent' => false,
+                    'title' => $assignment->article->title,
+                    'url' => KnowledgeArticleResource::getUrl('view', ['record' => $assignment->article]),
+                    'fields' => array_values(array_filter([
+                        $assignment->due_at ? ['label' => 'Termiņš', 'value' => $assignment->due_at->locale('lv')->translatedFormat('d.m.Y')] : null,
+                        $assignment->assignedTo && $this->scopeToUser() === false
+                            ? ['label' => 'Aģents', 'value' => $assignment->assignedTo->name]
+                            : null,
+                    ])),
+                    'status' => null,
+                    'status_color' => 'gray',
+                    'timestamp' => $assignment->due_at ?? $assignment->created_at,
                 ];
             })
             ->all();

@@ -34,10 +34,12 @@
                             $quickMethod = 'completeTask';
                         } elseif (! empty($item['viewing_id'])) {
                             $quickMethod = 'completeViewing';
+                        } elseif (! empty($item['knowledge_assignment_id']) && ! empty($item['can_complete'])) {
+                            $quickMethod = 'completeKnowledgeAssignment';
                         } else {
                             $quickMethod = null;
                         }
-                        $quickId = $item['task_id'] ?? $item['viewing_id'] ?? null;
+                        $quickId = $item['task_id'] ?? $item['viewing_id'] ?? $item['knowledge_assignment_id'] ?? null;
                         $quickTitle = ! empty($item['viewing_id']) ? 'Atzīmēt kā notikušu' : 'Atzīmēt kā pabeigtu';
                     @endphp
                     <div class="pdc-today-row" wire:key="today-{{ $item['key'] }}" style="display: flex; align-items: stretch; border: 1px solid {{ $item['urgent'] ? '#fca5a5' : '#e5e7eb' }}; border-left: 3px solid {{ $item['urgent'] ? '#dc2626' : 'var(--pdc-primary)' }}; border-radius: 0.7rem; background: #ffffff;">

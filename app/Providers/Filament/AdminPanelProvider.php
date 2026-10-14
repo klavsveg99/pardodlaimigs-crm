@@ -88,6 +88,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 'CRM',
                 'Darbplūsma',
+                'Izglītība',
                 'Sistēma',
             ]);
     }
