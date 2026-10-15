@@ -304,7 +304,7 @@ h1, h2, h3 { font-family: var(--serif); }
 .grecaptcha-badge { visibility: hidden; }
 
 .site-footer { color: rgb(255 255 255 / 76%); background: #183a37; }
-.footer-main { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding: 26px 0; }
+.footer-main { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 26px 0; }
 .footer-brand-block { display: grid; gap: 12px; justify-items: start; }
 .footer-brand-block p { margin: 0; font-size: 12px; }
 .footer-contact-block { display: grid; gap: 12px; justify-items: end; text-align: right; }
