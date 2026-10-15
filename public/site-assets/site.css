@@ -413,6 +413,9 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .mobile-menu-arrow { color: #e5bd76; font-size: 15px; font-weight: 400; }
 
   .mobile-menu-block { padding: 20px 20px 0; }
+  /* The language switcher closes the drawer, so it carries its own bottom
+     padding instead of the foot's. */
+  .mobile-menu-language { padding-bottom: 20px; }
   .mobile-menu-label { margin: 0 0 11px; color: rgb(255 255 255 / 55%); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
   .mobile-menu-langs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .mobile-menu-lang { display: inline-flex; align-items: center; gap: 9px; min-height: 42px; padding: 0 12px; border: 1px solid rgb(255 255 255 / 26%); cursor: pointer; color: #fff; background: transparent; font-size: 12px; font-weight: 600; text-align: left; transition: background .18s ease, border-color .18s ease; }

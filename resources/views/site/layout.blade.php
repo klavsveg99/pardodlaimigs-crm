@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
           crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=2">
+    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=3">
     <script defer src="{{ asset('site-assets/site.js') }}?v=1"></script>
 </head>
 <body class="site">
@@ -79,16 +79,6 @@
             @endforeach
         </nav>
         <div class="mobile-menu-block">
-            <p class="mobile-menu-label">{{ $copy['languageLabel'] ?? 'Valoda' }}</p>
-            <div class="mobile-menu-langs" role="group" aria-label="{{ $copy['languageLabel'] ?? 'Valoda' }}">
-                @foreach ($languages as $code => $name)
-                    <a class="mobile-menu-lang{{ $code === $locale ? ' is-active' : '' }}" href="{{ $languageUrls[$code] ?? '#' }}" aria-current="{{ $code === $locale ? 'true' : 'false' }}">
-                        <img src="{{ asset('site-assets/images/flags/'.$flags[$code]) }}" alt="" width="18" height="12">{{ $name }}<span class="language-check" aria-hidden="true">✓</span>
-                    </a>
-                @endforeach
-            </div>
-        </div>
-        <div class="mobile-menu-block">
             <p class="mobile-menu-label">{{ $copy['quickContact'] ?? 'Ātrā saziņa' }}</p>
             <a class="mobile-menu-contact" href="https://wa.me/37124922942" target="_blank" rel="noreferrer"><span>WhatsApp</span><strong>+371 2492 2942</strong></a>
             <a class="mobile-menu-contact" href="tel:+37124922942"><span>{{ $copy['call'] ?? 'Zvanīt' }}</span><strong>+371 2492 2942</strong></a>
@@ -99,6 +89,16 @@
                 <a href="https://www.facebook.com/PardodLaimigs/" target="_blank" rel="noreferrer">Facebook</a>
                 <a href="https://instagram.com/pardodlaimigs" target="_blank" rel="noreferrer">Instagram</a>
                 <a href="https://g.page/r/CRZd6XZu2hhmEAE/review" target="_blank" rel="noreferrer">Google</a>
+            </div>
+        </div>
+        <div class="mobile-menu-block mobile-menu-language">
+            <p class="mobile-menu-label">{{ $copy['languageLabel'] ?? 'Valoda' }}</p>
+            <div class="mobile-menu-langs" role="group" aria-label="{{ $copy['languageLabel'] ?? 'Valoda' }}">
+                @foreach ($languages as $code => $name)
+                    <a class="mobile-menu-lang{{ $code === $locale ? ' is-active' : '' }}" href="{{ $languageUrls[$code] ?? '#' }}" aria-current="{{ $code === $locale ? 'true' : 'false' }}">
+                        <img src="{{ asset('site-assets/images/flags/'.$flags[$code]) }}" alt="" width="18" height="12">{{ $name }}<span class="language-check" aria-hidden="true">✓</span>
+                    </a>
+                @endforeach
             </div>
         </div>
     </div>
