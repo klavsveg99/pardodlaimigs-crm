@@ -8,8 +8,11 @@ use App\Models\WpformEntry;
 use App\Services\Site\SiteContent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class PublicSiteLeadController extends Controller
 {
@@ -31,6 +34,9 @@ class PublicSiteLeadController extends Controller
             return redirect($this->content->localizedPath($locale, '/paldies/'));
         }
 
+        $copy = $this->content->strings($locale);
+        $prefixes = (array) config('site.phone_prefixes');
+
         $types = [
             'apartment' => 'Dzīvoklis',
             'house' => 'Māja',
@@ -47,12 +53,27 @@ class PublicSiteLeadController extends Controller
             'desired_price' => ['nullable', 'numeric', 'min:0', 'max:1000000000'],
             'urgent' => ['nullable', 'boolean'],
             'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:40'],
-            'email' => ['required', 'email', 'max:255'],
+            'phone_prefix' => ['required', 'string', Rule::in(array_keys($prefixes))],
+            'phone' => ['required', 'string', 'max:30'],
+            'email' => ['required', 'email:rfc', 'max:255'],
             'comment' => ['nullable', 'string', 'max:2000'],
             'consent' => ['accepted'],
             'website' => ['nullable', 'string', 'max:0'],
         ]);
+
+        // The national number has to be as long as the chosen country's numbers
+        // are, otherwise the country code is what is wrong, not the number.
+        $rule = $prefixes[$data['phone_prefix']];
+        $digits = (string) preg_replace('/\D/', '', $data['phone']);
+        if (strlen($digits) < $rule['min'] || strlen($digits) > $rule['max']) {
+            throw ValidationException::withMessages(['phone' => $copy['formPhoneInvalid'] ?? 'Enter a valid phone number.']);
+        }
+
+        if (! $this->recaptchaPasses($request)) {
+            throw ValidationException::withMessages(['recaptcha_token' => $copy['formCaptchaFailed'] ?? 'The security check failed.']);
+        }
+
+        $phone = '+'.$rule['dial'].' '.$digits;
 
         $fields = [
             ['id' => 1, 'name' => 'Īpašuma veids', 'type' => 'select', 'value' => $types[$data['property_type']]],
@@ -63,7 +84,7 @@ class PublicSiteLeadController extends Controller
             ['id' => 6, 'name' => 'Vēlamā cena par īpašumu', 'type' => 'text', 'value' => $data['desired_price'] ?? ''],
             ['id' => 7, 'name' => 'Vēlos pārdot steidzami', 'type' => 'checkbox', 'value' => ($data['urgent'] ?? false) ? 'Jā' : 'Nē'],
             ['id' => 8, 'name' => 'Jūsu vārds', 'type' => 'text', 'value' => $data['name']],
-            ['id' => 9, 'name' => 'Telefona numurs', 'type' => 'tel', 'value' => $data['phone']],
+            ['id' => 9, 'name' => 'Telefona numurs', 'type' => 'tel', 'value' => $phone],
             ['id' => 10, 'name' => 'E-pasts', 'type' => 'email', 'value' => $data['email']],
             ['id' => 11, 'name' => 'Papildu piezīmes', 'type' => 'textarea', 'value' => $data['comment'] ?? ''],
             ['id' => 12, 'name' => 'Privātuma politika', 'type' => 'checkbox', 'value' => 'Piekritu'],
@@ -84,5 +105,43 @@ class PublicSiteLeadController extends Controller
         ]);
 
         return redirect($this->content->localizedPath($locale, '/paldies/'));
+    }
+
+    /**
+     * reCAPTCHA v3. Without a configured secret the check is skipped rather than
+     * failed, so environments that do not carry the keys keep a working form.
+     */
+    private function recaptchaPasses(Request $request): bool
+    {
+        $secret = (string) config('services.recaptcha.secret');
+        if ($secret === '') {
+            return true;
+        }
+
+        $token = (string) $request->input('recaptcha_token');
+        if ($token === '') {
+            return false;
+        }
+
+        try {
+            $response = Http::asForm()->timeout(6)->post('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => $secret,
+                'response' => $token,
+                'remoteip' => $request->ip(),
+            ]);
+        } catch (Throwable) {
+            return false;
+        }
+
+        if (! $response->successful()) {
+            return false;
+        }
+
+        $result = $response->json();
+        $action = (string) config('services.recaptcha.action', 'valuation');
+
+        return ($result['success'] ?? false) === true
+            && ($result['action'] ?? $action) === $action
+            && (float) ($result['score'] ?? 0) >= (float) config('services.recaptcha.threshold', 0.5);
     }
 }

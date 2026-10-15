@@ -510,6 +510,130 @@
         });
     }
 
+    /* ── Valuation form: validation and reCAPTCHA v3 ───────────────────── */
+    const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+
+    function phonePrefixes() {
+        const payload = $('#phone-prefixes');
+        if (!payload) return {};
+        try {
+            return JSON.parse(payload.textContent) || {};
+        } catch (error) {
+            return {};
+        }
+    }
+
+    function setFieldError(field, message) {
+        const error = $(`#${field.name}-error`);
+        field.setAttribute('aria-invalid', 'true');
+        if (error) {
+            error.textContent = message;
+            error.hidden = false;
+        }
+    }
+
+    function clearFieldError(field) {
+        const error = $(`#${field.name}-error`);
+        field.removeAttribute('aria-invalid');
+        if (error) error.hidden = true;
+    }
+
+    /** Email shape plus the national number length of the chosen country. */
+    function validateContactForm(form) {
+        let valid = true;
+
+        clearFieldError(form.email);
+        if (!EMAIL_PATTERN.test(form.email.value.trim())) {
+            setFieldError(form.email, form.dataset.emailInvalid || 'Invalid email address.');
+            valid = false;
+        }
+
+        clearFieldError(form.phone);
+        const rule = phonePrefixes()[form.phone_prefix.value];
+        const digits = form.phone.value.replace(/\D/g, '');
+        if (rule && (digits.length < rule.min || digits.length > rule.max)) {
+            setFieldError(form.phone, form.dataset.phoneInvalid || 'Invalid phone number.');
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    function loadRecaptcha(siteKey) {
+        if (!siteKey || $('script[data-recaptcha]')) return;
+        const script = document.createElement('script');
+        script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
+        script.async = true;
+        script.dataset.recaptcha = '1';
+        document.head.appendChild(script);
+    }
+
+    /** The token goes into the hidden field; the form is then submitted for real. */
+    function requestRecaptchaToken(form, submit, attempt = 0) {
+        const siteKey = form.dataset.siteKey;
+
+        // Without a key configured the server skips the check as well.
+        if (!siteKey) {
+            submit('');
+            return;
+        }
+
+        // api.js loads asynchronously: give it a moment instead of posting an
+        // unverified request the server will only throw away.
+        if (typeof grecaptcha === 'undefined') {
+            if (attempt < 40) {
+                setTimeout(() => requestRecaptchaToken(form, submit, attempt + 1), 150);
+                return;
+            }
+            showCaptchaFailure(form);
+            return;
+        }
+
+        grecaptcha.ready(() => {
+            grecaptcha.execute(siteKey, { action: 'valuation' })
+                .then((token) => (token ? submit(token) : showCaptchaFailure(form)))
+                .catch(() => showCaptchaFailure(form));
+        });
+    }
+
+    function showCaptchaFailure(form) {
+        const feedback = $('#form-feedback');
+        if (feedback) {
+            feedback.textContent = form.dataset.captchaFailed || '';
+            feedback.hidden = false;
+        }
+    }
+
+    function setupContactForm() {
+        const form = $('.contact-form');
+        if (!form) return;
+
+        loadRecaptcha(form.dataset.siteKey);
+
+        form.addEventListener('submit', (event) => {
+            if (!validateContactForm(form)) {
+                event.preventDefault();
+                form.querySelector('[aria-invalid="true"]')?.focus();
+                return;
+            }
+
+            if (form.dataset.recaptchaReady === '1') return;
+
+            // Hold the native submit until the token is in hand.
+            event.preventDefault();
+            requestRecaptchaToken(form, (token) => {
+                form.recaptcha_token.value = token;
+                form.dataset.recaptchaReady = '1';
+                form.submit();
+            });
+        });
+
+        form.querySelectorAll('input[name="email"], input[name="phone"]').forEach((field) => {
+            field.addEventListener('input', () => clearFieldError(field));
+        });
+        form.phone_prefix?.addEventListener('change', () => clearFieldError(form.phone));
+    }
+
     function setupDialogs() {
         $$('[data-close-dialog]').forEach((button) => button.addEventListener('click', () => button.closest('dialog')?.close()));
         $$('dialog').forEach((dialog) => dialog.addEventListener('click', (event) => {
@@ -529,6 +653,7 @@
         setupReviews();
         setupCookies();
         setupQuickContact();
+        setupContactForm();
         setupDialogs();
     });
 })();

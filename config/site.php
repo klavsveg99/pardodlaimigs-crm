@@ -19,6 +19,41 @@ return [
 
     'locales' => ['lv', 'en', 'ru', 'de'],
 
+    /*
+     * Country dial codes and the national number length each one accepts, for
+     * the valuation form's prefix selector and its validation. The static
+     * preview validates against the same list (phonePrefixes in src/main.js),
+     * so keep them in step.
+     */
+    'phone_prefixes' => [
+        'LV' => ['dial' => '371', 'min' => 8, 'max' => 8],
+        'AT' => ['dial' => '43', 'min' => 8, 'max' => 11],
+        'BE' => ['dial' => '32', 'min' => 8, 'max' => 9],
+        'BY' => ['dial' => '375', 'min' => 9, 'max' => 9],
+        'CH' => ['dial' => '41', 'min' => 9, 'max' => 9],
+        'CZ' => ['dial' => '420', 'min' => 9, 'max' => 9],
+        'DE' => ['dial' => '49', 'min' => 6, 'max' => 11],
+        'DK' => ['dial' => '45', 'min' => 8, 'max' => 8],
+        'EE' => ['dial' => '372', 'min' => 7, 'max' => 8],
+        'ES' => ['dial' => '34', 'min' => 9, 'max' => 9],
+        'FI' => ['dial' => '358', 'min' => 6, 'max' => 12],
+        'FR' => ['dial' => '33', 'min' => 9, 'max' => 9],
+        'GB' => ['dial' => '44', 'min' => 9, 'max' => 10],
+        'IE' => ['dial' => '353', 'min' => 7, 'max' => 9],
+        'IT' => ['dial' => '39', 'min' => 8, 'max' => 11],
+        'LT' => ['dial' => '370', 'min' => 8, 'max' => 8],
+        'NL' => ['dial' => '31', 'min' => 9, 'max' => 9],
+        'NO' => ['dial' => '47', 'min' => 8, 'max' => 8],
+        'PL' => ['dial' => '48', 'min' => 9, 'max' => 9],
+        'PT' => ['dial' => '351', 'min' => 9, 'max' => 9],
+        'RU' => ['dial' => '7', 'min' => 10, 'max' => 10],
+        'SE' => ['dial' => '46', 'min' => 7, 'max' => 10],
+        'UA' => ['dial' => '380', 'min' => 9, 'max' => 9],
+        'US' => ['dial' => '1', 'min' => 10, 'max' => 10],
+    ],
+
+    'default_phone_prefix' => 'LV',
+
     'language_names' => [
         'lv' => 'Latviešu',
         'en' => 'English',

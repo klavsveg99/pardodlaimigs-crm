@@ -495,7 +495,13 @@
           "name": "Lāsma Sarksne"
         }
       ],
-      "formConsent": "Piekrītu personas datu apstrādei saskaņā ar privātuma politiku"
+      "formConsent": "Piekrītu personas datu apstrādei saskaņā ar privātuma politiku",
+      "formPhoneCode": "Valsts kods",
+      "formPhoneInvalid": "Ievadiet derīgu tālruņa numuru.",
+      "formEmailInvalid": "Ievadiet derīgu e-pasta adresi.",
+      "formCaptchaFailed": "Drošības pārbaude neizdevās. Lūdzu, mēģiniet vēlreiz.",
+      "termsLabel": "pakalpojuma noteikumi",
+      "recaptchaNote": "Šo vietni aizsargā reCAPTCHA. Uz to attiecas Google [privacy] un [terms]."
     },
     "en": {
       "navFaq": "FAQ",
@@ -585,7 +591,13 @@
       "podcastLead": "Explore our YouTube channel and Spotify podcast about real estate.",
       "youtube": "YouTube channel",
       "spotify": "Spotify podcast",
-      "formConsent": "I agree to the processing of my personal data under the privacy policy"
+      "formConsent": "I agree to the processing of my personal data under the privacy policy",
+      "formPhoneCode": "Country code",
+      "formPhoneInvalid": "Enter a valid phone number.",
+      "formEmailInvalid": "Enter a valid email address.",
+      "formCaptchaFailed": "The security check failed. Please try again.",
+      "termsLabel": "Terms of Service",
+      "recaptchaNote": "This site is protected by reCAPTCHA and the Google [privacy] and [terms] apply."
     },
     "ru": {
       "navFaq": "FAQ",
@@ -675,7 +687,13 @@
       "podcastLead": "Смотрите наш YouTube-канал и слушайте подкаст Spotify о недвижимости.",
       "youtube": "Канал YouTube",
       "spotify": "Подкаст Spotify",
-      "formConsent": "Я согласен на обработку персональных данных согласно политике конфиденциальности"
+      "formConsent": "Я согласен на обработку персональных данных согласно политике конфиденциальности",
+      "formPhoneCode": "Код страны",
+      "formPhoneInvalid": "Введите корректный номер телефона.",
+      "formEmailInvalid": "Введите корректный адрес эл. почты.",
+      "formCaptchaFailed": "Проверка безопасности не удалась. Попробуйте ещё раз.",
+      "termsLabel": "Условия использования",
+      "recaptchaNote": "Этот сайт защищён reCAPTCHA. Применяются [privacy] и [terms] Google."
     },
     "de": {
       "navFaq": "FAQ",
@@ -765,7 +783,13 @@
       "podcastLead": "Entdecken Sie unseren YouTube-Kanal und Spotify-Podcast rund um Immobilien.",
       "youtube": "YouTube-Kanal",
       "spotify": "Spotify-Podcast",
-      "formConsent": "Ich stimme der Verarbeitung meiner personenbezogenen Daten gemäß der Datenschutzerklärung zu"
+      "formConsent": "Ich stimme der Verarbeitung meiner personenbezogenen Daten gemäß der Datenschutzerklärung zu",
+      "formPhoneCode": "Ländervorwahl",
+      "formPhoneInvalid": "Bitte eine gültige Telefonnummer eingeben.",
+      "formEmailInvalid": "Bitte eine gültige E-Mail-Adresse eingeben.",
+      "formCaptchaFailed": "Die Sicherheitsprüfung ist fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "termsLabel": "Nutzungsbedingungen",
+      "recaptchaNote": "Diese Website ist durch reCAPTCHA geschützt. Es gelten die [privacy] und die [terms] von Google."
     }
   }
 }

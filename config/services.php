@@ -39,6 +39,16 @@ return [
         'key' => env('GOOGLE_MAPS_KEY'),
     ],
 
+    // Google reCAPTCHA v3 - the same keys the WordPress site uses (WPForms).
+    // Without a secret the public valuation form skips the check instead of
+    // failing, so the keys can be filled in per environment.
+    'recaptcha' => [
+        'site_key' => env('RECAPTCHA_SITE_KEY'),
+        'secret' => env('RECAPTCHA_SECRET'),
+        'threshold' => (float) env('RECAPTCHA_THRESHOLD', 0.5),
+        'action' => 'valuation',
+    ],
+
     // AI teksta ģenerators. Pietiek VIENAS atslēgas — Gemini (Google AI Studio,
     // bezmaksas līmenis) vai OpenAI. Bez atslēgas forma rāda paziņojumu un
     // paliek vecais šablona ģenerators.
@@ -52,7 +62,5 @@ return [
         'key' => env('OPENAI_API_KEY'),
         'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
     ],
-
-
 
 ];

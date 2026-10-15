@@ -270,6 +270,16 @@ h1, h2, h3 { font-family: var(--serif); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
 .form-submit-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .form-feedback { margin: -4px 0 0; color: var(--brand); font-size: 12px; }
+.phone-field { display: grid; grid-template-columns: minmax(86px, auto) 1fr; gap: 8px; }
+.phone-field select { min-height: 43px; border: 1px solid #e2e6e2; border-radius: 0; padding: 0 8px; color: var(--ink); background: #fff; font-size: 12px; }
+.field-error { margin: -2px 0 0; color: #b3261e; font-size: 10px; font-weight: 600; }
+.field-error[hidden] { display: none; }
+.contact-form [aria-invalid="true"] { border-color: #b3261e; }
+.recaptcha-note { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
+.recaptcha-note a { color: var(--brand); text-decoration: underline; }
+/* reCAPTCHA v3 badges itself into the bottom corner, where the quick-contact
+   button already sits; the form carries the required notice instead. */
+.grecaptcha-badge { visibility: hidden; }
 
 .site-footer { color: rgb(255 255 255 / 76%); background: #183a37; }
 .footer-main { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 110px; }

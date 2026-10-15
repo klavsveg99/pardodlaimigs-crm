@@ -18,7 +18,12 @@ it is switched on:
 - `app/Http/Controllers/PublicSiteController.php` renders the pages (home,
   listings, property, blog, posts, content pages, agent pages, sitemap) and
   `PublicSiteLeadController.php` takes the valuation form into the same
-  `wpform_entries` inbox the CRM already reads.
+  `wpform_entries` inbox the CRM already reads. The form checks the email shape,
+  the phone number against the chosen country's dial code
+  (`config/site.php` -> `phone_prefixes`) and a Google reCAPTCHA v3 token: the
+  keys live in `RECAPTCHA_SITE_KEY` / `RECAPTCHA_SECRET` (the same pair the
+  WordPress site uses) and without a secret the check is skipped rather than
+  failed.
 - `resources/views/site/*` are the views, `public/site-assets/*` the CSS, JS,
   fonts and images they use.
 - Migrated WordPress content lives in `resources/site/` (articles and pages in
