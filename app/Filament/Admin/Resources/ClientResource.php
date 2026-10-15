@@ -147,6 +147,7 @@ class ClientResource extends Resource
                             ->options(Client::STATUSES)
                             ->default('active')
                             ->required()
+                            ->live()
                             ->columnSpan(['default' => AgentField::siblingSpan()]),
                         Forms\Components\Select::make('owner_user_id')
                             ->label('Atbildīgais aģents')
@@ -158,6 +159,20 @@ class ClientResource extends Resource
                             ->visible(AgentField::visible())
                             ->disabled(AgentField::disabled()),
                     ]),
+                    // Līda turpmākā saziņa: abi lauki parādās tikai līdam
+                    // (statuss maina redzamību uzreiz), katrs savā rindā.
+                    Forms\Components\DatePicker::make('follow_up_at')
+                        ->label('Nākamās saziņas datums')
+                        ->native(false)
+                        ->displayFormat('d.m.Y')
+                        ->columnSpanFull()
+                        ->visible(fn (Get $get): bool => $get('status') === 'lead'),
+                    Forms\Components\Textarea::make('follow_up_note')
+                        ->label('Nākamās saziņas piezīme')
+                        ->rows(3)
+                        ->maxLength(1000)
+                        ->columnSpanFull()
+                        ->visible(fn (Get $get): bool => $get('status') === 'lead'),
                     Forms\Components\Checkbox::make('greetings_enabled')
                         ->label('Klients var saņemt apsveikumus un paziņojumus (GDPR piekrišana)')
                         ->inline()

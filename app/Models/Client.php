@@ -26,8 +26,8 @@ class Client extends Model
     protected $fillable = [
         'name', 'person_type', 'legal_representative', 'contact_person',
         'phone', 'email', 'personas_kods', 'birth_date', 'birthday_greeted_at',
-        'address', 'bank_account', 'source', 'status', 'gdpr_consent_at',
-        'greetings_enabled',
+        'address', 'bank_account', 'source', 'status', 'follow_up_at', 'follow_up_note',
+        'gdpr_consent_at', 'greetings_enabled',
         'gdpr_erased_at', 'notes_md', 'owner_user_id',
     ];
 
@@ -72,6 +72,7 @@ class Client extends Model
         'gdpr_erased_at' => 'datetime',
         'birth_date' => 'date',
         'birthday_greeted_at' => 'date',
+        'follow_up_at' => 'date',
         'legal_representative' => 'array',
         'contact_person' => 'array',
     ];

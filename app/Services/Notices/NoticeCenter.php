@@ -19,6 +19,8 @@ use Illuminate\Support\Collection;
  * notification_dismissals tabulā, tāpēc abas vietas vienmēr sakrīt.
  *
  * Paziņojumu veidi:
+ *  - follow_up: līdi, kuriem pienācis norādītais saziņas datums (atbildīgajam
+ *    aģentam). Paliek redzams katru dienu, līdz to aizver;
  *  - lead: klienti ar statusu "Līds" (atbildīgajam aģentam), atgriežas katru dienu;
  *  - stale_property: aktīvi īpašumi, kuru cena/statuss nav mainīti 45 dienas.
  *
@@ -28,6 +30,8 @@ use Illuminate\Support\Collection;
 class NoticeCenter
 {
     public const LEAD_KEY_PREFIX = 'lead:';
+
+    public const FOLLOW_UP_KEY_PREFIX = 'follow_up:';
 
     public const STALE_KEY_PREFIX = 'stale_property:';
 
@@ -40,6 +44,7 @@ class NoticeCenter
             ->keyBy('key');
 
         return array_values(array_merge(
+            $this->followUpNotices($user, $dismissals),
             $this->leadNotices($user, $dismissals),
             $this->stalePropertyNotices($user, $dismissals),
         ));
@@ -51,6 +56,57 @@ class NoticeCenter
             ['user_id' => $user->id, 'key' => $key],
             ['dismissed_at' => now()],
         );
+    }
+
+    /**
+     * Līdi, kuriem ir pienācis norādītais saziņas datums. Atgādinājums
+     * paliek redzams, līdz to aizver; ja datums tiek nomainīts, tas parādās
+     * no jauna (atslēga satur datumu).
+     *
+     * @param  Collection<string, NotificationDismissal>  $dismissals
+     * @return array<int, array<string, mixed>>
+     */
+    private function followUpNotices(User $user, Collection $dismissals): array
+    {
+        if ($user->isPhoto()) {
+            return [];
+        }
+
+        return Client::query()
+            ->where('status', 'lead')
+            ->whereNotNull('follow_up_at')
+            ->whereDate('follow_up_at', '<=', now()->toDateString())
+            ->when(! $user->can('manage'), fn ($query) => $query->where('owner_user_id', $user->id))
+            ->with('owner')
+            ->orderBy('follow_up_at')
+            ->get()
+            ->reject(fn (Client $client): bool => $dismissals->has($this->followUpKey($client)))
+            ->map(fn (Client $client): array => [
+                'key' => $this->followUpKey($client),
+                'type' => 'Follow-up',
+                'type_color' => 'warning',
+                'icon' => 'heroicon-o-calendar-days',
+                'urgent' => false,
+                'title' => $client->name,
+                'url' => ClientResource::getUrl('view', ['record' => $client]),
+                'fields' => array_values(array_filter([
+                    ['label' => 'Saziņa', 'value' => $client->follow_up_at?->format('d.m.Y')],
+                    $client->follow_up_note ? ['label' => 'Piezīme', 'value' => $client->follow_up_note] : null,
+                    $client->phone ? ['label' => 'Tālrunis', 'value' => PhoneFormat::display($client->phone)] : null,
+                    ($user->can('manage') && $client->owner) ? ['label' => 'Aģents', 'value' => $client->owner->name] : null,
+                ])),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Atslēga satur arī datumu, tāpēc cita datuma atgādinājums ir atsevišķs
+     * paziņojums un pēc aizvēršanas atgriežas tikai tad, ja datums mainīts.
+     */
+    private function followUpKey(Client $client): string
+    {
+        return self::FOLLOW_UP_KEY_PREFIX.$client->id.':'.($client->follow_up_at?->toDateString() ?? '');
     }
 
     /**
@@ -67,6 +123,12 @@ class NoticeCenter
             ->where(function ($query): void {
                 $query->where('created_at', '<', now()->startOfDay())
                     ->orWhereColumn('updated_at', '>', 'created_at');
+            })
+            // Ja līdam jau ir pienācis saziņas datums, rāda konkrēto
+            // Follow-up atgādinājumu, nevis vispārīgo līda paziņojumu.
+            ->where(function ($query): void {
+                $query->whereNull('follow_up_at')
+                    ->orWhereDate('follow_up_at', '>', now()->toDateString());
             })
             ->with('owner')
             ->orderBy('updated_at')
