@@ -634,6 +634,22 @@
         form.phone_prefix?.addEventListener('change', () => clearFieldError(form.phone));
     }
 
+    /* ── Intro video dialog ─────────────────────────────────────────────── */
+    function setupVideoDialog() {
+        const dialog = $('#video-dialog');
+        const video = $('#intro-video');
+        if (!dialog || !video) return;
+
+        // The file is 24 MB: it only downloads once opened (preload="none") and
+        // stops again when the dialog closes.
+        dialog.addEventListener('close', () => {
+            video.pause();
+            video.currentTime = 0;
+        });
+
+        $('#open-video')?.addEventListener('click', () => dialog.showModal());
+    }
+
     function setupDialogs() {
         $$('[data-close-dialog]').forEach((button) => button.addEventListener('click', () => button.closest('dialog')?.close()));
         $$('dialog').forEach((dialog) => dialog.addEventListener('click', (event) => {
@@ -654,6 +670,7 @@
         setupCookies();
         setupQuickContact();
         setupContactForm();
+        setupVideoDialog();
         setupDialogs();
     });
 })();

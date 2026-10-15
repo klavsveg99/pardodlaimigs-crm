@@ -18,7 +18,7 @@
                 <p class="hero-description">{{ $copy['heroBody'] ?? '' }}</p>
                 <div class="hero-actions">
                     <a class="button button-light" href="#kontakti"><span>{{ $copy['heroAction'] ?? '' }}</span><span aria-hidden="true">↗</span></a>
-                    <a class="video-link" href="https://www.youtube.com/@pardodlaimigs" target="_blank" rel="noreferrer"><span class="play-icon" aria-hidden="true">▶</span><span>{{ $copy['videoAction'] ?? '' }}</span></a>
+                    <button class="video-link" type="button" id="open-video" aria-haspopup="dialog"><span class="play-icon" aria-hidden="true">▶</span><span>{{ $copy['videoAction'] ?? '' }}</span></button>
                 </div>
                 <div class="hero-proof"><span class="proof-stars" aria-hidden="true">★★★★★</span><span>{{ $copy['heroNote'] ?? '' }}</span></div>
             </div>

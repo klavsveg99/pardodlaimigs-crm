@@ -17,8 +17,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
           crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=8">
-    <script defer src="{{ asset('site-assets/site.js') }}?v=4"></script>
+    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=9">
+    <script defer src="{{ asset('site-assets/site.js') }}?v=5"></script>
 </head>
 <body class="site">
 <header class="site-header">
@@ -145,6 +145,13 @@
     </div>
 </div>
 @endif
+
+<dialog class="video-dialog" id="video-dialog" aria-label="{{ $copy['videoAction'] ?? '' }}">
+    <button class="dialog-close" type="button" data-close-dialog aria-label="{{ $copy['close'] ?? 'Aizvērt' }}">×</button>
+    <video id="intro-video" controls preload="none" playsinline width="1600" height="900" poster="{{ asset('site-media/pardod-laimigs-intro-poster.jpg') }}">
+        <source src="{{ asset('site-media/pardod-laimigs-intro.mp4') }}" type="video/mp4">
+    </video>
+</dialog>
 
 <dialog class="property-dialog" id="property-dialog" aria-labelledby="property-dialog-title">
     <button class="dialog-close" type="button" data-close-dialog aria-label="{{ $copy['close'] ?? 'Aizvērt' }}">×</button>

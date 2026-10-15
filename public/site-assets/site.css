@@ -85,7 +85,8 @@ h1, h2, h3 { font-family: var(--serif); }
 .button-outline { color: var(--brand); border-color: var(--brand); background: transparent; }
 .button-outline:hover, .button-outline:focus-visible { color: #fff; background: var(--brand); }
 .button-quiet { border-color: transparent; color: var(--ink); background: transparent; }
-.video-link { display: inline-flex; align-items: center; gap: 10px; color: #fff; font-size: 12px; font-weight: 600; }
+.video-link { display: inline-flex; align-items: center; gap: 10px; border: 0; padding: 0; cursor: pointer; color: #fff; background: transparent; font-size: 12px; font-weight: 600; }
+.video-link:hover span:last-child, .video-link:focus-visible span:last-child { text-decoration: underline; }
 .play-icon { display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid rgb(255 255 255 / 48%); border-radius: 50%; font-size: 9px; padding-left: 2px; }
 .hero-proof { display: flex; align-items: center; gap: 12px; margin-top: 34px; color: rgb(255 255 255 / 78%); font-size: 11px; }
 .proof-stars { color: #e5bd76; letter-spacing: 2px; font-size: 13px; }
@@ -315,6 +316,10 @@ h1, h2, h3 { font-family: var(--serif); }
 dialog { max-width: min(940px, calc(100% - 32px)); max-height: min(88vh, 820px); border: 0; padding: 0; color: var(--ink); background: #fff; box-shadow: 0 24px 90px rgb(0 0 0 / 25%); }
 dialog::backdrop { background: rgb(17 31 28 / 62%); }
 .property-dialog { width: 1080px; max-width: min(1080px, calc(100% - 32px)); overflow: hidden; }
+/* The intro video: a dark player that keeps its 16:9 shape on any screen. */
+.video-dialog { width: 960px; max-width: min(960px, calc(100% - 32px)); overflow: hidden; background: #0d1a17; }
+.video-dialog video { display: block; width: 100%; height: auto; max-height: 78vh; background: #0d1a17; }
+.video-dialog .dialog-close { top: 10px; right: 10px; }
 .dialog-close { position: absolute; z-index: 4; top: 12px; right: 12px; display: grid; width: 34px; height: 34px; place-items: center; border: 0; border-radius: 50%; cursor: pointer; color: var(--ink); background: #fff; font-size: 23px; line-height: 1; }
 .property-detail { display: grid; grid-template-columns: 1.06fr 1fr; max-height: min(88vh, 820px); }
 .property-detail-media { position: relative; overflow: hidden; background: #122924; }
@@ -536,6 +541,7 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .cookie-actions .button { flex: 1 1 40%; padding-inline: 8px; }
   .cookie-settings { flex: 1; }
   .property-dialog { overflow-y: auto; }
+  .video-dialog { max-width: calc(100% - 20px); }
   .property-detail { grid-template-columns: 1fr; max-height: none; }
   .property-detail-media > img { min-height: 0; height: 245px; }
   .property-detail-thumbs { position: static; right: auto; bottom: auto; left: auto; margin: 10px 0 0; padding-bottom: 2px; }
