@@ -477,6 +477,37 @@
         });
     }
 
+    /* ── Sticky header ──────────────────────────────────────────────────── */
+    function setupStickyHeader() {
+        const header = $('.site-header');
+        if (!header) return;
+
+        let last = window.scrollY;
+        let ticking = false;
+
+        // The header is sticky: it slides away going down and returns on the
+        // way up, or as soon as the top of the page is in reach.
+        const update = () => {
+            ticking = false;
+            const y = Math.max(0, window.scrollY);
+            if (y <= 120 || y < last - 4) header.classList.remove('is-hidden');
+            else if (y > last + 4) header.classList.add('is-hidden');
+            last = y;
+        };
+
+        window.addEventListener('scroll', () => {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(update);
+        }, { passive: true });
+
+        // Show it again when something inside it takes focus, otherwise the
+        // browser scrolls the page back to the top to reveal it.
+        document.addEventListener('focusin', (event) => {
+            if (event.target.closest('.site-header')) header.classList.remove('is-hidden');
+        });
+    }
+
     function setupDialogs() {
         $$('[data-close-dialog]').forEach((button) => button.addEventListener('click', () => button.closest('dialog')?.close()));
         $$('dialog').forEach((dialog) => dialog.addEventListener('click', (event) => {
@@ -487,6 +518,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         setupLanguageSwitcher();
         setupMobileMenu();
+        setupStickyHeader();
         setupHero();
         setupFilters();
         setupPropertyDialog();

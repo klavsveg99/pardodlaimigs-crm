@@ -17,8 +17,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
           crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=4">
-    <script defer src="{{ asset('site-assets/site.js') }}?v=1"></script>
+    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=5">
+    <script defer src="{{ asset('site-assets/site.js') }}?v=2"></script>
 </head>
 <body class="site">
 <header class="site-header">
