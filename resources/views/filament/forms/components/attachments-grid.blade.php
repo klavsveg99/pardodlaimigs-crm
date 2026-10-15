@@ -866,7 +866,11 @@
         },
         // Konkrēts augšupielādes kļūdas iemesls: servera ziņojums, ja tāds ir,
         // citādi HTTP statuss (413 pārāk liels fails, 419 beigusies sesija,
-        // 0 pārtrūcis savienojums). Nekad nepaliek tikai "neizdevās".
+        // 0 pārtrūcis savienojums). Iemesls vienmēr tiek nosaukts, nekad
+        // nepaliek tikai vispārīgs paziņojums.
+        // UZMANĪBU: šis kods atrodas x-data atribūtā, tāpēc tajā nedrīkst būt
+        // ASCII pēdiņas - tās pārtrauc atribūtu un visa Alpine komponente
+        // pārstāj darboties.
         uploadErrorMessage(xhr, parsed) {
             const status = xhr ? (xhr.status || 0) : 0;
             const message = parsed && (parsed.message || parsed.error);
