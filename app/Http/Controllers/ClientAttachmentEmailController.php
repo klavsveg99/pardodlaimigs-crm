@@ -42,23 +42,48 @@ class ClientAttachmentEmailController extends Controller
 
         $file = $request->file('file');
         if (! $file || ! $file->isValid()) {
+            $errorCode = $file?->getError() ?? ($_FILES['file']['error'] ?? UPLOAD_ERR_NO_FILE);
+
             Log::warning('Client attachment upload received no valid file', [
                 'client_id' => $client->getKey(),
-                'upload_error_code' => $file?->getError() ?? ($_FILES['file']['error'] ?? UPLOAD_ERR_NO_FILE),
+                'upload_error_code' => $errorCode,
                 'content_length' => (int) $request->server('CONTENT_LENGTH', 0),
+                'upload_max_filesize' => ini_get('upload_max_filesize'),
+                'post_max_size' => ini_get('post_max_size'),
             ]);
 
-            return response()->json(['message' => 'Nav faila.'], 422);
+            return response()->json(['message' => 'Fails netika saņemts - '.self::uploadErrorMessage($errorCode).'.'], 422);
         }
 
         $acceptedTypes = config('attachments.accepted_file_types', []);
         $maxSize = (int) config('attachments.max_size_kb', 25600);
 
         if (! empty($acceptedTypes) && ! in_array($file->getMimeType(), $acceptedTypes, true)) {
-            return response()->json(['message' => 'Šāda faila tipa augšupielāde nav atļauta.'], 422);
+            Log::info('Client attachment upload rejected: file type', [
+                'client_id' => $client->getKey(),
+                'name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ]);
+
+            return response()->json([
+                'message' => 'Šāda faila tipa augšupielāde nav atļauta: '.$file->getMimeType()
+                    .'. Atļautie tipi: '.implode(', ', config('attachments.accepted_mimes', [])).'.',
+            ], 422);
         }
+
         if ($file->getSize() > $maxSize * 1024) {
-            return response()->json(['message' => 'Fails ir pārāk liels.'], 422);
+            Log::info('Client attachment upload rejected: file too large', [
+                'client_id' => $client->getKey(),
+                'name' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'limit_kb' => $maxSize,
+            ]);
+
+            return response()->json([
+                'message' => 'Fails ir pārāk liels: '.self::sizeLabel((int) $file->getSize())
+                    .' (maksimums '.self::sizeLabel($maxSize * 1024).').',
+            ], 422);
         }
 
         try {
@@ -117,13 +142,38 @@ class ClientAttachmentEmailController extends Controller
         } catch (\Throwable $e) {
             Log::error('Client attachment upload failed', [
                 'client_id' => $client->getKey(),
+                'name' => $file->getClientOriginalName(),
                 'file_size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
                 'exception' => $e,
             ]);
 
-            return response()->json(['message' => 'Neizdevās augšupielādēt pielikumu.'], 500);
+            return response()->json(['message' => 'Neizdevās augšupielādēt pielikumu - '.$e->getMessage().'.'], 500);
         }
+    }
+
+    /** PHP augšupielādes kļūdas koda skaidrojums (redzams arī lietotājam). */
+    public static function uploadErrorMessage(int $errorCode): string
+    {
+        return match ($errorCode) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'fails pārsniedz servera limitu ('.ini_get('upload_max_filesize').')',
+            UPLOAD_ERR_PARTIAL => 'augšupielāde pārtrūka, pirms fails tika saņemts pilnībā',
+            UPLOAD_ERR_NO_FILE => 'fails netika nosūtīts',
+            UPLOAD_ERR_NO_TMP_DIR => 'serverim nav pagaidu mapes',
+            UPLOAD_ERR_CANT_WRITE => 'serveris nevarēja ierakstīt failu diskā',
+            UPLOAD_ERR_EXTENSION => 'augšupielādi apturēja PHP paplašinājums',
+            default => 'nezināma augšupielādes kļūda (kods '.$errorCode.')',
+        };
+    }
+
+    /** Faila izmērs cilvēkam lasāmā formā (MB lieliem, KB maziem failiem). */
+    public static function sizeLabel(int $bytes): string
+    {
+        $value = $bytes >= 1048576
+            ? rtrim(rtrim(number_format($bytes / 1048576, 1, ',', ''), '0'), ',').' MB'
+            : rtrim(rtrim(number_format($bytes / 1024, 1, ',', ''), '0'), ',').' KB';
+
+        return $value === ' KB' || $value === ' MB' ? '0 '.trim($value) : $value;
     }
 
     /**

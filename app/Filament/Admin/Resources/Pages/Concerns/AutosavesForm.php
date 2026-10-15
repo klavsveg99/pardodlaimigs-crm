@@ -85,8 +85,14 @@ trait AutosavesForm
             Log::info('Autosave skipped (validation)', ['msg' => $this->autosaveError]);
         } catch (\Throwable $e) {
             $this->autosaveState = 'error';
-            $this->autosaveError = 'Pagaidu saglabāšana neizdevās.';
-            Log::warning('Autosave failed', ['msg' => $e->getMessage(), 'exception' => $e]);
+            // Kļūdas iemesls tiek parādīts arī aģentam - vispārīgs "neizdevās"
+            // neļauj neko diagnosticēt ne lietotājam, ne žurnālā.
+            $this->autosaveError = 'Pagaidu saglabāšana neizdevās - '.mb_substr($e->getMessage(), 0, 200);
+            Log::warning('Autosave failed', [
+                'record' => ($record = $this->getRecord()) ? get_class($record).'#'.$record->getKey() : null,
+                'msg' => $e->getMessage(),
+                'exception' => $e,
+            ]);
         } finally {
             AuditLogger::$suppressUpdates = false;
             $this->isAutosaveRun = false;

@@ -13,8 +13,10 @@ use App\Services\Mail\EmailSender;
 use App\Services\Mail\EmailTooLargeException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use RuntimeException;
 
 /**
  * Attachment upload + "Nosūtīt" email for properties. Mirrors the client
@@ -45,18 +47,51 @@ class PropertyAttachmentEmailController extends Controller
         }
 
         $file = $request->file('file');
-        if (! $file) {
-            return response()->json(['message' => 'Nav faila.'], 422);
+        if (! $file || ! $file->isValid()) {
+            $errorCode = $file?->getError() ?? ($_FILES['file']['error'] ?? UPLOAD_ERR_NO_FILE);
+
+            Log::warning('Property attachment upload received no valid file', [
+                'property_id' => $property->getKey(),
+                'upload_error_code' => $errorCode,
+                'content_length' => (int) $request->server('CONTENT_LENGTH', 0),
+                'upload_max_filesize' => ini_get('upload_max_filesize'),
+                'post_max_size' => ini_get('post_max_size'),
+            ]);
+
+            return response()->json([
+                'message' => 'Fails netika saņemts - '.ClientAttachmentEmailController::uploadErrorMessage($errorCode).'.',
+            ], 422);
         }
 
         $acceptedTypes = config('attachments.accepted_file_types', []);
         $maxSize = (int) config('attachments.max_size_kb', 25600);
 
         if (! empty($acceptedTypes) && ! in_array($file->getMimeType(), $acceptedTypes, true)) {
-            return response()->json(['message' => 'Šāda faila tipa augšupielāde nav atļauta.'], 422);
+            Log::info('Property attachment upload rejected: file type', [
+                'property_id' => $property->getKey(),
+                'name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ]);
+
+            return response()->json([
+                'message' => 'Šāda faila tipa augšupielāde nav atļauta: '.$file->getMimeType()
+                    .'. Atļautie tipi: '.implode(', ', config('attachments.accepted_mimes', [])).'.',
+            ], 422);
         }
+
         if ($file->getSize() > $maxSize * 1024) {
-            return response()->json(['message' => 'Fails ir pārāk liels.'], 422);
+            Log::info('Property attachment upload rejected: file too large', [
+                'property_id' => $property->getKey(),
+                'name' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'limit_kb' => $maxSize,
+            ]);
+
+            return response()->json([
+                'message' => 'Fails ir pārāk liels: '.ClientAttachmentEmailController::sizeLabel((int) $file->getSize())
+                    .' (maksimums '.ClientAttachmentEmailController::sizeLabel($maxSize * 1024).').',
+            ], 422);
         }
 
         $originalName = $file->getClientOriginalName();
@@ -72,29 +107,51 @@ class PropertyAttachmentEmailController extends Controller
                 $i++;
             } while ($disk->exists($candidate));
         }
-        $path = $file->storeAs('attachments', basename($candidate), 'public');
-
-        $size = (int) $disk->size($path);
 
         try {
-            $abs = $disk->path($path);
-            if (is_file($abs) && str_starts_with((string) $file->getMimeType(), 'image/')) {
-                $result = app(ImageOptimizer::class)->optimize($abs);
-                $size = (int) ($result['size'] ?? $size);
-            }
-        } catch (\Throwable) {
-            // Optimisation must never block the upload.
-        }
+            $path = $file->storeAs('attachments', basename($candidate), 'public');
 
-        $attachment = $property->attachments()->create([
-            'collection' => 'documents',
-            'path' => $path,
-            'disk' => 'public',
-            'original_name' => $originalName,
-            'mime_type' => $file->getMimeType(),
-            'size' => $size,
-            'sort_order' => (int) $property->attachments()->max('sort_order') + 1,
-        ]);
+            if (! $path) {
+                throw new RuntimeException('storeAs returned false for '.basename($candidate));
+            }
+
+            $size = (int) $disk->size($path);
+
+            try {
+                $abs = $disk->path($path);
+                if (is_file($abs) && str_starts_with((string) $file->getMimeType(), 'image/')) {
+                    $result = app(ImageOptimizer::class)->optimize($abs);
+                    $size = (int) ($result['size'] ?? $size);
+                }
+            } catch (\Throwable $e) {
+                // Optimisation must never block the upload.
+                Log::warning('Property attachment image optimization failed', [
+                    'property_id' => $property->getKey(),
+                    'path' => $path,
+                    'exception' => $e,
+                ]);
+            }
+
+            $attachment = $property->attachments()->create([
+                'collection' => 'documents',
+                'path' => $path,
+                'disk' => 'public',
+                'original_name' => $originalName,
+                'mime_type' => $file->getMimeType(),
+                'size' => $size,
+                'sort_order' => (int) $property->attachments()->max('sort_order') + 1,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Property attachment upload failed', [
+                'property_id' => $property->getKey(),
+                'name' => $originalName,
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'exception' => $e,
+            ]);
+
+            return response()->json(['message' => 'Neizdevās augšupielādēt pielikumu - '.$e->getMessage().'.'], 500);
+        }
 
         return response()->json([
             'id' => $attachment->id,

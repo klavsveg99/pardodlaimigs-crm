@@ -483,14 +483,22 @@
             if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
             return (bytes / (1024 * 1024)).toFixed(1).replace('.0', '') + ' MB';
         },
+        // Failu saraksts tiek nodots formas stāvoklī un saglabājas ar nākamo
+        // pieprasījumu (autosave vai Saglabāt). Apzināti NEIZSAUCAM
+        // $wire.$refresh(): tā atbilde aizstāj formas stāvokli ar versiju,
+        // kāda tā bija pieprasījuma sūtīšanas brīdī, un var izdzēst failus,
+        // kas pievienoti, kamēr pieprasījums bija ceļā.
         sync() {
             $wire.set('{{ $statePath }}', this.paths, false);
             $wire.set('{{ $originalNamesPath }}', this.names, false);
-            // Make sure the change reaches the record promptly: pages using
-            // AutosavesForm listen for this event (others ignore it harmlessly).
             clearTimeout(window.__pdcAttSyncTimer);
-            this.$nextTick(() => { $wire.$refresh && $wire.$refresh(); });
             window.__pdcAttSyncTimer = setTimeout(() => {
+                // Sarakstu pārrakstām arī tieši pirms autosave pieprasījuma:
+                // ja starplaikā kāda cita pieprasījuma atbilde bija
+                // atgriezusi vecāku stāvokli, saglabāšana joprojām notiek ar
+                // aktuālo failu sarakstu.
+                $wire.set('{{ $statePath }}', this.paths, false);
+                $wire.set('{{ $originalNamesPath }}', this.names, false);
                 $wire.dispatch && $wire.dispatch('pdc-autosave-tick');
             }, 400);
         },
@@ -503,13 +511,41 @@
             this.selected = this.files.map(f => f.id);
         },
         clearSelection() { this.selected = []; },
-        deleteSelected() {
+        async deleteSelected() {
             if (!this.selected.length) return;
             if (!confirm(`Dzēst ${this.selected.length} atlasītos failus?`)) return;
-            this.files = this.files.filter(f => !this.selected.includes(f.id));
+
+            const ids = this.selected.slice();
+
+            // Saglabātie faili tiek dzēsti uzreiz serverī (tāpat kā
+            // atsevišķa faila noņemšana), nevis tikai izņemti no saraksta.
+            if (this.deleteUrl) {
+                for (const id of ids) {
+                    if (typeof id !== 'number') continue;
+                    try {
+                        const resp = await fetch(this.deleteUrl.replace(':id', String(id)), {
+                            method: 'DELETE',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': this.csrfToken,
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        });
+                        if (!resp.ok) {
+                            const d = await resp.json().catch(() => ({}));
+                            alert(d.message || ('Neizdevās izdzēst failu (HTTP ' + resp.status + ').'));
+                            return;
+                        }
+                    } catch (err) {
+                        alert('Neizdevās izdzēst failu: ' + (err.message || err));
+                        return;
+                    }
+                }
+            }
+
+            this.files = this.files.filter(f => !ids.includes(f.id));
             this.selected = [];
             this.sync();
-            $wire.$refresh && $wire.$refresh();
         },
         async removeFile(id) {
             if (!confirm('Dzēst šo failu?')) return;
@@ -528,11 +564,11 @@
                     });
                     if (!resp.ok) {
                         const d = await resp.json().catch(() => ({}));
-                        alert(d.message || 'Neizdevās izdzēst failu.');
+                        alert(d.message || ('Neizdevās izdzēst failu (HTTP ' + resp.status + ').'));
                         return;
                     }
                 } catch (e) {
-                    alert('Neizdevās izdzēst failu: ' + (e.message || ''));
+                    alert('Neizdevās izdzēst failu: ' + (e && e.message ? e.message : 'savienojums pārtrūka'));
                     return;
                 }
             }
@@ -792,26 +828,28 @@
                     }
                 });
                 xhr.addEventListener('load', () => {
+                    let r = {};
                     try {
-                        const r = JSON.parse(xhr.responseText);
-                        if (r.path) {
-                            this.files[this.editorIndex] = {
-                                id: this.editorFile.id,
-                                path: r.path,
-                                url: r.url,
-                                name: r.name || fileName,
-                            };
-                            this.sync();
-                            this.closeEditor();
-                        } else {
-                            window.alert('Augšupielāde neizdevās: ' + fileName);
-                        }
+                        r = JSON.parse(xhr.responseText);
                     } catch (err) {
-                        window.alert('Augšupielāde neizdevās: ' + fileName + '\n' + err.message);
+                        r = {};
+                    }
+
+                    if (r.path) {
+                        this.files[this.editorIndex] = {
+                            id: this.editorFile.id,
+                            path: r.path,
+                            url: r.url,
+                            name: r.name || fileName,
+                        };
+                        this.sync();
+                        this.closeEditor();
+                    } else {
+                        window.alert('Augšupielāde neizdevās: ' + fileName + '\n' + this.uploadErrorMessage(xhr, r));
                     }
                 });
                 xhr.addEventListener('error', () => {
-                    window.alert('Augšupielāde neizdevās: ' + fileName);
+                    window.alert('Augšupielāde neizdevās: ' + fileName + '\n' + this.uploadErrorMessage(xhr, {}) + ' - pārbaudiet interneta savienojumu.');
                 });
                 xhr.addEventListener('loadend', () => {
                     this.savingCrop = false;
@@ -826,10 +864,29 @@
         pickFiles() {
             this.$refs.fileInput && this.$refs.fileInput.click();
         },
+        // Konkrēts augšupielādes kļūdas iemesls: servera ziņojums, ja tāds ir,
+        // citādi HTTP statuss (413 pārāk liels fails, 419 beigusies sesija,
+        // 0 pārtrūcis savienojums). Nekad nepaliek tikai "neizdevās".
+        uploadErrorMessage(xhr, parsed) {
+            const status = xhr ? (xhr.status || 0) : 0;
+            const message = parsed && (parsed.message || parsed.error);
+            if (message) return message;
+            if (status === 419) return 'sesija beidzās - pārlādējiet lapu un mēģiniet vēlreiz (HTTP 419)';
+            if (status === 413) return 'fails pārsniedz servera pieņemto apjomu (HTTP 413)';
+            if (status === 0) return 'savienojums pārtrūka (HTTP 0)';
+            const body = xhr && xhr.responseText
+                ? xhr.responseText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
+                : '';
+            return 'servera atbilde HTTP ' + status + (body ? ': ' + body : '');
+        },
         async handleUpload(e) {
             const input = e.target || e;
             const newFiles = Array.from(input.files || []);
             if (!newFiles.length) return;
+            input.value = '';
+
+            // Pa vienam, nevis visus paralēli: vairāki vienlaicīgi pieprasījumi
+            // var pārrakstīt viens otra saglabāto formas stāvokli.
             for (const file of newFiles) {
                 const trackObj = {
                     id: 'up-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
@@ -838,19 +895,26 @@
                     size: file.size,
                 };
                 this.uploading.push(trackObj);
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', this.uploadUrl, true);
-                xhr.setRequestHeader('X-CSRF-TOKEN', this.csrfToken);
-                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-                xhr.upload.addEventListener('progress', (ev) => {
-                    if (ev.lengthComputable) {
-                        const idx = this.uploading.findIndex(u => u.id === trackObj.id);
-                        if (idx !== -1) this.uploading[idx].progress = Math.round(ev.loaded / ev.total * 100);
-                    }
-                });
-                xhr.addEventListener('load', () => {
-                    try {
-                        const r = JSON.parse(xhr.responseText);
+
+                await new Promise((resolve) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', this.uploadUrl, true);
+                    xhr.setRequestHeader('X-CSRF-TOKEN', this.csrfToken);
+                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                    xhr.upload.addEventListener('progress', (ev) => {
+                        if (ev.lengthComputable) {
+                            const idx = this.uploading.findIndex(u => u.id === trackObj.id);
+                            if (idx !== -1) this.uploading[idx].progress = Math.round(ev.loaded / ev.total * 100);
+                        }
+                    });
+                    xhr.addEventListener('load', () => {
+                        let r = {};
+                        try {
+                            r = JSON.parse(xhr.responseText);
+                        } catch (err) {
+                            r = {};
+                        }
+
                         if (r.path) {
                             this.files.push({
                                 id: (r.id !== undefined ? r.id : 'new-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)),
@@ -863,39 +927,36 @@
                             });
                             this.sync();
                         } else {
+                            const reason = this.uploadErrorMessage(xhr, r);
                             console.error('Attachment upload failed', {
                                 status: xhr.status,
                                 url: this.uploadUrl,
-                                message: r.message || r.error || null,
+                                file: file.name,
+                                size: file.size,
+                                response: (xhr.responseText || '').slice(0, 500),
                             });
-                            window.alert('Augšupielāde neizdevās: ' + (r.message || file.name));
+                            window.alert('Augšupielāde neizdevās: ' + file.name + '\n' + reason);
                         }
-                    } catch (err) {
-                        console.error('Attachment upload response could not be read', {
+                    });
+                    xhr.addEventListener('error', () => {
+                        console.error('Attachment upload request failed', {
                             status: xhr.status,
                             url: this.uploadUrl,
-                            error: err,
+                            file: file.name,
+                            size: file.size,
                         });
-                        window.alert('Augšupielāde neizdevās: ' + file.name + '\n' + err.message);
-                    }
-                });
-                xhr.addEventListener('error', () => {
-                    console.error('Attachment upload request failed', {
-                        status: xhr.status,
-                        url: this.uploadUrl,
-                        size: file.size,
+                        window.alert('Augšupielāde neizdevās: ' + file.name + '\n' + this.uploadErrorMessage(xhr, {}) + ' - pārbaudiet interneta savienojumu.');
                     });
-                    window.alert('Augšupielāde neizdevās: ' + file.name);
+                    xhr.addEventListener('loadend', () => {
+                        this.uploading = this.uploading.filter(u => u.id !== trackObj.id);
+                        resolve();
+                    });
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('_token', this.csrfToken);
+                    xhr.send(formData);
                 });
-                xhr.addEventListener('loadend', () => {
-                    this.uploading = this.uploading.filter(u => u.id !== trackObj.id);
-                });
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('_token', this.csrfToken);
-                xhr.send(formData);
             }
-            input.value = '';
         }
     }"
     wire:ignore.self

@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -198,19 +199,51 @@ Route::get('/property/image-proxy', function (Request $request) {
 Route::post('/property/upload-attachment', function () {
     $file = request()->file('file');
 
-    if (! $file) {
-        return response()->json(['error' => 'No file provided'], 422);
+    if (! $file || ! $file->isValid()) {
+        $errorCode = $file?->getError() ?? ($_FILES['file']['error'] ?? UPLOAD_ERR_NO_FILE);
+
+        Log::warning('Attachment upload received no valid file', [
+            'route' => 'property.upload-attachment',
+            'upload_error_code' => $errorCode,
+            'content_length' => (int) request()->server('CONTENT_LENGTH', 0),
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+        ]);
+
+        return response()->json([
+            'message' => 'Fails netika saņemts - '.ClientAttachmentEmailController::uploadErrorMessage($errorCode).'.',
+        ], 422);
     }
 
     $acceptedTypes = config('attachments.accepted_file_types', []);
     $maxSize = (int) config('attachments.max_size_kb', 10240);
 
     if (! empty($acceptedTypes) && ! in_array($file->getMimeType(), $acceptedTypes, true)) {
-        return response()->json(['error' => 'File type not accepted'], 422);
+        Log::info('Attachment upload rejected: file type', [
+            'route' => 'property.upload-attachment',
+            'name' => $file->getClientOriginalName(),
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+        ]);
+
+        return response()->json([
+            'message' => 'Šāda faila tipa augšupielāde nav atļauta: '.$file->getMimeType()
+                .'. Atļautie tipi: '.implode(', ', config('attachments.accepted_mimes', [])).'.',
+        ], 422);
     }
 
     if ($file->getSize() > $maxSize * 1024) {
-        return response()->json(['error' => 'File too large'], 422);
+        Log::info('Attachment upload rejected: file too large', [
+            'route' => 'property.upload-attachment',
+            'name' => $file->getClientOriginalName(),
+            'size' => $file->getSize(),
+            'limit_kb' => $maxSize,
+        ]);
+
+        return response()->json([
+            'message' => 'Fails ir pārāk liels: '.ClientAttachmentEmailController::sizeLabel((int) $file->getSize())
+                .' (maksimums '.ClientAttachmentEmailController::sizeLabel($maxSize * 1024).').',
+        ], 422);
     }
 
     $originalName = $file->getClientOriginalName();
@@ -226,7 +259,24 @@ Route::post('/property/upload-attachment', function () {
             $i++;
         } while ($disk->exists($candidate));
     }
-    $path = $file->storeAs($dir, basename($candidate), 'public');
+
+    try {
+        $path = $file->storeAs($dir, basename($candidate), 'public');
+
+        if (! $path) {
+            throw new RuntimeException('storeAs returned false for '.basename($candidate));
+        }
+    } catch (Throwable $e) {
+        Log::error('Attachment upload failed', [
+            'route' => 'property.upload-attachment',
+            'name' => $originalName,
+            'file_size' => $file->getSize(),
+            'mime_type' => $file->getMimeType(),
+            'exception' => $e,
+        ]);
+
+        return response()->json(['message' => 'Neizdevās saglabāt failu - '.$e->getMessage().'.'], 500);
+    }
 
     try {
         $abs = Storage::disk('public')->path($path);
@@ -234,6 +284,11 @@ Route::post('/property/upload-attachment', function () {
             app(ImageOptimizer::class)->optimize($abs);
         }
     } catch (Throwable $e) {
+        Log::warning('Attachment image optimization failed', [
+            'route' => 'property.upload-attachment',
+            'path' => $path,
+            'exception' => $e,
+        ]);
     }
 
     return response()->json([

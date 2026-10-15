@@ -7,7 +7,9 @@ namespace App\Filament\Admin\Resources\Pages\Concerns;
 use App\Services\ImageOptimizer;
 use App\Services\PdfOptimizer;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 trait SyncsAttachments
 {
@@ -124,6 +126,18 @@ trait SyncsAttachments
 
             foreach ($existing as $attachment) {
                 if (! in_array($attachment->path, $paths, true)) {
+                    // Sarakstā iztrūkstošs fails nozīmē, ka lietotājs to
+                    // noņēmis (vai arī formas stāvoklis bija novecojis).
+                    // Ieraksts žurnālā ļauj pēc tam precīzi noteikt, kurš
+                    // fails un kad tika izdzēsts.
+                    Log::info('Attachment removed by form sync', [
+                        'record' => $record::class.'#'.$record->getKey(),
+                        'collection' => $collection,
+                        'attachment' => $attachment->id,
+                        'path' => $attachment->path,
+                        'submitted_paths' => $paths,
+                    ]);
+
                     Storage::disk($attachment->disk)->delete($attachment->path);
                     $attachment->delete();
                 }
@@ -136,6 +150,21 @@ trait SyncsAttachments
                     if ($attachment->sort_order !== $i) {
                         $attachment->update(['sort_order' => $i]);
                     }
+
+                    continue;
+                }
+
+                // Datne var būt pazudusi no diska (piem. izdzēsta citā logā),
+                // kamēr pārlūkā tā vēl ir sarakstā. Ierakstu tad neveidojam un
+                // saglabāšanu nebojājam - neizprotama kļūda saglabāšanas laikā
+                // citādi neļauj pievienot nevienu failu.
+                if (! $disk->exists($path)) {
+                    Log::warning('Attachment skipped: file is missing from disk', [
+                        'record' => $record::class.'#'.$record->getKey(),
+                        'collection' => $collection,
+                        'path' => $path,
+                        'submitted_paths' => $paths,
+                    ]);
 
                     continue;
                 }
