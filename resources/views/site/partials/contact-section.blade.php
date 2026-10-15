@@ -48,7 +48,7 @@
             {{-- Honeypot: bots fill this, people never see it. --}}
             <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
             <div class="form-submit-row">
-                <button class="button button-light" type="submit"><span>{{ $copy['formSubmit'] ?? '' }}</span><span aria-hidden="true">↗</span></button>
+                <button class="button button-dark" type="submit"><span>{{ $copy['formSubmit'] ?? '' }}</span><span aria-hidden="true">↗</span></button>
             </div>
         </form>
     </div>
