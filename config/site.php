@@ -19,6 +19,10 @@ return [
 
     'locales' => ['lv', 'en', 'ru', 'de'],
 
+    // Blog cards per batch: the homepage renders this many and the load more
+    // button (site.blog.more) serves the next batch.
+    'blog_batch' => 3,
+
     /*
      * Country dial codes and the national number length each one accepts, for
      * the valuation form's prefix selector and its validation. The static

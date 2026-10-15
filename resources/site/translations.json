@@ -501,7 +501,9 @@
       "formEmailInvalid": "Ievadiet derīgu e-pasta adresi.",
       "formCaptchaFailed": "Drošības pārbaude neizdevās. Lūdzu, mēģiniet vēlreiz.",
       "termsLabel": "pakalpojuma noteikumi",
-      "recaptchaNote": "Šo vietni aizsargā reCAPTCHA. Uz to attiecas Google [privacy] un [terms]."
+      "recaptchaNote": "Šo vietni aizsargā reCAPTCHA. Uz to attiecas Google [privacy] un [terms].",
+      "loadMore": "Rādīt vairāk rakstu",
+      "loadMoreFailed": "Neizdevās ielādēt vairāk rakstu. Lūdzu, mēģiniet vēlreiz."
     },
     "en": {
       "navFaq": "FAQ",
@@ -597,7 +599,9 @@
       "formEmailInvalid": "Enter a valid email address.",
       "formCaptchaFailed": "The security check failed. Please try again.",
       "termsLabel": "Terms of Service",
-      "recaptchaNote": "This site is protected by reCAPTCHA and the Google [privacy] and [terms] apply."
+      "recaptchaNote": "This site is protected by reCAPTCHA and the Google [privacy] and [terms] apply.",
+      "loadMore": "Show more articles",
+      "loadMoreFailed": "Could not load more articles. Please try again."
     },
     "ru": {
       "navFaq": "FAQ",
@@ -693,7 +697,9 @@
       "formEmailInvalid": "Введите корректный адрес эл. почты.",
       "formCaptchaFailed": "Проверка безопасности не удалась. Попробуйте ещё раз.",
       "termsLabel": "Условия использования",
-      "recaptchaNote": "Этот сайт защищён reCAPTCHA. Применяются [privacy] и [terms] Google."
+      "recaptchaNote": "Этот сайт защищён reCAPTCHA. Применяются [privacy] и [terms] Google.",
+      "loadMore": "Показать больше статей",
+      "loadMoreFailed": "Не удалось загрузить статьи. Попробуйте ещё раз."
     },
     "de": {
       "navFaq": "FAQ",
@@ -789,7 +795,9 @@
       "formEmailInvalid": "Bitte eine gültige E-Mail-Adresse eingeben.",
       "formCaptchaFailed": "Die Sicherheitsprüfung ist fehlgeschlagen. Bitte versuchen Sie es erneut.",
       "termsLabel": "Nutzungsbedingungen",
-      "recaptchaNote": "Diese Website ist durch reCAPTCHA geschützt. Es gelten die [privacy] und die [terms] von Google."
+      "recaptchaNote": "Diese Website ist durch reCAPTCHA geschützt. Es gelten die [privacy] und die [terms] von Google.",
+      "loadMore": "Mehr Artikel anzeigen",
+      "loadMoreFailed": "Weitere Artikel konnten nicht geladen werden. Bitte erneut versuchen."
     }
   }
 }

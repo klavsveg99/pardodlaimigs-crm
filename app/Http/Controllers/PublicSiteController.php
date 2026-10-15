@@ -8,6 +8,8 @@ use App\Models\CrmProperty;
 use App\Models\User;
 use App\Services\Site\SiteContent;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -52,16 +54,6 @@ class PublicSiteController extends Controller
         return $this->propertyView($this->content->locale($locale), $slug);
     }
 
-    public function blog(): View
-    {
-        return $this->blogView('lv');
-    }
-
-    public function localizedBlog(string $locale): View
-    {
-        return $this->blogView($this->content->locale($locale));
-    }
-
     public function post(string $slug): View
     {
         return $this->postView('lv', $slug);
@@ -95,7 +87,7 @@ class PublicSiteController extends Controller
     public function sitemap(): Response
     {
         $locales = config('site.locales', ['lv', 'en', 'ru', 'de']);
-        $paths = ['/', '/properties/', '/blog/', '/privatuma-politika/', '/paldies/'];
+        $paths = ['/', '/properties/', '/privatuma-politika/', '/paldies/'];
 
         foreach ($this->propertyList() as $property) {
             $paths[] = '/ipasums/'.$property['slug'].'/';
@@ -126,18 +118,43 @@ class PublicSiteController extends Controller
         return response($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
     }
 
+    /**
+     * The next batch of blog cards, as HTML ready to append. The homepage shows
+     * the first batch server side; this is what its load more button asks for.
+     */
+    public function blogMore(Request $request): JsonResponse
+    {
+        $locale = $this->content->locale((string) $request->query('locale', 'lv'));
+        $batch = max(1, (int) config('site.blog_batch', 3));
+        $page = max(2, (int) $request->query('page', 2));
+        $offset = ($page - 1) * $batch;
+        $posts = $this->content->posts($locale);
+
+        return response()->json([
+            'html' => view('site.partials.article-cards', [
+                'posts' => array_slice($posts, $offset, $batch),
+                'copy' => $this->content->strings($locale),
+                'locale' => $locale,
+                'offset' => $offset,
+            ])->render(),
+            'hasMore' => ($offset + $batch) < count($posts),
+        ]);
+    }
+
     private function homeView(string $locale): View
     {
         $properties = $this->propertyList();
         $hero = array_values(array_filter($properties, static fn (array $property): bool => filled($property['hero_image'] ?? null)));
-        $posts = array_slice($this->content->posts($locale), 0, 3);
+        $batch = (int) config('site.blog_batch', 3);
+        $posts = $this->content->posts($locale);
         $copy = $this->content->strings($locale);
         $path = '/';
 
         return view('site.home', $this->pageData($locale, $path) + [
             'properties' => $properties,
             'heroProperties' => $hero,
-            'posts' => $posts,
+            'posts' => array_slice($posts, 0, $batch),
+            'hasMorePosts' => count($posts) > $batch,
             'agents' => $this->agents(),
             'googleMapsKey' => (string) config('services.google_maps.key'),
             'categories' => config('site.property_categories', []),
@@ -161,13 +178,6 @@ class PublicSiteController extends Controller
         return view('site.property', $this->pageData($locale, '/ipasums/'.$slug.'/') + [
             'property' => $property,
             'googleMapsKey' => (string) config('services.google_maps.key'),
-        ]);
-    }
-
-    private function blogView(string $locale): View
-    {
-        return view('site.blog', $this->pageData($locale, '/blog/') + [
-            'posts' => $this->content->posts($locale),
         ]);
     }
 

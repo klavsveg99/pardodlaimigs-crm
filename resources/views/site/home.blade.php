@@ -169,23 +169,18 @@
 
     <section class="section blog-section" id="blog" aria-labelledby="blog-title">
         <div class="container">
-            <div class="section-heading section-heading-row">
-                <div><p class="eyebrow eyebrow-green">{{ $copy['blogEyebrow'] ?? '' }}</p><h2 id="blog-title">{{ $copy['blogTitle'] ?? '' }}</h2></div>
-                <a class="text-link desktop-link" href="{{ \App\Support\SiteUrls::path($locale, '/blog/') }}">{{ $copy['allArticles'] ?? '' }} <span aria-hidden="true">↗</span></a>
+            <div class="section-heading">
+                <p class="eyebrow eyebrow-green">{{ $copy['blogEyebrow'] ?? '' }}</p><h2 id="blog-title">{{ $copy['blogTitle'] ?? '' }}</h2>
             </div>
-            <div class="article-grid">
-                @foreach ($posts as $index => $post)
-                    <article class="article-card">
-                        <a href="{{ \App\Support\SiteUrls::post($locale, $post['slug']) }}">
-                            <img src="{{ $post['image'] ?? '' }}" alt="" loading="lazy">
-                            <div class="article-copy">
-                                <span class="article-date">{{ \Illuminate\Support\Carbon::parse($post['date'])->format('d.m.Y') }}</span>
-                                <h3>{{ $copy['articleTitles'][$index] ?? $post['title'] }}</h3>
-                                <span class="article-link">{{ $copy['readArticle'] ?? '' }}<span aria-hidden="true">↗</span></span>
-                            </div>
-                        </a>
-                    </article>
-                @endforeach
+            <div class="article-grid" id="article-grid">
+                @include('site.partials.article-cards', ['posts' => $posts, 'copy' => $copy, 'locale' => $locale, 'offset' => 0])
+            </div>
+            <div class="section-action">
+                <button class="button button-outline" id="load-more-posts" type="button"
+                        data-endpoint="{{ route('site.blog.more') }}"
+                        data-page="2" data-locale="{{ $locale }}"
+                        @if (! ($hasMorePosts ?? false)) hidden @endif>{{ $copy['loadMore'] ?? 'Rādīt vairāk' }}</button>
+                <p class="load-more-error" id="load-more-error" role="status" hidden>{{ $copy['loadMoreFailed'] ?? '' }}</p>
             </div>
         </div>
     </section>

@@ -17,8 +17,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
           crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=10">
-    <script defer src="{{ asset('site-assets/site.js') }}?v=5"></script>
+    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=11">
+    <script defer src="{{ asset('site-assets/site.js') }}?v=6"></script>
 </head>
 <body class="site">
 <header class="site-header">
@@ -31,7 +31,7 @@
             <a href="{{ \App\Support\SiteUrls::path($locale) }}#ipasumi">{{ $copy['navProperties'] ?? '' }}</a>
             <a href="{{ \App\Support\SiteUrls::path($locale, '/pardot/') }}">{{ $copy['navSell'] ?? '' }}</a>
             <a href="{{ \App\Support\SiteUrls::path($locale) }}#komanda">{{ $copy['navAbout'] ?? '' }}</a>
-            <a href="{{ \App\Support\SiteUrls::path($locale, '/blog/') }}">{{ $copy['navBlog'] ?? '' }}</a>
+            <a href="{{ \App\Support\SiteUrls::path($locale).'#blog' }}">{{ $copy['navBlog'] ?? '' }}</a>
             <a href="#kontakti">{{ $copy['navContact'] ?? '' }}</a>
             <a href="#buj">{{ $copy['navFaq'] ?? '' }}</a>
         </nav>
@@ -71,7 +71,7 @@
                 [\App\Support\SiteUrls::path($locale) . '#ipasumi', $copy['navProperties'] ?? ''],
                 [\App\Support\SiteUrls::path($locale, '/pardot/'), $copy['navSell'] ?? ''],
                 [\App\Support\SiteUrls::path($locale) . '#komanda', $copy['navAbout'] ?? ''],
-                [\App\Support\SiteUrls::path($locale, '/blog/'), $copy['navBlog'] ?? ''],
+                [\App\Support\SiteUrls::path($locale).'#blog', $copy['navBlog'] ?? ''],
                 ['#kontakti', $copy['navContact'] ?? ''],
                 ['#buj', $copy['navFaq'] ?? ''],
             ] as $index => [$href, $label])

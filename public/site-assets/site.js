@@ -650,6 +650,39 @@
         $('#open-video')?.addEventListener('click', () => dialog.showModal());
     }
 
+    /* ── Blog: load more ────────────────────────────────────────────────── */
+    function setupBlogMore() {
+        const button = $('#load-more-posts');
+        const grid = $('#article-grid');
+        if (!button || !grid) return;
+
+        const error = $('#load-more-error');
+
+        button.addEventListener('click', async () => {
+            if (button.getAttribute('aria-busy') === 'true') return;
+            const page = Number(button.dataset.page || 2);
+            button.setAttribute('aria-busy', 'true');
+            if (error) error.hidden = true;
+
+            try {
+                const response = await fetch(`${button.dataset.endpoint}?page=${page}&locale=${button.dataset.locale}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                grid.insertAdjacentHTML('beforeend', data.html || '');
+                button.dataset.page = String(page + 1);
+                button.hidden = !data.hasMore;
+            } catch (failure) {
+                // Keep the button so the visitor can try again.
+                if (error) error.hidden = false;
+            } finally {
+                button.setAttribute('aria-busy', 'false');
+            }
+        });
+    }
+
     function setupDialogs() {
         $$('[data-close-dialog]').forEach((button) => button.addEventListener('click', () => button.closest('dialog')?.close()));
         $$('dialog').forEach((dialog) => dialog.addEventListener('click', (event) => {
@@ -671,6 +704,7 @@
         setupQuickContact();
         setupContactForm();
         setupVideoDialog();
+        setupBlogMore();
         setupDialogs();
     });
 })();

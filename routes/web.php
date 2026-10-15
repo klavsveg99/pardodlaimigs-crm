@@ -393,9 +393,9 @@ if (config('site.enabled')) {
         Route::get('/properties', [PublicSiteController::class, 'properties'])->name('site.properties');
         Route::get('/{locale}/properties', [PublicSiteController::class, 'localizedProperties'])
             ->where('locale', 'en|ru|de')->name('site.properties.locale');
-        Route::get('/blog', [PublicSiteController::class, 'blog'])->name('site.blog');
-        Route::get('/{locale}/blog', [PublicSiteController::class, 'localizedBlog'])
-            ->where('locale', 'en|ru|de')->name('site.blog.locale');
+        // The blog has no page of its own: the homepage lists the first batch
+        // and asks this endpoint for the next one.
+        Route::get('/blog/more', [PublicSiteController::class, 'blogMore'])->name('site.blog.more');
 
         Route::get('/ipasums/{slug}', [PublicSiteController::class, 'property'])->name('site.property');
         Route::get('/{locale}/ipasums/{slug}', [PublicSiteController::class, 'localizedProperty'])
