@@ -45,7 +45,7 @@
       "reviewsTitle": "Labi darījumi sākas ar uzticēšanos",
       "reviewCount": "150+ laimīgu klientu",
       "blogEyebrow": "Padomi, ieteikumi un vērtīgs materiāls",
-      "blogTitle": "Noderīga informācija",
+      "blogTitle": "Bloga raksti",
       "readArticle": "Lasīt rakstu",
       "teamEyebrow": "Cilvēki, kuri būs tavā pusē",
       "teamTitle": "Mūsu komanda",
@@ -143,7 +143,7 @@
       "reviewsTitle": "Good deals start with trust",
       "reviewCount": "150+ happy clients",
       "blogEyebrow": "Advice, ideas and useful resources",
-      "blogTitle": "Useful information",
+      "blogTitle": "Blog articles",
       "readArticle": "Read article",
       "teamEyebrow": "People on your side",
       "teamTitle": "Our team",
@@ -239,7 +239,7 @@
       "reviewsTitle": "Хорошие сделки начинаются с доверия",
       "reviewCount": "Более 150 довольных клиентов",
       "blogEyebrow": "Советы и полезные материалы",
-      "blogTitle": "Полезная информация",
+      "blogTitle": "Статьи в блогах",
       "readArticle": "Читать статью",
       "teamEyebrow": "Люди на вашей стороне",
       "teamTitle": "Наша команда",
@@ -335,7 +335,7 @@
       "reviewsTitle": "Gute Geschäfte beginnen mit Vertrauen",
       "reviewCount": "Mehr als 150 zufriedene Kunden",
       "blogEyebrow": "Tipps und hilfreiche Informationen",
-      "blogTitle": "Nützliche Informationen",
+      "blogTitle": "Blog-Artikel",
       "readArticle": "Artikel lesen",
       "teamEyebrow": "Menschen an Ihrer Seite",
       "teamTitle": "Unser Team",
@@ -503,7 +503,8 @@
       "termsLabel": "pakalpojuma noteikumi",
       "recaptchaNote": "Šo vietni aizsargā reCAPTCHA. Uz to attiecas Google [privacy] un [terms].",
       "loadMore": "Rādīt vairāk rakstu",
-      "loadMoreFailed": "Neizdevās ielādēt vairāk rakstu. Lūdzu, mēģiniet vēlreiz."
+      "loadMoreFailed": "Neizdevās ielādēt vairāk rakstu. Lūdzu, mēģiniet vēlreiz.",
+      "blogTitle": "Bloga raksti"
     },
     "en": {
       "navFaq": "FAQ",
@@ -601,7 +602,8 @@
       "termsLabel": "Terms of Service",
       "recaptchaNote": "This site is protected by reCAPTCHA and the Google [privacy] and [terms] apply.",
       "loadMore": "Show more articles",
-      "loadMoreFailed": "Could not load more articles. Please try again."
+      "loadMoreFailed": "Could not load more articles. Please try again.",
+      "blogTitle": "Blog articles"
     },
     "ru": {
       "navFaq": "FAQ",
@@ -699,7 +701,8 @@
       "termsLabel": "Условия использования",
       "recaptchaNote": "Этот сайт защищён reCAPTCHA. Применяются [privacy] и [terms] Google.",
       "loadMore": "Показать больше статей",
-      "loadMoreFailed": "Не удалось загрузить статьи. Попробуйте ещё раз."
+      "loadMoreFailed": "Не удалось загрузить статьи. Попробуйте ещё раз.",
+      "blogTitle": "Статьи в блогах"
     },
     "de": {
       "navFaq": "FAQ",
@@ -797,7 +800,8 @@
       "termsLabel": "Nutzungsbedingungen",
       "recaptchaNote": "Diese Website ist durch reCAPTCHA geschützt. Es gelten die [privacy] und die [terms] von Google.",
       "loadMore": "Mehr Artikel anzeigen",
-      "loadMoreFailed": "Weitere Artikel konnten nicht geladen werden. Bitte erneut versuchen."
+      "loadMoreFailed": "Weitere Artikel konnten nicht geladen werden. Bitte erneut versuchen.",
+      "blogTitle": "Blog-Artikel"
     }
   }
 }

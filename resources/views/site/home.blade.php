@@ -185,6 +185,22 @@
         </div>
     </section>
 
+    @if (filled($useful ?? null))
+        <section class="section info-section" aria-labelledby="info-title">
+            <div class="container">
+                <div class="section-heading"><h2 id="info-title">{{ $useful['title'] }}</h2></div>
+                <div class="info-list">
+                    @foreach ($useful['tabs'] as $index => $tab)
+                        <details class="info-item" @if ($index === 0) open @endif>
+                            <summary>{{ $tab['title'] }}</summary>
+                            <div class="post-body">{!! $tab['html'] !!}</div>
+                        </details>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
     <section class="podcast-section">
         <div class="container podcast-layout">
             <div><p class="eyebrow">{{ $copy['podcastTitle'] ?? '' }}</p><p>{{ $copy['podcastLead'] ?? '' }}</p></div>

@@ -224,6 +224,17 @@ h1, h2, h3 { font-family: var(--serif); }
    instead of an empty slot. */
 .load-more-error { margin: 12px 0 0; color: #b3261e; font-size: 11px; }
 .load-more-error[hidden] { display: none; }
+/* "Noderīga informācija" from the old site: the same accordion language as the
+   FAQ, one step up the page and with the article text inside. */
+.info-section { padding-top: 0; }
+.info-list { border-top: 1px solid #cfd8d1; }
+.info-item { border-bottom: 1px solid #cfd8d1; }
+.info-item summary { position: relative; padding: 21px 40px 21px 0; cursor: pointer; font-family: var(--serif); font-size: 16px; font-weight: 700; letter-spacing: -.02em; list-style: none; }
+.info-item summary::-webkit-details-marker { display: none; }
+.info-item summary::after { position: absolute; top: 19px; right: 4px; content: '+'; color: var(--brand); font-family: Arial, sans-serif; font-size: 24px; font-weight: 400; }
+.info-item[open] summary::after { content: '-'; }
+.info-item .post-body { max-width: 820px; margin: 0 0 28px; }
+.info-item .post-body h3 { margin-top: 22px; }
 .article-placeholder { display: grid; height: 206px; place-items: center; background: var(--brand); }
 .article-card .article-placeholder img { width: 132px; height: auto; filter: brightness(0) invert(1); opacity: .92; }
 
@@ -536,6 +547,9 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .podcast-links { width: 100%; }
   .podcast-links a { flex: 1; min-width: 0; }
   .faq-layout { grid-template-columns: 1fr; gap: 24px; }
+  .info-item summary { padding: 17px 32px 17px 0; font-size: 15px; }
+  .info-item summary::after { top: 14px; font-size: 21px; }
+  .info-item .post-body { margin-bottom: 22px; }
   .contact-copy h2 { font-size: 35px; }
   .contact-form { padding: 19px 16px; }
   .form-row { grid-template-columns: 1fr; }

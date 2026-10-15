@@ -21,6 +21,18 @@ class SiteContent
         ]);
     }
 
+    /**
+     * The old site's "Noderīga informācija" block: a heading and four items of
+     * advice, kept as HTML (resources/site/useful.json).
+     */
+    public function useful(string $locale): ?array
+    {
+        $locale = $this->locale($locale);
+        $useful = $this->readJson(resource_path('site/useful.json'));
+
+        return $useful[$locale] ?? $useful['lv'] ?? null;
+    }
+
     public function posts(string $locale): array
     {
         $locale = $this->locale($locale);

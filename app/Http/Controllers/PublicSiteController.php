@@ -155,6 +155,7 @@ class PublicSiteController extends Controller
             'heroProperties' => $hero,
             'posts' => array_slice($posts, 0, $batch),
             'hasMorePosts' => count($posts) > $batch,
+            'useful' => $this->content->useful($locale),
             'agents' => $this->agents(),
             'googleMapsKey' => (string) config('services.google_maps.key'),
             'categories' => config('site.property_categories', []),
