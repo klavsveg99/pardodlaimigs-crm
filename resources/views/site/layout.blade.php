@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
           crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=9">
+    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=10">
     <script defer src="{{ asset('site-assets/site.js') }}?v=5"></script>
 </head>
 <body class="site">
@@ -110,20 +110,26 @@
 
 <footer class="site-footer">
     <div class="container footer-main">
-        <a class="brand footer-brand" href="{{ \App\Support\SiteUrls::path($locale) }}"><img src="{{ asset('site-assets/images/brand/logo.svg') }}?v=2" alt="Pārdod Laimīgs"></a>
-        <p>{{ $copy['footerLine'] ?? '' }}</p>
-        <div class="footer-links">
-            <a href="https://www.youtube.com/@pardodlaimigs" target="_blank" rel="noreferrer">YouTube</a>
-            <a href="https://www.facebook.com/PardodLaimigs/" target="_blank" rel="noreferrer">Facebook</a>
-            <a href="https://instagram.com/pardodlaimigs" target="_blank" rel="noreferrer">Instagram</a>
-            <a href="https://g.page/r/CRZd6XZu2hhmEAE/review" target="_blank" rel="noreferrer">Google</a>
+        <div class="footer-brand-block">
+            <a class="brand footer-brand" href="{{ \App\Support\SiteUrls::path($locale) }}"><img src="{{ asset('site-assets/images/brand/logo.svg') }}?v=2" alt="Pārdod Laimīgs"></a>
+            <p>{{ $copy['footerLine'] ?? '' }}</p>
         </div>
-        <a class="footer-phone" href="tel:+37124922942">+371 2492 2942</a>
+        <div class="footer-contact-block">
+            <a class="footer-phone" href="tel:+37124922942">+371 2492 2942</a>
+            <div class="footer-links">
+                <a href="https://www.youtube.com/@pardodlaimigs" target="_blank" rel="noreferrer">YouTube</a>
+                <a href="https://www.facebook.com/PardodLaimigs/" target="_blank" rel="noreferrer">Facebook</a>
+                <a href="https://instagram.com/pardodlaimigs" target="_blank" rel="noreferrer">Instagram</a>
+                <a href="https://g.page/r/CRZd6XZu2hhmEAE/review" target="_blank" rel="noreferrer">Google</a>
+            </div>
+        </div>
     </div>
     <div class="container footer-bottom">
         <span>© {{ date('Y') }} Pārdod Laimīgs</span>
-        <button type="button" class="footer-cookie-link" id="manage-cookies">{{ $copy['cookieSettings'] ?? 'Sīkdatņu iestatījumi' }}</button>
-        <a href="{{ \App\Support\SiteUrls::path($locale, '/privatuma-politika/') }}">{{ $copy['privacyLabel'] ?? 'Privātuma politika' }}</a>
+        <div class="footer-legal">
+            <button type="button" class="footer-cookie-link" id="manage-cookies">{{ $copy['cookieSettings'] ?? 'Sīkdatņu iestatījumi' }}</button>
+            <a href="{{ \App\Support\SiteUrls::path($locale, '/privatuma-politika/') }}">{{ $copy['privacyLabel'] ?? 'Privātuma politika' }}</a>
+        </div>
     </div>
 </footer>
 
