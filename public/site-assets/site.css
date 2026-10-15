@@ -269,7 +269,6 @@ h1 { max-width: 580px; margin: 0; color: #fff; font-size: clamp(42px, 4.5vw, 60p
 .contact-form .form-check input { flex: 0 0 16px; width: 16px; min-height: 16px; margin: 0; accent-color: var(--brand); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
 .form-submit-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.local-note { margin: 0; color: #7c8580; font-size: 9px; line-height: 1.45; }
 .form-feedback { margin: -4px 0 0; color: var(--brand); font-size: 12px; }
 
 .site-footer { color: rgb(255 255 255 / 76%); background: #183a37; }
