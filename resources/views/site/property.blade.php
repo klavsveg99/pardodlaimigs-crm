@@ -12,8 +12,14 @@
     $category = $property['category'] ?? '';
     $categoryLabel = $copy['categoryLabels'][$category] ?? $category;
     $hasLocation = is_numeric($property['lat'] ?? null) && is_numeric($property['lng'] ?? null);
+    // The listing text is "[LV]" followed by the prose and then a glued-together
+    // parameter dump; the page shows the prose, the facts block the parameters.
+    $description = preg_replace('/^\[LV\]/', '', (string) ($property['description'] ?? ''));
+    $description = preg_split('/Galvenie parametri/i', $description)[0] ?? $description;
+    $description = str_ends_with($description, $property['title']) ? substr($description, 0, -strlen($property['title'])) : $description;
+    $description = trim(preg_replace('/\s+/u', ' ', preg_replace('/(?<=[a-zāčēģīķļņšūž0-9])(?=[A-ZĀČĒĢĪĶĻŅŠŪŽ])/u', ' ', $description)));
     $pageTitle = $property['title'].' - Pārdod Laimīgs';
-    $pageDescription = \Illuminate\Support\Str::limit(trim(preg_replace('/\s+/', ' ', (string) ($property['description'] ?? ''))), 160);
+    $pageDescription = \Illuminate\Support\Str::limit($description, 160);
 @endphp
 
 @section('content')
@@ -52,7 +58,7 @@
                             @endforeach
                         </ul>
                     @endif
-                    <div class="property-detail-text">{!! nl2br(e(preg_replace('/^\[LV\]/', '', (string) ($property['description'] ?? '')))) !!}</div>
+                    <div class="property-detail-text">{!! nl2br(e($description)) !!}</div>
                     <div class="property-detail-agent">
                         <span>{{ $copy['agent'] ?? '' }}</span>
                         <strong>{{ $property['agent'] ?? '' }}</strong>

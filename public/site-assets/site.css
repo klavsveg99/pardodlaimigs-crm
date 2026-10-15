@@ -73,7 +73,7 @@ body.menu-locked { overflow: hidden; }
 .eyebrow { margin: 0 0 18px; color: rgb(255 255 255 / 72%); font-size: 11px; letter-spacing: .13em; line-height: 1.4; text-transform: uppercase; font-weight: 700; }
 h1, h2, h3, p { margin-top: 0; }
 h1, h2, h3 { font-family: var(--serif); }
-h1 { max-width: 580px; margin: 0; color: #fff; font-size: clamp(42px, 4.5vw, 60px); letter-spacing: -.055em; line-height: 1.05; font-weight: 600; white-space: normal; }
+.hero-copy h1 { max-width: 580px; margin: 0; color: #fff; font-size: clamp(42px, 4.5vw, 60px); letter-spacing: -.055em; line-height: 1.05; font-weight: 600; white-space: normal; }
 .hero-description { max-width: 470px; margin: 22px 0 29px; color: rgb(255 255 255 / 79%); font-size: 15px; line-height: 1.75; }
 .hero-actions { display: flex; align-items: center; gap: 25px; }
 .button { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: 16px; border: 1px solid transparent; padding: 0 20px; cursor: pointer; font-size: 12px; font-weight: 700; transition: background .18s ease, color .18s ease, border-color .18s ease; }
@@ -436,7 +436,7 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .hero-layout { min-height: unset; grid-template-columns: 1fr; gap: 29px; }
   .hero-copy { padding-top: 0; }
   .eyebrow { margin-bottom: 13px; font-size: 9px; }
-  h1 { max-width: 420px; font-size: clamp(39px, 12vw, 55px); }
+  .hero-copy h1 { max-width: 420px; font-size: clamp(39px, 12vw, 55px); }
   .hero-description { margin: 16px 0 22px; font-size: 13px; }
   .hero-actions { gap: 15px; }
   .button { min-height: 46px; padding-inline: 15px; font-size: 11px; }
@@ -566,7 +566,10 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .agent-card > img { height: 160px; }
 }
 
-/* ── Server-rendered pages: property detail, blog, content, agent ───── */
+/* ── Detail pages: property, blog post, content page, agent, listings ── */
+/* The site's h1 is the hero's white display type (see .hero-copy h1), so the
+   pages below the fold set their own ink colour. */
+.property-page h1, .post-page h1, .content-page h1, .blog-index h1, .agent-page h1 { color: var(--ink); }: property detail, blog, content, agent ───── */
 .breadcrumb { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; color: var(--muted); font-size: 11px; }
 .breadcrumb a { color: var(--brand); font-weight: 600; }
 .property-page { padding: 96px 0 40px; }
@@ -619,3 +622,8 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .listings-filters .search-keyword { grid-column: span 2; }
   .listings-filters .button { grid-column: span 2; }
 }
+
+/* The property page reuses the dialog's detail markup, but on a page nothing
+   may clip it or scroll inside a column. */
+.property-page .property-detail { max-height: none; }
+.property-page .property-detail-copy { overflow: visible; }

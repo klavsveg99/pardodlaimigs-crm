@@ -445,6 +445,8 @@
         $$('[data-gallery-step]').forEach((button) => button.addEventListener('click', () => show(index + Number(button.dataset.galleryStep))));
 
         document.addEventListener('keydown', (event) => {
+            // Never move the gallery while the visitor is typing in the form.
+            if (event.target instanceof Element && event.target.closest('input, textarea, select, [contenteditable]')) return;
             if (event.key === 'ArrowRight') show(index + 1);
             else if (event.key === 'ArrowLeft') show(index - 1);
         });
