@@ -475,9 +475,11 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .reviews-section { padding: 63px 0; }
   .reviews-layout { grid-template-columns: 1fr; gap: 30px; }
   .reviews-intro h2 { font-size: 31px; }
-  .review-card { min-height: 225px; padding: 22px 18px; border-left: 0; border-top: 1px solid rgb(255 255 255 / 35%); }
+  .review-card { min-height: 225px; padding: 22px 18px 68px; border-left: 0; border-top: 1px solid rgb(255 255 255 / 35%); }
   .review-card > p { font-size: 15px; }
-  .review-controls { right: 10px; }
+  /* The controls sit in a reserved band below the author, so the stars and
+     the arrows cannot collide on a narrow card. */
+  .review-controls { right: 18px; bottom: 18px; }
   .article-grid { grid-template-columns: 1fr; gap: 14px; }
   /* The photo and the copy sit inside the card's link, so the two columns have
      to be declared on the link; the card itself has only one child and the
