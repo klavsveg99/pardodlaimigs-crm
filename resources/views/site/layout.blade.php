@@ -12,7 +12,12 @@
     <link rel="alternate" hreflang="x-default" href="{{ $languageUrls['lv'] ?? $canonical }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('site-assets/images/brand/favicon.svg') }}">
     <meta name="theme-color" content="#285854">
-    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=1">
+    {{-- Font Awesome, for the quick-contact icon (same version and hash as the
+         static preview build). --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+          integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=2">
     <script defer src="{{ asset('site-assets/site.js') }}?v=1"></script>
 </head>
 <body class="site">
@@ -123,7 +128,7 @@
 </footer>
 
 <button class="quick-contact-button" id="quick-contact-toggle" type="button" aria-label="{{ $copy['quickContact'] ?? '' }}" aria-expanded="false" aria-controls="quick-contact-panel">
-    <span class="quick-contact-dot" aria-hidden="true"></span><span>{{ $copy['quickContact'] ?? '' }}</span>
+    <i class="fa-solid fa-headset" aria-hidden="true"></i><span>{{ $copy['quickContact'] ?? '' }}</span>
 </button>
 <div class="quick-contact-panel" id="quick-contact-panel" hidden>
     <a class="quick-contact-single" href="https://wa.me/37124922942" target="_blank" rel="noreferrer"><span>WhatsApp</span></a>
