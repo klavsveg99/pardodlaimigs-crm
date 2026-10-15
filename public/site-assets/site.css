@@ -373,7 +373,7 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
 .property-photo-count { color: var(--muted); font-size: 10px; }
 .property-detail-copy h2 { margin: 0 0 10px; font-size: 30px; line-height: 1.16; letter-spacing: -.045em; }
 .property-detail-address { margin: 0 0 14px; color: var(--muted); font-size: 12px; line-height: 1.5; }
-.property-detail-place { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px 14px; margin: 0 0 14px; }
+.property-detail-place { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 14px; margin: 0 0 14px; }
 .property-detail-place .property-detail-address { margin: 0; max-width: 62%; }
 .property-map-toggle { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 9px; padding: 8px 12px; border: 1px solid var(--line); cursor: pointer; color: var(--brand); background: #fff; font-size: 10px; font-weight: 700; transition: background .18s ease, color .18s ease, border-color .18s ease; }
 .property-map-toggle:hover, .property-map-toggle:focus-visible, .property-map-toggle[aria-expanded="true"] { color: #fff; border-color: var(--brand); background: var(--brand); }
@@ -550,6 +550,7 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .urgent-steps { grid-template-columns: 1fr; gap: 26px; }
   .urgent-steps::before { top: 10px; bottom: 10px; left: 8px; width: 1px; height: auto; }
   .urgent-step { padding: 0 0 0 34px; text-align: left; }
+  .urgent-day { display: block; line-height: 17px; }   /* centres the day label on the timeline marker */
   .urgent-step::before { position: absolute; top: 0; left: 0; margin: 0; background: #fbfaf7; }
   .urgent-step p { max-width: none; margin: 0; }
   .podcast-layout { align-items: flex-start; flex-direction: column; }
