@@ -1,0 +1,771 @@
+{
+  "languages": {
+    "lv": {
+      "name": "Latviešu",
+      "languageLabel": "Valoda",
+      "mainMenu": "Galvenā izvēlne",
+      "menuOpen": "Atvērt izvēlni",
+      "previousReview": "Iepriekšējā atsauksme",
+      "nextReview": "Nākamā atsauksme",
+      "navProperties": "Īpašumi",
+      "navSell": "Pārdot īpašumu",
+      "navAbout": "Par mums",
+      "navBlog": "Noderīgi",
+      "navContact": "Kontakti",
+      "eyebrow": "Nekustamā īpašuma aģentūra Latvijā",
+      "heroTitle": "Pārdod savu īpašumu.\nPar labāko cenu.",
+      "heroBody": "Profesionāls atbalsts no pirmās sarunas līdz darījuma noslēgšanai. Skaidrs process, pārdomāta stratēģija un cilvēks, kurš ir tavā pusē.",
+      "heroAction": "Novērtēt īpašumu",
+      "videoAction": "Iepazīsti mūs",
+      "heroNote": "Vairāk nekā 150 laimīgu klientu",
+      "searchTitle": "Atrodi savu nākamo īpašumu",
+      "searchType": "Īpašuma veids",
+      "searchPrice": "Maksimālā cena",
+      "searchPlace": "Vieta vai atslēgvārds",
+      "searchAction": "Meklēt",
+      "allTypes": "Visi veidi",
+      "allPrices": "Jebkura cena",
+      "propertiesEyebrow": "Zeme un īpašumi pārdošanā",
+      "propertiesTitle": "Īpašumi, ko vērts apskatīt",
+      "propertiesLead": "Pārlūko aktuālos piedāvājumus un sazinies ar mums, lai uzzinātu vairāk.",
+      "viewAll": "Skatīt visus īpašumus",
+      "propertyCount": "īpašumi",
+      "details": "Apskatīt īpašumu",
+      "sellEyebrow": "Pārdošana bez lieka stresa",
+      "sellTitle": "Katram īpašumam - sava pieeja",
+      "sellLead": "Precīzs vērtējums un skaidrs plāns palīdz pieņemt labākos lēmumus.",
+      "apartment": "Dzīvoklis",
+      "apartmentText": "Nosakām tirgus vērtību, sagatavojam sludinājumu un atrodam īsto pircēju.",
+      "house": "Māja",
+      "houseText": "Sakārtojam pārdošanas procesu arī tad, ja situācija nav standarta.",
+      "land": "Zeme vai mežs",
+      "landText": "Salīdzinām līdzīgus darījumus, lai noteiktu pamatotu cenu un iespējas.",
+      "sellAction": "Pieteikt konsultāciju",
+      "reviewsEyebrow": "Ko saka mūsu klienti",
+      "reviewsTitle": "Labi darījumi sākas ar uzticēšanos",
+      "reviewCount": "150+ laimīgu klientu",
+      "blogEyebrow": "Padomi, ieteikumi un vērtīgs materiāls",
+      "blogTitle": "Noderīga informācija",
+      "readArticle": "Lasīt rakstu",
+      "teamEyebrow": "Cilvēki, kuri būs tavā pusē",
+      "teamTitle": "Mūsu komanda",
+      "agent": "Nekustamo īpašumu aģents",
+      "contactEyebrow": "Parunāsim par tavu īpašumu",
+      "contactTitle": "Pirmais solis ir vienkāršs",
+      "contactBody": "Pastāsti, ko vēlies pārdot. Sazināsimies, izrunāsim situāciju un vienosimies par nākamajiem soļiem.",
+      "formName": "Vārds",
+      "formPhone": "Tālrunis",
+      "formEmail": "E-pasts",
+      "formType": "Īpašuma veids",
+      "formChoose": "Izvēlies",
+      "formArea": "Platība",
+      "formLocation": "Atrašanās vieta",
+      "formCadastre": "Kadastra numurs",
+      "formDesiredPrice": "Vēlamā cena par īpašumu (€)",
+      "formDescription": "Īpašuma apraksts",
+      "formComment": "Papildu piezīmes",
+      "formApartment": "Dzīvoklis",
+      "formHouse": "Māja",
+      "formLand": "Zeme",
+      "formForest": "Mežs",
+      "urgentCheckbox": "Vēlos pārdot steidzami",
+      "formMessage": "Par īpašumu",
+      "formSubmit": "Pieteikt konsultāciju",
+      "localNote": "Priekšskatījuma forma - pieteikums netiek nosūtīts.",
+      "legalTitle": "Juridiskais atbalsts",
+      "legalItems": [
+        "Juridiski apgrūtinātu īpašumu uzpirkšana",
+        "Nekustamo īpašumu atdalīšana",
+        "Jaunu nosaukumu piešķiršana zemes vienībām - palīdzība no iesnieguma pašvaldībā līdz reģistrācijai Zemesgrāmatā",
+        "Mantojuma lietas",
+        "Palīdzība, ja pret īpašumu vērsta parādu piedziņa",
+        "Pirkuma līgumu sagatavošana un citu līgumu pārbaude atbilstoši aktuālajiem likumiem"
+      ],
+      "footerLine": "Ātri, ērti, laimīgi.",
+      "quickContact": "Ātrā saziņa",
+      "call": "Zvanīt",
+      "email": "Rakstīt e-pastu",
+      "cookiesTitle": "Tava privātuma izvēle",
+      "cookiesText": "Izmantojam nepieciešamās sīkdatnes vietnes darbībai. Ar tavu atļauju varam izmantot arī analītikas sīkdatnes.",
+      "acceptCookies": "Atļaut visas",
+      "rejectCookies": "Tikai nepieciešamās",
+      "cookieSettings": "Iestatījumi",
+      "cookieNecessary": "Nepieciešamās",
+      "cookieAnalytics": "Analītikas",
+      "saveChoices": "Saglabāt izvēli",
+      "close": "Aizvērt",
+      "noResults": "Šiem kritērijiem īpašumi nav atrasti.",
+      "priceFrom": "Cena pēc pieprasījuma"
+    },
+    "en": {
+      "name": "English",
+      "languageLabel": "Language",
+      "mainMenu": "Main navigation",
+      "menuOpen": "Open menu",
+      "previousReview": "Previous review",
+      "nextReview": "Next review",
+      "formChoose": "Choose",
+      "navProperties": "Properties",
+      "navSell": "Sell a property",
+      "navAbout": "About us",
+      "navBlog": "Insights",
+      "navContact": "Contact",
+      "eyebrow": "Real estate agency in Latvia",
+      "heroTitle": "Sell your property.\nFor the best price.",
+      "heroBody": "Professional support from the first conversation to closing. A clear process, a considered strategy, and someone on your side.",
+      "heroAction": "Request a valuation",
+      "videoAction": "Meet our team",
+      "heroNote": "More than 150 happy clients",
+      "searchTitle": "Find your next property",
+      "searchType": "Property type",
+      "searchPrice": "Maximum price",
+      "searchPlace": "Place or keyword",
+      "searchAction": "Search",
+      "allTypes": "All types",
+      "allPrices": "Any price",
+      "propertiesEyebrow": "Land and homes for sale",
+      "propertiesTitle": "Properties worth a closer look",
+      "propertiesLead": "Browse current listings and get in touch to find out more.",
+      "viewAll": "View all properties",
+      "propertyCount": "properties",
+      "details": "View property",
+      "sellEyebrow": "A smoother way to sell",
+      "sellTitle": "A considered approach for every property",
+      "sellLead": "An accurate valuation and a clear plan help you make better decisions.",
+      "apartment": "Apartment",
+      "apartmentText": "We assess the market, prepare the listing, and find the right buyer.",
+      "house": "House",
+      "houseText": "We guide the sale even when the situation is not straightforward.",
+      "land": "Land or forest",
+      "landText": "We compare similar sales to find a realistic price and the right options.",
+      "sellAction": "Request a consultation",
+      "reviewsEyebrow": "What our clients say",
+      "reviewsTitle": "Good deals start with trust",
+      "reviewCount": "150+ happy clients",
+      "blogEyebrow": "Advice, ideas and useful resources",
+      "blogTitle": "Useful information",
+      "readArticle": "Read article",
+      "teamEyebrow": "People on your side",
+      "teamTitle": "Our team",
+      "agent": "Real estate agent",
+      "contactEyebrow": "Let’s talk about your property",
+      "contactTitle": "Taking the first step is easy",
+      "contactBody": "Tell us what you would like to sell. We will talk through your situation and agree on next steps.",
+      "formName": "Name",
+      "formPhone": "Phone",
+      "formEmail": "Email",
+      "formType": "Property type",
+      "formArea": "Area",
+      "formLocation": "Location",
+      "formCadastre": "Cadastral number",
+      "formDesiredPrice": "Desired price (€)",
+      "formDescription": "Property description",
+      "formComment": "Additional notes",
+      "formApartment": "Apartment",
+      "formHouse": "House",
+      "formLand": "Land",
+      "formForest": "Forest",
+      "urgentCheckbox": "I want to sell urgently",
+      "formMessage": "About the property",
+      "formSubmit": "Request a valuation",
+      "localNote": "Preview form - your request is not sent.",
+      "legalTitle": "Legal support",
+      "legalItems": [
+        "Purchase of properties with legal encumbrances",
+        "Subdivision and naming of properties",
+        "Inheritance matters",
+        "Debt recovery matters",
+        "Preparation and review of purchase agreements"
+      ],
+      "footerLine": "Quick, easy, happy.",
+      "quickContact": "Quick contact",
+      "call": "Call",
+      "email": "Send an email",
+      "cookiesTitle": "Your privacy choices",
+      "cookiesText": "We use essential cookies to run this site. With your permission, we may also use analytics cookies.",
+      "acceptCookies": "Accept all",
+      "rejectCookies": "Essential only",
+      "cookieSettings": "Settings",
+      "cookieNecessary": "Essential",
+      "cookieAnalytics": "Analytics",
+      "saveChoices": "Save choices",
+      "close": "Close",
+      "noResults": "No properties match these filters.",
+      "priceFrom": "Price on request"
+    },
+    "ru": {
+      "name": "Русский",
+      "languageLabel": "Язык",
+      "mainMenu": "Главная навигация",
+      "menuOpen": "Открыть меню",
+      "previousReview": "Предыдущий отзыв",
+      "nextReview": "Следующий отзыв",
+      "formChoose": "Выберите",
+      "navProperties": "Объекты",
+      "navSell": "Продать недвижимость",
+      "navAbout": "О нас",
+      "navBlog": "Полезное",
+      "navContact": "Контакты",
+      "eyebrow": "Агентство недвижимости в Латвии",
+      "heroTitle": "Продайте недвижимость.\nПо лучшей цене.",
+      "heroBody": "Профессиональная поддержка от первого разговора до завершения сделки. Понятный процесс, продуманная стратегия и человек на вашей стороне.",
+      "heroAction": "Оценить недвижимость",
+      "videoAction": "Познакомьтесь с нами",
+      "heroNote": "Более 150 довольных клиентов",
+      "searchTitle": "Найдите свою недвижимость",
+      "searchType": "Тип недвижимости",
+      "searchPrice": "Максимальная цена",
+      "searchPlace": "Место или ключевое слово",
+      "searchAction": "Искать",
+      "allTypes": "Все типы",
+      "allPrices": "Любая цена",
+      "propertiesEyebrow": "Земля и недвижимость на продажу",
+      "propertiesTitle": "Объекты, заслуживающие внимания",
+      "propertiesLead": "Посмотрите актуальные предложения и свяжитесь с нами, чтобы узнать подробности.",
+      "viewAll": "Все объекты",
+      "propertyCount": "объектов",
+      "details": "Посмотреть объект",
+      "sellEyebrow": "Продажа без лишнего стресса",
+      "sellTitle": "Индивидуальный подход к каждому объекту",
+      "sellLead": "Точная оценка и понятный план помогают принимать верные решения.",
+      "apartment": "Квартира",
+      "apartmentText": "Оценим рынок, подготовим объявление и найдем подходящего покупателя.",
+      "house": "Дом",
+      "houseText": "Поможем пройти процесс продажи, даже если ситуация нестандартная.",
+      "land": "Земля или лес",
+      "landText": "Сравним похожие сделки, чтобы определить обоснованную цену и возможности.",
+      "sellAction": "Записаться на консультацию",
+      "reviewsEyebrow": "Отзывы наших клиентов",
+      "reviewsTitle": "Хорошие сделки начинаются с доверия",
+      "reviewCount": "Более 150 довольных клиентов",
+      "blogEyebrow": "Советы и полезные материалы",
+      "blogTitle": "Полезная информация",
+      "readArticle": "Читать статью",
+      "teamEyebrow": "Люди на вашей стороне",
+      "teamTitle": "Наша команда",
+      "agent": "Агент по недвижимости",
+      "contactEyebrow": "Обсудим вашу недвижимость",
+      "contactTitle": "Сделать первый шаг просто",
+      "contactBody": "Расскажите, что вы хотите продать. Мы обсудим ситуацию и договоримся о следующих шагах.",
+      "formName": "Имя",
+      "formPhone": "Телефон",
+      "formEmail": "Эл. почта",
+      "formType": "Тип недвижимости",
+      "formArea": "Площадь",
+      "formLocation": "Местоположение",
+      "formCadastre": "Кадастровый номер",
+      "formDesiredPrice": "Желаемая цена (€)",
+      "formDescription": "Описание недвижимости",
+      "formComment": "Дополнительная информация",
+      "formApartment": "Квартира",
+      "formHouse": "Дом",
+      "formLand": "Земля",
+      "formForest": "Лес",
+      "urgentCheckbox": "Хочу продать срочно",
+      "formMessage": "О недвижимости",
+      "formSubmit": "Запросить оценку",
+      "localNote": "Демонстрационная форма - заявка не отправляется.",
+      "legalTitle": "Юридическая поддержка",
+      "legalItems": [
+        "Выкуп объектов с юридическими обременениями",
+        "Раздел недвижимости и присвоение названий",
+        "Вопросы наследства",
+        "Вопросы взыскания долгов",
+        "Подготовка и проверка договоров купли-продажи"
+      ],
+      "footerLine": "Быстро, удобно, счастливо.",
+      "quickContact": "Быстрая связь",
+      "call": "Позвонить",
+      "email": "Написать",
+      "cookiesTitle": "Настройки конфиденциальности",
+      "cookiesText": "Для работы сайта используются необходимые cookie. С вашего разрешения также могут использоваться аналитические cookie.",
+      "acceptCookies": "Разрешить все",
+      "rejectCookies": "Только необходимые",
+      "cookieSettings": "Настройки",
+      "cookieNecessary": "Необходимые",
+      "cookieAnalytics": "Аналитика",
+      "saveChoices": "Сохранить выбор",
+      "close": "Закрыть",
+      "noResults": "По этим критериям объекты не найдены.",
+      "priceFrom": "Цена по запросу"
+    },
+    "de": {
+      "name": "Deutsch",
+      "languageLabel": "Sprache",
+      "mainMenu": "Hauptnavigation",
+      "menuOpen": "Menü öffnen",
+      "previousReview": "Vorherige Bewertung",
+      "nextReview": "Nächste Bewertung",
+      "formChoose": "Auswählen",
+      "navProperties": "Immobilien",
+      "navSell": "Immobilie verkaufen",
+      "navAbout": "Über uns",
+      "navBlog": "Ratgeber",
+      "navContact": "Kontakt",
+      "eyebrow": "Immobilienagentur in Lettland",
+      "heroTitle": "Verkaufen Sie Ihre Immobilie.\nZum besten Preis.",
+      "heroBody": "Professionelle Unterstützung vom ersten Gespräch bis zum Abschluss. Ein klarer Ablauf, eine durchdachte Strategie und jemand an Ihrer Seite.",
+      "heroAction": "Immobilie bewerten lassen",
+      "videoAction": "Lernen Sie uns kennen",
+      "heroNote": "Mehr als 150 zufriedene Kunden",
+      "searchTitle": "Finden Sie Ihre nächste Immobilie",
+      "searchType": "Immobilientyp",
+      "searchPrice": "Höchstpreis",
+      "searchPlace": "Ort oder Stichwort",
+      "searchAction": "Suchen",
+      "allTypes": "Alle Typen",
+      "allPrices": "Jeder Preis",
+      "propertiesEyebrow": "Grundstücke und Immobilien zum Verkauf",
+      "propertiesTitle": "Immobilien, die einen Blick wert sind",
+      "propertiesLead": "Entdecken Sie aktuelle Angebote und fragen Sie uns nach weiteren Informationen.",
+      "viewAll": "Alle Immobilien ansehen",
+      "propertyCount": "Immobilien",
+      "details": "Immobilie ansehen",
+      "sellEyebrow": "Verkaufen ohne unnötigen Stress",
+      "sellTitle": "Ein passender Weg für jede Immobilie",
+      "sellLead": "Eine genaue Bewertung und ein klarer Plan helfen bei guten Entscheidungen.",
+      "apartment": "Wohnung",
+      "apartmentText": "Wir bewerten den Markt, erstellen das Angebot und finden den passenden Käufer.",
+      "house": "Haus",
+      "houseText": "Wir begleiten den Verkauf auch in besonderen Situationen.",
+      "land": "Grundstück oder Wald",
+      "landText": "Wir vergleichen ähnliche Verkäufe, um einen fairen Preis und Möglichkeiten zu finden.",
+      "sellAction": "Beratung anfragen",
+      "reviewsEyebrow": "Das sagen unsere Kunden",
+      "reviewsTitle": "Gute Geschäfte beginnen mit Vertrauen",
+      "reviewCount": "Mehr als 150 zufriedene Kunden",
+      "blogEyebrow": "Tipps und hilfreiche Informationen",
+      "blogTitle": "Nützliche Informationen",
+      "readArticle": "Artikel lesen",
+      "teamEyebrow": "Menschen an Ihrer Seite",
+      "teamTitle": "Unser Team",
+      "agent": "Immobilienmakler",
+      "contactEyebrow": "Sprechen wir über Ihre Immobilie",
+      "contactTitle": "Der erste Schritt ist ganz einfach",
+      "contactBody": "Erzählen Sie uns, was Sie verkaufen möchten. Wir besprechen Ihre Situation und die nächsten Schritte.",
+      "formName": "Name",
+      "formPhone": "Telefon",
+      "formEmail": "E-Mail",
+      "formType": "Immobilientyp",
+      "formArea": "Fläche",
+      "formLocation": "Standort",
+      "formCadastre": "Katasternummer",
+      "formDesiredPrice": "Gewünschter Preis (€)",
+      "formDescription": "Beschreibung der Immobilie",
+      "formComment": "Zusätzliche Angaben",
+      "formApartment": "Wohnung",
+      "formHouse": "Haus",
+      "formLand": "Grundstück",
+      "formForest": "Wald",
+      "urgentCheckbox": "Ich möchte dringend verkaufen",
+      "formMessage": "Zur Immobilie",
+      "formSubmit": "Bewertung anfragen",
+      "localNote": "Vorschauformular - die Anfrage wird nicht gesendet.",
+      "legalTitle": "Rechtliche Unterstützung",
+      "legalItems": [
+        "Ankauf rechtlich belasteter Immobilien",
+        "Teilung und Benennung von Grundstücken",
+        "Erbschaftsangelegenheiten",
+        "Fragen zur Forderungsvollstreckung",
+        "Vorbereitung und Prüfung von Kaufverträgen"
+      ],
+      "footerLine": "Schnell, einfach, glücklich.",
+      "quickContact": "Schnellkontakt",
+      "call": "Anrufen",
+      "email": "E-Mail senden",
+      "cookiesTitle": "Ihre Datenschutzeinstellungen",
+      "cookiesText": "Für den Betrieb der Website verwenden wir notwendige Cookies. Mit Ihrer Einwilligung können auch Analyse-Cookies eingesetzt werden.",
+      "acceptCookies": "Alle akzeptieren",
+      "rejectCookies": "Nur notwendige",
+      "cookieSettings": "Einstellungen",
+      "cookieNecessary": "Notwendig",
+      "cookieAnalytics": "Analyse",
+      "saveChoices": "Auswahl speichern",
+      "close": "Schließen",
+      "noResults": "Keine Immobilien für diese Kriterien gefunden.",
+      "priceFrom": "Preis auf Anfrage"
+    }
+  },
+  "translatedCategories": {
+    "en": {
+      "Dzīvoklis": "Apartment",
+      "Māja": "House",
+      "Zeme": "Land",
+      "Komerciāls": "Commercial"
+    },
+    "ru": {
+      "Dzīvoklis": "Квартира",
+      "Māja": "Дом",
+      "Zeme": "Земля",
+      "Komerciāls": "Коммерческая недвижимость"
+    },
+    "de": {
+      "Dzīvoklis": "Wohnung",
+      "Māja": "Haus",
+      "Zeme": "Grundstück",
+      "Komerciāls": "Gewerbeimmobilie"
+    }
+  },
+  "extendedTranslations": {
+    "lv": {
+      "navFaq": "BUJ",
+      "faqEyebrow": "BUJ",
+      "privacyLabel": "Privātuma politika",
+      "googleReviews": "Google atsauksmes",
+      "heroCarouselLabel": "Īpašumu attēlu galerija",
+      "previousSlide": "Iepriekšējais attēls",
+      "nextSlide": "Nākamais attēls",
+      "legalEyebrow": "Papildu pakalpojumi",
+      "legalLead": "Kad darījums nav vienkāršs, palīdzam arī ar juridiskiem jautājumiem - no dokumentu izpētes līdz reģistrācijai Zemesgrāmatā.",
+      "photos": "foto",
+      "photo": "Attēls",
+      "galleryLabel": "Īpašuma attēli",
+      "enquire": "Sazināties par īpašumu",
+      "fullListing": "Atvērt sludinājumu",
+      "preciseLocation": "Precīza atrašanās vieta",
+      "openInMaps": "Atvērt Google Maps",
+      "allArticles": "Visi raksti",
+      "teamLead": "Pieredze, cilvēcīga attieksme un rūpes par katru detaļu - no pirmās sarunas līdz atslēgu nodošanai.",
+      "articleTitles": [
+        "Zemesgrāmata - pats svarīgākais dokuments nekustamā īpašuma darījumos",
+        "Cik maksā lauksaimniecības zeme Latvijā? 2025. gada cenu apskats",
+        "Nekustamo īpašumu tirgus Saldū - aktuālākās cenas un iespējas"
+      ],
+      "factLabels": {
+        "Telpu platība": "Telpu platība",
+        "Zemes platība": "Zemes platība",
+        "Istabas": "Istabas",
+        "Vannasistabas": "Vannasistabas"
+      },
+      "urgentEyebrow": "Kad laiks ir svarīgs",
+      "urgentTitle": "Pārdod īpašumu 3 dienu laikā",
+      "urgentLead": "Steidzamai realizācijai - saziņa vienas stundas laikā un skaidri nākamie soļi.",
+      "urgentSteps": [
+        [
+          "01 / diena",
+          "Saziņa un izvērtēšana",
+          "Sazvanīšanās, ātrās realizācijas vērtības noteikšana un īpašuma dokumentu analīze."
+        ],
+        [
+          "02 / diena",
+          "Piedāvājums",
+          "Veicam ātrās realizācijas izpēti, piedāvājam cenu un vienojamies par tikšanos pie notāra."
+        ],
+        [
+          "03 / diena",
+          "Darījuma noslēgums",
+          "Tiekamies pie notāra un pēc darījuma nauda tiek pārskaitīta tavā kontā."
+        ]
+      ],
+      "urgentAction": "Pieteikt steidzamu pārdošanu",
+      "faqTitle": "Biežāk uzdotie jautājumi",
+      "faqItems": [
+        [
+          "Kādas ir izmaksas, pārdodot īpašumu ar mums?",
+          "Maksa ir atkarīga no darījuma sarežģītības un visbiežāk sākas no 5%. Slēdzam ekskluzīvu vienošanos un sadarbojamies ar aģentiem visā Latvijā."
+        ],
+        [
+          "Vai es varu pārdot īpašumu pats?",
+          "Protams. Mēs piedāvājam tirgus analīzi, mārketinga stratēģiju, komunikācijas vadību un juridisko formalitāšu atbalstu, lai pārdošanas process būtu drošs un pārskatāms."
+        ],
+        [
+          "Cik ātri var pārdot īpašumu?",
+          "Pēc tirgus analīzes un cenas noteikšanas īpašumu reizēm izdodas pārdot nedēļas laikā. Dārgāki objekti var tikt tirgoti no viena līdz sešiem mēnešiem."
+        ],
+        [
+          "Kas nepieciešams pirms īpašuma pārdošanas?",
+          "Sākumā pietiek ar lēmumu pārdot. Kopā izanalizēsim dokumentus, izpētīsim tirgu un noteiksim īpašuma patieso vērtību."
+        ]
+      ],
+      "podcastTitle": "Vairāk noderīga satura",
+      "podcastLead": "Apskati mūsu YouTube kanālu un Spotify podkāstu par nekustamo īpašumu.",
+      "youtube": "YouTube kanāls",
+      "spotify": "Spotify podkāsts",
+      "reviews": [
+        {
+          "quote": "Sākotnēji mēģināju pārdot īpašumu pats, bet bez panākumiem. Roberts piesaistīja profesionālu fotogrāfu, izveidoja labu sludinājumu un ātri pārdeva īpašumu par vēlamo cenu. Paldies!",
+          "name": "Simra Sia"
+        },
+        {
+          "quote": "Liela pateicība par profesionālo darbu! Roberts bija ļoti atsaucīgs, komunikabls un zinošs. Process noritēja ātri, kvalitatīvi un bez lieka stresa. Noteikti iesaku.",
+          "name": "Aivars Ikaunieks"
+        },
+        {
+          "quote": "Sadarbība ar Robertu bija lieliska. Dokumenti tika sagatavoti ātri, uzņemtas labas fotogrāfijas un pircējs atrasts visīsākajā laikā.",
+          "name": "Lāsma Sarksne"
+        }
+      ],
+      "formConsent": "Piekrītu personas datu apstrādei saskaņā ar privātuma politiku"
+    },
+    "en": {
+      "navFaq": "FAQ",
+      "faqEyebrow": "FAQ",
+      "privacyLabel": "Privacy policy",
+      "googleReviews": "Google reviews",
+      "heroCarouselLabel": "Property image gallery",
+      "previousSlide": "Previous image",
+      "nextSlide": "Next image",
+      "legalEyebrow": "Additional services",
+      "legalLead": "When a transaction is not straightforward, we also help with legal matters, from reviewing documents to registering them in the Land Register.",
+      "photos": "photos",
+      "photo": "Image",
+      "galleryLabel": "Property images",
+      "enquire": "Enquire about this property",
+      "fullListing": "Open full listing",
+      "preciseLocation": "Precise location",
+      "openInMaps": "Open in Google Maps",
+      "allArticles": "All articles",
+      "teamLead": "Experience, a personal approach and care for every detail, from the first conversation to handing over the keys.",
+      "articleTitles": [
+        "The Land Register - the key document in real estate transactions",
+        "How much does farmland cost in Latvia? 2025 price review",
+        "The Saldus real estate market: current prices and opportunities"
+      ],
+      "reviews": [
+        {
+          "quote": "I originally tried selling my property myself, without success. Roberts brought in a professional photographer, created a strong listing and sold the property quickly for the price I wanted. Thank you!",
+          "name": "Simra Sia"
+        },
+        {
+          "quote": "Many thanks for the professional work! Roberts was responsive, communicative and knowledgeable. The process was quick, high-quality and stress-free. I highly recommend him.",
+          "name": "Aivars Ikaunieks"
+        },
+        {
+          "quote": "Working with Roberts was excellent. The paperwork was prepared quickly, great photos were taken, and a buyer was found in no time. A punctual and responsible specialist.",
+          "name": "Lāsma Sarksne"
+        }
+      ],
+      "factLabels": {
+        "Telpu platība": "Indoor area",
+        "Zemes platība": "Land area",
+        "Istabas": "Rooms",
+        "Vannasistabas": "Bathrooms"
+      },
+      "urgentEyebrow": "When time matters",
+      "urgentTitle": "Sell your property in 3 days",
+      "urgentLead": "For urgent sales, we will contact you within one hour and explain the next steps.",
+      "urgentSteps": [
+        [
+          "DAY 01",
+          "Get in touch",
+          "We discuss the property, estimate its quick-sale value, and review the documents."
+        ],
+        [
+          "DAY 02",
+          "Receive an offer",
+          "We assess quick-sale options, make an offer, and arrange a notary appointment."
+        ],
+        [
+          "DAY 03",
+          "Complete the sale",
+          "We meet at the notary and the sale proceeds are transferred to your account."
+        ]
+      ],
+      "urgentAction": "Request an urgent sale",
+      "faqTitle": "Frequently asked questions",
+      "faqItems": [
+        [
+          "What does it cost to sell with you?",
+          "Fees depend on the complexity of the transaction and most often start at 5%. We agree on the terms in advance and work with agents across Latvia."
+        ],
+        [
+          "Can I sell my property myself?",
+          "Of course. We provide market analysis, a marketing strategy, communication support, and help with legal formalities."
+        ],
+        [
+          "How quickly can a property be sold?",
+          "After market analysis and pricing, some properties can sell within a week. Higher-priced properties may take one to six months."
+        ],
+        [
+          "What do I need before selling?",
+          "First, decide that you want to sell. We will review the documents, research the market, and estimate the property’s value."
+        ]
+      ],
+      "podcastTitle": "More useful content",
+      "podcastLead": "Explore our YouTube channel and Spotify podcast about real estate.",
+      "youtube": "YouTube channel",
+      "spotify": "Spotify podcast",
+      "formConsent": "I agree to the processing of my personal data under the privacy policy"
+    },
+    "ru": {
+      "navFaq": "FAQ",
+      "faqEyebrow": "Вопросы",
+      "privacyLabel": "Политика конфиденциальности",
+      "googleReviews": "Отзывы Google",
+      "heroCarouselLabel": "Галерея изображений объектов",
+      "previousSlide": "Предыдущее изображение",
+      "nextSlide": "Следующее изображение",
+      "legalEyebrow": "Дополнительные услуги",
+      "legalLead": "Если сделка непростая, мы помогаем и с юридическими вопросами - от проверки документов до регистрации в Земельной книге.",
+      "photos": "фото",
+      "photo": "Изображение",
+      "galleryLabel": "Изображения объекта",
+      "enquire": "Связаться по объекту",
+      "fullListing": "Открыть объявление",
+      "preciseLocation": "Точное местоположение",
+      "openInMaps": "Открыть в Google Maps",
+      "allArticles": "Все статьи",
+      "teamLead": "Опыт, внимательное отношение и забота о каждой детали - от первого разговора до передачи ключей.",
+      "articleTitles": [
+        "Земельная книга - главный документ в сделках с недвижимостью",
+        "Сколько стоит сельскохозяйственная земля в Латвии? Обзор цен за 2025 год",
+        "Рынок недвижимости в Салдусе: актуальные цены и возможности"
+      ],
+      "reviews": [
+        {
+          "quote": "Сначала я пыталась продать недвижимость самостоятельно, но безуспешно. Роберт пригласил профессионального фотографа, подготовил хорошее объявление и быстро продал недвижимость по желаемой цене. Спасибо!",
+          "name": "Simra Sia"
+        },
+        {
+          "quote": "Большое спасибо за профессиональную работу! Роберт был отзывчивым, общительным и знающим. Все прошло быстро, качественно и без лишнего стресса. Рекомендую!",
+          "name": "Aivars Ikaunieks"
+        },
+        {
+          "quote": "Сотрудничество с Робертом было отличным. Документы подготовили быстро, сделали хорошие фотографии и в кратчайший срок нашли покупателя. Ответственный и пунктуальный специалист.",
+          "name": "Lāsma Sarksne"
+        }
+      ],
+      "factLabels": {
+        "Telpu platība": "Площадь помещений",
+        "Zemes platība": "Площадь земли",
+        "Istabas": "Комнаты",
+        "Vannasistabas": "Ванные комнаты"
+      },
+      "urgentEyebrow": "Когда важно время",
+      "urgentTitle": "Продайте недвижимость за 3 дня",
+      "urgentLead": "При срочной продаже мы свяжемся с вами в течение часа и объясним следующие шаги.",
+      "urgentSteps": [
+        [
+          "ДЕНЬ 01",
+          "Свяжитесь с нами",
+          "Обсудим недвижимость, оценим стоимость быстрой продажи и проверим документы."
+        ],
+        [
+          "ДЕНЬ 02",
+          "Получите предложение",
+          "Изучим варианты быстрой продажи, предложим цену и договоримся о встрече у нотариуса."
+        ],
+        [
+          "ДЕНЬ 03",
+          "Завершите сделку",
+          "Встретимся у нотариуса, после чего деньги поступят на ваш счет."
+        ]
+      ],
+      "urgentAction": "Запросить срочную продажу",
+      "faqTitle": "Часто задаваемые вопросы",
+      "faqItems": [
+        [
+          "Сколько стоит продать недвижимость с вами?",
+          "Стоимость зависит от сложности сделки и чаще всего начинается от 5%. Условия согласовываются заранее, мы работаем с агентами по всей Латвии."
+        ],
+        [
+          "Можно ли продать недвижимость самостоятельно?",
+          "Конечно. Мы предлагаем анализ рынка, маркетинговую стратегию, поддержку в общении и помощь с юридическими формальностями."
+        ],
+        [
+          "Как быстро можно продать недвижимость?",
+          "После анализа рынка и определения цены некоторые объекты продаются за неделю. Более дорогие объекты могут продаваться от одного до шести месяцев."
+        ],
+        [
+          "Что нужно для начала продажи?",
+          "Сначала достаточно принять решение о продаже. Мы проверим документы, изучим рынок и оценим реальную стоимость."
+        ]
+      ],
+      "podcastTitle": "Больше полезных материалов",
+      "podcastLead": "Смотрите наш YouTube-канал и слушайте подкаст Spotify о недвижимости.",
+      "youtube": "Канал YouTube",
+      "spotify": "Подкаст Spotify",
+      "formConsent": "Я согласен на обработку персональных данных согласно политике конфиденциальности"
+    },
+    "de": {
+      "navFaq": "FAQ",
+      "faqEyebrow": "FAQ",
+      "privacyLabel": "Datenschutzerklärung",
+      "googleReviews": "Google-Bewertungen",
+      "heroCarouselLabel": "Bildergalerie der Immobilien",
+      "previousSlide": "Vorheriges Bild",
+      "nextSlide": "Nächstes Bild",
+      "legalEyebrow": "Zusätzliche Leistungen",
+      "legalLead": "Wenn ein Geschäft nicht einfach ist, helfen wir auch bei rechtlichen Fragen - von der Prüfung der Unterlagen bis zur Eintragung ins Grundbuch.",
+      "photos": "Fotos",
+      "photo": "Bild",
+      "galleryLabel": "Bilder der Immobilie",
+      "enquire": "Zur Immobilie anfragen",
+      "fullListing": "Inserat öffnen",
+      "preciseLocation": "Genauer Standort",
+      "openInMaps": "In Google Maps öffnen",
+      "allArticles": "Alle Artikel",
+      "teamLead": "Erfahrung, persönliche Betreuung und Sorgfalt bei jedem Detail - vom ersten Gespräch bis zur Schlüsselübergabe.",
+      "articleTitles": [
+        "Das Grundbuch - das wichtigste Dokument bei Immobiliengeschäften",
+        "Was kostet Ackerland in Lettland? Preisübersicht 2025",
+        "Der Immobilienmarkt in Saldus: aktuelle Preise und Möglichkeiten"
+      ],
+      "reviews": [
+        {
+          "quote": "Zuerst habe ich versucht, meine Immobilie selbst zu verkaufen, leider ohne Erfolg. Roberts engagierte einen professionellen Fotografen, erstellte ein gutes Inserat und verkaufte die Immobilie schnell zum gewünschten Preis. Vielen Dank!",
+          "name": "Simra Sia"
+        },
+        {
+          "quote": "Vielen Dank für die professionelle Arbeit! Roberts war sehr hilfsbereit, kommunikativ und kompetent. Der Ablauf war schnell, hochwertig und stressfrei. Ich empfehle ihn gerne weiter.",
+          "name": "Aivars Ikaunieks"
+        },
+        {
+          "quote": "Die Zusammenarbeit mit Roberts war ausgezeichnet. Die Unterlagen wurden schnell vorbereitet, gute Fotos gemacht und in kürzester Zeit ein Käufer gefunden. Ein pünktlicher und verantwortungsvoller Spezialist.",
+          "name": "Lāsma Sarksne"
+        }
+      ],
+      "factLabels": {
+        "Telpu platība": "Wohnfläche",
+        "Zemes platība": "Grundstücksfläche",
+        "Istabas": "Zimmer",
+        "Vannasistabas": "Badezimmer"
+      },
+      "urgentEyebrow": "Wenn Zeit wichtig ist",
+      "urgentTitle": "Immobilie in 3 Tagen verkaufen",
+      "urgentLead": "Bei einem dringenden Verkauf melden wir uns innerhalb einer Stunde und erklären die nächsten Schritte.",
+      "urgentSteps": [
+        [
+          "TAG 01",
+          "Kontakt aufnehmen",
+          "Wir besprechen die Immobilie, schätzen den schnellen Verkaufspreis und prüfen die Unterlagen."
+        ],
+        [
+          "TAG 02",
+          "Angebot erhalten",
+          "Wir prüfen die Möglichkeiten, unterbreiten ein Angebot und vereinbaren einen Notartermin."
+        ],
+        [
+          "TAG 03",
+          "Verkauf abschließen",
+          "Wir treffen uns beim Notar und der Verkaufserlös wird auf Ihr Konto überwiesen."
+        ]
+      ],
+      "urgentAction": "Dringenden Verkauf anfragen",
+      "faqTitle": "Häufig gestellte Fragen",
+      "faqItems": [
+        [
+          "Was kostet ein Verkauf mit Ihnen?",
+          "Die Kosten hängen von der Komplexität des Geschäfts ab und beginnen meist bei 5%. Die Bedingungen vereinbaren wir im Voraus."
+        ],
+        [
+          "Kann ich meine Immobilie selbst verkaufen?",
+          "Natürlich. Wir bieten Marktanalyse, Marketingstrategie, Kommunikationsunterstützung und Hilfe bei rechtlichen Formalitäten."
+        ],
+        [
+          "Wie schnell kann eine Immobilie verkauft werden?",
+          "Nach Marktanalyse und Preisfestlegung können manche Immobilien innerhalb einer Woche verkauft werden. Hochpreisige Objekte benötigen oft ein bis sechs Monate."
+        ],
+        [
+          "Was brauche ich vor dem Verkauf?",
+          "Zunächst müssen Sie sich für den Verkauf entscheiden. Wir prüfen gemeinsam die Unterlagen, den Markt und den realistischen Wert."
+        ]
+      ],
+      "podcastTitle": "Weitere hilfreiche Inhalte",
+      "podcastLead": "Entdecken Sie unseren YouTube-Kanal und Spotify-Podcast rund um Immobilien.",
+      "youtube": "YouTube-Kanal",
+      "spotify": "Spotify-Podcast",
+      "formConsent": "Ich stimme der Verarbeitung meiner personenbezogenen Daten gemäß der Datenschutzerklärung zu"
+    }
+  }
+}

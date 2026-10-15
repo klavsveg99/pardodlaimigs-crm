@@ -249,19 +249,21 @@ class CrmProperty extends Model
 
     public function getPublicUrlAttribute(): string
     {
-        $base = rtrim((string) config('wp-bridge.wordpress.site_url'), '/');
+        // While the new site is not switched on, the public face of a property
+        // is still its WordPress post, so the CRM keeps linking there.
+        if (! config('site.enabled')) {
+            $base = rtrim((string) config('wp-bridge.wordpress.site_url'), '/');
 
-        // WP saite pēc post ID vienmēr aizved uz īsto ierakstu pat tad,
-        // ja CRM slug novecojis vai nesakrīt ar WP post_name.
-        if (filled($this->wp_post_id)) {
-            // Melnraksts/pārdots/dzēsts → WP neatklāts (draft/private) posts,
-            // kur ?p=ID bezprewiew vietnei 404. preview=true ļauj ielogotam
-            // WP adminam apskatīt ierakstu; publicētam īpašumam paliek
-            // tīra ?p= saite, kas kanoniski pārved uz pretty permalink.
-            $preview = $this->status !== 'published' ? '&post_type=property&preview=true' : '';
+            if (filled($this->wp_post_id)) {
+                $preview = $this->status !== 'published' ? '&post_type=property&preview=true' : '';
 
-            return $base.'/?p='.(int) $this->wp_post_id.$preview;
+                return $base.'/?p='.(int) $this->wp_post_id.$preview;
+            }
+
+            return $base.'/ipasums/'.($this->slug ?: $this->id).'/';
         }
+
+        $base = rtrim((string) config('wp-bridge.public_url'), '/');
 
         return $base.'/ipasums/'.($this->slug ?: $this->id).'/';
     }

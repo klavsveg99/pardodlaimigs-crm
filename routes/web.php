@@ -5,6 +5,8 @@ use App\Http\Controllers\ClientAttachmentEmailController;
 use App\Http\Controllers\PropertyAttachmentEmailController;
 use App\Http\Controllers\PropertyGalleryDownloadController;
 use App\Http\Controllers\PropertyMarketingController;
+use App\Http\Controllers\PublicSiteController;
+use App\Http\Controllers\PublicSiteLeadController;
 use App\Http\Controllers\RecordAttachmentEmailController;
 use App\Http\Controllers\TaskNotificationController;
 use App\Models\CrmProperty;
@@ -377,3 +379,41 @@ Route::post('/tasks/{id}/notify/agent',
 Route::post('/tasks/{id}/notify/izpilditajs',
     [TaskNotificationController::class, 'izpilditajs']
 )->middleware(['auth', 'web'])->name('tasks.notify.izpilditajs');
+
+// Public pardodlaimigs.lv site. Registered only when the site is switched on
+// (config('site.enabled'), i.e. PUBLIC_SITE_ENABLED=1) AND the public host is
+// pointed at this app. Until then pardodlaimigs.lv stays on WordPress and the
+// new site lives on the static preview at /new/, so these routes stay dormant
+// and cannot affect the live domain.
+if (config('site.enabled')) {
+    Route::domain(config('wp-bridge.public_host'))->group(function (): void {
+        Route::get('/', [PublicSiteController::class, 'home'])->name('site.home');
+        Route::get('/sitemap.xml', [PublicSiteController::class, 'sitemap'])->name('site.sitemap');
+
+        Route::get('/properties', [PublicSiteController::class, 'properties'])->name('site.properties');
+        Route::get('/{locale}/properties', [PublicSiteController::class, 'localizedProperties'])
+            ->where('locale', 'en|ru|de')->name('site.properties.locale');
+        Route::get('/blog', [PublicSiteController::class, 'blog'])->name('site.blog');
+        Route::get('/{locale}/blog', [PublicSiteController::class, 'localizedBlog'])
+            ->where('locale', 'en|ru|de')->name('site.blog.locale');
+
+        Route::get('/ipasums/{slug}', [PublicSiteController::class, 'property'])->name('site.property');
+        Route::get('/{locale}/ipasums/{slug}', [PublicSiteController::class, 'localizedProperty'])
+            ->where('locale', 'en|ru|de')->name('site.property.locale');
+        Route::get('/agent/{slug}', [PublicSiteController::class, 'agent'])->name('site.agent');
+        Route::get('/{locale}/agent/{slug}', [PublicSiteController::class, 'localizedAgent'])
+            ->where('locale', 'en|ru|de')->name('site.agent.locale');
+
+        Route::post('/contact/valuation', [PublicSiteLeadController::class, 'store'])
+            ->middleware('throttle:10,1')->name('site.contact.store');
+        Route::post('/{locale}/contact/valuation', [PublicSiteLeadController::class, 'localizedStore'])
+            ->where('locale', 'en|ru|de')->middleware('throttle:10,1')->name('site.contact.store.locale');
+
+        Route::get('/{locale}', [PublicSiteController::class, 'localizedHome'])
+            ->where('locale', 'en|ru|de')->name('site.home.locale');
+        Route::get('/{locale}/{slug}', [PublicSiteController::class, 'localizedPage'])
+            ->where(['locale' => 'en|ru|de', 'slug' => '[A-Za-z0-9-]+'])->name('site.page.locale');
+        Route::get('/{slug}', [PublicSiteController::class, 'page'])
+            ->where('slug', '(?!admin$|api$|up$|cron-schedule$)[A-Za-z0-9-]+')->name('site.page');
+    });
+}

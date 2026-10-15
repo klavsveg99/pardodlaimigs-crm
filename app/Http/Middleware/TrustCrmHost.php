@@ -9,20 +9,24 @@ use Symfony\Component\HttpFoundation\Response;
 class TrustCrmHost
 {
     /**
-     * Only the CRM subdomain may reach this app.
-     * Defends against requests via https://pardodlaimigs.lv/crm/...
+     * Only the CRM subdomain may reach this app. Defends against requests via
+     * https://pardodlaimigs.lv/crm/... The public domain is also accepted, but
+     * only once the public site is switched on (config('site.enabled')) -
+     * otherwise pardodlaimigs.lv keeps redirecting here exactly as before.
      */
     public function handle(Request $request, Closure $next): Response
     {
         $expected = config('wp-bridge.host', 'crm.pardodlaimigs.lv');
+        $public = config('wp-bridge.public_host', 'pardodlaimigs.lv');
         $host = $request->getHost();
+        $publicSiteLive = (bool) config('site.enabled');
 
         // Allow CLI and tests through
         if (app()->runningInConsole() || app()->environment('testing') || $expected === '*') {
             return $next($request);
         }
 
-        if ($host !== $expected) {
+        if ($host !== $expected && ! ($publicSiteLive && $host === $public)) {
             // Allow local development access (serve --host / port forward).
             if (in_array($host, ['localhost', '127.0.0.1'], true)) {
                 return $next($request);

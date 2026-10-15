@@ -31,6 +31,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             // CRM is served straight from the domain root — the main screen
             // is https://crm.pardodlaimigs.lv/ without /admin or /public.
+            // Only pin the panel to the CRM subdomain once the public site is
+            // switched on (it then owns the public domain); while WordPress is
+            // still the public site everything keeps working as before.
+            ->domain((app()->environment('production') && config('site.enabled')) ? config('wp-bridge.host') : null)
             ->path('/')
             ->brandName('Pārdod Laimīgs · CRM')
             ->brandLogo(asset('images/favicon-180x180.jpg'))
