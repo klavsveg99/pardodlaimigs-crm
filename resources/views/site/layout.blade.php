@@ -10,14 +10,16 @@
         <link rel="alternate" hreflang="{{ $code }}" href="{{ $url }}">
     @endforeach
     <link rel="alternate" hreflang="x-default" href="{{ $languageUrls['lv'] ?? $canonical }}">
-    <link rel="icon" type="image/svg+xml" href="{{ asset('site-assets/images/brand/favicon.svg') }}">
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/favicon-32x32.jpg') }}" sizes="32x32">
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/favicon-180x180.jpg') }}" sizes="180x180">
+    <link rel="apple-touch-icon" href="{{ asset('images/favicon-180x180.jpg') }}">
     <meta name="theme-color" content="#285854">
     {{-- Font Awesome, for the quick-contact icon (same version and hash as the
          static preview build). --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
           crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=12">
+    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=13">
     <script defer src="{{ asset('site-assets/site.js') }}?v=6"></script>
 </head>
 <body class="site">
@@ -80,15 +82,9 @@
         </nav>
         <div class="mobile-menu-block">
             <p class="mobile-menu-label">{{ $copy['quickContact'] ?? 'Ātrā saziņa' }}</p>
-            <a class="mobile-menu-contact" href="https://wa.me/37124922942" target="_blank" rel="noreferrer"><span>WhatsApp</span><strong>+371 2492 2942</strong></a>
-            <a class="mobile-menu-contact" href="tel:+37124922942"><span>{{ $copy['call'] ?? 'Zvanīt' }}</span><strong>+371 2492 2942</strong></a>
-        </div>
-        <div class="mobile-menu-foot">
-            <div class="mobile-menu-social">
-                <a href="https://www.youtube.com/@pardodlaimigs" target="_blank" rel="noreferrer">YouTube</a>
-                <a href="https://www.facebook.com/PardodLaimigs/" target="_blank" rel="noreferrer">Facebook</a>
-                <a href="https://instagram.com/pardodlaimigs" target="_blank" rel="noreferrer">Instagram</a>
-                <a href="https://g.page/r/CRZd6XZu2hhmEAE/review" target="_blank" rel="noreferrer">Google</a>
+            <div class="mobile-menu-actions">
+                <a href="https://wa.me/37124922942" target="_blank" rel="noreferrer">WhatsApp</a>
+                <a href="tel:+37124922942">+371 2492 2942</a>
             </div>
         </div>
         <div class="mobile-menu-block mobile-menu-language">
