@@ -30,8 +30,8 @@
                 <div class="property-page-media">
                     <img id="property-detail-image" src="{{ $images->first() }}" alt="{{ $property['title'] }}">
                     @if ($images->count() > 1)
-                        <button class="property-nav property-nav-prev" type="button" data-gallery-step="-1" aria-label="{{ $copy['previousSlide'] ?? '' }}">←</button>
-                        <button class="property-nav property-nav-next" type="button" data-gallery-step="1" aria-label="{{ $copy['nextSlide'] ?? '' }}">→</button>
+                        <button class="property-nav property-nav-prev" type="button" data-gallery-step="-1" aria-label="{{ $copy['previousSlide'] ?? '' }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></button>
+                        <button class="property-nav property-nav-next" type="button" data-gallery-step="1" aria-label="{{ $copy['nextSlide'] ?? '' }}"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
                         <span class="property-gallery-position" id="property-gallery-position">1 / {{ $images->count() }}</span>
                     @endif
                 </div>
@@ -44,7 +44,7 @@
                     <div class="property-detail-place">
                         <p class="property-detail-address">{{ $property['address'] ?? '' }}</p>
                         @if ($hasLocation)
-                            <button class="property-map-toggle" type="button" id="property-map-toggle" aria-expanded="false" data-lat="{{ $property['lat'] }}" data-lng="{{ $property['lng'] }}"><span>{{ $copy['preciseLocation'] ?? '' }}</span><span aria-hidden="true">↗</span></button>
+                            <button class="property-map-toggle" type="button" id="property-map-toggle" aria-expanded="false" data-lat="{{ $property['lat'] }}" data-lng="{{ $property['lng'] }}"><span>{{ $copy['preciseLocation'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
                         @endif
                     </div>
                     @if ($hasLocation)

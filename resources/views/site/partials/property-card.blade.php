@@ -40,7 +40,7 @@
         @endif
         <div class="property-card-bottom">
             <strong class="property-price">{{ $price !== '' ? $price : ($copy['priceFrom'] ?? '') }}</strong>
-            <a class="arrow-button" href="{{ \App\Support\SiteUrls::property($locale, $property['slug']) }}" aria-label="{{ $copy['details'] ?? '' }}">↗</a>
+            <a class="arrow-button" href="{{ \App\Support\SiteUrls::property($locale, $property['slug']) }}" aria-label="{{ $copy['details'] ?? '' }}"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
         </div>
     </div>
 </article>

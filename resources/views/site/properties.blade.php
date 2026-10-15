@@ -36,7 +36,7 @@
                     </select>
                 </label>
                 <label class="search-keyword"><span>{{ $copy['searchPlace'] ?? '' }}</span><input name="query" id="search-query" type="search" autocomplete="off"></label>
-                <button class="button button-dark" type="submit"><span>{{ $copy['searchAction'] ?? '' }}</span><span aria-hidden="true">↗</span></button>
+                <button class="button button-dark" type="submit"><span>{{ $copy['searchAction'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
             </form>
             <div class="results-line">
                 <span id="property-count" data-suffix="{{ $copy['propertyCount'] ?? '' }}">{{ count($properties) }} {{ $copy['propertyCount'] ?? '' }}</span>

@@ -17,10 +17,10 @@
                 <h1>{!! nl2br(e($copy['heroTitle'] ?? '')) !!}</h1>
                 <p class="hero-description">{{ $copy['heroBody'] ?? '' }}</p>
                 <div class="hero-actions">
-                    <a class="button button-light" href="#kontakti"><span>{{ $copy['heroAction'] ?? '' }}</span><span aria-hidden="true">↗</span></a>
-                    <button class="video-link" type="button" id="open-video" aria-haspopup="dialog"><span class="play-icon" aria-hidden="true">▶</span><span>{{ $copy['videoAction'] ?? '' }}</span></button>
+                    <a class="button button-light" href="#kontakti"><span>{{ $copy['heroAction'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                    <button class="video-link" type="button" id="open-video" aria-haspopup="dialog"><span class="play-icon" aria-hidden="true"><i class="fa-solid fa-play"></i></span><span>{{ $copy['videoAction'] ?? '' }}</span></button>
                 </div>
-                <div class="hero-proof"><span class="proof-stars" aria-hidden="true">★★★★★</span><span>{{ $copy['heroNote'] ?? '' }}</span></div>
+                <div class="hero-proof"><span class="proof-stars" aria-hidden="true"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span><span>{{ $copy['heroNote'] ?? '' }}</span></div>
             </div>
             <div class="hero-visual" id="hero-carousel" aria-roledescription="carousel" aria-label="{{ $copy['heroCarouselLabel'] ?? '' }}">
                 <div class="hero-slides">
@@ -44,8 +44,8 @@
                 </div>
                 <div class="hero-image-caption"><span class="caption-label" id="hero-caption-title"></span><span class="caption-location" id="hero-caption-location"></span></div>
                 <div class="hero-controls">
-                    <button class="hero-control" type="button" data-hero-prev aria-label="{{ $copy['previousSlide'] ?? '' }}">←</button>
-                    <button class="hero-control" type="button" data-hero-next aria-label="{{ $copy['nextSlide'] ?? '' }}">→</button>
+                    <button class="hero-control" type="button" data-hero-prev aria-label="{{ $copy['previousSlide'] ?? '' }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></button>
+                    <button class="hero-control" type="button" data-hero-next aria-label="{{ $copy['nextSlide'] ?? '' }}"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
                 </div>
                 <div class="hero-index"><span id="hero-position">01</span><span class="hero-index-line"></span><span id="hero-total"></span></div>
                 <div class="hero-progress" aria-hidden="true"><span id="hero-progress"></span></div>
@@ -76,7 +76,7 @@
                     </select>
                 </label>
                 <label class="search-keyword"><span>{{ $copy['searchPlace'] ?? '' }}</span><input name="query" id="search-query" type="search" autocomplete="off"></label>
-                <button class="button button-dark" type="submit"><span>{{ $copy['searchAction'] ?? '' }}</span><span aria-hidden="true">↗</span></button>
+                <button class="button button-dark" type="submit"><span>{{ $copy['searchAction'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
             </form>
         </div>
     </section>
@@ -89,7 +89,7 @@
                     <h2 id="properties-title">{{ $copy['propertiesTitle'] ?? '' }}</h2>
                     <p class="section-lead">{{ $copy['propertiesLead'] ?? '' }}</p>
                 </div>
-                <a class="text-link desktop-link" href="{{ \App\Support\SiteUrls::path($locale, '/properties/') }}"><span>{{ $copy['viewAll'] ?? '' }}</span><span aria-hidden="true">↗</span></a>
+                <a class="text-link desktop-link" href="{{ \App\Support\SiteUrls::path($locale, '/properties/') }}"><span>{{ $copy['viewAll'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
             </div>
             <div class="results-line">
                 <span id="property-count" data-suffix="{{ $copy['propertyCount'] ?? '' }}">{{ count($properties) }} {{ $copy['propertyCount'] ?? '' }}</span>
@@ -103,7 +103,7 @@
                     @include('site.partials.property-card', ['property' => $property, 'locale' => $locale, 'copy' => $copy])
                 @endforeach
             </div>
-            <div class="section-action"><button class="button button-outline" id="view-all" type="button"><span>{{ $copy['viewAll'] ?? '' }}</span><span aria-hidden="true">↗</span></button></div>
+            <div class="section-action"><button class="button button-outline" id="view-all" type="button"><span>{{ $copy['viewAll'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></div>
         </div>
     </section>
 
@@ -120,7 +120,7 @@
                         <span class="selling-number">{{ $number }}</span>
                         <h3>{{ $copy[$titleKey] ?? '' }}</h3>
                         <p>{{ $copy[$bodyKey] ?? '' }}</p>
-                        <a class="text-link" href="#kontakti"><span>{{ $copy['sellAction'] ?? '' }}</span><span aria-hidden="true">↗</span></a>
+                        <a class="text-link" href="#kontakti"><span>{{ $copy['sellAction'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
                     </article>
                 @endforeach
             </div>
@@ -139,7 +139,7 @@
                     <li class="urgent-step"><span class="urgent-day">{{ $day }}</span><h3>{{ $title }}</h3><p>{{ $description }}</p></li>
                 @endforeach
             </ol>
-            <div class="section-action"><a class="button button-dark" href="#kontakti"><span>{{ $copy['urgentAction'] ?? '' }}</span><span aria-hidden="true">↗</span></a></div>
+            <div class="section-action"><a class="button button-dark" href="#kontakti"><span>{{ $copy['urgentAction'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a></div>
         </div>
     </section>
 
@@ -148,17 +148,17 @@
             <div class="reviews-intro">
                 <p class="eyebrow">{{ $copy['reviewsEyebrow'] ?? '' }}</p>
                 <h2 id="reviews-title">{{ $copy['reviewsTitle'] ?? '' }}</h2>
-                <div class="review-score"><span class="proof-stars" aria-hidden="true">★★★★★</span><strong>5/5</strong><span>{{ $copy['reviewCount'] ?? '' }}</span></div>
-                <a class="text-link link-light" href="https://g.page/r/CRZd6XZu2hhmEAE/review" target="_blank" rel="noreferrer"><span>{{ $copy['googleReviews'] ?? '' }}</span><span aria-hidden="true">↗</span></a>
+                <div class="review-score"><span class="proof-stars" aria-hidden="true"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span><strong>5/5</strong><span>{{ $copy['reviewCount'] ?? '' }}</span></div>
+                <a class="text-link link-light" href="https://g.page/r/CRZd6XZu2hhmEAE/review" target="_blank" rel="noreferrer"><span>{{ $copy['googleReviews'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
             </div>
             <article class="review-card" aria-live="polite">
                 <span class="quote-mark" aria-hidden="true">“</span>
                 <p id="review-quote"></p>
-                <div class="review-author"><strong id="review-name"></strong><span>★★★★★</span></div>
+                <div class="review-author"><strong id="review-name"></strong><span class="review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span></div>
                 <div class="review-controls">
-                    <button id="review-prev" type="button" aria-label="{{ $copy['previousReview'] ?? '' }}">←</button>
+                    <button id="review-prev" type="button" aria-label="{{ $copy['previousReview'] ?? '' }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></button>
                     <span id="review-position"></span>
-                    <button id="review-next" type="button" aria-label="{{ $copy['nextReview'] ?? '' }}">→</button>
+                    <button id="review-next" type="button" aria-label="{{ $copy['nextReview'] ?? '' }}"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
                 </div>
             </article>
             @foreach (($copy['reviews'] ?? []) as $review)
@@ -205,8 +205,8 @@
         <div class="container podcast-layout">
             <div><p class="eyebrow">{{ $copy['podcastTitle'] ?? '' }}</p><p>{{ $copy['podcastLead'] ?? '' }}</p></div>
             <div class="podcast-links">
-                <a href="https://www.youtube.com/@pardodlaimigs" target="_blank" rel="noreferrer"><span>{{ $copy['youtube'] ?? '' }}</span><span aria-hidden="true">↗</span></a>
-                <a href="https://open.spotify.com/show/5Tansq4D8byHA7ciR9DA2n" target="_blank" rel="noreferrer"><span>{{ $copy['spotify'] ?? '' }}</span><span aria-hidden="true">↗</span></a>
+                <a href="https://www.youtube.com/@pardodlaimigs" target="_blank" rel="noreferrer"><span>{{ $copy['youtube'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                <a href="https://open.spotify.com/show/5Tansq4D8byHA7ciR9DA2n" target="_blank" rel="noreferrer"><span>{{ $copy['spotify'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
     </section>

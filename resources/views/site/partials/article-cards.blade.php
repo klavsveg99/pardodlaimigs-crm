@@ -16,7 +16,7 @@
             <div class="article-copy">
                 <span class="article-date">{{ \Illuminate\Support\Carbon::parse($post['date'])->format('d.m.Y') }}</span>
                 <h3>{{ $copy['articleTitles'][$offset + $index] ?? $post['title'] }}</h3>
-                <span class="article-link">{{ $copy['readArticle'] ?? '' }}<span aria-hidden="true">↗</span></span>
+                <span class="article-link">{{ $copy['readArticle'] ?? '' }}<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
             </div>
         </a>
     </article>

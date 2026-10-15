@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
           crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=13">
+    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=14">
     <script defer src="{{ asset('site-assets/site.js') }}?v=6"></script>
 </head>
 <body class="site">
@@ -50,7 +50,7 @@
                             <a href="{{ $languageUrls[$code] ?? '#' }}">
                                 <img class="language-flag" src="{{ asset('site-assets/images/flags/'.$flags[$code]) }}" alt="" width="18" height="12">
                                 <span>{{ $name }}</span>
-                                <span class="language-check" aria-hidden="true">✓</span>
+                                <span class="language-check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
                             </a>
                         </li>
                     @endforeach
@@ -77,7 +77,7 @@
                 ['#kontakti', $copy['navContact'] ?? ''],
                 ['#buj', $copy['navFaq'] ?? ''],
             ] as $index => [$href, $label])
-                <a href="{{ $href }}"><span class="mobile-menu-index">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</span><span class="mobile-menu-label-text">{{ $label }}</span><span class="mobile-menu-arrow" aria-hidden="true">↗</span></a>
+                <a href="{{ $href }}"><span class="mobile-menu-index">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</span><span class="mobile-menu-label-text">{{ $label }}</span><span class="mobile-menu-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span></a>
             @endforeach
         </nav>
         <div class="mobile-menu-block">
@@ -92,7 +92,7 @@
             <div class="mobile-menu-langs" role="group" aria-label="{{ $copy['languageLabel'] ?? 'Valoda' }}">
                 @foreach ($languages as $code => $name)
                     <a class="mobile-menu-lang{{ $code === $locale ? ' is-active' : '' }}" href="{{ $languageUrls[$code] ?? '#' }}" aria-current="{{ $code === $locale ? 'true' : 'false' }}">
-                        <img src="{{ asset('site-assets/images/flags/'.$flags[$code]) }}" alt="" width="18" height="12">{{ $name }}<span class="language-check" aria-hidden="true">✓</span>
+                        <img src="{{ asset('site-assets/images/flags/'.$flags[$code]) }}" alt="" width="18" height="12">{{ $name }}<span class="language-check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
                     </a>
                 @endforeach
             </div>
@@ -149,20 +149,20 @@
 @endif
 
 <dialog class="video-dialog" id="video-dialog" aria-label="{{ $copy['videoAction'] ?? '' }}">
-    <button class="dialog-close" type="button" data-close-dialog aria-label="{{ $copy['close'] ?? 'Aizvērt' }}">×</button>
+    <button class="dialog-close" type="button" data-close-dialog aria-label="{{ $copy['close'] ?? 'Aizvērt' }}"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     <video id="intro-video" controls preload="none" playsinline width="1600" height="900" poster="{{ asset('site-media/pardod-laimigs-intro-poster.jpg') }}">
         <source src="{{ asset('site-media/pardod-laimigs-intro.mp4') }}" type="video/mp4">
     </video>
 </dialog>
 
 <dialog class="property-dialog" id="property-dialog" aria-labelledby="property-dialog-title">
-    <button class="dialog-close" type="button" data-close-dialog aria-label="{{ $copy['close'] ?? 'Aizvērt' }}">×</button>
+    <button class="dialog-close" type="button" data-close-dialog aria-label="{{ $copy['close'] ?? 'Aizvērt' }}"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     <div id="property-dialog-content"></div>
 </dialog>
 
 @if (! empty($showCookieBanner))
 <dialog class="cookie-dialog" id="cookie-dialog" aria-labelledby="cookie-dialog-title">
-    <button class="dialog-close" type="button" data-close-dialog aria-label="{{ $copy['close'] ?? 'Aizvērt' }}">×</button>
+    <button class="dialog-close" type="button" data-close-dialog aria-label="{{ $copy['close'] ?? 'Aizvērt' }}"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     <h2 id="cookie-dialog-title">{{ $copy['cookiesTitle'] ?? '' }}</h2>
     <p>{{ $copy['cookiesText'] ?? '' }}</p>
     <label class="cookie-option"><span>{{ $copy['cookieNecessary'] ?? '' }}</span><input type="checkbox" checked disabled></label>

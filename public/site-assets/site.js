@@ -271,8 +271,8 @@
               <div class="property-detail-media">
                 <img id="property-detail-image" src="${images[0]}" alt="${property.title}">
                 ${images.length > 1 ? `
-                  <button class="property-nav property-nav-prev" type="button" data-gallery-step="-1" aria-label="Previous">←</button>
-                  <button class="property-nav property-nav-next" type="button" data-gallery-step="1" aria-label="Next">→</button>
+                  <button class="property-nav property-nav-prev" type="button" data-gallery-step="-1" aria-label="Previous"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></button>
+                  <button class="property-nav property-nav-next" type="button" data-gallery-step="1" aria-label="Next"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
                   <span class="property-gallery-position" id="property-gallery-position">1 / ${images.length}</span>
                   <div class="property-detail-thumbs" role="group">
                     ${images.map((image, index) => `<button type="button" class="property-thumb${index === 0 ? ' is-active' : ''}" data-gallery-index="${index}"><img src="${image}" alt="" loading="lazy"></button>`).join('')}
@@ -283,7 +283,7 @@
                 <h2 id="property-dialog-title">${property.title}</h2>
                 <div class="property-detail-place">
                   <p class="property-detail-address">${property.address || ''}</p>
-                  ${hasLocation ? `<button class="property-map-toggle" type="button" id="property-map-toggle" aria-expanded="false"><span>${property.map_label || ''}</span><span aria-hidden="true">↗</span></button>` : ''}
+                  ${hasLocation ? `<button class="property-map-toggle" type="button" id="property-map-toggle" aria-expanded="false"><span>${property.map_label || ''}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>` : ''}
                 </div>
                 ${hasLocation ? '<div class="property-map" id="property-map" hidden></div>' : ''}
                 <p class="property-detail-price">${property.price || ''}</p>

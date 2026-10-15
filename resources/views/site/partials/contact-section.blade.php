@@ -76,7 +76,7 @@
             {{-- reCAPTCHA v3: site.js puts the token here just before it submits. --}}
             <input type="hidden" name="recaptcha_token" value="">
             <div class="form-submit-row">
-                <button class="button button-dark" type="submit"><span>{{ $copy['formSubmit'] ?? '' }}</span><span aria-hidden="true">↗</span></button>
+                <button class="button button-dark" type="submit"><span>{{ $copy['formSubmit'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
             </div>
             <script type="application/json" id="phone-prefixes">@json($prefixes)</script>
             @if ($siteKey && ($copy['recaptchaNote'] ?? null))
