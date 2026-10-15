@@ -161,12 +161,16 @@ class ClientResource extends Resource
                     ]),
                     // Līda turpmākā saziņa: abi lauki parādās tikai līdam
                     // (statuss maina redzamību uzreiz), katrs savā rindā.
+                    // Datums līdam ir obligāts — bez tā līds neparādītos
+                    // atgādinājumos. Slēptam laukam Filament noteikumu
+                    // nepārbauda, tāpēc prasība attiecas tikai uz līdu.
                     Forms\Components\DatePicker::make('follow_up_at')
                         ->label('Nākamās saziņas datums')
                         ->native(false)
                         ->displayFormat('d.m.Y')
                         ->columnSpanFull()
-                        ->visible(fn (Get $get): bool => $get('status') === 'lead'),
+                        ->visible(fn (Get $get): bool => $get('status') === 'lead')
+                        ->required(fn (Get $get): bool => $get('status') === 'lead'),
                     Forms\Components\Textarea::make('follow_up_note')
                         ->label('Nākamās saziņas piezīme')
                         ->rows(3)
