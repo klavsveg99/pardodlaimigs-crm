@@ -19,8 +19,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
           crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=21">
-    <script defer src="{{ asset('site-assets/site.js') }}?v=7"></script>
+    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=23">
+    <script defer src="{{ asset('site-assets/site.js') }}?v=8"></script>
 </head>
 <body class="site">
 <header class="site-header">
@@ -156,9 +156,13 @@
             <p class="agent-role">{{ $copy['agent'] ?? '' }}</p>
             <h2 id="agent-dialog-name"></h2>
             <p class="agent-dialog-bio" id="agent-dialog-bio"></p>
-            <div class="agent-dialog-actions">
+            <div class="agent-dialog-contacts">
                 <a class="agent-dialog-phone" id="agent-dialog-phone" href=""><i class="fa-solid fa-phone" aria-hidden="true"></i><span></span></a>
-                <a class="agent-dialog-page" id="agent-dialog-page" href=""><span></span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+            </div>
+            <div class="agent-dialog-listings" id="agent-dialog-listings" data-count-suffix="{{ $copy['propertyCount'] ?? '' }}" hidden>
+                <p class="agent-dialog-label"><span>{{ $copy['navProperties'] ?? '' }}</span><span id="agent-dialog-count"></span></p>
+                <div class="agent-properties" id="agent-dialog-properties"></div>
+                <a class="text-link" id="agent-dialog-more" href="" hidden><span>{{ $copy['viewMoreProperties'] ?? 'Skatīt visus īpašumus' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
     </div>

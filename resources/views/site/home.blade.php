@@ -232,6 +232,13 @@
                         'portrait' => (bool) ($agent['portrait'] ?? false),
                         'photo' => $agent['avatar_url'] ?? '',
                         'url' => \App\Support\SiteUrls::agent($locale, $agent['slug']),
+                        'propertyCount' => $agent['property_count'] ?? 0,
+                        'properties' => collect($agent['properties'] ?? [])->map(static fn (array $property): array => [
+                            'title' => $property['title'],
+                            'price' => $property['price'],
+                            'image' => $property['image'],
+                            'url' => \App\Support\SiteUrls::property($locale, $property['slug']),
+                        ])->all(),
                     ];
                 @endphp
                 <script type="application/json" data-agent-data>@json($agentPayload)</script>

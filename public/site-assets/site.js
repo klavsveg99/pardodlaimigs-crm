@@ -651,11 +651,37 @@
     }
 
     /* ── Team: the agent's short description ───────────────────────────── */
+    /** A few of the agent's listings; the button opens their page for the rest. */
+    function renderAgentListings(agent) {
+        const block = $('#agent-dialog-listings');
+        const list = $('#agent-dialog-properties');
+        const more = $('#agent-dialog-more');
+        if (!block || !list || !more) return;
+
+        const properties = agent.properties || [];
+        block.hidden = properties.length === 0;
+        if (properties.length === 0) return;
+
+        list.innerHTML = properties.map((property) => `
+            <a class="agent-property" href="${property.url}">
+              <img src="${property.image}" alt="" loading="lazy">
+              <span class="agent-property-copy"><strong>${property.title}</strong><span>${property.price}</span></span>
+              <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </a>`).join('');
+
+        const count = $('#agent-dialog-count');
+        if (count) count.textContent = `${agent.propertyCount} ${block.dataset.countSuffix || ''}`.trim();
+
+        more.href = agent.url;
+        more.hidden = !(agent.propertyCount > properties.length);
+    }
+
     function setupAgentDialog() {
         const dialog = $('#agent-dialog');
         if (!dialog) return;
 
         const data = $$('[data-agent-data]').map((node) => JSON.parse(node.textContent));
+
 
         const open = (slug) => {
             const agent = data.find((item) => item.slug === slug);
@@ -672,10 +698,7 @@
             phone.querySelector('span').textContent = agent.phone;
             phone.hidden = !agent.phone;
 
-            const page = $('#agent-dialog-page');
-            page.href = agent.url;
-            page.querySelector('span').textContent = agent.name;
-            page.hidden = !agent.url;
+            renderAgentListings(agent);
 
             dialog.showModal();
         };

@@ -320,8 +320,21 @@ class PublicSiteController extends Controller
             ['slug' => 'inga-dobuma', 'name' => 'Inga Dobuma', 'phone' => '+371 2822 8208', 'position' => 'Nekustamo īpašumu aģente', 'portrait' => true, 'avatar_url' => asset('site-assets/images/team/inga.jpg')],
         ];
 
+        $properties = $this->propertyList();
+
         foreach ($preview as $index => $agent) {
+            $mine = collect($properties)->filter(
+                static fn (array $property): bool => ($property['agent'] ?? '') === $agent['name']
+            );
+
             $preview[$index]['description'] = $this->content->agentBio($locale, $agent['slug']);
+            $preview[$index]['property_count'] = $mine->count();
+            $preview[$index]['properties'] = $mine->take(3)->map(static fn (array $property): array => [
+                'slug' => $property['slug'],
+                'title' => $property['title'],
+                'price' => $property['price'] ?? '',
+                'image' => $property['image'] ?? ($property['image_local'] ?? ''),
+            ])->values()->all();
         }
 
         if (config('site.preview_snapshot')) {

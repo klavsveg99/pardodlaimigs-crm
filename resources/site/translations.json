@@ -95,7 +95,8 @@
       "saveChoices": "Saglabāt izvēli",
       "close": "Aizvērt",
       "noResults": "Šiem kritērijiem īpašumi nav atrasti.",
-      "priceFrom": "Cena pēc pieprasījuma"
+      "priceFrom": "Cena pēc pieprasījuma",
+      "viewMoreProperties": "Skatīt visus īpašumus"
     },
     "en": {
       "name": "English",
@@ -191,7 +192,8 @@
       "saveChoices": "Save choices",
       "close": "Close",
       "noResults": "No properties match these filters.",
-      "priceFrom": "Price on request"
+      "priceFrom": "Price on request",
+      "viewMoreProperties": "View all properties"
     },
     "ru": {
       "name": "Русский",
@@ -287,7 +289,8 @@
       "saveChoices": "Сохранить выбор",
       "close": "Закрыть",
       "noResults": "По этим критериям объекты не найдены.",
-      "priceFrom": "Цена по запросу"
+      "priceFrom": "Цена по запросу",
+      "viewMoreProperties": "Показать все объекты"
     },
     "de": {
       "name": "Deutsch",
@@ -383,7 +386,8 @@
       "saveChoices": "Auswahl speichern",
       "close": "Schließen",
       "noResults": "Keine Immobilien für diese Kriterien gefunden.",
-      "priceFrom": "Preis auf Anfrage"
+      "priceFrom": "Preis auf Anfrage",
+      "viewMoreProperties": "Alle Objekte anzeigen"
     }
   },
   "translatedCategories": {
@@ -504,7 +508,8 @@
       "recaptchaNote": "Šo vietni aizsargā reCAPTCHA. Uz to attiecas Google [privacy] un [terms].",
       "loadMore": "Rādīt vairāk rakstu",
       "loadMoreFailed": "Neizdevās ielādēt vairāk rakstu. Lūdzu, mēģiniet vēlreiz.",
-      "blogTitle": "Bloga raksti"
+      "blogTitle": "Bloga raksti",
+      "viewMoreProperties": "Skatīt visus īpašumus"
     },
     "en": {
       "navFaq": "FAQ",
@@ -603,7 +608,8 @@
       "recaptchaNote": "This site is protected by reCAPTCHA and the Google [privacy] and [terms] apply.",
       "loadMore": "Show more articles",
       "loadMoreFailed": "Could not load more articles. Please try again.",
-      "blogTitle": "Blog articles"
+      "blogTitle": "Blog articles",
+      "viewMoreProperties": "View all properties"
     },
     "ru": {
       "navFaq": "FAQ",
@@ -702,7 +708,8 @@
       "recaptchaNote": "Этот сайт защищён reCAPTCHA. Применяются [privacy] и [terms] Google.",
       "loadMore": "Показать больше статей",
       "loadMoreFailed": "Не удалось загрузить статьи. Попробуйте ещё раз.",
-      "blogTitle": "Статьи в блогах"
+      "blogTitle": "Статьи в блогах",
+      "viewMoreProperties": "Показать все объекты"
     },
     "de": {
       "navFaq": "FAQ",
@@ -801,7 +808,8 @@
       "recaptchaNote": "Diese Website ist durch reCAPTCHA geschützt. Es gelten die [privacy] und die [terms] von Google.",
       "loadMore": "Mehr Artikel anzeigen",
       "loadMoreFailed": "Weitere Artikel konnten nicht geladen werden. Bitte erneut versuchen.",
-      "blogTitle": "Blog-Artikel"
+      "blogTitle": "Blog-Artikel",
+      "viewMoreProperties": "Alle Objekte anzeigen"
     }
   }
 }

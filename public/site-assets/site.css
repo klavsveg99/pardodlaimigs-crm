@@ -689,15 +689,31 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
 .property-page .property-detail-copy { overflow: visible; }
 
 /* Tapping a team member opens their short description, as the old site did. */
-.agent-dialog { width: 780px; max-width: min(780px, calc(100% - 32px)); overflow: hidden; }
+.agent-dialog { width: 780px; max-width: min(780px, calc(100% - 32px)); overflow-y: auto; }
 .agent-dialog-body { display: grid; grid-template-columns: 300px 1fr; }
-.agent-dialog-body > img { width: 100%; height: 100%; min-height: 330px; object-fit: cover; object-position: center 25%; }
+/* The photo follows the copy column's height, but stops growing when an
+   agent has a long list of properties under it. */
+.agent-dialog-body > img { width: 100%; height: 100%; min-height: 330px; max-height: 560px; object-fit: cover; object-position: center 25%; }
 .agent-dialog.is-portrait .agent-dialog-body > img { object-position: center 37%; }
-.agent-dialog-copy { padding: 36px 36px 34px; }
+.agent-dialog-copy { padding: 34px 34px 32px; }
 .agent-dialog-copy h2 { margin: 0 0 14px; font-size: 26px; letter-spacing: -.04em; }
-.agent-dialog-bio { margin: 0 0 22px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+.agent-dialog-bio { margin: 0 0 18px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+.agent-dialog-contacts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; margin-bottom: 24px; }
 .agent-dialog-phone { display: inline-flex; align-items: center; gap: 10px; color: var(--brand); font-size: 12px; font-weight: 700; }
 .agent-dialog-phone i { font-size: 12px; }
+.agent-dialog-listings { padding-top: 20px; border-top: 1px solid var(--line); }
+.agent-dialog-label { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 12px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.agent-dialog-label span:last-child { color: var(--accent); letter-spacing: 0; }
+.agent-properties { display: grid; gap: 8px; }
+.agent-property { display: grid; grid-template-columns: 66px 1fr auto; align-items: center; gap: 12px; padding: 8px; background: var(--paper); transition: background .18s ease; }
+.agent-property:hover { background: var(--brand-light); }
+.agent-property img { width: 66px; height: 48px; object-fit: cover; }
+.agent-property-copy { display: grid; gap: 3px; min-width: 0; }
+.agent-property-copy strong { font-size: 12px; font-weight: 700; line-height: 1.35; }
+.agent-property-copy span { color: var(--brand); font-size: 11px; font-weight: 700; }
+.agent-property i { color: var(--brand); font-size: 11px; }
+.agent-dialog-listings .text-link { margin-top: 14px; font-size: 11px; }
+.agent-dialog-listings .text-link[hidden] { display: none; }
 
 /* The agent dialog is styled after the breakpoints above, so its narrow-screen
    rules live here: the photo stacks above the copy and keeps a sane height. */
@@ -710,11 +726,10 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
 }
 
 /* ── Faint background texture ──────────────────────────────────────────
-   A hairline hatch at 5% in the brand green, tiled across the paper-coloured
-   surfaces. It is hidden by the cards and by the coloured bands, so it only
-   gives the light sections a little depth. */
+   A hairline hatch in the brand green, kept very light and only on a few
+   well-separated sections (the cards and the coloured bands hide it
+   elsewhere). Raising the tile size or the opacity quickly makes it noisy. */
 :root {
-  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cg fill='none' stroke='%23285854' stroke-width='1' opacity='0.05'%3E%3Cpath d='M0 28 L28 0 M-14 14 L14 -14 M14 42 L42 14'/%3E%3C/g%3E%3C/svg%3E");
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cg fill='none' stroke='%23285854' stroke-width='1' opacity='0.03'%3E%3Cpath d='M0 44 L44 0 M-22 22 L22 -22 M22 66 L66 22'/%3E%3C/g%3E%3C/svg%3E");
 }
-body { background-image: var(--pattern); }
-.selling-section, .urgent-section, .team-section, .faq-section { background-image: var(--pattern); }
+.properties-section, .team-section, .faq-section { background-image: var(--pattern); }
