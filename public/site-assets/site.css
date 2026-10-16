@@ -646,7 +646,12 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
 .content-page h1, .post-page h1 { margin: 0 0 12px; font-size: clamp(26px, 3.2vw, 40px); line-height: 1.15; letter-spacing: -.045em; }
 .post-date { margin: 0 0 26px; color: var(--accent); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
 .post-cover { width: 100%; max-height: 420px; object-fit: cover; margin-bottom: 30px; }
-.post-body { color: #3c4744; font-size: 15px; line-height: 1.8; }
+/* Migrated WordPress text can hold a long unbreakable token (a bare URL used
+   as link text, for instance), which used to push the page sideways on a
+   narrow phone. */
+.post-body { color: #3c4744; font-size: 15px; line-height: 1.8; overflow-wrap: break-word; }
+.post-body iframe, .post-body video, .post-body table { max-width: 100%; }
+.property-detail-text, .agent-description { overflow-wrap: break-word; }
 .post-body h2 { margin: 34px 0 12px; font-size: 22px; letter-spacing: -.02em; }
 .post-body h3 { margin: 26px 0 10px; font-size: 18px; }
 .post-body p { margin: 0 0 16px; }
