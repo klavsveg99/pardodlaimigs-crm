@@ -46,7 +46,7 @@ img { display: block; max-width: 100%; }
 .language-picker:hover { border-color: rgb(255 255 255 / 58%); background: rgb(255 255 255 / 10%); }
 .language-picker:focus-visible { outline: 2px solid #c08e50; outline-offset: 3px; }
 .language-picker[aria-expanded="true"] { border-color: rgb(255 255 255 / 58%); background: rgb(255 255 255 / 12%); }
-.language-flag { flex: 0 0 18px; width: 18px; height: 12px; }
+.language-flag { flex: 0 0 18px; width: 18px; height: 12px; object-fit: cover; }
 .language-name { font-size: 11px; font-weight: 600; letter-spacing: .01em; white-space: nowrap; }
 .language-caret { width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translate(-1px, -1px); transition: transform .2s ease; }
 .language-picker[aria-expanded="true"] .language-caret { transform: rotate(-135deg) translate(-1px, -1px); }
@@ -247,12 +247,15 @@ h1, h2, h3 { font-family: var(--serif); }
 .team-heading .section-lead { max-width: 385px; }
 .team-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
 .agent-card { min-width: 0; background: #fff; }
-.agent-card > img { width: 100%; height: 265px; object-fit: cover; object-position: center 25%; }
+.agent-photo { display: block; width: 100%; border: 0; padding: 0; cursor: pointer; background: #fff; }
+.agent-photo img { width: 100%; height: 265px; object-fit: cover; object-position: center 25%; }
 /* Inga's photo is a 2:3 portrait, so the default 25% crop leaves a lot of
    building above her and pushes her face low. 37% centres her face with the
    shoulders below, the same balance Roberts' square photo gets. */
-.agent-card--portrait > img { object-position: center 37%; }
+.agent-card--portrait .agent-photo img { object-position: center 37%; }
 .agent-card > div { padding: 15px 17px 18px; }
+.agent-name { border: 0; padding: 0; cursor: pointer; color: inherit; background: none; font: inherit; letter-spacing: inherit; text-align: left; }
+.agent-name:hover, .agent-photo:hover + div .agent-name { color: var(--brand); }
 .agent-role { margin: 0 0 7px; color: var(--accent); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
 .agent-card h3 { margin: 0 0 6px; font-size: 18px; letter-spacing: -.025em; }
 .agent-card a { color: var(--muted); font-size: 11px; }
@@ -418,7 +421,7 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .property-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .team-layout { grid-template-columns: 1fr; gap: 28px; }
   .team-heading .section-lead { max-width: 600px; }
-  .agent-card > img { height: 310px; }
+  .agent-photo img { height: 310px; }
   .legal-layout { grid-template-columns: 1fr; }
 }
 
@@ -468,7 +471,7 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .mobile-menu-label { margin: 0 0 11px; color: rgb(255 255 255 / 55%); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
   .mobile-menu-langs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .mobile-menu-lang { display: inline-flex; align-items: center; gap: 9px; min-height: 42px; padding: 0 12px; border: 1px solid rgb(255 255 255 / 26%); cursor: pointer; color: #fff; background: transparent; font-size: 12px; font-weight: 600; text-align: left; transition: background .18s ease, border-color .18s ease; }
-  .mobile-menu-lang img { flex: 0 0 18px; width: 18px; height: 12px; }
+  .mobile-menu-lang img { flex: 0 0 18px; width: 18px; height: 12px; object-fit: cover; }
   .mobile-menu-lang:hover { border-color: rgb(255 255 255 / 55%); background: rgb(255 255 255 / 8%); }
   .mobile-menu-lang.is-active { border-color: #fff; background: #fff; color: var(--brand-dark); }
   .mobile-menu-lang .language-check { margin-left: auto; color: inherit; font-size: 12px; opacity: 0; }
@@ -539,7 +542,7 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .article-date, .article-link { font-size: 9px; }
   .team-section { padding: 63px 0; }
   .team-grid { gap: 12px; }
-  .agent-card > img { height: 190px; }
+  .agent-photo img { height: 190px; }
   .agent-card > div { padding: 12px; }
   .agent-card h3 { font-size: 15px; }
   .agent-role { font-size: 8px; }
@@ -580,6 +583,11 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .cookie-settings { flex: 1; }
   .property-dialog { overflow-y: auto; }
   .video-dialog { max-width: calc(100% - 20px); }
+  .agent-dialog { overflow-y: auto; }
+  .agent-dialog-body { grid-template-columns: 1fr; }
+  .agent-dialog-body > img { height: 230px; min-height: 0; }
+  .agent-dialog-copy { padding: 22px 20px 26px; }
+  .agent-dialog-copy h2 { font-size: 22px; }
   .property-detail { grid-template-columns: 1fr; max-height: none; }
   .property-detail-media > img { min-height: 0; height: 245px; }
   .property-detail-thumbs { position: static; right: auto; bottom: auto; left: auto; margin: 0; background: none; }
@@ -617,7 +625,7 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .property-card h3 { font-size: 12px; }
   .property-price { font-size: 13px; }
   .article-card { grid-template-columns: 34% 1fr; }
-  .agent-card > img { height: 160px; }
+  .agent-photo img { height: 160px; }
 }
 
 /* ── Detail pages: property, blog post, content page, agent, listings ── */
@@ -681,3 +689,14 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
    may clip it or scroll inside a column. */
 .property-page .property-detail { max-height: none; }
 .property-page .property-detail-copy { overflow: visible; }
+
+/* Tapping a team member opens their short description, as the old site did. */
+.agent-dialog { width: 780px; max-width: min(780px, calc(100% - 32px)); overflow: hidden; }
+.agent-dialog-body { display: grid; grid-template-columns: 300px 1fr; }
+.agent-dialog-body > img { width: 100%; height: 100%; min-height: 330px; object-fit: cover; object-position: center 25%; }
+.agent-dialog.is-portrait .agent-dialog-body > img { object-position: center 37%; }
+.agent-dialog-copy { padding: 36px 36px 34px; }
+.agent-dialog-copy h2 { margin: 0 0 14px; font-size: 26px; letter-spacing: -.04em; }
+.agent-dialog-bio { margin: 0 0 22px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+.agent-dialog-phone { display: inline-flex; align-items: center; gap: 10px; color: var(--brand); font-size: 12px; font-weight: 700; }
+.agent-dialog-phone i { font-size: 12px; }

@@ -19,8 +19,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
           crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=16">
-    <script defer src="{{ asset('site-assets/site.js') }}?v=6"></script>
+    <link rel="stylesheet" href="{{ asset('site-assets/site.css') }}?v=18">
+    <script defer src="{{ asset('site-assets/site.js') }}?v=7"></script>
 </head>
 <body class="site">
 <header class="site-header">
@@ -147,6 +147,22 @@
     </div>
 </div>
 @endif
+
+<dialog class="agent-dialog" id="agent-dialog" aria-labelledby="agent-dialog-name">
+    <button class="dialog-close" type="button" data-close-dialog aria-label="{{ $copy['close'] ?? 'Aizvērt' }}"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    <div class="agent-dialog-body">
+        <img id="agent-dialog-photo" src="" alt="">
+        <div class="agent-dialog-copy">
+            <p class="agent-role">{{ $copy['agent'] ?? '' }}</p>
+            <h2 id="agent-dialog-name"></h2>
+            <p class="agent-dialog-bio" id="agent-dialog-bio"></p>
+            <div class="agent-dialog-actions">
+                <a class="agent-dialog-phone" id="agent-dialog-phone" href=""><i class="fa-solid fa-phone" aria-hidden="true"></i><span></span></a>
+                <a class="agent-dialog-page" id="agent-dialog-page" href=""><span></span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+            </div>
+        </div>
+    </div>
+</dialog>
 
 <dialog class="video-dialog" id="video-dialog" aria-label="{{ $copy['videoAction'] ?? '' }}">
     <button class="dialog-close" type="button" data-close-dialog aria-label="{{ $copy['close'] ?? 'Aizvērt' }}"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>

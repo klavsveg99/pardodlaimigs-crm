@@ -22,6 +22,17 @@ class SiteContent
     }
 
     /**
+     * The team's short descriptions migrated from the old site (per language),
+     * keyed by slug. A description filled in the CRM wins over these.
+     */
+    public function agentBio(string $locale, string $slug): string
+    {
+        $bios = $this->readJson(resource_path('site/agents.json'));
+
+        return (string) ($bios[$this->locale($locale)][$slug] ?? $bios['lv'][$slug] ?? '');
+    }
+
+    /**
      * The old site's "Noderīga informācija" block: a heading and four items of
      * advice, kept as HTML (resources/site/useful.json).
      */

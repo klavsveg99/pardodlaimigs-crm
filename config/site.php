@@ -66,10 +66,10 @@ return [
     ],
 
     'language_flags' => [
-        'lv' => 'lv.png',
-        'en' => 'en_GB.png',
-        'ru' => 'ru_RU.png',
-        'de' => 'de_DE.png',
+        'lv' => 'lv.svg',
+        'en' => 'en.svg',
+        'ru' => 'ru.svg',
+        'de' => 'de.svg',
     ],
 
     'property_categories' => [

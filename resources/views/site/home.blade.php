@@ -120,7 +120,7 @@
                         <span class="selling-number">{{ $number }}</span>
                         <h3>{{ $copy[$titleKey] ?? '' }}</h3>
                         <p>{{ $copy[$bodyKey] ?? '' }}</p>
-                        <a class="text-link" href="#kontakti"><span>{{ $copy['sellAction'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                        <a class="text-link" href="#kontakti" data-preselect="{{ $titleKey }}"><span>{{ $copy['sellAction'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
                     </article>
                 @endforeach
             </div>
@@ -218,13 +218,33 @@
                 <h2 id="team-title">{{ $copy['teamTitle'] ?? '' }}</h2>
                 <p class="section-lead">{{ $copy['teamLead'] ?? '' }}</p>
             </div>
+            {{-- Tapping a photo or name opens the description, the way the old
+                 site did. The payload is built in a plain PHP block first,
+                 because the json directive cannot parse an array that contains
+                 nested parentheses. --}}
+            @foreach ($agents as $agent)
+                @php
+                    $agentPayload = [
+                        'slug' => $agent['slug'],
+                        'name' => $agent['name'],
+                        'phone' => $agent['phone'] ?? '',
+                        'description' => $agent['description'] ?? '',
+                        'portrait' => (bool) ($agent['portrait'] ?? false),
+                        'photo' => $agent['avatar_url'] ?? '',
+                        'url' => \App\Support\SiteUrls::agent($locale, $agent['slug']),
+                    ];
+                @endphp
+                <script type="application/json" data-agent-data>@json($agentPayload)</script>
+            @endforeach
             <div class="team-grid">
                 @foreach ($agents as $agent)
-                    <article class="agent-card{{ ($agent['portrait'] ?? false) ? ' agent-card--portrait' : '' }}">
-                        @if (! empty($agent['avatar_url']))<img src="{{ $agent['avatar_url'] }}" alt="{{ $agent['name'] }}" loading="lazy">@endif
+                    <article class="agent-card{{ ($agent['portrait'] ?? false) ? ' agent-card--portrait' : '' }}" data-agent-card="{{ $agent['slug'] }}">
+                        @if (! empty($agent['avatar_url']))
+                            <button class="agent-photo" type="button" data-agent="{{ $agent['slug'] }}" aria-label="{{ $agent['name'] }}"><img src="{{ $agent['avatar_url'] }}" alt="" loading="lazy"></button>
+                        @endif
                         <div>
                             <p class="agent-role">{{ $copy['agent'] ?? '' }}</p>
-                            <h3><a href="{{ \App\Support\SiteUrls::agent($locale, $agent['slug']) }}">{{ $agent['name'] }}</a></h3>
+                            <h3><button class="agent-name" type="button" data-agent="{{ $agent['slug'] }}">{{ $agent['name'] }}</button></h3>
                             @if (! empty($agent['phone']))<a href="tel:{{ preg_replace('/\s/', '', $agent['phone']) }}">{{ $agent['phone'] }}</a>@endif
                         </div>
                     </article>

@@ -156,7 +156,7 @@ class PublicSiteController extends Controller
             'posts' => array_slice($posts, 0, $batch),
             'hasMorePosts' => count($posts) > $batch,
             'useful' => $this->content->useful($locale),
-            'agents' => $this->agents(),
+            'agents' => $this->agents($locale),
             'googleMapsKey' => (string) config('services.google_maps.key'),
             'categories' => config('site.property_categories', []),
         ]);
@@ -212,7 +212,7 @@ class PublicSiteController extends Controller
 
     private function agentView(string $locale, string $slug): View
     {
-        $agent = collect($this->agents())->firstWhere('slug', $slug);
+        $agent = collect($this->agents($locale))->firstWhere('slug', $slug);
         abort_unless($agent, 404);
 
         $agent['properties'] = collect($this->propertyList())
@@ -313,12 +313,16 @@ class PublicSiteController extends Controller
         ];
     }
 
-    private function agents(): array
+    private function agents(string $locale = 'lv'): array
     {
         $preview = [
-            ['slug' => 'roberts-evarsons', 'name' => 'Roberts Evarsons', 'phone' => '+371 2492 2942', 'position' => 'Nekustamo īpašumu aģents', 'description' => '', 'avatar_url' => asset('site-assets/images/team/roberts.jpg')],
-            ['slug' => 'inga-dobuma', 'name' => 'Inga Dobuma', 'phone' => '+371 2822 8208', 'position' => 'Nekustamo īpašumu aģente', 'description' => '', 'portrait' => true, 'avatar_url' => asset('site-assets/images/team/inga.jpg')],
+            ['slug' => 'roberts-evarsons', 'name' => 'Roberts Evarsons', 'phone' => '+371 2492 2942', 'position' => 'Nekustamo īpašumu aģents', 'avatar_url' => asset('site-assets/images/team/roberts.jpg')],
+            ['slug' => 'inga-dobuma', 'name' => 'Inga Dobuma', 'phone' => '+371 2822 8208', 'position' => 'Nekustamo īpašumu aģente', 'portrait' => true, 'avatar_url' => asset('site-assets/images/team/inga.jpg')],
         ];
+
+        foreach ($preview as $index => $agent) {
+            $preview[$index]['description'] = $this->content->agentBio($locale, $agent['slug']);
+        }
 
         if (config('site.preview_snapshot')) {
             return $preview;
@@ -326,7 +330,11 @@ class PublicSiteController extends Controller
 
         $agents = User::query()->whereIn('slug', ['roberts-evarsons', 'inga-dobuma'])->get()->keyBy('slug');
 
-        return collect($preview)->map(function (array $fallback) use ($agents): array {
+        $bios = collect($preview)->mapWithKeys(fn (array $agent): array => [
+            $agent['slug'] => $this->content->agentBio($locale, $agent['slug']),
+        ]);
+
+        return collect($preview)->map(function (array $fallback) use ($agents, $bios): array {
             $agent = $agents->get($fallback['slug']);
             if (! $agent) {
                 return $fallback;
@@ -337,7 +345,7 @@ class PublicSiteController extends Controller
                 'name' => $agent->name,
                 'phone' => $agent->phone ?: $fallback['phone'],
                 'position' => $agent->position ?: $fallback['position'],
-                'description' => $agent->description ?: '',
+                'description' => $agent->description ?: ($bios[$fallback['slug']] ?? ''),
                 'avatar_url' => $agent->avatar_url ?: $fallback['avatar_url'],
                 'portrait' => $fallback['portrait'] ?? false,
             ];

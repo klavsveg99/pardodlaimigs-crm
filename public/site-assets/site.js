@@ -650,6 +650,39 @@
         $('#open-video')?.addEventListener('click', () => dialog.showModal());
     }
 
+    /* ── Team: the agent's short description ───────────────────────────── */
+    function setupAgentDialog() {
+        const dialog = $('#agent-dialog');
+        if (!dialog) return;
+
+        const data = $$('[data-agent-data]').map((node) => JSON.parse(node.textContent));
+
+        const open = (slug) => {
+            const agent = data.find((item) => item.slug === slug);
+            if (!agent) return;
+
+            $('#agent-dialog-photo').src = agent.photo;
+            $('#agent-dialog-photo').alt = agent.name;
+            dialog.classList.toggle('is-portrait', Boolean(agent.portrait));
+            $('#agent-dialog-name').textContent = agent.name;
+            $('#agent-dialog-bio').textContent = agent.description;
+
+            const phone = $('#agent-dialog-phone');
+            phone.href = `tel:${agent.phone.replace(/\s/g, '')}`;
+            phone.querySelector('span').textContent = agent.phone;
+            phone.hidden = !agent.phone;
+
+            const page = $('#agent-dialog-page');
+            page.href = agent.url;
+            page.querySelector('span').textContent = agent.name;
+            page.hidden = !agent.url;
+
+            dialog.showModal();
+        };
+
+        $$('[data-agent]').forEach((element) => element.addEventListener('click', () => open(element.dataset.agent)));
+    }
+
     /* ── Blog: load more ────────────────────────────────────────────────── */
     function setupBlogMore() {
         const button = $('#load-more-posts');
@@ -683,6 +716,16 @@
         });
     }
 
+    /* ── "Katram īpašumam - sava pieeja" preselects the type ────────────── */
+    function setupPreselectLinks() {
+        $$('[data-preselect]').forEach((link) => {
+            link.addEventListener('click', () => {
+                const select = $('.contact-form select[name="property_type"]');
+                if (select) select.value = link.dataset.preselect;
+            });
+        });
+    }
+
     function setupDialogs() {
         $$('[data-close-dialog]').forEach((button) => button.addEventListener('click', () => button.closest('dialog')?.close()));
         $$('dialog').forEach((dialog) => dialog.addEventListener('click', (event) => {
@@ -704,7 +747,9 @@
         setupQuickContact();
         setupContactForm();
         setupVideoDialog();
+        setupAgentDialog();
         setupBlogMore();
+        setupPreselectLinks();
         setupDialogs();
     });
 })();
