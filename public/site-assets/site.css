@@ -586,11 +586,6 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .cookie-settings { flex: 1; }
   .property-dialog { overflow-y: auto; }
   .video-dialog { max-width: calc(100% - 20px); }
-  .agent-dialog { overflow-y: auto; }
-  .agent-dialog-body { grid-template-columns: 1fr; }
-  .agent-dialog-body > img { height: 230px; min-height: 0; }
-  .agent-dialog-copy { padding: 22px 20px 26px; }
-  .agent-dialog-copy h2 { font-size: 22px; }
   .property-detail { grid-template-columns: 1fr; max-height: none; }
   .property-detail-media > img { min-height: 0; height: 245px; }
   .property-detail-thumbs { position: static; right: auto; bottom: auto; left: auto; margin: 0; background: none; }
@@ -703,3 +698,13 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
 .agent-dialog-bio { margin: 0 0 22px; color: var(--muted); font-size: 13px; line-height: 1.8; }
 .agent-dialog-phone { display: inline-flex; align-items: center; gap: 10px; color: var(--brand); font-size: 12px; font-weight: 700; }
 .agent-dialog-phone i { font-size: 12px; }
+
+/* The agent dialog is styled after the breakpoints above, so its narrow-screen
+   rules live here: the photo stacks above the copy and keeps a sane height. */
+@media (max-width: 680px) {
+  .agent-dialog { width: auto; max-width: calc(100% - 20px); overflow-y: auto; }
+  .agent-dialog-body { grid-template-columns: 1fr; }
+  .agent-dialog-body > img { height: 230px; min-height: 0; }
+  .agent-dialog-copy { padding: 22px 20px 26px; }
+  .agent-dialog-copy h2 { font-size: 22px; }
+}
