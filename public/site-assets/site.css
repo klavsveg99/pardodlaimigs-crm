@@ -255,7 +255,7 @@ h1, h2, h3 { font-family: var(--serif); }
 /* Inga's photo is a 2:3 portrait, so the default 25% crop leaves a lot of
    building above her and pushes her face low. 37% centres her face with the
    shoulders below, the same balance Roberts' square photo gets. */
-.agent-card--portrait .agent-photo img { object-position: center 37%; }
+.agent-card--portrait .agent-photo img { object-position: center 45%; }
 .agent-card > div { padding: 15px 17px 18px; }
 .agent-name { border: 0; padding: 0; cursor: pointer; color: inherit; background: none; font: inherit; letter-spacing: inherit; text-align: left; }
 .agent-name:hover, .agent-photo:hover + div .agent-name { color: var(--brand); }
@@ -703,9 +703,7 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
 /* Tapping a team member opens their short description, as the old site did. */
 .agent-dialog { width: 780px; max-width: min(780px, calc(100% - 32px)); overflow-y: auto; }
 .agent-dialog-body { display: grid; grid-template-columns: 300px 1fr; }
-/* The photo follows the copy column's height, but stops growing when an
-   agent has a long list of properties under it. */
-.agent-dialog-body > img { width: 100%; height: 100%; min-height: 330px; max-height: 560px; object-fit: cover; object-position: center 25%; }
+.agent-dialog-body > img { width: 100%; height: 460px; object-fit: cover; object-position: center 25%; }
 .agent-dialog.is-portrait .agent-dialog-body > img { object-position: center 37%; }
 .agent-dialog-copy { padding: 34px 34px 32px; }
 .agent-dialog-copy h2 { margin: 0 0 14px; font-size: 26px; letter-spacing: -.04em; }
