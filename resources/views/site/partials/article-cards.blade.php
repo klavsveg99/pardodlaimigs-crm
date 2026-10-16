@@ -11,7 +11,7 @@
                 <img src="{{ $post['image'] }}" alt="" loading="lazy">
             @else
                 {{-- WordPress posts that never had a featured image. --}}
-                <div class="article-placeholder" aria-hidden="true"><img src="{{ asset('site-assets/images/brand/logo.svg') }}?v=2" alt=""></div>
+                <div class="article-placeholder" aria-hidden="true"><img src="{{ asset('images/favicon-180x180.jpg') }}" alt=""></div>
             @endif
             <div class="article-copy">
                 <span class="article-date">{{ \Illuminate\Support\Carbon::parse($post['date'])->format('d.m.Y') }}</span>

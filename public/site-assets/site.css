@@ -239,8 +239,11 @@ h1, h2, h3 { font-family: var(--serif); }
 .info-item[open] summary::after { content: '\f068'; }
 .info-item .post-body { max-width: 820px; margin: 0 0 28px; }
 .info-item .post-body h3 { margin-top: 22px; }
+/* WordPress posts without a featured image show the client's icon on brand
+   green instead of an empty slot; the icon's own background is the same green,
+   so it blends into the tile. */
 .article-placeholder { display: grid; height: 206px; place-items: center; background: var(--brand); }
-.article-card .article-placeholder img { width: 132px; height: auto; filter: brightness(0) invert(1); opacity: .92; }
+.article-card .article-placeholder img { width: 76px; height: 76px; }
 
 .team-section { padding-top: 68px; padding-bottom: 86px; background: #f0f2ee; }
 .team-layout { display: grid; grid-template-columns: .75fr 1.25fr; gap: 7%; align-items: center; }
@@ -536,7 +539,7 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .article-card > a { display: grid; grid-template-columns: 40% 1fr; min-height: 132px; }
   .article-card img { height: 100%; min-height: 132px; object-fit: cover; }
   .article-placeholder { height: 132px; }
-  .article-card .article-placeholder img { width: 84px; }
+  .article-card .article-placeholder img { width: 56px; height: 56px; }
   .article-copy { min-height: 0; padding: 13px; }
   .article-copy h3 { margin: 8px 0 10px; font-size: 13px; }
   .article-date, .article-link { font-size: 9px; }
