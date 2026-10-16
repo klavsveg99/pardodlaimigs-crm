@@ -190,8 +190,8 @@
             <div class="container">
                 <div class="section-heading"><h2 id="info-title">{{ $useful['title'] }}</h2></div>
                 <div class="info-list">
-                    @foreach ($useful['tabs'] as $index => $tab)
-                        <details class="info-item" @if ($index === 0) open @endif>
+                    @foreach ($useful['tabs'] as $tab)
+                        <details class="info-item">
                             <summary>{{ $tab['title'] }}</summary>
                             <div class="post-body">{!! $tab['html'] !!}</div>
                         </details>
