@@ -131,18 +131,31 @@ class CrmPropertyResource extends Resource
                         ->live()
                         ->afterStateUpdated(function ($state, Set $set): void {
                             if ($state !== 'external') {
-                                $set('lead_owner', null);
+                                $set('lead_source_name', null);
+                                $set('lead_source_commission', null);
                             }
                         })
                         ->columnSpanFull(),
 
-                    Forms\Components\TextInput::make('lead_owner')
-                        ->label('Atbildīgais aģents')
-                        ->placeholder('Norādi atbildīgo aģentu')
-                        ->maxLength(255)
-                        ->required(fn (Get $get): bool => $get('lead_source') === 'external')
+                    // Ārējam avotam rāda pašu avotu: tā nosaukumu un komisiju.
+                    // Vienā rindā uz galda, katrs savā rindā mobilajā.
+                    Grid::make(['default' => 1, 'md' => 2])
+                        ->columnSpanFull()
                         ->visible(fn (Get $get): bool => $get('lead_source') === 'external')
-                        ->columnSpanFull(),
+                        ->schema([
+                            Forms\Components\TextInput::make('lead_source_name')
+                                ->label('Avota nosaukums')
+                                ->placeholder('Norādi avota nosaukumu')
+                                ->maxLength(255)
+                                ->required(fn (Get $get): bool => $get('lead_source') === 'external'),
+                            Forms\Components\TextInput::make('lead_source_commission')
+                                ->label('Avota komisija (%)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->maxValue(100)
+                                ->suffix('%')
+                                ->placeholder('Norādi komisiju'),
+                        ]),
 
                     Grid::make(['default' => 1, 'md' => 3])
                         ->columnSpanFull()
@@ -420,7 +433,7 @@ class CrmPropertyResource extends Resource
                             $kadastra = (string) ($get('data.kadastra_nr') ?? '');
                             $status = (string) ($get('data.status') ?? '');
                             $leadSource = (string) ($get('data.lead_source') ?? '');
-                            $leadOwner = (string) ($get('data.lead_owner') ?? '');
+                            $leadOwner = (string) ($get('data.lead_source_name') ?? '');
                             $finalPrice = (float) ($get('data.final_price_eur') ?? 0);
                             $commission = (float) ($get('data.commission_eur') ?? 0);
                             $title = (string) ($get('data.title') ?? $category);
@@ -434,7 +447,7 @@ class CrmPropertyResource extends Resource
                             $kadastra = (string) ($get('data.kadastra_nr') ?? '');
                             $status = (string) ($get('data.status') ?? '');
                             $leadSource = (string) ($get('data.lead_source') ?? '');
-                            $leadOwner = (string) ($get('data.lead_owner') ?? '');
+                            $leadOwner = (string) ($get('data.lead_source_name') ?? '');
                             $finalPrice = (float) ($get('data.final_price_eur') ?? 0);
                             $commission = (float) ($get('data.commission_eur') ?? 0);
                             $title = (string) ($get('data.title') ?? $category);
@@ -463,7 +476,7 @@ class CrmPropertyResource extends Resource
                                 $feat[] = 'avots: '.$leadSource;
                             }
                             if ($leadOwner) {
-                                $feat[] = 'atbildīgais aģents: '.$leadOwner;
+                                $feat[] = 'avota nosaukums: '.$leadOwner;
                             }
                             if ($finalPrice > 0) {
                                 $feat[] = 'gala cena: '.number_format($finalPrice, 0, ',', ' ').' €';

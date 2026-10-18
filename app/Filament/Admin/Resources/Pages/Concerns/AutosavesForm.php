@@ -77,7 +77,7 @@ trait AutosavesForm
             $this->autosaveError = null;
         } catch (ValidationException $e) {
             // Draft autosave must never blow up the page (e.g. switching
-            // "Pieteikuma avots" to Ārējais before "Atbildīgais aģents" is filled).
+            // "Pieteikuma avots" to Ārējais before "Avota nosaukums" is filled).
             // Record the first validation message so the indicator can show it.
             $this->autosaveState = 'error';
             $messages = collect($e->errors())->flatten()->filter()->values();

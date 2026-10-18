@@ -29,7 +29,7 @@ class CrmPropertySeeder extends Seeder
                 'address' => '"Līdaciņas", Novadnieku pagasts, Saldus novads, LV-3801',
                 'image_urls' => ['https://pardodlaimigs.lv/wp-content/webp-express/webp-images/uploads/2026/08/440d62df4195454ce55f4d1eabd079cbba99ae1c-370x220.jpg.webp'],
                 'lead_source' => 'internal',
-                'lead_owner' => 'Roberts Evarsons',
+                'lead_source_name' => 'Roberts Evarsons',
                 'sort_order' => 1,
             ],
             [
@@ -46,7 +46,7 @@ class CrmPropertySeeder extends Seeder
                 'address' => '"Siguldas", Sātiņi, Novadnieku pag., Saldus nov.',
                 'image_urls' => ['https://pardodlaimigs.lv/wp-content/webp-express/webp-images/uploads/2026/08/d0628f9fc6b22c2426db5a305a31b093ce783dc7-370x220.jpg.webp'],
                 'lead_source' => 'internal',
-                'lead_owner' => 'Roberts Evarsons',
+                'lead_source_name' => 'Roberts Evarsons',
                 'sort_order' => 2,
             ],
             [
@@ -63,7 +63,7 @@ class CrmPropertySeeder extends Seeder
                 'address' => '"Sīpoliņi", Mērsraga pag., Talsu nov.',
                 'image_urls' => ['https://pardodlaimigs.lv/wp-content/webp-express/webp-images/uploads/2026/08/a2a299c9ab6dfa2dd00fe68f566b0d4dc7c8c95e-370x220.jpg.webp'],
                 'lead_source' => 'internal',
-                'lead_owner' => 'Roberts Evarsons',
+                'lead_source_name' => 'Roberts Evarsons',
                 'sort_order' => 3,
             ],
             [
@@ -80,7 +80,7 @@ class CrmPropertySeeder extends Seeder
                 'address' => 'Bākas iela 49, Mērsrags, Mērsraga pagasts, Talsu novads, LV-3284',
                 'image_urls' => ['https://pardodlaimigs.lv/wp-content/webp-express/webp-images/uploads/2026/08/49937c37cc7ea950fca4f6edaa210eb4e1c8df61-370x220.jpg.webp'],
                 'lead_source' => 'internal',
-                'lead_owner' => 'Roberts Evarsons',
+                'lead_source_name' => 'Roberts Evarsons',
                 'sort_order' => 4,
             ],
             [
@@ -97,7 +97,7 @@ class CrmPropertySeeder extends Seeder
                 'address' => 'Kuldīgas iela 55A, Saldus, Saldus pilsēta, Saldus novads, LV-3801',
                 'image_urls' => ['https://pardodlaimigs.lv/wp-content/webp-express/webp-images/uploads/2026/08/b0c9bd2514e2cad10f9f64356eab7abe3c9a3f3f-370x220.jpg.webp'],
                 'lead_source' => 'internal',
-                'lead_owner' => 'Roberts Evarsons',
+                'lead_source_name' => 'Roberts Evarsons',
                 'sort_order' => 5,
             ],
             [
@@ -114,7 +114,7 @@ class CrmPropertySeeder extends Seeder
                 'address' => 'Avotu iela 4B, Saldus, Saldus pilsēta, Saldus novads, LV-3801',
                 'image_urls' => ['https://pardodlaimigs.lv/wp-content/webp-express/webp-images/uploads/2026/08/874d37318d2f475c58bcf5768c81f324cc1c7636-370x220.jpg.webp'],
                 'lead_source' => 'internal',
-                'lead_owner' => 'Roberts Evarsons',
+                'lead_source_name' => 'Roberts Evarsons',
                 'sort_order' => 6,
             ],
             [
@@ -131,7 +131,7 @@ class CrmPropertySeeder extends Seeder
                 'address' => 'Mazā iela, Saldus, Saldus pilsēta, Saldus novads, LV-3801',
                 'image_urls' => ['https://pardodlaimigs.lv/wp-content/webp-express/webp-images/uploads/2026/08/a1b05ebd005b0a9875f893bd573f7733e0256a78-370x220.jpg.webp'],
                 'lead_source' => 'internal',
-                'lead_owner' => 'Roberts Evarsons',
+                'lead_source_name' => 'Roberts Evarsons',
                 'sort_order' => 7,
             ],
             [
@@ -148,7 +148,7 @@ class CrmPropertySeeder extends Seeder
                 'address' => 'J. Rozentāla iela 31, Saldus, Saldus pilsēta, Saldus novads, LV-3801',
                 'image_urls' => ['https://pardodlaimigs.lv/wp-content/webp-express/webp-images/uploads/2026/08/1cf499acbfca6475f3b8156c1812de0944124dec-370x220.jpg.webp'],
                 'lead_source' => 'internal',
-                'lead_owner' => 'Roberts Evarsons',
+                'lead_source_name' => 'Roberts Evarsons',
                 'sort_order' => 8,
             ],
             [
@@ -165,7 +165,7 @@ class CrmPropertySeeder extends Seeder
                 'address' => 'Kursīšu pagasts, Saldus novads',
                 'image_urls' => ['https://pardodlaimigs.lv/wp-content/webp-express/webp-images/uploads/2026/08/4a54508ed573410cfa930b62ac3705554b9584be-370x220.jpg.webp'],
                 'lead_source' => 'internal',
-                'lead_owner' => 'Roberts Evarsons',
+                'lead_source_name' => 'Roberts Evarsons',
                 'sort_order' => 9,
             ],
             [
@@ -182,7 +182,7 @@ class CrmPropertySeeder extends Seeder
                 'address' => 'Dzirnavu iela 1A, Saldus',
                 'image_urls' => ['https://pardodlaimigs.lv/wp-content/webp-express/webp-images/uploads/2026/08/91ea247a931b01cc932627bd0087e8deaf468ebf-370x220.jpg.webp'],
                 'lead_source' => 'internal',
-                'lead_owner' => 'Roberts Evarsons',
+                'lead_source_name' => 'Roberts Evarsons',
                 'sort_order' => 10,
             ],
             [
@@ -199,7 +199,7 @@ class CrmPropertySeeder extends Seeder
                 'address' => 'Lutriņi, Pakalniņi',
                 'image_urls' => ['https://pardodlaimigs.lv/wp-content/webp-express/webp-images/uploads/2026/08/d80bb2f6abb97453ea01671284d2bd3ad4272e88-370x220.jpg.webp'],
                 'lead_source' => 'internal',
-                'lead_owner' => 'Roberts Evarsons',
+                'lead_source_name' => 'Roberts Evarsons',
                 'sort_order' => 11,
             ],
         ];
@@ -211,7 +211,7 @@ class CrmPropertySeeder extends Seeder
             if ($existing) {
                 $existing->update([
                     'owner_user_id' => $agent?->id,
-                    'lead_owner' => $data['lead_owner'],
+                    'lead_source_name' => $data['lead_source_name'],
                     'image_urls' => $galleries[$data['slug']] ?? $existing->image_urls,
                 ]);
                 continue;
