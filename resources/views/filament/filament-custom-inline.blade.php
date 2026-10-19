@@ -1140,7 +1140,7 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-selection-cell { width: 4% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-featured-thumb { width: 6% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-is-featured { width: 3% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title { width: 24.5% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title { width: 24% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-category { width: 8% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-status { width: 7.5% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-city { width: 9% !important; }
@@ -1148,7 +1148,7 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-price-eur { width: 8.5% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-owner\.name { width: 8% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-updated-at { width: 8% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-actions-header-cell { width: 4% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-actions-header-cell { width: 4.5% !important; }
 
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell {
         white-space: normal !important;
