@@ -1120,6 +1120,15 @@ html.dark .rounded-xl .text-emerald-900 {
     overflow-wrap: normal !important;
 }
 
+/* Desktop properties table: keep the title readable instead of letting the
+   many badge/number columns squeeze it down to a few characters per line. */
+@media (min-width: 640px) {
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title,
+    .fi-ta.pdc-properties-table .fi-ta-table td.fi-ta-cell-title {
+        min-width: 18rem !important;
+    }
+}
+
 .fi-ta-table .fi-ta-text {
     overflow: visible !important;
     text-overflow: clip !important;
