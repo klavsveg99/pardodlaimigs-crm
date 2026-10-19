@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\WpformEntry;
 use App\Services\Site\SiteContent;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -28,10 +29,34 @@ class PublicSiteLeadController extends Controller
         return $this->storeForLocale($request, $this->content->locale($locale));
     }
 
+    /**
+     * JSON intake for the static frontend on /new/. It posts cross-origin to
+     * the CRM, so the response is JSON (validation failures come back as 422).
+     */
+    public function storeApi(Request $request): JsonResponse
+    {
+        $locale = in_array($request->input('locale'), (array) config('site.locales'), true)
+            ? (string) $request->input('locale')
+            : 'lv';
+
+        $this->createEntry($request, $locale);
+
+        return response()->json(['ok' => true], 201);
+    }
+
     private function storeForLocale(Request $request, string $locale): RedirectResponse
     {
+        $this->createEntry($request, $locale);
+
+        return redirect($this->content->localizedPath($locale, '/paldies/'));
+    }
+
+    private function createEntry(Request $request, string $locale): void
+    {
+        // Honeypot: a filled "website" field is a bot. Pretend it worked so the
+        // bot does not learn it was rejected.
         if ($request->filled('website')) {
-            return redirect($this->content->localizedPath($locale, '/paldies/'));
+            return;
         }
 
         $copy = $this->content->strings($locale);
@@ -103,8 +128,6 @@ class PublicSiteLeadController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
-        return redirect($this->content->localizedPath($locale, '/paldies/'));
     }
 
     /**

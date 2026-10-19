@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attachment;
 use App\Models\CrmProperty;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -69,6 +70,61 @@ class CrmPropertyFeedController extends Controller
                 'status' => (string) $property->status,
             ])
             ->values();
+
+        return response()
+            ->json(['properties' => $properties])
+            ->header('Cache-Control', 'no-store, max-age=0');
+    }
+
+    /**
+     * Full public listing feed for the new frontend (/new/). No API key: only
+     * published and reserved properties are exposed, and only the fields the
+     * public site renders. The site merges this over its bundled snapshot so
+     * newly added properties appear without a rebuild.
+     */
+    public function publicProperties(): JsonResponse
+    {
+        $properties = CrmProperty::query()
+            ->with(['owner', 'attachments'])
+            ->whereIn('status', ['published', 'reserved'])
+            // The order the admin sets by dragging rows in the CRM table is the
+            // order /new/ displays. New rows default to 0 and sit at the top
+            // until they are placed.
+            ->orderByRaw('COALESCE(sort_order, id)')
+            ->orderBy('id')
+            ->get()
+            ->map(function (CrmProperty $property): array {
+                $images = $property->attachments
+                    ->filter(fn (Attachment $attachment): bool => $attachment->isImage())
+                    ->sortBy('sort_order')
+                    ->values()
+                    ->map(fn (Attachment $attachment): array => [
+                        'url' => $attachment->cacheBustedUrl(),
+                        'thumb_url' => $attachment->thumbUrl(),
+                    ])
+                    ->all();
+
+                return [
+                    'crm_id' => $property->id,
+                    'slug' => (string) $property->slug,
+                    'title' => (string) $property->title,
+                    'description' => (string) $property->description,
+                    'price' => (float) $property->price_eur,
+                    'currency' => (string) $property->currency,
+                    'category' => (string) $property->category,
+                    'status' => (string) $property->status,
+                    'beds' => $property->beds,
+                    'baths' => $property->baths,
+                    'size_m2' => $property->size_m2,
+                    'land_m2' => $property->land_m2,
+                    'city' => (string) $property->city,
+                    'address' => (string) $property->address,
+                    'lat' => $property->lat !== null ? (float) $property->lat : null,
+                    'lng' => $property->lng !== null ? (float) $property->lng : null,
+                    'agent_name' => (string) ($property->owner?->name ?? ''),
+                    'images' => $images,
+                ];
+            });
 
         return response()
             ->json(['properties' => $properties])

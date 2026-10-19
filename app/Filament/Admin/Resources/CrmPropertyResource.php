@@ -674,6 +674,10 @@ class CrmPropertyResource extends Resource
         return $table
             ->extraAttributes(['class' => 'pdc-properties-table'])
             ->reorderable('sort_order')
+            // The row order is the public listing order on /new/, so only
+            // administrators may drag properties around; agents can still
+            // click the column headers to sort their own view.
+            ->authorizeReorder(fn (): bool => auth()->user()?->can('manage') ?? false)
             ->defaultSort('sort_order', 'asc')
             ->columns([
                 Tables\Columns\ImageColumn::make('featured_thumb')
