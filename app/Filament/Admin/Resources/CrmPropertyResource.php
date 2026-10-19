@@ -123,6 +123,11 @@ class CrmPropertyResource extends Resource
                         ->required()
                         ->live(),
 
+                    Forms\Components\Checkbox::make('is_featured')
+                        ->label('Izcelts īpašums')
+                        ->visible(fn (): bool => auth()->user()?->can('manage') ?? false)
+                        ->columnSpanFull(),
+
                     Forms\Components\Select::make('lead_source')
                         ->label('Pieteikuma avots')
                         ->options(CrmProperty::LEAD_SOURCES)
@@ -696,6 +701,18 @@ class CrmPropertyResource extends Resource
                     ->height(40)
                     ->width(60)
                     ->extraImgAttributes(['style' => 'border-radius: 4px;']),
+                Tables\Columns\IconColumn::make('is_featured')
+                    ->label('')
+                    ->boolean()
+                    ->getStateUsing(fn (CrmProperty $record): bool => (bool) $record->is_featured)
+                    ->trueIcon('heroicon-s-star')
+                    ->falseIcon('heroicon-o-star')
+                    ->extraCellAttributes(fn (CrmProperty $record): array => [
+                        'class' => $record->is_featured ? 'pdc-featured-yes' : 'pdc-featured-no',
+                    ])
+                    ->tooltip(fn (CrmProperty $record): string => $record->is_featured ? 'Izcelts īpašums' : 'Nav izcelts')
+                    ->visible(fn (): bool => auth()->user()?->can('manage') ?? false)
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->sortable()->weight('bold')
                     ->url(fn (CrmProperty $record) => static::getUrl('view', ['record' => $record]))
                     ->description(fn (CrmProperty $record): ?string => $record->clients()
@@ -730,6 +747,20 @@ class CrmPropertyResource extends Resource
             ->filtersFormColumns(3)
             ->actions([
                 Actions\ActionGroup::make([
+                    // Admin-only quick toggle for the public "featured" pin.
+                    Actions\Action::make('toggle_featured')
+                        ->label(fn (CrmProperty $record): string => $record->is_featured ? 'Noņemt izcelto' : 'Izcelt īpašumu')
+                        ->icon(fn (CrmProperty $record): string => $record->is_featured ? 'heroicon-s-star' : 'heroicon-o-star')
+                        ->color('gray')
+                        ->visible(fn (): bool => auth()->user()?->can('manage') ?? false)
+                        ->action(function (CrmProperty $record): void {
+                            $record->update(['is_featured' => ! $record->is_featured]);
+
+                            Notification::make()
+                                ->title($record->is_featured ? 'Īpašums izcelts' : 'Īpašums vairs nav izcelts')
+                                ->success()
+                                ->send();
+                        }),
                     // Ātrā darbība "Mainīt statusu": vienā modālī nomaina
                     // statusu. Katram statusam tiek prasīti tikai tam
                     // nepieciešamie lauki — "Pārdots" prasa gala cenu un
@@ -984,6 +1015,7 @@ class CrmPropertyResource extends Resource
                                 // Pārdotu īpašumu nevar atzīmēt bez pārdevēja.
                                 if ($status === 'sold' && ! $record->hasSeller()) {
                                     $blocked[] = $record->title;
+
                                     continue;
                                 }
 

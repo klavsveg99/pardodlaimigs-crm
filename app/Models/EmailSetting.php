@@ -12,6 +12,14 @@ use Illuminate\Database\Eloquent\Model;
  */
 class EmailSetting extends Model
 {
+    /** Frontend listing order choices shown in Settings -> Īpašumi. */
+    public const PROPERTY_SORTS = [
+        'sort_order' => 'Pēc īpašumu tabulas secības',
+        'featured_sort_order' => 'Ar zvaigzni pirmie, pēc tam īpašumu tabulas secība',
+        'random' => 'Random',
+        'featured_random' => 'Ar zvaigzni pirmie, pēc tam random',
+    ];
+
     protected $fillable = ['data'];
 
     protected $casts = [
@@ -28,6 +36,17 @@ class EmailSetting extends Model
     {
         return [
             'greetings' => config('crm.greetings', []),
+            'properties' => [
+                'frontend_sort' => 'featured_sort_order',
+            ],
         ];
+    }
+
+    /** The validated sort mode used by the public property feed. */
+    public static function frontendPropertySort(): string
+    {
+        $sort = (string) (self::current()->data['properties']['frontend_sort'] ?? 'featured_sort_order');
+
+        return array_key_exists($sort, self::PROPERTY_SORTS) ? $sort : 'featured_sort_order';
     }
 }

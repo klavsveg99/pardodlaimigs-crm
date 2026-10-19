@@ -52,7 +52,7 @@ class CrmProperty extends Model
 
     protected $fillable = [
         'wp_post_id', 'title', 'slug', 'description', 'image_urls', 'price_cents', 'price_eur',
-        'currency', 'category', 'status', 'sale_started_at', 'partnership_months',
+        'currency', 'category', 'status', 'is_featured', 'sale_started_at', 'partnership_months',
         'price_status_changed_at', 'stale_notice_dismissed_at',
         'lead_source', 'lead_source_name', 'lead_source_commission', 'beds', 'baths',
         'size_m2', 'land_m2', 'kadastra_nr', 'city', 'address', 'zip',
@@ -72,6 +72,7 @@ class CrmProperty extends Model
         'price_status_changed_at' => 'datetime',
         'stale_notice_dismissed_at' => 'datetime',
         'image_urls' => 'array',
+        'is_featured' => 'boolean',
         'beds' => 'integer',
         'baths' => 'integer',
         'size_m2' => 'integer',

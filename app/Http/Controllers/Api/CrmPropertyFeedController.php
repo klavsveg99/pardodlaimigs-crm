@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Attachment;
 use App\Models\CrmProperty;
+use App\Models\EmailSetting;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -84,14 +85,23 @@ class CrmPropertyFeedController extends Controller
      */
     public function publicProperties(): JsonResponse
     {
-        $properties = CrmProperty::query()
+        $query = CrmProperty::query()
             ->with(['owner', 'attachments'])
-            ->whereIn('status', ['published', 'reserved'])
-            // The order the admin sets by dragging rows in the CRM table is the
-            // order /new/ displays. New rows default to 0 and sit at the top
-            // until they are placed.
-            ->orderByRaw('COALESCE(sort_order, id)')
-            ->orderBy('id')
+            ->whereIn('status', ['published', 'reserved']);
+
+        // Settings -> Īpašumi controls the public order. The table order is
+        // the admin's drag order; the starred variants pin featured properties
+        // above the rest; the random variants shuffle within those groups.
+        match (EmailSetting::frontendPropertySort()) {
+            'random' => $query->inRandomOrder(),
+            'featured_random' => $query->orderByDesc('is_featured')->inRandomOrder(),
+            'featured_sort_order' => $query->orderByDesc('is_featured')
+                ->orderByRaw('COALESCE(sort_order, id)')
+                ->orderBy('id'),
+            default => $query->orderByRaw('COALESCE(sort_order, id)')->orderBy('id'),
+        };
+
+        $properties = $query
             ->get()
             ->map(function (CrmProperty $property): array {
                 $images = $property->attachments

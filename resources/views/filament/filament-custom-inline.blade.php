@@ -115,6 +115,22 @@
     opacity: 0.5;
 }
 
+/* Featured star: gold when active, muted when not. */
+.fi-ta-table .pdc-featured-yes .fi-icon {
+    color: #eab308 !important;
+}
+.fi-ta-table .pdc-featured-no .fi-icon {
+    color: #9ca3af !important;
+    opacity: 0.45;
+}
+.dark .fi-ta-table .pdc-featured-yes .fi-icon {
+    color: #facc15 !important;
+}
+.dark .fi-ta-table .pdc-featured-no .fi-icon {
+    color: #71717a !important;
+    opacity: 0.5;
+}
+
 /* Sidebar icons stay as-is — excluded from global icon rules. */
 .fi-sidebar .fi-icon {
     color: inherit !important;

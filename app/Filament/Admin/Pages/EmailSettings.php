@@ -8,6 +8,7 @@ use App\Filament\Admin\Widgets\GreetingHistoryTable;
 use App\Models\EmailSetting;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -144,6 +145,16 @@ class EmailSettings extends Page
 
                         Livewire::make(GreetingHistoryTable::class)
                             ->columnSpanFull(),
+                    ]),
+
+                Section::make('Īpašumi')
+                    ->schema([
+                        Select::make('properties.frontend_sort')
+                            ->label('Īpašumu kārtošana mājaslapā')
+                            ->options(EmailSetting::PROPERTY_SORTS)
+                            ->default('featured_sort_order')
+                            ->selectablePlaceholder(false)
+                            ->required(),
                     ]),
             ]);
     }
