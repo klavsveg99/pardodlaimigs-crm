@@ -1014,9 +1014,6 @@ html.dark .rounded-xl .text-emerald-900 {
     box-sizing: border-box !important;
     width: 100% !important;
 }
-@media (min-width: 768px) {
-    .fi-ta-table { min-width: 720px !important; }
-}
 @media (max-width: 767px) {
     .fi-ta-content-ctn, .fi-ta-ctn { overflow-x: auto !important; }
 }
@@ -1109,8 +1106,8 @@ html.dark .rounded-xl .text-emerald-900 {
 
 .fi-ta-table td {
     white-space: normal !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
     min-width: 0 !important;
 }
 
@@ -1125,6 +1122,63 @@ html.dark .rounded-xl .text-emerald-900 {
     white-space: nowrap !important;
     word-break: normal !important;
     overflow-wrap: normal !important;
+}
+
+/* Tablet and small-desktop tables: the wide resource lists have to share one
+   row, so use a fixed layout and let headers wrap. This keeps the table inside
+   the panel instead of scrolling sideways; the stacked cards below 640px are
+   untouched. Tables without row selection (dashboard cards) keep auto layout. */
+@media (min-width: 640px) and (max-width: 1400px) {
+    .fi-ta-table:has(> thead > tr > th.fi-ta-selection-cell) {
+        table-layout: fixed !important;
+        min-width: 0 !important;
+    }
+
+    .fi-ta-table th.fi-ta-selection-cell { width: 44px !important; }
+    .fi-ta-table th.fi-ta-actions-header-cell { width: 48px !important; }
+
+    .fi-ta-table th.fi-ta-header-cell {
+        white-space: normal !important;
+        padding-inline: 0.375rem !important;
+    }
+
+    .fi-ta-table .fi-ta-header-cell-sort-btn {
+        white-space: normal !important;
+        gap: 0.25rem !important;
+    }
+
+    /* The primary text column gets the room the short columns do not need. */
+    .fi-ta-table:has(> thead > tr > th.fi-ta-selection-cell) th.fi-ta-header-cell-name,
+    .fi-ta-table:has(> thead > tr > th.fi-ta-selection-cell) th.fi-ta-header-cell-title,
+    .fi-ta-table:has(> thead > tr > th.fi-ta-selection-cell) th.fi-ta-header-cell-subject,
+    .fi-ta-table:has(> thead > tr > th.fi-ta-selection-cell) th.fi-ta-header-cell-property\.title,
+    .fi-ta-table:has(> thead > tr > th.fi-ta-selection-cell) th.fi-ta-header-cell-client\.name {
+        width: 18% !important;
+    }
+
+    .fi-ta-table td:has(> .fi-ta-actions) {
+        width: auto !important;
+        min-width: 0 !important;
+        padding-inline: 0.25rem !important;
+    }
+
+    .fi-ta-table td > .fi-ta-actions { gap: 0.25rem !important; }
+
+    .fi-ta-table .fi-ac-icon-btn-group { margin: 0 !important; }
+
+    /* Filament gives the status select a 12rem minimum, which is wider than
+       the column it lives in at tablet widths. */
+    .fi-ta-table .fi-ta-select {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .fi-ta-table .fi-badge { white-space: normal !important; }
+
+    /* Keep phone numbers, prices and dates inside their column instead of
+       letting the nowrap cell run over its neighbour. */
+    .fi-ta-table td.pdc-nowrap,
+    .fi-ta-table td.pdc-nowrap .fi-ta-text { white-space: normal !important; }
 }
 
 /* Desktop properties table: twelve columns share one row, so use a fixed
@@ -1184,6 +1238,29 @@ html.dark .rounded-xl .text-emerald-900 {
     }
 }
 
+/* Tablet properties: photo, title, type, status, city, price and agent are
+   enough; the star, cadastre and updated columns return on wide desktops. */
+@media (min-width: 640px) and (max-width: 1400px) {
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-is-featured,
+    .fi-ta.pdc-properties-table .fi-ta-table td.fi-ta-cell-is-featured,
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-kadastra-nr,
+    .fi-ta.pdc-properties-table .fi-ta-table td.fi-ta-cell-kadastra-nr,
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-updated-at,
+    .fi-ta.pdc-properties-table .fi-ta-table td.fi-ta-cell-updated-at {
+        display: none !important;
+    }
+
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-selection-cell { width: 44px !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-featured-thumb { width: 68px !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title { width: 26% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-category { width: 8% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-status { width: 8% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-city { width: 10% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-price-eur { width: 9% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-owner\.name { width: 9% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-actions-header-cell { width: 48px !important; }
+}
+
 .fi-ta-table .fi-ta-text {
     overflow: visible !important;
     text-overflow: clip !important;
@@ -1233,8 +1310,8 @@ html.dark .rounded-xl .text-emerald-900 {
 @media (min-width: 640px) {
     .fi-ta-table td:has(> .fi-ta-actions) {
         width: 1% !important;
-        min-width: 9rem !important;
-        padding-inline: 1rem !important;
+        min-width: 3.5rem !important;
+        padding-inline: 0.5rem !important;
         vertical-align: middle !important;
         white-space: nowrap !important;
     }
@@ -1243,8 +1320,12 @@ html.dark .rounded-xl .text-emerald-900 {
         flex-wrap: nowrap !important;
         justify-content: flex-end !important;
         align-items: center !important;
-        gap: 1rem !important;
+        gap: 0.5rem !important;
         white-space: nowrap !important;
+    }
+
+    .fi-ta-table .fi-ac-icon-btn-group {
+        margin: 0 !important;
     }
 
     .fi-ta-table td > .fi-ta-actions > * {
