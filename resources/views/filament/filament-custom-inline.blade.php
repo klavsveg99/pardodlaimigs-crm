@@ -1143,7 +1143,10 @@ html.dark .rounded-xl .text-emerald-900 {
     }
 
     .fi-ta-table .fi-ta-header-cell-sort-btn {
+        flex-wrap: wrap !important;
+        min-width: 0 !important;
         white-space: normal !important;
+        overflow-wrap: anywhere !important;
         gap: 0.25rem !important;
     }
 
@@ -1252,13 +1255,59 @@ html.dark .rounded-xl .text-emerald-900 {
 
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-selection-cell { width: 44px !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-featured-thumb { width: 68px !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title { width: 26% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title { width: 24% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-category { width: 8% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-status { width: 8% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-city { width: 10% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-status { width: 10% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-city { width: 12% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-price-eur { width: 9% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-owner\.name { width: 9% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-actions-header-cell { width: 48px !important; }
+}
+
+/* Tablet list tables keep only the columns that are needed to identify and
+   act on a row; the rest return when the content column is wide enough. */
+@media (min-width: 640px) and (max-width: 1100px) {
+    .fi-ta.pdc-clients-table th.fi-ta-header-cell-person-type,
+    .fi-ta.pdc-clients-table td.fi-ta-cell-person-type,
+    .fi-ta.pdc-clients-table th.fi-ta-header-cell-personas-kods,
+    .fi-ta.pdc-clients-table td.fi-ta-cell-personas-kods,
+    .fi-ta.pdc-clients-table th.fi-ta-header-cell-crm-properties-count,
+    .fi-ta.pdc-clients-table td.fi-ta-cell-crm-properties-count,
+    .fi-ta.pdc-tasks-table th.fi-ta-header-cell-completed,
+    .fi-ta.pdc-tasks-table td.fi-ta-cell-completed,
+    .fi-ta.pdc-tasks-table th.fi-ta-header-cell-izpilditajs\.name,
+    .fi-ta.pdc-tasks-table td.fi-ta-cell-izpilditajs\.name,
+    .fi-ta.pdc-tasks-table th.fi-ta-header-cell-property\.selection-label,
+    .fi-ta.pdc-tasks-table td.fi-ta-cell-property\.selection-label,
+    .fi-ta.pdc-viewings-table th.fi-ta-header-cell-agent\.name,
+    .fi-ta.pdc-viewings-table td.fi-ta-cell-agent\.name,
+    .fi-ta.pdc-viewings-table th.fi-ta-header-cell-duration-min,
+    .fi-ta.pdc-viewings-table td.fi-ta-cell-duration-min,
+    .fi-ta.pdc-users-table th.fi-ta-header-cell-phone,
+    .fi-ta.pdc-users-table td.fi-ta-cell-phone,
+    .fi-ta.pdc-izpilditajs-table th.fi-ta-header-cell-id,
+    .fi-ta.pdc-izpilditajs-table td.fi-ta-cell-id,
+    .fi-ta.pdc-izpilditajs-table th.fi-ta-header-cell-tasks-count,
+    .fi-ta.pdc-izpilditajs-table td.fi-ta-cell-tasks-count,
+    .fi-ta.pdc-izpilditajs-table th.fi-ta-header-cell-updated-at,
+    .fi-ta.pdc-izpilditajs-table td.fi-ta-cell-updated-at,
+    .fi-ta.pdc-wpforms-table th.fi-ta-header-cell-form-name,
+    .fi-ta.pdc-wpforms-table td.fi-ta-cell-form-name,
+    .fi-ta.pdc-wpforms-table th.fi-ta-header-cell-phone,
+    .fi-ta.pdc-wpforms-table td.fi-ta-cell-phone,
+    .fi-ta.pdc-properties-table th.fi-ta-header-cell-category,
+    .fi-ta.pdc-properties-table td.fi-ta-cell-category {
+        display: none !important;
+    }
+}
+
+/* The tightest tablet width still has room for the essential property
+   columns only; the city moves into the title and detail view. */
+@media (min-width: 640px) and (max-width: 767px) {
+    .fi-ta.pdc-properties-table th.fi-ta-header-cell-city,
+    .fi-ta.pdc-properties-table td.fi-ta-cell-city {
+        display: none !important;
+    }
 }
 
 .fi-ta-table .fi-ta-text {

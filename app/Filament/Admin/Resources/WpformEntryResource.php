@@ -138,6 +138,7 @@ class WpformEntryResource extends Resource
             && (auth()->user()?->can('manage') ?? false));
 
         return $table
+            ->extraAttributes(['class' => 'pdc-wpforms-table'])
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')->label('Iesniegts')->dateTime('d.m.Y H:i')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->sortable(),

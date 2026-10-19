@@ -194,6 +194,7 @@ class KnowledgeArticleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->extraAttributes(['class' => 'pdc-knowledge-table'])
             ->columns([
                 Tables\Columns\TextColumn::make('title')->label('Nosaukums')->searchable()->sortable()->weight('bold')->wrap()
                     ->url(fn (KnowledgeArticle $record): ?string => $record->trashed()

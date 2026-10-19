@@ -128,6 +128,7 @@ class ViewingResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->extraAttributes(['class' => 'pdc-viewings-table'])
             ->modifyQueryUsing(fn ($query) => $query->with(['property', 'client', 'agent']))
             ->columns([
                 Tables\Columns\TextColumn::make('scheduled_at')

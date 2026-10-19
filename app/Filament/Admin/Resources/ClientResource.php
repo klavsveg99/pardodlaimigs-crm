@@ -251,6 +251,7 @@ class ClientResource extends Resource
             && (auth()->user()?->can('manage') ?? false));
 
         return $table
+            ->extraAttributes(['class' => 'pdc-clients-table'])
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable()->weight('bold')
                     ->url(fn (Client $record) => $record->trashed() ? null : static::getUrl('view', ['record' => $record])),

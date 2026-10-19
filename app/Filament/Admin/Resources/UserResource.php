@@ -132,6 +132,7 @@ class UserResource extends Resource
             && (auth()->user()?->can('manage') ?? false));
 
         return $table
+            ->extraAttributes(['class' => 'pdc-users-table'])
             ->columns([
                 Tables\Columns\ImageColumn::make('avatar_path')->label('Foto')->disk('public')->circular()->defaultImageUrl(asset('images/no-photo.svg')),
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable(),

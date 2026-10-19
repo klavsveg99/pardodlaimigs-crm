@@ -109,6 +109,7 @@ class IzpilditajsResource extends Resource
             && (auth()->user()?->can('manage') ?? false));
 
         return $table
+            ->extraAttributes(['class' => 'pdc-izpilditajs-table'])
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('#')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable()->weight('bold')->wrap(),

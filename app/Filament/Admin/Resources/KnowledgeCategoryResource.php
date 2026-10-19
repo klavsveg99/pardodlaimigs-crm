@@ -70,7 +70,7 @@ class KnowledgeCategoryResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->columns([
+        return $table->extraAttributes(['class' => 'pdc-knowledge-categories-table'])->columns([
             Tables\Columns\TextColumn::make('name')->label('Kategorija')->searchable()->sortable()->weight('bold'),
             Tables\Columns\TextColumn::make('articles_count')->label('Materiāli')->counts('articles'),
         ])->actions([
