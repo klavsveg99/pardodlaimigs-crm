@@ -20,6 +20,7 @@ class CrmProperty extends Model
     public const STATUSES = [
         'draft' => 'Melnraksts',
         'published' => 'Pārdošanā',
+        'reserved' => 'Rezervēts',
         'sold' => 'Pārdots',
         'deleted' => 'Dzēsts',
     ];

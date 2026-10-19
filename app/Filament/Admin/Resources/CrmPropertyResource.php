@@ -488,6 +488,8 @@ class CrmPropertyResource extends Resource
 
                             if ($status === 'sold') {
                                 $prefix = 'Pārdots';
+                            } elseif ($status === 'reserved') {
+                                $prefix = 'Rezervēts';
                             } elseif ($status === 'published') {
                                 $prefix = 'Pārdošanā';
                             } else {
@@ -522,6 +524,7 @@ class CrmPropertyResource extends Resource
                             };
                             $prefixEn = match ($status) {
                                 'sold' => 'Sold',
+                                'reserved' => 'Reserved',
                                 'published' => 'For sale',
                                 'deleted' => 'Withdrawn',
                                 default => 'Offered',
@@ -723,42 +726,66 @@ class CrmPropertyResource extends Resource
             ->filtersFormColumns(3)
             ->actions([
                 Actions\ActionGroup::make([
-                    // Ātrā darbība "Pārdots": darījuma reģistrēšana vienā
-                    // klikšķī (gala cena + komisija), bez pilnas rediģēšanas
-                    // formas. Statuss kļūst "Pārdots".
-                    Actions\Action::make('mark_sold')
-                        ->label('Pārdots')
-                        ->icon('heroicon-o-check-badge')
-                        ->color('success')
-                        ->visible(fn (CrmProperty $record): bool => $record->status !== 'sold'
-                            && $record->status !== 'deleted'
+                    // Ātrā darbība "Mainīt statusu": vienā modālī nomaina
+                    // statusu. Katram statusam tiek prasīti tikai tam
+                    // nepieciešamie lauki — "Pārdots" prasa gala cenu un
+                    // komisiju (un izsauc svinību animāciju), pārējie tikai
+                    // pašu statusu.
+                    Actions\Action::make('change_status')
+                        ->label('Mainīt statusu')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('gray')
+                        ->visible(fn (CrmProperty $record): bool => $record->status !== 'deleted'
                             && ! auth()->user()?->isPhoto())
-                        ->modalHeading('Reģistrēt darījumu')
-                        ->modalDescription('Atzīmēt īpašumu kā pārdotu. Norādi gala cenu un komisijas summu.')
-                        ->modalSubmitActionLabel('Atzīmēt kā pārdotu')
+                        ->modalHeading('Mainīt statusu')
+                        ->modalSubmitActionLabel('Saglabāt statusu')
                         ->form([
+                            Forms\Components\Select::make('status')
+                                ->label('Statuss')
+                                ->options(array_diff_key(CrmProperty::STATUSES, ['deleted' => true]))
+                                ->default(fn (CrmProperty $record): string => $record->status)
+                                ->required()
+                                ->live(),
+                            // Gala cena un komisija parādās un kļūst obligātas
+                            // tikai statusam "Pārdots" (tāpat kā rediģēšanas
+                            // formā).
                             Forms\Components\TextInput::make('final_price_eur')
                                 ->label('Gala cena (€)')
                                 ->numeric()
                                 ->minValue(0)
                                 ->prefix('€')
-                                ->required()
+                                ->placeholder('Ievadi gala cenu')
+                                ->visible(fn (Get $get): bool => $get('status') === 'sold')
+                                ->required(fn (Get $get): bool => $get('status') === 'sold')
                                 ->validationMessages([
-                                    'required' => 'Gala cena ir obligāta.',
+                                    'required' => 'Gala cena ir obligāta, atzīmējot īpašumu kā pārdotu.',
                                 ]),
                             Forms\Components\TextInput::make('commission_eur')
                                 ->label('Komisijas summa (€)')
                                 ->numeric()
                                 ->minValue(0)
                                 ->prefix('€')
-                                ->required()
+                                ->placeholder('Ievadi komisiju')
+                                ->visible(fn (Get $get): bool => $get('status') === 'sold')
+                                ->required(fn (Get $get): bool => $get('status') === 'sold')
                                 ->validationMessages([
-                                    'required' => 'Komisijas summa ir obligāta.',
+                                    'required' => 'Komisijas summa ir obligāta, atzīmējot īpašumu kā pārdotu.',
                                 ]),
                         ])
                         ->action(function (CrmProperty $record, array $data, $livewire): void {
+                            $status = (string) $data['status'];
+
+                            if ($status === $record->status) {
+                                Notification::make()
+                                    ->title('Statuss nav mainīts')
+                                    ->body('Īpašumam jau ir izvēlētais statuss.')
+                                    ->send();
+
+                                return;
+                            }
+
                             // Pārdotu īpašumu nevar reģistrēt bez pārdevēja.
-                            if (! $record->hasSeller()) {
+                            if ($status === 'sold' && ! $record->hasSeller()) {
                                 Notification::make()
                                     ->title('Nav piesaistīta pārdevēja')
                                     ->body('Īpašumu nevar atzīmēt kā "Pārdots" bez piesaistīta pārdevēja. Vispirms piesaisti pārdevēju.')
@@ -768,18 +795,22 @@ class CrmPropertyResource extends Resource
                                 return;
                             }
 
-                            $record->update([
-                                'status' => 'sold',
-                                'final_price_eur' => $data['final_price_eur'],
-                                'commission_eur' => $data['commission_eur'],
-                            ]);
+                            $update = ['status' => $status];
+                            if ($status === 'sold') {
+                                $update['final_price_eur'] = $data['final_price_eur'];
+                                $update['commission_eur'] = $data['commission_eur'];
+                            }
+
+                            $record->update($update);
 
                             Notification::make()
-                                ->title('Īpašums atzīmēts kā pārdots')
+                                ->title('Statuss mainīts uz "'.(CrmProperty::STATUSES[$status] ?? $status).'"')
                                 ->success()
                                 ->send();
 
-                            $livewire->dispatch('pdc-property-sold', title: $record->title);
+                            if ($status === 'sold') {
+                                $livewire->dispatch('pdc-property-sold', title: $record->title);
+                            }
                         }),
 
                     // Ātrā darbība pārdotiem īpašumiem: vienā klikšķī atver
@@ -912,22 +943,53 @@ class CrmPropertyResource extends Resource
                         ->form([
                             Forms\Components\Select::make('status')
                                 ->label('Statuss')
-                                ->options(CrmProperty::STATUSES)
-                                ->required(),
+                                ->options(array_diff_key(CrmProperty::STATUSES, ['deleted' => true]))
+                                ->required()
+                                ->live(),
+                            Forms\Components\TextInput::make('final_price_eur')
+                                ->label('Gala cena (€)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->prefix('€')
+                                ->visible(fn (Get $get): bool => $get('status') === 'sold')
+                                ->required(fn (Get $get): bool => $get('status') === 'sold')
+                                ->validationMessages([
+                                    'required' => 'Gala cena ir obligāta, atzīmējot īpašumu kā pārdotu.',
+                                ]),
+                            Forms\Components\TextInput::make('commission_eur')
+                                ->label('Komisijas summa (€)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->prefix('€')
+                                ->visible(fn (Get $get): bool => $get('status') === 'sold')
+                                ->required(fn (Get $get): bool => $get('status') === 'sold')
+                                ->validationMessages([
+                                    'required' => 'Komisijas summa ir obligāta, atzīmējot īpašumu kā pārdotu.',
+                                ]),
                         ])
                         ->action(function (Collection $records, array $data): void {
-                            $status = $data['status'];
+                            $status = (string) $data['status'];
                             $updated = 0;
                             $blocked = [];
 
                             foreach ($records as $record) {
+                                if ($record->status === $status) {
+                                    continue;
+                                }
+
                                 // Pārdotu īpašumu nevar atzīmēt bez pārdevēja.
                                 if ($status === 'sold' && ! $record->hasSeller()) {
                                     $blocked[] = $record->title;
                                     continue;
                                 }
 
-                                $record->update(['status' => $status]);
+                                $update = ['status' => $status];
+                                if ($status === 'sold') {
+                                    $update['final_price_eur'] = $data['final_price_eur'];
+                                    $update['commission_eur'] = $data['commission_eur'];
+                                }
+
+                                $record->update($update);
                                 $updated++;
                             }
 

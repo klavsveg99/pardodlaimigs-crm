@@ -43,6 +43,9 @@ function pdc_map_status($crm_status)
         case 'draft':     return 'draft';
         case 'expired':   return 'expired';
         case 'hidden':    return 'private';
+        // Rezervēts paliek redzams mājaslapā (rokas nauda saņemta, darījums
+        // vēl nav noslēgts) — publish, nevis draft.
+        case 'reserved':  return 'publish';
         // Pārdots īpašums nedrīkst būt redzams frontendā — private (nevis
         // publish), lai WP meklēšana/lokatori to izlaiž, bet posts paliek
         // saglabāts WP admin pusē.

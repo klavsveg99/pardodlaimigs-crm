@@ -52,6 +52,29 @@ class CrmPropertyFeedController extends Controller
         ]);
     }
 
+    /**
+     * Public slug -> status map for the new frontend (pardodlaimigs.lv/new/).
+     * No API key: a listing page only needs to know which properties are
+     * reserved so it can badge them and sort them last. Deleted properties
+     * are omitted; everything else is returned so the site can hide anything
+     * that is no longer published.
+     */
+    public function publicStatuses(): JsonResponse
+    {
+        $properties = CrmProperty::query()
+            ->where('status', '!=', 'deleted')
+            ->get(['slug', 'status'])
+            ->map(fn (CrmProperty $property): array => [
+                'slug' => (string) $property->slug,
+                'status' => (string) $property->status,
+            ])
+            ->values();
+
+        return response()
+            ->json(['properties' => $properties])
+            ->header('Cache-Control', 'no-store, max-age=0');
+    }
+
     public function agents(Request $request): JsonResponse
     {
         if (! $this->hasValidApiKey($request)) {
