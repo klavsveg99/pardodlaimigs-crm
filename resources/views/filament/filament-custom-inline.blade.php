@@ -1124,6 +1124,13 @@ html.dark .rounded-xl .text-emerald-900 {
     overflow-wrap: normal !important;
 }
 
+/* A narrow column must wrap its label instead of running into the next one. */
+.fi-ta-table .fi-ta-header-cell-sort-btn {
+    flex-wrap: wrap !important;
+    min-width: 0 !important;
+    overflow-wrap: anywhere !important;
+}
+
 /* Tablet and small-desktop tables: the wide resource lists have to share one
    row, so use a fixed layout and let headers wrap. This keeps the table inside
    the panel instead of scrolling sideways; the stacked cards below 640px are
@@ -1197,19 +1204,19 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-selection-cell { width: 4% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-featured-thumb { width: 6% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-is-featured { width: 3% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title { width: 24% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-category { width: 8% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title { width: 18.5% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-category { width: 8.5% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-status { width: 7.5% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-city { width: 9% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-city { width: 12% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-kadastra-nr { width: 9.5% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-price-eur { width: 8.5% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-owner\.name { width: 8% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-updated-at { width: 8% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-updated-at { width: 10% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-actions-header-cell { width: 4.5% !important; }
 
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell {
         white-space: normal !important;
-        padding-inline: 0.5rem !important;
+        padding-inline: 0.375rem !important;
     }
 
     .fi-ta.pdc-properties-table .fi-ta-table .fi-ta-header-cell-sort-btn {
