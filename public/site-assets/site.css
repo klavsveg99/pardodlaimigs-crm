@@ -655,19 +655,31 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
 .post-body { color: #3c4744; font-size: 15px; line-height: 1.8; overflow-wrap: break-word; }
 .post-body iframe, .post-body video, .post-body table { max-width: 100%; }
 .property-detail-text, .agent-description { overflow-wrap: break-word; }
+/* Migrated WordPress articles carry their own block soup: the browser's 40px
+   figure indent, stray empty paragraphs and a trailing margin. They are
+   normalised so the body sits on the same left edge and rhythm as the rest of
+   the page. */
+.post-body figure { margin: 0 0 16px; }
+.post-body p { margin: 0 0 16px; }
+.post-body p:empty { display: none; }
+.post-body > :last-child { margin-bottom: 0; }
 .post-body h2 { margin: 34px 0 12px; font-size: 22px; letter-spacing: -.02em; }
 .post-body h3 { margin: 26px 0 10px; font-size: 18px; }
-.post-body p { margin: 0 0 16px; }
 .post-body ul, .post-body ol { margin: 0 0 16px; padding-left: 20px; }
 .post-body li { margin-bottom: 8px; }
 .post-body img { margin: 18px 0; width: 100%; height: auto; }
-.post-body a { color: var(--brand); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.post-body a { color: var(--brand); font-weight: 600; text-decoration: none; }
+.post-body a:hover, .post-body a:focus-visible { color: var(--accent); }
 .post-body blockquote { margin: 20px 0; padding: 4px 0 4px 18px; border-left: 2px solid var(--accent); color: var(--muted); }
-.post-body video { width: 100%; margin: 18px 0; }
+.post-body video { width: 100%; aspect-ratio: 16 / 9; margin: 18px 0; }
+/* The notes in the copied articles are marked with icons instead of emoji
+   (see the migration): keep them on the text's optical line, inset them and
+   let them take the article's accent colour. */
+.post-body i.fa-solid { margin-right: .45em; color: var(--accent); font-size: .95em; vertical-align: -.125em; }
 /* Video links inside migrated posts get an icon in front of them, drawn with
    the icon font so the stored WordPress HTML stays untouched. */
-.site-video-link a { display: inline-flex; align-items: baseline; gap: 9px; color: var(--brand); font-weight: 600; }
-.site-video-link a::before { content: '\f03d'; font-family: 'Font Awesome 6 Free'; font-size: 13px; font-weight: 900; }
+.site-video-link a { color: var(--brand); font-weight: 600; }
+.site-video-link a::before { content: '\f03d'; margin-right: .5em; font-family: 'Font Awesome 6 Free'; font-size: .95em; font-weight: 900; vertical-align: -.125em; }
 .agent-page { padding: 96px 0 40px; }
 .agent-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 46px; align-items: center; }
 .agent-portrait { width: 100%; max-height: 460px; object-fit: cover; object-position: center 30%; }
