@@ -115,7 +115,7 @@
     opacity: 0.5;
 }
 
-/* Featured star: gold when active, muted when not. */
+/* Featured star: gold when active, muted when not. The star cell is the toggle. */
 .fi-ta-table .pdc-featured-yes .fi-icon {
     color: #eab308 !important;
 }
@@ -129,6 +129,13 @@
 .dark .fi-ta-table .pdc-featured-no .fi-icon {
     color: #71717a !important;
     opacity: 0.5;
+}
+.fi-ta-table .pdc-featured-toggle .fi-ta-col {
+    cursor: pointer;
+}
+.fi-ta-table .pdc-featured-toggle .fi-ta-col:hover .fi-icon,
+.fi-ta-table .pdc-featured-toggle .fi-ta-col:focus-visible .fi-icon {
+    opacity: 1;
 }
 
 /* Sidebar icons stay as-is — excluded from global icon rules. */
@@ -1120,12 +1127,54 @@ html.dark .rounded-xl .text-emerald-900 {
     overflow-wrap: normal !important;
 }
 
-/* Desktop properties table: keep the title readable instead of letting the
-   many badge/number columns squeeze it down to a few characters per line. */
+/* Desktop properties table: twelve columns share one row, so use a fixed
+   layout and give the title a quarter of the width. Auto layout let the
+   compact columns keep their max-content width and squeezed the title down to
+   a few characters per line; fixed widths keep the table inside the panel
+   without horizontal scrolling. */
 @media (min-width: 640px) {
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title,
-    .fi-ta.pdc-properties-table .fi-ta-table td.fi-ta-cell-title {
-        min-width: 18rem !important;
+    .fi-ta.pdc-properties-table .fi-ta-table {
+        table-layout: fixed !important;
+    }
+
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-selection-cell { width: 4% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-featured-thumb { width: 6% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-is-featured { width: 3% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title { width: 24.5% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-category { width: 8% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-status { width: 7.5% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-city { width: 9% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-kadastra-nr { width: 9.5% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-price-eur { width: 8.5% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-owner\.name { width: 8% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-updated-at { width: 8% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-actions-header-cell { width: 4% !important; }
+
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell {
+        white-space: normal !important;
+        padding-inline: 0.5rem !important;
+    }
+
+    .fi-ta.pdc-properties-table .fi-ta-table .fi-ta-header-cell-sort-btn {
+        white-space: normal !important;
+        gap: 0.25rem !important;
+    }
+
+    /* 11-digit cadastre numbers must not break in the middle. */
+    .fi-ta.pdc-properties-table .fi-ta-table td.fi-ta-cell-kadastra-nr {
+        white-space: nowrap !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+    }
+
+    .fi-ta.pdc-properties-table .fi-ta-table td:has(> .fi-ta-actions) {
+        width: auto !important;
+        min-width: 0 !important;
+        padding-inline: 0.25rem !important;
+    }
+
+    .fi-ta.pdc-properties-table .fi-ta-table td > .fi-ta-actions {
+        gap: 0.25rem !important;
     }
 }
 
