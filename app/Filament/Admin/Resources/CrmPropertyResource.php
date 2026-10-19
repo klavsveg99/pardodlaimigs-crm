@@ -69,8 +69,9 @@ class CrmPropertyResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        // "photo" loma drīkst rediģēt tikai nosaukumu un galeriju — pārējie
-        // lauki formā vispār netiek parādīti.
+        // "photo" loma drīkst rediģēt nosaukumu, kategoriju un galeriju —
+        // pārējie lauki formā vispār netiek parādīti. Kategorija ir obligāta
+        // arī fotogrāfa izveidotajam īpašumam.
         if (auth()->user()?->isPhoto()) {
             return $schema->schema([
                 Forms\Components\TextInput::make('title')
@@ -78,6 +79,15 @@ class CrmPropertyResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(),
+
+                Forms\Components\Select::make('category')
+                    ->label('Kategorija')
+                    ->options(CrmProperty::CATEGORIES)
+                    ->required()
+                    ->searchable()
+                    ->validationMessages([
+                        'required' => 'Kategorija ir obligāts lauks.',
+                    ]),
 
                 Section::make('Galerija')->columnSpanFull()->schema([
                     AttachmentsGrid::make('attachments')

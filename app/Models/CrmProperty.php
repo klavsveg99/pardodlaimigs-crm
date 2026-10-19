@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class CrmProperty extends Model
 {
@@ -94,6 +95,15 @@ class CrmProperty extends Model
     protected static function booted(): void
     {
         static::saving(function (self $property) {
+            // Kategorija ir obligāta jaunam īpašumam un arī tad, ja to
+            // mēģina notīrīt esošam. Citas atjaunināšanas (statuss, cena,
+            // AI rezultāts) vecākiem ierakstiem paliek iespējamas.
+            if ((! $property->exists || $property->isDirty('category')) && blank($property->category)) {
+                throw ValidationException::withMessages([
+                    'data.category' => 'Kategorija ir obligāts lauks.',
+                ]);
+            }
+
             // Cena pēc noklusējuma 0 (shēma price_eur NOT NULL) — pretējā
             // gadījumā "Cena (€)" tukšā forma izmet SQL 500, nevis validāciju.
             if ($property->price_eur === null) {
