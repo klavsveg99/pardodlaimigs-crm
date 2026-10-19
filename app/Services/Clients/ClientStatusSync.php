@@ -82,7 +82,7 @@ class ClientStatusSync
 
         $hasActive = $client->crmProperties()
             ->wherePivot('relation', 'seller')
-            ->whereIn('crm_properties.status', ['published', 'draft'])
+            ->whereIn('crm_properties.status', ['published', 'draft', 'reserved'])
             ->exists();
 
         return $hasActive ? 'active' : 'laimigs';

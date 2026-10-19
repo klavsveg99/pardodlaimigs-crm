@@ -257,7 +257,11 @@ class CrmProperty extends Model
             $base = rtrim((string) config('wp-bridge.wordpress.site_url'), '/');
 
             if (filled($this->wp_post_id)) {
-                $preview = $this->status !== 'published' ? '&post_type=property&preview=true' : '';
+                // Rezervēts ir publiski redzams (mu-plugin to publicē), tāpēc
+                // preview parametru tam nevajag — tikai melnrakstam, pārdotam
+                // un dzēstam.
+                $needsPreview = in_array($this->status, ['draft', 'sold', 'deleted'], true);
+                $preview = $needsPreview ? '&post_type=property&preview=true' : '';
 
                 return $base.'/?p='.(int) $this->wp_post_id.$preview;
             }
