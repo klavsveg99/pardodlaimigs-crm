@@ -1274,7 +1274,7 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-selection-cell { width: 44px !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-featured-thumb { width: 68px !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title { width: 20% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-status { width: 10% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-status { width: 12% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-city { width: 15% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-price-eur { width: 12% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-owner\.name { width: 10% !important; }
