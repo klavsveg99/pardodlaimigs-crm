@@ -1009,6 +1009,14 @@ html.dark .rounded-xl .text-emerald-900 {
     overflow-x: auto !important;
 }
 
+/* Filament's 4xl filter dropdown is wider than the table toolbar below ~1000px,
+   so it starts at the content edge and runs past the viewport. Keep it inside
+   the toolbar (which is already inset from the screen edges). */
+.fi-ta-filters-dropdown .fi-dropdown-panel {
+    width: min(56rem, 100%) !important;
+    max-width: 100% !important;
+}
+
 .fi-ta-table {
     table-layout: auto !important;
     box-sizing: border-box !important;
