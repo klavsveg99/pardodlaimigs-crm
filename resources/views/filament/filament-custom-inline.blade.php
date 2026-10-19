@@ -1176,6 +1176,12 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta.pdc-properties-table .fi-ta-table td > .fi-ta-actions {
         gap: 0.25rem !important;
     }
+
+    /* Filament's icon buttons carry a -8px margin that assumes the default
+       1rem action-cell padding; this table uses a tighter action column. */
+    .fi-ta.pdc-properties-table .fi-ta-table .fi-ac-icon-btn-group {
+        margin: 0 !important;
+    }
 }
 
 .fi-ta-table .fi-ta-text {
