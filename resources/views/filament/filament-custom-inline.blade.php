@@ -1185,6 +1185,10 @@ html.dark .rounded-xl .text-emerald-900 {
 
     .fi-ta-table .fi-badge { white-space: normal !important; }
 
+    /* Cells carry 0.75rem of inline padding each side, which leaves very
+       little text room once the columns share a tablet-width row. */
+    .fi-ta-table .fi-ta-text { padding-inline: 0.25rem !important; }
+
     /* Keep phone numbers, prices and dates inside their column instead of
        letting the nowrap cell run over its neighbour. */
     .fi-ta-table td.pdc-nowrap,
@@ -1256,18 +1260,19 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-kadastra-nr,
     .fi-ta.pdc-properties-table .fi-ta-table td.fi-ta-cell-kadastra-nr,
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-updated-at,
-    .fi-ta.pdc-properties-table .fi-ta-table td.fi-ta-cell-updated-at {
+    .fi-ta.pdc-properties-table .fi-ta-table td.fi-ta-cell-updated-at,
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-category,
+    .fi-ta.pdc-properties-table .fi-ta-table td.fi-ta-cell-category {
         display: none !important;
     }
 
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-selection-cell { width: 44px !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-featured-thumb { width: 68px !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title { width: 24% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-category { width: 8% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title { width: 20% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-status { width: 10% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-city { width: 12% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-price-eur { width: 9% !important; }
-    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-owner\.name { width: 9% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-city { width: 15% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-price-eur { width: 12% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-owner\.name { width: 10% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-actions-header-cell { width: 48px !important; }
 }
 
@@ -1301,9 +1306,7 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta.pdc-wpforms-table th.fi-ta-header-cell-form-name,
     .fi-ta.pdc-wpforms-table td.fi-ta-cell-form-name,
     .fi-ta.pdc-wpforms-table th.fi-ta-header-cell-phone,
-    .fi-ta.pdc-wpforms-table td.fi-ta-cell-phone,
-    .fi-ta.pdc-properties-table th.fi-ta-header-cell-category,
-    .fi-ta.pdc-properties-table td.fi-ta-cell-category {
+    .fi-ta.pdc-wpforms-table td.fi-ta-cell-phone {
         display: none !important;
     }
 }
@@ -1315,6 +1318,11 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta.pdc-properties-table td.fi-ta-cell-city {
         display: none !important;
     }
+
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-title { width: 23% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-status { width: 14% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-price-eur { width: 16% !important; }
+    .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-owner\.name { width: 10% !important; }
 }
 
 .fi-ta-table .fi-ta-text {
