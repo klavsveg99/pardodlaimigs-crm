@@ -1205,6 +1205,11 @@ html.dark .rounded-xl .text-emerald-900 {
         table-layout: fixed !important;
     }
 
+    /* The thumbnail needs its 60px, not another 24px of cell padding. */
+    .fi-ta.pdc-properties-table .fi-ta-table .fi-ta-image {
+        padding-inline: 0 !important;
+    }
+
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-selection-cell { width: 4% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-featured-thumb { width: 6% !important; }
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell-is-featured { width: 3% !important; }
