@@ -125,7 +125,11 @@
     </x-filament::section>
 
     <x-filament::section heading="Apraksts">
-        <div class="prose max-w-none text-sm text-gray-700 dark:text-gray-300">
+        {{-- fi-prose is the class Filament's RichEditor puts on the edit form's
+             content area, so the description renders with the same typography
+             and block spacing here as in the WYSIWYG. The font size matches
+             the editor's ProseMirror base size (fi-prose itself is 14px). --}}
+        <div class="fi-prose" style="font-size: 1rem;">
             {!! $record->description ?: '<span class="text-gray-400">Nav apraksta.</span>' !!}
         </div>
     </x-filament::section>
