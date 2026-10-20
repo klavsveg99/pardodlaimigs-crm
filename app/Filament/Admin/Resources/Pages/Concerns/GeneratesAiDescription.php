@@ -30,7 +30,7 @@ trait GeneratesAiDescription
             'title' => $data['title'] ?? null,
             'category' => $data['category'] ?? null,
             'status' => $data['status'] ?? null,
-            'price_eur' => $data['price_eur'] ?? null,
+            'price_eur' => ((float) ($data['price_eur'] ?? 0)) > 0 ? $data['price_eur'] : null,
             'beds' => $data['beds'] ?? null,
             'baths' => $data['baths'] ?? null,
             'size_m2' => $data['size_m2'] ?? null,

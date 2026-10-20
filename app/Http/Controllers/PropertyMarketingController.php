@@ -111,7 +111,7 @@ class PropertyMarketingController extends Controller
                 'title' => $property->title,
                 'category' => $property->category,
                 'status' => $property->status,
-                'price_eur' => $property->price_eur,
+                'price_eur' => (float) $property->price_eur > 0 ? $property->price_eur : null,
                 'beds' => $property->beds,
                 'baths' => $property->baths,
                 'size_m2' => $property->size_m2,
