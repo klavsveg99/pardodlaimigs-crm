@@ -62,7 +62,11 @@ class CrmPropertiesAsBuyerRelationManager extends RelationManager
                     ->badge()
                     ->sortable()
                     ->formatStateUsing(fn ($state) => CrmProperty::STATUSES[$state] ?? $state),
-                Tables\Columns\TextColumn::make('price_eur')->label('Cena')->money('EUR')->sortable(),
+                Tables\Columns\TextColumn::make('price_eur')->label('Cena')
+                    ->state(fn (CrmProperty $record): ?float => (float) $record->price_eur > 0 ? (float) $record->price_eur : null)
+                    ->money('EUR')
+                    ->placeholder('Pēc pieprasījuma')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('pivot.relation')
                     ->label('Saistība')
                     ->badge()

@@ -371,7 +371,7 @@
                             <p class="f-address" data-out="address">{{ $addressLine }}</p>
 
                             <div class="price-box">
-                                <div class="f-price" data-out="price">{{ $priceValue }}</div>
+                                <div class="f-price" data-out="price">{{ $priceValue !== '' ? $priceValue : 'Cena pēc pieprasījuma' }}</div>
                                 <div class="price-meta" id="price-meta">
                                     <span data-out="area">{{ $areaValue }}</span> m²
                                     <span data-show-if="pricePerSqm">• <span data-out="pricePerSqm">{{ $pricePerSqmValue }}</span> €/m²</span>
@@ -466,6 +466,9 @@
             }
 
             function update(key, value) {
+                if (key === 'price' && String(value).trim() === '') {
+                    value = 'Cena pēc pieprasījuma';
+                }
                 document.querySelectorAll('[data-out="' + key + '"]').forEach(function (node) {
                     if (key === 'cta') { node.textContent = value; return; }
                     node.textContent = value;

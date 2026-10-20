@@ -946,10 +946,15 @@ function pdc_upsert_property($data, $agent_map = [])
     update_post_meta($post_id, '_pdc_crm_id', $crm_id);
     update_post_meta($post_id, '_pdc_last_sync', current_time('mysql'));
 
-    update_post_meta($post_id, 'real_estate_property_price', $price);
+    // Cena CRM nav obligāta: 0 nozīmē "cena pēc pieprasījuma". ERE rāda
+    // tukšas cenas vietā opcijas empty_price_text tekstu, tāpēc glabājam ''
+    // (nevis 0, kas priekšpusē izskatītos kā "0 €").
+    $price_on_request = (float) $price <= 0;
+
+    update_post_meta($post_id, 'real_estate_property_price', $price_on_request ? '' : $price);
     update_post_meta($post_id, 'real_estate_property_price_unit', '1');
-    update_post_meta($post_id, 'real_estate_property_price_short', $price);
-    update_post_meta($post_id, 'real_estate_property_price_on_call', 0);
+    update_post_meta($post_id, 'real_estate_property_price_short', $price_on_request ? '' : $price);
+    update_post_meta($post_id, 'real_estate_property_price_on_call', $price_on_request ? 1 : 0);
     update_post_meta($post_id, 'real_estate_property_identity', $post_id);
     // Size may be NULL for land-only properties (e.g., Zeme) — store 0 so ERE
     // size slider (0-3000) doesn't exclude them via meta_query. The "Telpu

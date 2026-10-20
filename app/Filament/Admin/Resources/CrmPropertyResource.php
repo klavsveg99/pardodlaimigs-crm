@@ -214,15 +214,13 @@ class CrmPropertyResource extends Resource
                                 }),
                         ]),
 
+                    // Cena nav obligāta: bez tās vietnē rāda "Cena pēc
+                    // pieprasījuma" (skat. CrmProperty::price_display).
                     Forms\Components\TextInput::make('price_eur')
                         ->label('Cena (€)')
                         ->numeric()
                         ->minValue(0)
-                        ->prefix('€')
-                        ->required()
-                        ->validationMessages([
-                            'required' => 'Cena ir obligāts lauks.',
-                        ]),
+                        ->prefix('€'),
 
                     Forms\Components\DatePicker::make('sale_started_at')
                         ->label('Pārdošanas sākuma datums')
@@ -749,7 +747,12 @@ class CrmPropertyResource extends Resource
                     ->placeholder(fn ($state) => $state ? null : '—')
                     ->icon(fn ($state) => $state ? null : 'heroicon-o-exclamation-triangle')
                     ->iconColor('warning'),
-                Tables\Columns\TextColumn::make('price_eur')->label('Cena')->money('EUR')->sortable()->extraCellAttributes(['class' => 'pdc-nowrap']),
+                Tables\Columns\TextColumn::make('price_eur')->label('Cena')
+                    ->state(fn (CrmProperty $record): ?float => (float) $record->price_eur > 0 ? (float) $record->price_eur : null)
+                    ->money('EUR')
+                    ->placeholder('Pēc pieprasījuma')
+                    ->sortable()
+                    ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('owner.name')->label('Aģents')->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Atjaunināts')->since()->sortable(),
             ])

@@ -50,7 +50,7 @@
                     @if ($hasLocation)
                         <div class="property-map" id="property-map" hidden></div>
                     @endif
-                    <p class="property-detail-price">{{ $property['price'] ?? ($copy['priceFrom'] ?? '') }}</p>
+                    <p class="property-detail-price">{{ $property['price'] ?: ($copy['priceFrom'] ?? '') }}</p>
                     @if ($facts->isNotEmpty())
                         <ul class="property-detail-facts">
                             @foreach ($facts as $fact)

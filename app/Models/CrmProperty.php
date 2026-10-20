@@ -231,7 +231,7 @@ class CrmProperty extends Model
     public function getPriceDisplayAttribute(): string
     {
         if ($this->price_eur <= 0) {
-            return '';
+            return 'Cena pēc pieprasījuma';
         }
 
         return number_format((float) $this->price_eur, 0, '.', ' ').' €';
