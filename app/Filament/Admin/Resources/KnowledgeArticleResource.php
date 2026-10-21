@@ -119,6 +119,7 @@ class KnowledgeArticleResource extends Resource
                 ->simple(TextInput::make('video_url')->label('Video saite')->url()->required()->maxLength(2048))
                 ->default([])
                 ->addActionLabel('Pievienot video')
+                ->addActionAlignment(Alignment::Start)
                 ->reorderableWithButtons()
                 ->columnSpanFull(),
             Forms\Components\Repeater::make('steps')
