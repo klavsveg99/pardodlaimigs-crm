@@ -84,7 +84,7 @@ class NoticeCenter
             ->map(fn (Client $client): array => [
                 'key' => $this->followUpKey($client),
                 'type' => 'Follow-up',
-                'type_color' => 'warning',
+                'type_color' => 'gray',
                 'icon' => 'heroicon-o-calendar-days',
                 'urgent' => false,
                 'title' => $client->name,

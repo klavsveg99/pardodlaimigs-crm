@@ -263,6 +263,12 @@ class ClientResource extends Resource
                     ->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')->searchable()->copyable()->sortable(),
                 Tables\Columns\TextColumn::make('owner.name')->label('Aģents')->sortable()->toggleable(),
+                Tables\Columns\TextColumn::make('follow_up_at')
+                    ->label('Nākamais saziņas datums')
+                    ->date('d.m.Y')
+                    ->placeholder('—')
+                    ->sortable()
+                    ->visible(fn (): bool => ($table->getLivewire()?->activeTab ?? 'active') === 'lead'),
                 Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->sortable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('crm_properties_count')
                     ->counts('crmProperties')
