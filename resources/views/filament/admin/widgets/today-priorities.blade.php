@@ -34,7 +34,7 @@
                             $quickMethod = 'completeTask';
                         } elseif (! empty($item['viewing_id'])) {
                             $quickMethod = 'completeViewing';
-                        } elseif (! empty($item['knowledge_assignment_id']) && ! empty($item['can_complete'])) {
+                        } elseif (! empty($item['knowledge_assignment_id'])) {
                             $quickMethod = 'completeKnowledgeAssignment';
                         } else {
                             $quickMethod = null;

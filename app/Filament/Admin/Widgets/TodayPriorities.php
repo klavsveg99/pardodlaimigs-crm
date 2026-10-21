@@ -293,16 +293,17 @@ class TodayPriorities extends Widget
     /** @return array<int, array<string, mixed>> */
     protected function knowledgeNotifications(): array
     {
+        // Materiāli ir personiski: rāda tikai šim lietotājam piešķirtos,
+        // arī administratoram.
         return KnowledgeAssignment::query()
+            ->where('assigned_user_id', auth()->id())
             ->whereNull('completed_at')
-            ->when($this->scopeToUser(), fn ($query) => $query->where('assigned_user_id', auth()->id()))
-            ->with(['article', 'assignedTo'])
+            ->with(['article'])
             ->get()
             ->map(function (KnowledgeAssignment $assignment): array {
                 return [
                     'key' => 'knowledge-'.$assignment->id,
                     'knowledge_assignment_id' => $assignment->id,
-                    'can_complete' => $assignment->assigned_user_id === auth()->id(),
                     'type' => KnowledgeArticle::TYPES[$assignment->article->type] ?? 'Materiāls',
                     'type_color' => 'gray',
                     'icon' => 'heroicon-o-academic-cap',
@@ -311,9 +312,6 @@ class TodayPriorities extends Widget
                     'url' => KnowledgeArticleResource::getUrl('view', ['record' => $assignment->article]),
                     'fields' => array_values(array_filter([
                         $assignment->due_at ? ['label' => 'Termiņš', 'value' => $assignment->due_at->locale('lv')->translatedFormat('d.m.Y')] : null,
-                        $assignment->assignedTo && $this->scopeToUser() === false
-                            ? ['label' => 'Aģents', 'value' => $assignment->assignedTo->name]
-                            : null,
                     ])),
                     'status' => null,
                     'status_color' => 'gray',

@@ -85,7 +85,17 @@ class KnowledgeArticleResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with('category');
+        $query = parent::getEloquentQuery()->with('category');
+
+        // Aģents redz tikai tos materiālus, kas viņam piešķirti.
+        if (! (auth()->user()?->can('manage') ?? false)) {
+            $query->whereHas(
+                'assignments',
+                fn (Builder $assignment): Builder => $assignment->where('assigned_user_id', auth()->id()),
+            );
+        }
+
+        return $query;
     }
 
     public static function form(Schema $schema): Schema
