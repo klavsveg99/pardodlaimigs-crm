@@ -23,6 +23,25 @@ function pdc_log($msg)
 }
 
 /**
+ * WordPress wptexturize, Elementor data and TranslatePress dictionaries can
+ * all emit an en/em dash. The client wants plain hyphens only, so normalise
+ * the finished public HTML.
+ */
+add_action('template_redirect', function () {
+    if (is_admin() || wp_doing_ajax()) {
+        return;
+    }
+
+    ob_start(function ($html) {
+        return str_replace(
+            ["\u{2013}", "\u{2014}", "\u{2015}", '&#8211;', '&#8212;', '&ndash;', '&mdash;'],
+            '-',
+            $html
+        );
+    });
+}, 1);
+
+/**
  * Purge the public page for a property post.
  *
  * Gallery and featured-image changes are meta-only updates: they never fire
