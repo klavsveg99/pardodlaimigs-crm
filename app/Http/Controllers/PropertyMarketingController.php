@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
 
 /**
- * "PDF mārketings" — viegla A4 lapas ģeneratora lapa, kas automātiski
+ * "PDF mārketings" - viegla A4 lapas ģeneratora lapa, kas automātiski
  * aizpilda īpašuma datus un attēlus un ļauj tos lejupielādēt kā PDF
  * (html2pdf pēc pieprasījuma) vai izdrukāt.
  *
@@ -35,7 +35,7 @@ class PropertyMarketingController extends Controller
             403,
         );
 
-        // Tikai attēli — galerijā var būt arī cita veida faili.
+        // Tikai attēli - galerijā var būt arī cita veida faili.
         $gallery = $property->attachments
             ->where('collection', 'gallery')
             ->filter(fn (Attachment $attachment): bool => str_starts_with((string) $attachment->mime_type, 'image/'))
@@ -130,7 +130,7 @@ class PropertyMarketingController extends Controller
 
         $ai = is_array($property->ai_result) ? $property->ai_result : [];
         $ai['pdf'] = $html;
-        // Mērķtiecīgi iestatīts PDF apraksts (arī tukšs) — vairs neizmantojam
+        // Mērķtiecīgi iestatīts PDF apraksts (arī tukšs) - vairs neizmantojam
         // Facebook/parastā apraksta fallbacku, lai lietotāja izdzēstais teksts
         // paliktu izdzēsts.
         $ai['pdf_set'] = true;
@@ -175,7 +175,7 @@ class PropertyMarketingController extends Controller
 
     /**
      * PDF bukleta apraksts: AI ģenerētais `ai_result.pdf` (ierobežots HTML),
-     * citādi — Facebook/parastā apraksta teksts sadalīts rindkopās. Vienmēr
+     * citādi - Facebook/parastā apraksta teksts sadalīts rindkopās. Vienmēr
      * attīrīts un apgriezts līdz PDF limita.
      */
     private function flyerDescriptionHtml(CrmProperty $property): string
@@ -183,7 +183,7 @@ class PropertyMarketingController extends Controller
         $ai = is_array($property->ai_result) ? $property->ai_result : [];
         $source = trim((string) ($ai['pdf'] ?? ''));
         // Kad apraksts reiz saglabāts (AI ģenerēts vai manuāli rediģēts),
-        // tukšs saturs nozīmē apzināti izdzēstu aprakstu — nevis fallbacku.
+        // tukšs saturs nozīmē apzināti izdzēstu aprakstu - nevis fallbacku.
         $isSet = ($ai['pdf_set'] ?? false) === true;
 
         if ($isSet || $source !== '') {
@@ -339,7 +339,7 @@ class PropertyMarketingController extends Controller
     }
 
     /**
-     * Google Static Maps attēls kā data URI — tā PDF vienmēr satur karti.
+     * Google Static Maps attēls kā data URI - tā PDF vienmēr satur karti.
      */
     private function staticMapDataUri(CrmProperty $property): ?string
     {

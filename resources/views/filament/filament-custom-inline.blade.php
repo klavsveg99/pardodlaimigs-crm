@@ -5,7 +5,7 @@
     --pdc-primary-darker: #1e4843;
     --pdc-warning: #f97316;
     /* Filament ģenerētā --primary-* palete no #285854 iznāca gaiši
-       tirkīza ("neonzaļa") — wizard soļi, fokusa gredzeni u.c. Pārrakstām
+       tirkīza ("neonzaļa") - wizard soļi, fokusa gredzeni u.c. Pārrakstām
        uz mūsu zīmola zaļo, lai visa sistēma lieto vienu akcenta krāsu. */
     --primary-50: #f1f6f5; --primary-100: #dfeae8; --primary-200: #bfd6d3;
     --primary-300: #98bcb8; --primary-400: #6c9d97; --primary-500: #4a7f78;
@@ -16,7 +16,7 @@
     --success-300: #98bcb8; --success-400: #6c9d97; --success-500: #4a7f78;
     --success-600: #285854; --success-700: #1e4843; --success-800: #173a36;
     --success-900: #112e2b; --success-950: #0a1c1a;
-    /* Teal is legacy brand teal – remap to primary */
+    /* Teal is legacy brand teal - remap to primary */
     --teal-50: var(--pdc-primary) !important; --teal-100: var(--pdc-primary) !important; --teal-200: var(--pdc-primary) !important; --teal-300: var(--pdc-primary) !important; --teal-400: var(--pdc-primary) !important; --teal-500: var(--pdc-primary) !important; --teal-600: var(--pdc-primary-darker) !important; --teal-700: var(--pdc-primary-darker) !important; --teal-800: var(--pdc-primary-darker) !important; --teal-900: var(--pdc-primary-darker) !important; --teal-950: var(--pdc-primary-darker) !important;
 }
 
@@ -138,13 +138,13 @@
     opacity: 1;
 }
 
-/* Sidebar icons stay as-is — excluded from global icon rules. */
+/* Sidebar icons stay as-is - excluded from global icon rules. */
 .fi-sidebar .fi-icon {
     color: inherit !important;
 }
 
 /* Page title and header action buttons ("Jauns īpašums" etc.) share one row:
-   heading block grows, actions stay compact on the right (all viewports —
+   heading block grows, actions stay compact on the right (all viewports -
    Filament stacks them vertically by default). */
 .fi-header {
     flex-direction: row !important;
@@ -160,7 +160,7 @@
     flex: 0 0 auto !important;
 }
 
-/* All headings — page title and section titles — share one neutral
+/* All headings - page title and section titles - share one neutral
    (gray/black) color so nothing stands out by accident. */
 .fi-section-header-heading,
 h1.fi-header-heading {
@@ -238,7 +238,7 @@ h1.fi-header-heading {
     }
 }
 
-/* View pages render disabled selects — the "x" (Clear selection) button is
+/* View pages render disabled selects - the "x" (Clear selection) button is
    dead weight there and must only exist on editable forms. */
 .fi-input-wrp.fi-disabled .fi-select-input-value-remove-btn {
     display: none !important;
@@ -257,7 +257,7 @@ h1.fi-header-heading {
 .fi-file-upload-image-editor .fi-modal {
     z-index: 2147483647 !important;
 }
-/* NOTE: .cropper-modal must NOT get a z-index here — in Cropper.js 1.x the
+/* NOTE: .cropper-modal must NOT get a z-index here - in Cropper.js 1.x the
    drag-box element carries the cropper-modal class (the 50% black overlay that
    covers the image outside the crop box). Forcing it above the crop box
    (z-index: 1) made the whole image, including the selected crop area, appear
@@ -269,8 +269,8 @@ h1.fi-header-heading {
 .pdc-editor-modal .fi-modal-overlay {
     z-index: 2147483647 !important;
 }
-/* Lightbox must be absolute top – fix gallery lightbox showing under form actions / Piesaistītie klienti / Datumi.
-   NOTE: .fi-ta-header must NOT be in this list — z-index on it traps table
+/* Lightbox must be absolute top - fix gallery lightbox showing under form actions / Piesaistītie klienti / Datumi.
+   NOTE: .fi-ta-header must NOT be in this list - z-index on it traps table
    header action modals ("Pievienot klientu" etc.) at z-1, painting them
    below the sidebar and topbar. */
 #content.form-actions, .fi-sc-actions, .fi-form-actions, .fi-page-footer {
@@ -294,7 +294,7 @@ h1.fi-header-heading {
 }
 .fi-section, .fi-resource-relation-managers { z-index: auto !important; position: relative; }
 .fi-section { transform: none !important; will-change: auto !important; }
-/* Any inline lightbox – force to max */
+/* Any inline lightbox - force to max */
 div[style*="z-index:999999"], div[style*="z-index: 999999"], div[style*="z-index:2147483647"] {
     z-index: 2147483647 !important;
 }
@@ -307,7 +307,7 @@ div[style*="z-index:999999"], div[style*="z-index: 999999"], div[style*="z-index
     color: #ffffff !important;
 }
 
-/* Colored buttons have solid backgrounds, so their labels stay white – only for solid (not outlined/ghost) */
+/* Colored buttons have solid backgrounds, so their labels stay white - only for solid (not outlined/ghost) */
 .fi-btn.fi-color-primary:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost),
 .fi-btn.fi-color-primary:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost) *,
 .fi-btn.fi-color-success:not(.fi-btn-type-outlined):not(.fi-btn-type-ghost),
@@ -344,7 +344,7 @@ div[style*="z-index:999999"], div[style*="z-index: 999999"], div[style*="z-index
     border-color: var(--pdc-primary-darker) !important;
 }
 
-/* Plain (non-button) links use the standard text color in both modes —
+/* Plain (non-button) links use the standard text color in both modes -
    only links explicitly colored primary keep the brand color. */
 a.fi-link:not(.fi-btn):not(.fi-color-primary),
 a.fi-link:not(.fi-btn):not(.fi-color-primary) .fi-link-label {
@@ -644,7 +644,7 @@ a.fi-link:not(.fi-btn):not(.fi-color-primary) .fi-link-label {
     border-color: #374151 !important;
 }
 
-/* All checked checkboxes use global accent via var(--pdc-primary) (#285854) – not hardcoded */
+/* All checked checkboxes use global accent via var(--pdc-primary) (#285854) - not hardcoded */
 input[type="checkbox"]:checked,
 .fi-checkbox-input:checked,
 .fi-checkbox input:checked,
@@ -675,7 +675,7 @@ input[type="checkbox"][checked] {
     color: #f3f4f6 !important;
 }
 
-/* Tabs – light + dark always use primary, kill teal #008078 */
+/* Tabs - light + dark always use primary, kill teal #008078 */
 .fi-tabs-nav {
     border-color: #e5e7eb !important;
 }
@@ -708,7 +708,7 @@ input[type="checkbox"][checked] {
     border-color: var(--pdc-primary) !important;
 }
 
-/* Property edit – Apraksts section: the WYSIWYG editor should sit flush
+/* Property edit - Apraksts section: the WYSIWYG editor should sit flush
    beneath the Apraksts/Versijas tab row, not inside a nested contained
    card with its own 1.5rem padding. */
 .pdc-desc-tabs.fi-contained {
@@ -762,7 +762,7 @@ input[type="checkbox"][checked] {
 }
 
 /* Clickable table rows (record URL / row action): visible hover, click and
-   tap feedback. Paint the <tr> itself, not the cells — on the stacked mobile
+   tap feedback. Paint the <tr> itself, not the cells - on the stacked mobile
    layout the row is a grid with gaps between cells, and cell backgrounds
    leave that whitespace uncolored. */
 .fi-ta-table .fi-ta-row.fi-clickable {
@@ -830,7 +830,7 @@ input[type="checkbox"][checked] {
 
 /* Filament only gives the modal header a bottom padding in modals WITHOUT
    content (`.fi-modal-window:not(.fi-modal-window-has-content)`). Every
-   content-bearing modal — "Nosūtīt juristam" and the rest — therefore collapses
+   content-bearing modal - "Nosūtīt juristam" and the rest - therefore collapses
    the header to its text height, so the heading sits flush against the first
    content row. The close button is absolutely positioned against the window
    (`top: 1rem`) and so never lines up with a header that has unequal padding.
@@ -855,7 +855,7 @@ input[type="checkbox"][checked] {
     border-color: #27303a !important;
 }
 
-/* NOTE: no manual modal positioning overrides — Filament centers and sizes
+/* NOTE: no manual modal positioning overrides - Filament centers and sizes
    modal windows natively; forcing top/left/transform on inner containers
    pushes content off-screen (heading/select rendered above the viewport). */
 
@@ -1026,8 +1026,8 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta-content-ctn, .fi-ta-ctn { overflow-x: auto !important; }
 }
 /* Filament returns stacked tables to horizontal layout at its sm breakpoint
-   (640px), so everything that restyles stacked rows must stop at 639px —
-   otherwise 640–767px gets grid rows/fixed layout applied to a real table. */
+   (640px), so everything that restyles stacked rows must stop at 639px -
+   otherwise 640-767px gets grid rows/fixed layout applied to a real table. */
 @media (max-width: 639px) {
     .fi-ta-table { min-width: 0 !important; table-layout: fixed !important; }
 
@@ -1132,9 +1132,11 @@ html.dark .rounded-xl .text-emerald-900 {
     overflow-wrap: normal !important;
 }
 
-/* A narrow column must wrap its label instead of running into the next one. */
+/* A narrow column must wrap its label instead of running into the next one,
+   but the sort icon has to stay on the same line: if it is allowed to wrap it
+   drops below the label and the whole header stops being vertically centered. */
 .fi-ta-table .fi-ta-header-cell-sort-btn {
-    flex-wrap: wrap !important;
+    flex-wrap: nowrap !important;
     min-width: 0 !important;
     overflow-wrap: anywhere !important;
 }
@@ -1158,7 +1160,7 @@ html.dark .rounded-xl .text-emerald-900 {
     }
 
     .fi-ta-table .fi-ta-header-cell-sort-btn {
-        flex-wrap: wrap !important;
+        flex-wrap: nowrap !important;
         min-width: 0 !important;
         white-space: normal !important;
         overflow-wrap: anywhere !important;
@@ -1413,7 +1415,7 @@ html.dark .rounded-xl .text-emerald-900 {
 
 /* ── Section spacing standard ─────────────────────────────────────
    Vertical rhythm belongs to the grid row-gap (24px everywhere), not to
-   section margins — margin-bottom on sections stacked on top of the gaps
+   section margins - margin-bottom on sections stacked on top of the gaps
    created double spacing on some pages and not on others.
    Sections stay margin-free; the stats widget below is the single
    exception: a slightly larger gap below the home stats boxes. */
@@ -1555,7 +1557,7 @@ html.dark .rounded-xl .text-emerald-900 {
 
 /* Shared empty state for galleries, attachments and similar list/file
    placeholders: identical box, icon size/colour and text size/colour
-   everywhere — only the wording and the icon differ. */
+   everywhere - only the wording and the icon differ. */
 .pdc-empty-state {
     text-align: center;
     padding: 2rem;
@@ -1641,7 +1643,7 @@ html.dark .rounded-xl .text-emerald-900 {
     color: #ffffff !important;
 }
 
-/* Sidebar/header no longer hide behind modals – proper z-index above handles it */
+/* Sidebar/header no longer hide behind modals - proper z-index above handles it */
 
 /* View page cards fallback - Tailwind utilities not in compiled app.css */
 .fi-section-content .rounded-xl { border-radius: 0.75rem !important; }
@@ -1686,7 +1688,7 @@ html.dark .rounded-xl .text-emerald-900 {
 .fi-fo-field:not(:has(.fi-checkbox-input)) .fi-fo-field-content-col > div { width: 100% !important; }
 
 /* ── Property view page "Saistītie klienti" cards ────────────────
-   Dedicated classes — Tailwind arbitrary utilities used previously are
+   Dedicated classes - Tailwind arbitrary utilities used previously are
    not present in the compiled app.css and rendered the cards unstyled.
    Look matches the view page info cards (rounded-xl, bg-gray-50). The
    whole card is a clickable link to the client view page. */
@@ -1798,12 +1800,12 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-ta-table td:has(> .fi-ta-actions) { text-align: right !important; }
     .fi-ta-table td > .fi-ta-actions { justify-content: flex-end !important; }
     /* Image-only cells (featured_thumb) with no photo would stack an empty
-       block above every record — collapse them on mobile */
+       block above every record - collapse them on mobile */
     .fi-ta-table td.fi-ta-cell-featured-thumb:not(:has(img)) { display: none !important; }
     /* Tabs scroll horizontally instead of wrapping off-screen */
     .fi-tabs, [role="tablist"], .fi-resource-tabs { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: none !important; flex-wrap: nowrap !important; }
     .fi-tabs::-webkit-scrollbar, [role="tablist"]::-webkit-scrollbar { display: none !important; }
-    /* Filters (AboveContent) – stack 3 cols to 1 */
+    /* Filters (AboveContent) - stack 3 cols to 1 */
     .fi-filters, .fi-ta-filters, .fi-table-filters, .fi-ta-filters-form, .fi-filters-form { grid-template-columns: 1fr !important; }
     .fi-filters .grid, .fi-ta-filters .grid { grid-template-columns: 1fr !important; }
     /* Table toolbar: search + sort stay on one row, search shrinks to fit */
@@ -1820,14 +1822,14 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-section-header { padding: 1rem 1rem 0 !important; }
     /* Content edges line up with the topbar icons: left = hamburger glyph
        (button 16px + 6px internal padding), right = avatar edge. .fi-main
-       adds its own 16px inside .fi-main-ctn — zero it to avoid double padding */
+       adds its own 16px inside .fi-main-ctn - zero it to avoid double padding */
     .fi-main-ctn { padding-left: 22px !important; padding-right: 1rem !important; }
     .fi-main-ctn .fi-main { padding-left: 0 !important; padding-right: 0 !important; }
     /* Forms: force single column, label above input */
     .fi-fo-component-ctn, .fi-fo-field-wrp { grid-template-columns: 1fr !important; }
     .fi-fo-field { grid-column: span 1 / span 1 !important; }
     .fi-fo-field-label-col { margin-bottom: 0.35rem !important; }
-    /* View page cards: no forced 2-col on mobile – let Tailwind responsive (1 col) work; just tighten gap */
+    /* View page cards: no forced 2-col on mobile - let Tailwind responsive (1 col) work; just tighten gap */
     .fi-section-content .grid { gap: 0.75rem !important; }
     .fi-section-content .rounded-xl { word-break: break-word !important; }
     /* Topbar user menu stays */
@@ -1846,13 +1848,13 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-main { padding-bottom: 6rem !important; }
 
     /* ── Stacked (mobile) tables ───────────────────────────────────── */
-    /* NOTE: stacked rules live in the ≤639px block above — Filament returns
+    /* NOTE: stacked rules live in the ≤639px block above - Filament returns
        tables to horizontal layout at 640px (its sm breakpoint). */
 }
 
 /* Table sort caret: only show on the actively sorted column.
    Filament renders a chevron on every sortable header (aria-sort="none")
-   — hide those, keep the caret for ascending/descending. */
+   - hide those, keep the caret for ascending/descending. */
 .fi-ta-header-cell[aria-sort='none'] .fi-ta-header-cell-sort-btn .fi-icon {
     opacity: 0 !important;
 }
@@ -1873,7 +1875,7 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     user-select: none;
 }
 
-/* ── Top 5 aģenti — compact leaderboard cards on mobile ──────────
+/* ── Top 5 aģenti - compact leaderboard cards on mobile ──────────
    Filament's stacked layout turns this six-column table into a long
    label/value list (the label repeated on every agent). Reflow each
    record into one card instead: medal + photo + name on top, the
@@ -1926,10 +1928,10 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-ta.pdc-top-agents .fi-ta-cell-avg-percent .fi-ta-text-item { justify-content: flex-end !important; }
 }
 
-/* ── Aģentu komisijas šogad — compact leaderboard cards on mobile ─
+/* ── Aģentu komisijas šogad - compact leaderboard cards on mobile ─
    Same treatment as "Top 5 aģenti": Filament's stacked layout turns
    this five-column table into a repeated label/value list, so reflow
-   each record into one card instead — photo + name on top, the yearly
+   each record into one card instead - photo + name on top, the yearly
    commission and average % below, sold badge top-right. */
 @media (max-width: 639px) {
     .fi-ta.pdc-yearly-commission .fi-ta-table-stacked-on-mobile > tbody > tr {
@@ -1975,7 +1977,7 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-ta.pdc-yearly-commission .fi-ta-cell-avg-percent .fi-ta-text-item { justify-content: flex-end !important; }
 }
 
-/* ── Kategoriju līderu avatari — sakrauti ar 50% pārklājumu ───── */
+/* ── Kategoriju līderu avatari - sakrauti ar 50% pārklājumu ───── */
 .pdc-avatar-stack {
     display: inline-flex;
     align-items: center;
@@ -1988,7 +1990,7 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     border-radius: 9999px;
     object-fit: cover;
     box-shadow: 0 0 0 2px #ffffff;
-    /* Nepieļauj flexbox saraušanu — izstiepts/saspiests attēls izskatās blurains. */
+    /* Nepieļauj flexbox saraušanu - izstiepts/saspiests attēls izskatās blurains. */
     flex-shrink: 0;
 }
 
@@ -2004,7 +2006,7 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     box-shadow: 0 0 0 2px #111827;
 }
 
-/* Avataru šūnai nav savas sānu atstarpes — citādi šaurā kolonna saspiež
+/* Avataru šūnai nav savas sānu atstarpes - citādi šaurā kolonna saspiež
    flexbox saturu un fotogrāfijas deformējas. */
 .fi-ta.pdc-category-leaders .fi-ta-cell-leader-avatar .fi-ta-text,
 .fi-ta.pdc-category-leaders .fi-ta-cell-leader-avatar .fi-ta-col {
@@ -2012,7 +2014,7 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     padding-right: 0;
 }
 
-/* ── Kategoriju līderi — compact rows on mobile ──────────────────
+/* ── Kategoriju līderi - compact rows on mobile ──────────────────
    The avatar column has no label, so Filament's stacked layout leaves
    it floating beside "Kategorija" and repeats every label. Show one
    row per category instead: avatar + category + value on top, the

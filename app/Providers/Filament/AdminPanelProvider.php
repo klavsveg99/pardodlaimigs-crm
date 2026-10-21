@@ -29,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->id('admin')
-            // CRM is served straight from the domain root — the main screen
+            // CRM is served straight from the domain root - the main screen
             // is https://crm.pardodlaimigs.lv/ without /admin or /public.
             // Only pin the panel to the CRM subdomain once the public site is
             // switched on (it then owns the public domain); while WordPress is

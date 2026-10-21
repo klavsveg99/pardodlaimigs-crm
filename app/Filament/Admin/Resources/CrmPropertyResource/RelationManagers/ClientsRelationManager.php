@@ -50,7 +50,7 @@ class ClientsRelationManager extends RelationManager
     }
 
     /**
-     * Allow attaching/detaching on the property VIEW page too — Filament
+     * Allow attaching/detaching on the property VIEW page too - Filament
      * denies these actions on ViewRecord pages by default, which hid the
      * "Pievienot klientu" button in the Piesaistītie klienti section.
      */

@@ -100,7 +100,7 @@
             if (! this.to || ! /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(this.to)) { this.error = 'Norādiet derīgu e-pasta adresi.'; return; }
             if (! this.selected.length) { this.error = 'Izvēlieties vismaz vienu failu.'; return; }
             if (! this.subject.trim()) { this.error = 'Norādiet tematu.'; return; }
-            if (this.totalSelected() > 18 * 1024 * 1024) { this.error = 'Pielikumi pārsniedz 18 MB — izvēlieties mazāk failu.'; return; }
+            if (this.totalSelected() > 18 * 1024 * 1024) { this.error = 'Pielikumi pārsniedz 18 MB - izvēlieties mazāk failu.'; return; }
             this.sending = true;
             try {
                 const token = document.querySelector('meta[name=csrf-token]')?.content;
@@ -200,7 +200,7 @@
                             <button type="button" x-on:click="execCmd('strikeThrough')" title="Pārsvītrojums" style="border: 0; background: transparent; cursor: pointer; color: #374151; text-decoration: line-through; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem;">S</button>
                             <button type="button" x-on:click="execCmd('insertUnorderedList')" title="Nenumurēts saraksts" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.85rem;">•</button>
                             <button type="button" x-on:click="execCmd('insertOrderedList')" title="Numurēts saraksts" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.8rem;">1.</button>
-                            <button type="button" x-on:click="execCmd('insertHorizontalRule')" title="Horizontāla līnija" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem;">—</button>
+                            <button type="button" x-on:click="execCmd('insertHorizontalRule')" title="Horizontāla līnija" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem;">-</button>
                             <button type="button" x-on:click="execCmd('formatBlock','<blockquote>')" title="Citāts" style="border: 0; background: transparent; cursor: pointer; color: #374151; padding: 0.25rem 0.45rem; border-radius: 0.35rem; font-size: 0.82rem; font-family: Georgia, serif;">„ ”</button>
                         </div>
                         <div x-ref="editor" contenteditable="true"

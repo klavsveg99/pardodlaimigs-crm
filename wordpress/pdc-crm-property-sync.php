@@ -44,9 +44,9 @@ function pdc_map_status($crm_status)
         case 'expired':   return 'expired';
         case 'hidden':    return 'private';
         // Rezervēts paliek redzams mājaslapā (rokas nauda saņemta, darījums
-        // vēl nav noslēgts) — publish, nevis draft.
+        // vēl nav noslēgts) - publish, nevis draft.
         case 'reserved':  return 'publish';
-        // Pārdots īpašums nedrīkst būt redzams frontendā — private (nevis
+        // Pārdots īpašums nedrīkst būt redzams frontendā - private (nevis
         // publish), lai WP meklēšana/lokatori to izlaiž, bet posts paliek
         // saglabāts WP admin pusē.
         case 'sold':      return 'private';
@@ -120,7 +120,7 @@ function pdc_relative_upload_path($url)
     if (strpos($path, 'storage/attachments/') === 0) {
         // Use a deterministic, time-independent storage path so re-syncs match existing
         // attachments instead of orphaning them when the calendar month rolls over.
-        // First sync: store under pdc-crm/attachments/<basename> — WP can serve it from there.
+        // First sync: store under pdc-crm/attachments/<basename> - WP can serve it from there.
         return 'pdc-crm/attachments/'.substr($path, strlen('storage/attachments/'));
     }
     if (strpos($path, 'storage/avatars/') === 0) {
@@ -299,13 +299,13 @@ function pdc_find_existing_media_by_path($path, $url = '', $name = '')
         return 0;
     }
 
-    // 0. Match on the CRM source URL first — unambiguous across syncs even when
+    // 0. Match on the CRM source URL first - unambiguous across syncs even when
     //    WP had to rename the stored file (e.g. "<name>-10.jpg" collision). Only
     //    existing attachments qualify (orphaned postmeta of deleted posts is ignored)
     //    and the newest match wins.
     //    VERIFY the match: the pre-2.3 basename matcher stamped CRM URLs onto
     //    other properties' files ("1.jpg", "5.jpg", ...). Such a stale stamp
-    //    points at a file in a different directory — ignore it so the sync
+    //    points at a file in a different directory - ignore it so the sync
     //    re-resolves to the correct file (or downloads it fresh) instead of
     //    re-attaching the wrong property's photo as featured image.
     if ($url !== '') {
@@ -328,12 +328,12 @@ function pdc_find_existing_media_by_path($path, $url = '', $name = '')
             // sinhronizācija. Tomēr vecāki (pirms 2.3) sinhronizācijas zīmogi
             // var būt uzlīmēti citam failam, tāpēc pārbaudām, ka arī pats
             // faila nosaukums atbilst CRM avotam (skat.
-            // pdc_crm_file_matches() — tas pieļauj WP kolīziju "-<n>" un
+            // pdc_crm_file_matches() - tas pieļauj WP kolīziju "-<n>" un
             // sākuma "_" noņemšanu, bet nenoņem CRM nosaukuma galotni).
             if (pdc_crm_file_matches($stored_file, $path, $name)) {
                 return (int) $by_url;
             }
-            // Stale/contaminated stamp — ignore this match and fall through.
+            // Stale/contaminated stamp - ignore this match and fall through.
             pdc_log('Ignoring stale URL stamp on #'.(int) $by_url.' ('.$stored_file.') for '.$path);
         }
     }
@@ -358,7 +358,7 @@ function pdc_find_existing_media_by_path($path, $url = '', $name = '')
     }
 
     // 2. Legacy path: previous version stored CRM attachments under the current
-    //    YYYY/MM/<basename>. Probe the current and previous month only — this is
+    //    YYYY/MM/<basename>. Probe the current and previous month only - this is
     //    enough to cover the rollover case without ballooning query count.
     $current_year = (int) gmdate('Y');
     $current_month = (int) gmdate('m');
@@ -389,7 +389,7 @@ function pdc_find_existing_media_by_path($path, $url = '', $name = '')
         }
     }
 
-    // 3. Last-resort fallback — same directory, matching filename only.
+    // 3. Last-resort fallback - same directory, matching filename only.
     //    Tolerates WP collision renames ("<name>-1.jpg"), sanitize_file_name()'s
     //    leading ".", "_", "-" strip and a mime-corrected extension, but NEVER
     //    strips a "-<number>" that is part of the CRM filename itself. The old
@@ -586,7 +586,7 @@ function pdc_sync_attachments($post_id, $attachments, $started_at = 0)
         $unique[] = $attachment;
     }
 
-    // Single pass in CRM order — existing attachments are reused, missing ones
+    // Single pass in CRM order - existing attachments are reused, missing ones
     // are downloaded inline. The previous two-phase version (all existing first,
     // then all downloads) scrambled gallery order whenever the CRM featured
     // image had not been downloaded yet, so the WP featured image mismatched CRM.
@@ -596,7 +596,7 @@ function pdc_sync_attachments($post_id, $attachments, $started_at = 0)
     // Web PHP workers hard-kill long sync requests: if a run dies after the
     // downloads but before the gallery/featured-image meta is written, the
     // property keeps showing zero photos (a 81-photo gallery needs minutes per
-    // run — above the web max_execution_time). Budget the download phase so
+    // run - above the web max_execution_time). Budget the download phase so
     // each run finishes gracefully: whatever exists so far is written
     // gallery-wise and the rest resumes on the next sync tick.
     $deferred = 0;
@@ -857,7 +857,7 @@ function pdc_sync_agents()
     }
 
     // Aģentiem, kas CRM vairs nav (izdzēsti/soft-deleted), arī WP pusē jāpazūd
-    // profils — citādi mājaslapā paliek "spoku" aģenta lapa. Tāpat kā
+    // profils - citādi mājaslapā paliek "spoku" aģenta lapa. Tāpat kā
     // īpašumiem, ierakstu atspiežam (private), nevis dzēšam neatgriezeniski.
     // Manuāli veidotus agent ierakstus bez _pdc_crm_agent_id (crm_id = 0) neskaitām.
     $all_agent_posts = get_posts([
@@ -956,13 +956,13 @@ function pdc_upsert_property($data, $agent_map = [])
     update_post_meta($post_id, 'real_estate_property_price_short', $price_on_request ? '' : $price);
     update_post_meta($post_id, 'real_estate_property_price_on_call', $price_on_request ? 1 : 0);
     update_post_meta($post_id, 'real_estate_property_identity', $post_id);
-    // Size may be NULL for land-only properties (e.g., Zeme) — store 0 so ERE
+    // Size may be NULL for land-only properties (e.g., Zeme) - store 0 so ERE
     // size slider (0-3000) doesn't exclude them via meta_query. The "Telpu
     // platība" tile/row is hidden client-side (hideEmptyRooms) when 0.
     update_post_meta($post_id, 'real_estate_property_size', $size_m2 !== null && $size_m2 !== '' ? $size_m2 : 0);
     update_post_meta($post_id, 'real_estate_property_land', $land_m2 ? round($land_m2 / 10000, 2) : '');
     // ERE only omits the overview/tile field when its meta is an empty string.
-    // The CRM sends 0 for "unset", which rendered as "Istabas 0" — store '' so
+    // The CRM sends 0 for "unset", which rendered as "Istabas 0" - store '' so
     // the theme skips the field entirely.
     update_post_meta($post_id, 'real_estate_property_bedrooms', (int) $beds > 0 ? (int) $beds : '');
     update_post_meta($post_id, 'real_estate_property_bathrooms', (int) $baths > 0 ? (int) $baths : '');
@@ -971,7 +971,7 @@ function pdc_upsert_property($data, $agent_map = [])
 
     // ERE admin (smart-framework map lauks) atver pin no 'location' = "lat,lng",
     // bet gsf-map-address ievadlaukā rāda 'address' vērtību. Tur jābūt
-    // KOORDINĀTĀM, lai redaktors vienmēr paliek precīzs — plain adrese laukiem
+    // KOORDINĀTĀM, lai redaktors vienmēr paliek precīzs - plain adrese laukiem
     // ne ģeolokācējas. Cilvēkam lasāmā adrese turpini dzīvot
     // real_estate_property_address (Address blokā virs mapes).
     $precise = ($lat && $lng) ? $lat.','.$lng : '';
@@ -1065,7 +1065,7 @@ function pdc_full_sync()
     set_time_limit(0);
 
     // Guard against overlapping runs: WP-Cron fires every 5 min but a full
-    // sync with downloads takes longer — concurrent runs race each other,
+    // sync with downloads takes longer - concurrent runs race each other,
     // duplicate downloads and flip-flop galleries/thumbnails.
     if (get_transient('pdc_sync_running')) {
         pdc_log('Sync skipped: another sync is already running');
@@ -1355,7 +1355,7 @@ function crm_wpforms_feed(WP_REST_Request $request)
  * 1. Phone numbers are displayed as "+371 xxx xxx" everywhere ERE
  *    renders agent/mobile phone output.
  * 2. "0 Istaba" info tiles are hidden on property cards and the
- *    single-property page (land properties have no rooms — showing
+ *    single-property page (land properties have no rooms - showing
  *    a zero rooms tile reads like an error).
  * 3. On mobile (max-width 767px) the property search/filters block
  *    becomes a proper popup modal with a close button (the inline
@@ -1388,7 +1388,7 @@ function pdc_frontend_enqueue()
         if (national === null) {
             return null;
         }
-        // "+371 xxxx xxxx" — 4-digit groups from the left, trailing remainder kept.
+        // "+371 xxxx xxxx" - 4-digit groups from the left, trailing remainder kept.
         var groups = [];
         for (var i = 0; i < national.length; i += 4) {
             groups.push(national.slice(i, i + 4));
@@ -1469,7 +1469,7 @@ function pdc_frontend_enqueue()
         var valueEl = tile.querySelector('.ere__lpi-value');
         var value = pdcNumber(valueEl ? valueEl.textContent : tile.textContent);
         if (value === 0) {
-            // !important — the theme sets `display: flex !important` on these.
+            // !important - the theme sets `display: flex !important` on these.
             tile.style.setProperty('display', 'none', 'important');
         }
     }
@@ -1493,7 +1493,7 @@ function pdc_frontend_enqueue()
             if (pdcNumber(el.textContent) === 0) {
                 var row = el.closest('li');
                 if (row) {
-                    // !important — .property-overview li has display:flex !important.
+                    // !important - .property-overview li has display:flex !important.
                     row.style.setProperty('display', 'none', 'important');
                 }
             }
@@ -1570,7 +1570,7 @@ function pdc_frontend_enqueue()
         });
     }
 
-    // Search results are AJAX-refreshed — reapply SPA-side fixes after each.
+    // Search results are AJAX-refreshed - reapply SPA-side fixes after each.
     var reapply = function () {
         buildFilterPopup();
         reformatPhoneNodes();
@@ -1700,7 +1700,7 @@ CSS);
 add_action('wp_enqueue_scripts', 'pdc_frontend_enqueue');
 
 /**
- * Agents are synced from CRM every 5 minutes — normalise the stored phone
+ * Agents are synced from CRM every 5 minutes - normalise the stored phone
  * meta so ERE renders "+371 xxxx xxxx" everywhere (display only; mobile_links
  * and other consumers of the raw value are unaffected).
  */
@@ -1740,7 +1740,7 @@ function pdc_format_phone_lv($phone)
  * ERE map popups prefer `real_estate_property_location['address']`, which we
  * keep as raw coordinates so the admin map editor stays precise. Frontend
  * popups then showed "56.6757412,22.5682925" instead of the real address.
- * Swap in the human-readable address for frontend reads only — the coordinates
+ * Swap in the human-readable address for frontend reads only - the coordinates
  * that position the marker live in ['location'] and are left untouched.
  */
 function pdc_frontend_map_location_address($value, $object_id, $meta_key, $single)
@@ -1768,7 +1768,7 @@ add_filter('get_post_metadata', 'pdc_frontend_map_location_address', 10, 4);
 /**
  * Frontend: ERE īpašumu kartes sākuma skats.
  *
- * Problēma: ERE klastero pārāk agresīvi (gridSize 60, maxZoom 18 — klasteri
+ * Problēma: ERE klastero pārāk agresīvi (gridSize 60, maxZoom 18 - klasteri
  * veidojas gandrīz visos tuvinājuma līmeņos) un sākuma skats ne vienmēr
  * ietilpina visus īpašumus.
  *
@@ -1883,7 +1883,7 @@ function pdc_map_autofit_script()
             return true;
         }
 
-        // Konstruktors var tikt ielādēts pēc mums — pārbaudām dažas reizes.
+        // Konstruktors var tikt ielādēts pēc mums - pārbaudām dažas reizes.
         if (!wrap()) {
             var tries = 0;
             var timer = window.setInterval(function () {

@@ -31,7 +31,7 @@ class CrmPropertiesAsBuyerRelationManager extends RelationManager
     }
 
     /**
-     * Allow attaching/detaching on the client VIEW page too — Filament denies
+     * Allow attaching/detaching on the client VIEW page too - Filament denies
      * these actions on ViewRecord pages by default, which hid the buttons.
      */
     public function getDefaultActionAuthorizationResponse(Actions\Action $action): ?Response
@@ -47,7 +47,7 @@ class CrmPropertiesAsBuyerRelationManager extends RelationManager
     {
         return $table
             // Constrain the JOINED pivot rows to buyer only. NOTE: this must
-            // be done via modifyQueryUsing — the RM table query comes from the
+            // be done via modifyQueryUsing - the RM table query comes from the
             // Eloquent relationship and a getEloquentQuery() override on the
             // relation manager is never applied by the table pipeline. Without
             // this, a client who is both Pārdevējs and Pircējs on the same
@@ -57,7 +57,7 @@ class CrmPropertiesAsBuyerRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('title')->label('Īpašums')->sortable()->weight('bold')->wrap()
                     ->url(fn (CrmProperty $record) => CrmPropertyResource::getUrl('view', ['record' => $record])),
                 Tables\Columns\TextColumn::make('city')->label('Pilsēta')->sortable()->wrap(),
-                Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->sortable()->placeholder('—')->wrap(),
+                Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->sortable()->placeholder('-')->wrap(),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
                     ->sortable()

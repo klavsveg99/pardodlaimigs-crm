@@ -11,8 +11,9 @@ use RuntimeException;
  *
  * Downscales images to a max dimension (1920px longest side), fixes EXIF
  * orientation, strips metadata by re-encoding and (re)generates a small
- * preview thumbnail (`thumb-<name>`) next to the source file so the admin
- * gallery never has to load full resolution images.
+ * preview thumbnail (`thumb-<name>`) plus a larger card preview
+ * (`preview-<name>`) next to the source file, so neither the admin gallery nor
+ * the public property grid has to load full resolution images.
  */
 class ImageOptimizer
 {
@@ -27,6 +28,10 @@ class ImageOptimizer
     public const THUMB_WIDTH = 400;
 
     public const THUMB_HEIGHT = 300;
+
+    public const PREVIEW_WIDTH = 800;
+
+    public const PREVIEW_HEIGHT = 600;
 
     /**
      * Optimise an image file in place.
@@ -122,6 +127,7 @@ class ImageOptimizer
             $sizeAfter = (int) @filesize($path);
 
             $thumb = $this->makeThumbnail($path, $type, $outW, $outH);
+            $this->makePreview($path, $type, $outW, $outH);
 
             return [
                 'optimized' => true,
@@ -137,6 +143,30 @@ class ImageOptimizer
                 imagedestroy($dst);
             }
         }
+    }
+
+    /**
+     * Generate the larger card preview for an image that is already
+     * optimised, leaving the original file untouched.
+     */
+    public function preview(string $path): bool
+    {
+        if (! is_file($path)) {
+            return false;
+        }
+
+        $info = @getimagesize($path);
+        if ($info === false) {
+            return false;
+        }
+
+        [$width, $height, $type] = $info;
+
+        if (! in_array($type, [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP], true)) {
+            return false;
+        }
+
+        return $this->makePreview($path, $type, $width, $height);
     }
 
     /**
@@ -236,8 +266,20 @@ class ImageOptimizer
 
     private function makeThumbnail(string $path, int $type, int $width, int $height): bool
     {
-        $thumb = $this->thumbPath($path);
+        return $this->makeVariant($path, $type, $width, $height, self::THUMB_WIDTH, self::THUMB_HEIGHT, $this->thumbPath($path));
+    }
 
+    /**
+     * Larger card variant for the public property grid, where a 400px thumb
+     * looks soft on a wide card and on high-density screens.
+     */
+    private function makePreview(string $path, int $type, int $width, int $height): bool
+    {
+        return $this->makeVariant($path, $type, $width, $height, self::PREVIEW_WIDTH, self::PREVIEW_HEIGHT, $this->previewPath($path));
+    }
+
+    private function makeVariant(string $path, int $type, int $width, int $height, int $maxWidth, int $maxHeight, string $target): bool
+    {
         $src = match ($type) {
             IMAGETYPE_JPEG => @imagecreatefromjpeg($path),
             IMAGETYPE_PNG => @imagecreatefrompng($path),
@@ -252,15 +294,15 @@ class ImageOptimizer
         $dst = null;
 
         try {
-            if ($width <= self::THUMB_WIDTH && $height <= self::THUMB_HEIGHT) {
-                if (is_file($thumb)) {
-                    @unlink($thumb);
+            if ($width <= $maxWidth && $height <= $maxHeight) {
+                if (is_file($target)) {
+                    @unlink($target);
                 }
 
                 return false;
             }
 
-            $ratio = min(self::THUMB_WIDTH / $width, self::THUMB_HEIGHT / $height, 1);
+            $ratio = min($maxWidth / $width, $maxHeight / $height, 1);
             $tw = max(1, (int) round($width * $ratio));
             $th = max(1, (int) round($height * $ratio));
 
@@ -284,7 +326,7 @@ class ImageOptimizer
                 return false;
             }
 
-            $this->writeAtomic($thumb, $encoded);
+            $this->writeAtomic($target, $encoded);
 
             return true;
         } finally {
@@ -298,6 +340,11 @@ class ImageOptimizer
     private function thumbPath(string $path): string
     {
         return dirname($path).DIRECTORY_SEPARATOR.'thumb-'.basename($path);
+    }
+
+    private function previewPath(string $path): string
+    {
+        return dirname($path).DIRECTORY_SEPARATOR.'preview-'.basename($path);
     }
 
     private function writeAtomic(string $path, string $data): void

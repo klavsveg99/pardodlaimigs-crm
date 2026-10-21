@@ -119,7 +119,7 @@ class NoticeCenter
             ->where('status', 'lead')
             ->when(! $user->can('manage'), fn ($query) => $query->where('owner_user_id', $user->id))
             // Nerādām pavisam jaunu, neaiztiktu līdu tajā pašā dienā, kad tas
-            // izveidots — dodam dienu, pirms tas sāk parādīties paziņojumos.
+            // izveidots - dodam dienu, pirms tas sāk parādīties paziņojumos.
             ->where(function ($query): void {
                 $query->where('created_at', '<', now()->startOfDay())
                     ->orWhereColumn('updated_at', '>', 'created_at');
@@ -179,7 +179,7 @@ class NoticeCenter
                 'url' => CrmPropertyResource::getUrl('view', ['record' => $property]),
                 'fields' => [
                     ['label' => 'Bez izmaiņām', 'value' => $property->daysWithoutPriceStatusChange().' dienas'],
-                    ['label' => 'Pārdošanas sākums', 'value' => $property->sale_started_at?->format('d.m.Y') ?? '—'],
+                    ['label' => 'Pārdošanas sākums', 'value' => $property->sale_started_at?->format('d.m.Y') ?? '-'],
                     ['label' => 'Līguma periods', 'value' => $property->partnership_label],
                 ],
             ])
@@ -188,7 +188,7 @@ class NoticeCenter
     }
 
     /**
-     * Paziņojums ir aizvērts tikai šodien — nākamajā dienā tas parādās
+     * Paziņojums ir aizvērts tikai šodien - nākamajā dienā tas parādās
      * atkal (kamēr pastāv tā pamatnosacījums).
      */
     private function dismissedToday(?NotificationDismissal $dismissal): bool

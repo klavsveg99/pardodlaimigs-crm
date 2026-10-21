@@ -4,13 +4,13 @@
     $isReorderable = $isReorderable();
     $isDeletable = $isDeletable();
     $isMultiselect = $isMultiselect();
-    // "Lejupielādēt visus" ZIP — tikai īpašuma galerijai ar saglabātu ierakstu.
+    // "Lejupielādēt visus" ZIP - tikai īpašuma galerijai ar saglabātu ierakstu.
     $galleryZipUrl = ($isDownloadable() && $record instanceof \App\Models\CrmProperty)
         ? route('properties.gallery.download', ['propertySlug' => $record->slug ?? $record->getKey()])
         : null;
     // The layout follows the field configuration (client/viewing/task and
     // property-document grids use rows), independent of whether send actions
-    // are currently possible — on the create page the files should already
+    // are currently possible - on the create page the files should already
     // render as rows, exactly like they will after the record is saved.
     $isRowMode = $isSendable() || $isPropertySendable() || $isRecordSendable();
 
@@ -59,13 +59,13 @@
         : ($isRecordSendable ? (bool) $recordClient : $isSendable);
 
     // Mark files that were previously emailed ("Nosūtīts klientam") from the
-    // audit activity log — client-scoped for clients, property-scoped for
+    // audit activity log - client-scoped for clients, property-scoped for
     // properties, owner-scoped for viewings/tasks.
     $recordOwnerKey = $isRecordSendable && $record
         ? (($record instanceof \App\Models\Viewing ? 'viewing' : 'task').':'.$record->getKey())
         : null;
 
-    // Klienta e-pasts pēc konteksta — lai zinātu, vai sūtījums tiešām gāja
+    // Klienta e-pasts pēc konteksta - lai zinātu, vai sūtījums tiešām gāja
     // klientam ("Nosūtīts klientam") vai citam saņēmējam ("Nosūtīts").
     $propertyClientEmails = collect($propertyClients)
         ->mapWithKeys(fn (array $c): array => [(int) $c['id'] => strtolower(trim((string) $c['email']))])

@@ -32,7 +32,7 @@
                         @if ($loop->first)
                             <span style="background: var(--pdc-primary); color: white; font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 0.4rem; letter-spacing: 0.04em; line-height: 1;">JAUNĀKĀ</span>
                         @endif
-                        <span class="pdc-rev-user" style="color: #6b7280;">{{ $revision->user?->name ?? '—' }}</span>
+                        <span class="pdc-rev-user" style="color: #6b7280;">{{ $revision->user?->name ?? '-' }}</span>
                     </div>
                     <button
                         type="button"

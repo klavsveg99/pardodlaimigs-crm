@@ -52,7 +52,7 @@ class ClientResource extends Resource
 
     protected static ?int $navigationSort = 10;
 
-    // Aģenti redz tikai savus klientus — arī atverot tiešu URL.
+    // Aģenti redz tikai savus klientus - arī atverot tiešu URL.
     public static function getEloquentQuery(): EloquentBuilder
     {
         return parent::getEloquentQuery()->when(
@@ -85,12 +85,12 @@ class ClientResource extends Resource
                         ->plain(fn (Get $get): bool => $get('person_type') === 'juridiska')
                         ->maxLength(20)
                         // Formāts XXXXXX-XXXXX (11 cipari ar domuzīmi) tikai
-                        // fiziskām personām; juridiskām — brīvs reģistrācijas
+                        // fiziskām personām; juridiskām - brīvs reģistrācijas
                         // numurs. Lauks var palikt tukšs.
                         ->rules(fn (Get $get): array => $get('person_type') === 'juridiska' ? [] : ['regex:/^\d{6}-\d{5}$/'])
                         ->disabled(fn (string $operation) => $operation === 'view')
                         // Dzimšanas datumu aizpilda uzreiz, tiklīdz kods ir
-                        // derīgs — bet tikai fiziskai personai un ja datums
+                        // derīgs - bet tikai fiziskai personai un ja datums
                         // vēl nav norādīts.
                         ->afterStateUpdated(function ($state, Set $set, Get $get): void {
                             if ($get('person_type') === 'juridiska' || filled($get('birth_date'))) {
@@ -133,13 +133,13 @@ class ClientResource extends Resource
                         ])
                         ->placeholder('Izvēlieties avotu'),
                     Forms\Components\TextInput::make('source_other')
-                        ->label('Avots — precizējums')
+                        ->label('Avots - precizējums')
                         ->maxLength(200)
                         ->visible(fn (callable $get): bool => $get('source') === 'Cits')
                         ->columnSpanFull(),
 
                     // Statuss un atbildīgais aģents vienā rindā. Aģenta lauks
-                    // nav redzams aģentiem (tikai adminiem un skata režīmā) —
+                    // nav redzams aģentiem (tikai adminiem un skata režīmā) -
                     // tad statuss aizņem visu rindu, lai nepaliek tukša kolonna.
                     Grid::make(['default' => 1, 'md' => 2])->columnSpanFull()->schema([
                         Forms\Components\Select::make('status')
@@ -161,7 +161,7 @@ class ClientResource extends Resource
                     ]),
                     // Līda turpmākā saziņa: abi lauki parādās tikai līdam
                     // (statuss maina redzamību uzreiz), katrs savā rindā.
-                    // Datums līdam ir obligāts — bez tā līds neparādītos
+                    // Datums līdam ir obligāts - bez tā līds neparādītos
                     // atgādinājumos. Slēptam laukam Filament noteikumu
                     // nepārbauda, tāpēc prasība attiecas tikai uz līdu.
                     Forms\Components\DatePicker::make('follow_up_at')
@@ -255,9 +255,8 @@ class ClientResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable()->weight('bold')
                     ->url(fn (Client $record) => $record->trashed() ? null : static::getUrl('view', ['record' => $record])),
-                Tables\Columns\TextColumn::make('person_type')->label('Personas veids')->badge()->sortable()
-                    ->formatStateUsing(fn ($state): string => Client::PERSON_TYPES[$state] ?? (string) $state)
-                    ->color(fn ($state): string => $state === 'juridiska' ? 'success' : 'gray'),
+                Tables\Columns\TextColumn::make('person_type')->label('Personas veids')->badge()->color('gray')->sortable()
+                    ->formatStateUsing(fn ($state): string => Client::PERSON_TYPES[$state] ?? (string) $state),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->searchable()->sortable()
                     ->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state)),
@@ -266,14 +265,15 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('follow_up_at')
                     ->label('Nākamais saziņas datums')
                     ->date('d.m.Y')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->sortable()
                     ->visible(fn (): bool => ($table->getLivewire()?->activeTab ?? 'active') === 'lead'),
-                Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->sortable()->placeholder('—'),
+                Tables\Columns\TextColumn::make('personas_kods')->label('Personas kods')->searchable()->sortable()->placeholder('-'),
                 Tables\Columns\TextColumn::make('crm_properties_count')
                     ->counts('crmProperties')
                     ->label('Īpašumi')
-                    ->sortable(),
+                    ->sortable()
+                    ->visible(fn (): bool => ($table->getLivewire()?->activeTab ?? 'active') !== 'lead'),
             ])
             ->filters([
                 Tables\Filters\Filter::make('gdpr_pending')->label('Bez GDPR piekrišanas')->query(
@@ -310,7 +310,7 @@ class ClientResource extends Resource
                         ->visible(fn (Client $record): bool => ! $record->trashed() && ! $record->gdpr_erased_at)
                         ->action(function (Client $record) {
                             $record->update([
-                                'name' => '—',
+                                'name' => '-',
                                 'phone' => null,
                                 'email' => null,
                                 'source' => null,

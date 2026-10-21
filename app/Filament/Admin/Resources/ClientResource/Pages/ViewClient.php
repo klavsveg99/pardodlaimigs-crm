@@ -18,7 +18,7 @@ class ViewClient extends ViewRecord
     protected function getHeaderActions(): array
     {
         // Send/email + WhatsApp live only in the attachment rows'
-        // "Nosūtīt" popup — never in the page header.
+        // "Nosūtīt" popup - never in the page header.
         return [
             Actions\EditAction::make()->label('Rediģēt'),
         ];

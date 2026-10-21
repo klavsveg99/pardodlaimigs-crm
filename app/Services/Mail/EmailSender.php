@@ -196,7 +196,7 @@ class EmailSender
     }
 
     /**
-     * Strip scripts/styles/iframes from user-authored HTML — the editors never
+     * Strip scripts/styles/iframes from user-authored HTML - the editors never
      * produce them but keep the email safe.
      */
     private static function sanitize(string $html): string

@@ -44,7 +44,7 @@ class ViewCrmProperty extends ViewRecord
      */
     public function form(Schema $schema): Schema
     {
-        // Fotogrāfs dokumentus tikai apskata — bez dzēšanas vai nosūtīšanas.
+        // Fotogrāfs dokumentus tikai apskata - bez dzēšanas vai nosūtīšanas.
         if (auth()->user()?->isPhoto()) {
             return $schema->components([
                 AttachmentsGrid::make('attachments_documents')

@@ -257,7 +257,7 @@
         initCropper() {
             this.destroyCropper();
             // The editor modal is inside a <template x-if>, which Alpine
-            // renders asynchronously — right after an upload it may not exist
+            // renders asynchronously - right after an upload it may not exist
             // yet, so poll for the image ref (and the Cropper lib) briefly.
             let tries = 0;
             this.cropperWait = null;
@@ -265,7 +265,7 @@
                 // Give up after ~30s or if the editor was closed meanwhile.
                 // $refs inside the freshly rendered x-if template can register
                 // only long after the morph (observed in the wild), so poll by
-                // direct DOM lookup too — the editor is the only img with that
+                // direct DOM lookup too - the editor is the only img with that
                 // alt text on the page.
                 if (!this.editorOpen || tries++ > 300) return;
                 const img = this.$refs.editorImage
@@ -296,7 +296,7 @@
                     console.error('Avatar editor: image failed to load', this.url);
                     alert('Neizdevās ielādēt attēlu redaktorā.');
                 };
-                // Ar :src saistīto bildi albīpa tehniski jau ielādē — atkārtots
+                // Ar :src saistīto bildi albīpa tehniski jau ielādē - atkārtots
                 // piešķirms norenderētu <img> elementu atjaunotnes drošībai.
                 if (img.src !== this.editUrl(this.url)) {
                     img.src = this.editUrl(this.url);
@@ -448,7 +448,7 @@
                 </button>
             </template>
         </div>
-        <p style="font-size: 0.75rem; color: #6b7280;">Kvadrātveida foto — 1:1, 1000×1000px, max 5MB.</p>
+        <p style="font-size: 0.75rem; color: #6b7280;">Kvadrātveida foto - 1:1, 1000×1000px, max 5MB.</p>
         <template x-if="uploading">
             <div style="width: 100%; padding: 0.7rem 0.9rem; border: 1px solid #bfdbfe; background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); border-radius: 0.55rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <div style="display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.45rem;">

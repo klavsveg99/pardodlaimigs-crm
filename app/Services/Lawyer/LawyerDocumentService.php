@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
  * (config/crm.php), e-pasta saturs un nosūtīšanas vēsture.
  *
  * E-pasts tiek būvēts no datu masīva (context), tāpēc to pašu saturu var
- * parādīt priekšskatījumā pirms nosūtīšanas — gan no saglabātajiem datiem,
+ * parādīt priekšskatījumā pirms nosūtīšanas - gan no saglabātajiem datiem,
  * gan no vēl nesaglabātām formas vērtībām.
  */
 class LawyerDocumentService
@@ -54,7 +54,7 @@ class LawyerDocumentService
         return $this->documentTypes()[$type]['label'] ?? $type;
     }
 
-    /** Juristi — izpildītāji ar kategoriju "Jurists". */
+    /** Juristi - izpildītāji ar kategoriju "Jurists". */
     public function juristOptions(): array
     {
         return Izpilditajs::query()

@@ -32,7 +32,7 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
  * strukturētu e-pastu.
  *
  * Pieejama jebkurā statusā (izņemot "Dzēsts") īpašumam ar piesaistītu
- * pārdevēju — līgums jāsagatavo pirms pārdošanas. Viena un tā pati darbība
+ * pārdevēju - līgums jāsagatavo pirms pārdošanas. Viena un tā pati darbība
  * tiek izmantota gan īpašuma skatā, gan īpašumu saraksta rindā.
  *
  * Lauku redzamība ir dinamiska: rokas naudas dati pieder rokas naudas
@@ -74,7 +74,7 @@ final class LawyerDocumentAction
     /**
      * Divi soļi: datu aizpilde, tad e-pasts. Soļu navigācija augšā tiek
      * paslēpta; pārejas notiek ar Filament kājienes pogām (Atpakaļ/Tālāk),
-     * pēdējā solī — "Nosūtīt".
+     * pēdējā solī - "Nosūtīt".
      *
      * Ja īpašumam jau ir nosūtīts pieprasījums, 1. solī vispirms redz tikai
      * paziņojumu un pogu "Sūtīt vēlreiz"; forma atveras tikai pēc tās.
@@ -547,7 +547,7 @@ final class LawyerDocumentAction
         ];
 
         // Noklusējumi, lai izvairītos no atkārtotas tās pašas informācijas
-        // ievades (pirkuma maksa no īpašuma cenas, vietai — īpašuma pilsēta).
+        // ievades (pirkuma maksa no īpašuma cenas, vietai - īpašuma pilsēta).
         $defaults = [
             'signing_place' => $property->city,
             'hand_money_contract' => 'Nē',

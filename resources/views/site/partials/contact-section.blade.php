@@ -38,6 +38,7 @@
                         <option value="house" @selected(old('property_type') === 'house')>{{ $copy['formHouse'] ?? '' }}</option>
                         <option value="land" @selected(old('property_type') === 'land')>{{ $copy['formLand'] ?? '' }}</option>
                         <option value="forest" @selected(old('property_type') === 'forest')>{{ $copy['formForest'] ?? '' }}</option>
+                        <option value="commercial" @selected(old('property_type') === 'commercial')>{{ $copy['formCommercial'] ?? '' }}</option>
                     </select>
                 </label>
                 <label><span>{{ $copy['formArea'] ?? '' }}</span><input name="area" inputmode="decimal" value="{{ old('area') }}" required></label>

@@ -77,7 +77,7 @@ class CategoryLeaders extends BaseWidget
 
     protected function computeLeaders($start, $end): array
     {
-        $empty = fn () => ['leader_name' => '—', 'leader_value' => '—', 'leaders' => []];
+        $empty = fn () => ['leader_name' => '-', 'leader_value' => '-', 'leaders' => []];
 
         // Uzvarētāju saraksts no lietotāju ID; saglabājam to secību. Ja
         // vairāki dalībnieki sasniedz vienādu vērtību, visi ir uzvarētāji.
@@ -96,7 +96,7 @@ class CategoryLeaders extends BaseWidget
             return [
                 'category' => $category,
                 'leader_value' => $value,
-                'leader_name' => $leaders === [] ? '—' : implode(', ', array_column($leaders, 'name')),
+                'leader_name' => $leaders === [] ? '-' : implode(', ', array_column($leaders, 'name')),
                 'leaders' => $leaders,
             ];
         };
@@ -166,7 +166,7 @@ class CategoryLeaders extends BaseWidget
             $leaders[] = array_merge(['category' => 'Pārdoti īpašumi'], $empty());
         }
 
-        // Ātrākais pārdošanas cikls — dienas no pārdošanas sākuma datuma
+        // Ātrākais pārdošanas cikls - dienas no pārdošanas sākuma datuma
         // (sale_started_at) līdz dienai, kad statuss kļuva "Pārdots"
         // (sold_at). Tā kā uzvarētājs tiek meklēts tikai starp statusa
         // "sold" īpašumiem, atgriežot statusu atpakaļ ieraksts pazūd.

@@ -40,7 +40,7 @@ class GreetingHistoryTable extends TableWidget
                     ->label('Klients')
                     ->searchable()
                     ->sortable()
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 Tables\Columns\TextColumn::make('context')
                     ->label('Veids')
                     ->badge()

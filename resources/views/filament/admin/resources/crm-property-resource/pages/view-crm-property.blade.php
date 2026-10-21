@@ -36,30 +36,30 @@
         <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kategorija</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->category ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->category ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Cena</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->price_display ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->price_display ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atbildīgais</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->owner?->name ?: '—' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->owner?->name ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Slug</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all">{{ $record->slug ?: '—' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all">{{ $record->slug ?: '-' }}</dd>
             </div>
         </div>
         @if($record->status === 'sold')
             <div class="mt-6 grid gap-3 grid-cols-1 md:grid-cols-3">
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Gala cena (pārdots)</dt>
-                    <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->final_price_eur ? number_format((float) $record->final_price_eur, 2, ',', ' ') . ' €' : '—' }}</dd>
+                    <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->final_price_eur ? number_format((float) $record->final_price_eur, 2, ',', ' ') . ' €' : '-' }}</dd>
                 </div>
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Komisijas summa</dt>
-                    <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->commission_eur ? number_format((float) $record->commission_eur, 2, ',', ' ') . ' €' : '—' }}</dd>
+                    <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->commission_eur ? number_format((float) $record->commission_eur, 2, ',', ' ') . ' €' : '-' }}</dd>
                 </div>
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Komisija %</dt>
@@ -67,7 +67,7 @@
                         @if($record->commission_percent !== null)
                             {{ number_format($record->commission_percent, 2, ',', ' ') }} %
                         @else
-                            —
+                            -
                         @endif
                     </dd>
                 </div>
@@ -79,23 +79,23 @@
         <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-5">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Istabas</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->beds ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->beds ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Vannas istabas</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->baths ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->baths ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Platība (m²)</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->size_m2 ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->size_m2 ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Zemes platība (m²)</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->land_m2 ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->land_m2 ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14] md:col-span-2">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kadastra nr.</dt>
-                <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">{{ $record->kadastra_nr ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">{{ $record->kadastra_nr ?: '-' }}</dd>
             </div>
         </div>
     </x-filament::section>
@@ -104,16 +104,16 @@
         <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pilsēta/rajons</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->city ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->city ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Adrese</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->address ?: '—' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->address ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Koordinātes</dt>
                 <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">
-                    {{ $record->lat && $record->lng ? "{$record->lat}, {$record->lng}" : '—' }}
+                    {{ $record->lat && $record->lng ? "{$record->lat}, {$record->lng}" : '-' }}
                 </dd>
             </div>
         </div>
@@ -265,7 +265,7 @@
                             <div class="pdc-client-avatar">{{ strtoupper(mb_substr($client->name, 0, 1)) }}</div>
                             <div class="pdc-client-info">
                                 <p class="pdc-client-name">{{ $client->name }}</p>
-                                <p class="pdc-client-contact">{{ implode(' · ', array_filter([\App\Support\PhoneFormat::display($client->phone ?? null), $client->email])) ?: '—' }}</p>
+                                <p class="pdc-client-contact">{{ implode(' · ', array_filter([\App\Support\PhoneFormat::display($client->phone ?? null), $client->email])) ?: '-' }}</p>
                                 <x-filament::badge color="gray" class="pdc-client-badge">
                                     {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
                                 </x-filament::badge>
@@ -340,7 +340,7 @@
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pārdošanas sākums</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->sale_started_at?->format('d.m.Y') ?? '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->sale_started_at?->format('d.m.Y') ?? '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sadarbības līguma periods</dt>
@@ -360,8 +360,8 @@
                         </div>
                         <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
                             <span>{{ $lawyerRequest->sent_at?->format('d.m.Y H:i') ?? $lawyerRequest->created_at?->format('d.m.Y H:i') }}</span>
-                            <span>Jurists: {{ $lawyerRequest->jurist?->name ?? '—' }} ({{ $lawyerRequest->recipient_email }})</span>
-                            <span>Nosūtīja: {{ $lawyerRequest->sentBy?->name ?? '—' }}</span>
+                            <span>Jurists: {{ $lawyerRequest->jurist?->name ?? '-' }} ({{ $lawyerRequest->recipient_email }})</span>
+                            <span>Nosūtīja: {{ $lawyerRequest->sentBy?->name ?? '-' }}</span>
                         </div>
                     </div>
                 @endforeach

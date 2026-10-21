@@ -26,7 +26,7 @@ class ViewWpformEntry extends ViewRecord
     {
         return [
             Actions\Action::make('change_status')
-                ->label(fn () => 'Statuss: '.(WpformEntryResource::STATUSES[$this->record->status] ?? $this->record->status ?? '—'))
+                ->label(fn () => 'Statuss: '.(WpformEntryResource::STATUSES[$this->record->status] ?? $this->record->status ?? '-'))
                 ->icon('heroicon-o-arrow-path')
                 ->color('gray')
                 // Deleted entries go back through the restore action (which
@@ -56,7 +56,7 @@ class ViewWpformEntry extends ViewRecord
                 ->modalDescription('Tiks izveidots jauns klients ar vārdu, e-pastu un tālruni no šī pieteikuma un pieteikums tiks piesaistīts jaunajam klientam.')
                 ->modalSubmitActionLabel('Ģenerēt')
                 ->action(function () {
-                    $name = $this->record->fieldValue('Jūsu vārds') ?? '—';
+                    $name = $this->record->fieldValue('Jūsu vārds') ?? '-';
                     $email = $this->record->fieldValue('E-pasts');
                     $phone = $this->record->fieldValue('Telefona numurs');
 

@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 /**
  * Manual "Nosūtīt paziņojumu" for a task. Assignment emails are never sent
- * automatically — the agent presses a button in the task page section.
+ * automatically - the agent presses a button in the task page section.
  */
 class TaskNotificationController extends Controller
 {
@@ -48,7 +48,7 @@ class TaskNotificationController extends Controller
 
         $message = $error ?? 'Paziņojums nosūtīts uz '.$to.'.';
 
-        // Lapas pārlāde nav vajadzīga — poga tiek aizstāta ar "Nosūtīts"
+        // Lapas pārlāde nav vajadzīga - poga tiek aizstāta ar "Nosūtīts"
         // uzreiz (fetch), tāpēc atgriežam JSON.
         if ($request->expectsJson()) {
             return response()->json([

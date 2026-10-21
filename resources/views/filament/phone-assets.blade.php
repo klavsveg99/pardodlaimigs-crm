@@ -15,7 +15,7 @@
         overflow: visible !important;
     }
 
-    /* Filament's fi-input-wrp has overflow:hidden — it would clip the dropdown */
+    /* Filament's fi-input-wrp has overflow:hidden - it would clip the dropdown */
     .fi-fo-text-input:has(> .pdc-phone-field) {
         overflow: visible !important;
     }
@@ -112,7 +112,7 @@
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('pdcPhone', (statePath, isStatic = false) => {
-            // Keep the Iti instance outside Alpine's reactive proxy — it is
+            // Keep the Iti instance outside Alpine's reactive proxy - it is
             // a private-class object and breaks behind a Proxy.
             let iti = null;
             let lastSent = null;
@@ -165,7 +165,7 @@
                         }
 
                         // Migrate legacy / formatted values to clean E.164
-                        // only when the restored number is actually valid —
+                        // only when the restored number is actually valid -
                         // broken legacy values stay as-is for the user to fix.
                         const normalized = iti.getNumber();
                         if (normalized && normalized !== String(initial) && iti.isValidNumber()) {
@@ -178,7 +178,7 @@
                     input.addEventListener('countrychange', () => this.commit());
                     input.addEventListener('blur', () => this.validate());
 
-                    // External state changes (form re-fills, resets) — re-sync display.
+                    // External state changes (form re-fills, resets) - re-sync display.
                     this.$wire.$watch(statePath, (value) => {
                         if (this.syncing) return;
                         const v = String(value ?? '');

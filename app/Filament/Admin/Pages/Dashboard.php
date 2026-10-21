@@ -8,7 +8,7 @@ use App\Filament\Admin\Resources\CrmPropertyResource;
 use Filament\Pages\Dashboard as BaseDashboard;
 
 /**
- * Fotogrāfa loma neredz pārskata paneli — uzreiz tiek novirzīta uz īpašumu
+ * Fotogrāfa loma neredz pārskata paneli - uzreiz tiek novirzīta uz īpašumu
  * sarakstu, jo pieejamas ir tikai īpašumu darbības.
  */
 class Dashboard extends BaseDashboard

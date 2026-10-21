@@ -49,7 +49,7 @@ return [
         'action' => 'valuation',
     ],
 
-    // AI teksta ģenerators. Pietiek VIENAS atslēgas — Gemini (Google AI Studio,
+    // AI teksta ģenerators. Pietiek VIENAS atslēgas - Gemini (Google AI Studio,
     // bezmaksas līmenis) vai OpenAI. Bez atslēgas forma rāda paziņojumu un
     // paliek vecais šablona ģenerators.
     'gemini' => [

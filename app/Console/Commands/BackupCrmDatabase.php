@@ -12,7 +12,7 @@ use RuntimeException;
  * Full-data daily backup.
  *
  * CRM runs on SQLite, so the entire dataset (clients, properties, WPForms
- * entries, viewings, tasks, audit log…) lives in one file — a consistent
+ * entries, viewings, tasks, audit log…) lives in one file - a consistent
  * copy is produced via `VACUUM INTO` (clean snapshot without locking the
  * live database) and only the newest N backups are kept.
  */
@@ -29,7 +29,7 @@ class BackupCrmDatabase extends Command
             // MySQL backup path (mysqldump) is intentionally not available:
             // prod data lives in SQLite. Fail loudly instead of silently
             // producing an incomplete backup.
-            $this->error('Tikai SQLite savienojums tiek atbalstīts — produkcijas dati dzīvo SQLite failā.');
+            $this->error('Tikai SQLite savienojums tiek atbalstīts - produkcijas dati dzīvo SQLite failā.');
 
             return self::FAILURE;
         }

@@ -27,8 +27,8 @@ class AppServiceProvider extends ServiceProvider
 
         Table::configureUsing(fn (Table $table) => $table->stackedOnMobile());
 
-        // Empty cells everywhere show "—" instead of blank space
-        TextColumn::configureUsing(fn (TextColumn $column) => $column->placeholder('—'));
+        // Empty cells everywhere show "-" instead of blank space
+        TextColumn::configureUsing(fn (TextColumn $column) => $column->placeholder('-'));
 
         // Filament's own lv translation is missing this key, so every empty
         // select dropdown falls back to English "No options available."

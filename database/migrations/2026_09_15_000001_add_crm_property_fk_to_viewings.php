@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Apskates tagad mērķē TIKAI uz CRM īpašumiem (viewings.property_id →
- * crm_properties.id) — līdz šim tabula rādīja uz properties_cache (WP
+ * crm_properties.id) - līdz šim tabula rādīja uz properties_cache (WP
  * spoguļtabulu), kas bloķēja apskates izveidi ar CRM īpašumu (integritātes
  * kļūda: viewing_booked aktivitātes FK → crm_properties).
  *

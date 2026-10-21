@@ -78,7 +78,7 @@ class GdprController extends Controller
         $clients = Client::where('email', $email)->get();
         foreach ($clients as $c) {
             $c->update([
-                'name' => '—',
+                'name' => '-',
                 'phone' => null,
                 'email' => null,
                 'source' => null,

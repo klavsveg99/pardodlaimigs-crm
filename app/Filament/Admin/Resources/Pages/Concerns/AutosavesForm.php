@@ -31,7 +31,7 @@ trait AutosavesForm
     /**
      * Override to restrict when autosave is allowed to run (e.g. only for
      * draft records). Autosaving an already published record means every
-     * keystroke silently persists — such records must be saved explicitly.
+     * keystroke silently persists - such records must be saved explicitly.
      */
     protected function canAutosave(): bool
     {
@@ -81,7 +81,7 @@ trait AutosavesForm
             // Record the first validation message so the indicator can show it.
             $this->autosaveState = 'error';
             $messages = collect($e->errors())->flatten()->filter()->values();
-            $this->autosaveError = $messages->first() ?: 'Pagaidu saglabāšana neizdevās — pabeidziet obligātos laukus.';
+            $this->autosaveError = $messages->first() ?: 'Pagaidu saglabāšana neizdevās - pabeidziet obligātos laukus.';
             Log::info('Autosave skipped (validation)', ['msg' => $this->autosaveError]);
         } catch (\Throwable $e) {
             $this->autosaveState = 'error';

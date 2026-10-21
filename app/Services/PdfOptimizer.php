@@ -12,7 +12,7 @@ use Symfony\Component\Process\Process;
  * Re-writes the PDF with /ebook image downsampling (150dpi, JPEG quality)
  * which typically cuts file size severalfold for scan/photo-heavy PDFs
  * while keeping text intact. The original is only replaced when the new
- * PDF is verifiably valid AND smaller — every other case keeps the
+ * PDF is verifiably valid AND smaller - every other case keeps the
  * original untouched. Non-PDF documents are never handled here.
  */
 class PdfOptimizer
@@ -30,7 +30,7 @@ class PdfOptimizer
             return null;
         }
 
-        // Never trust the saved mime alone — check the actual PDF magic bytes
+        // Never trust the saved mime alone - check the actual PDF magic bytes
         // so mislabelled docx/images can't be fed into Ghostscript.
         $fh = @fopen($path, 'rb');
         if (! $fh) {

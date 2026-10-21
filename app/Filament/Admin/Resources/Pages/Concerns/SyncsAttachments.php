@@ -181,7 +181,7 @@ trait SyncsAttachments
 
                 // Newly attached local files are optimised immediately.
                 // Images: max 1920px + re-encode + thumbnail (property uploads
-                // are already optimised by the upload endpoint — skip when a
+                // are already optimised by the upload endpoint - skip when a
                 // thumb file already exists to avoid double re-encoding).
                 // PDFs: Ghostscript re-compress, original kept on any failure.
                 // Any other document (docx etc.) is never touched.

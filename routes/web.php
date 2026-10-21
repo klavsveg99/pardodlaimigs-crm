@@ -31,7 +31,7 @@ Route::get('/cron-schedule', function () {
     }
     Artisan::call('schedule:run');
 
-    // Nav pastāvīga queue worker'a koplietotajā hostingā — iztukšojam rindu
+    // Nav pastāvīga queue worker'a koplietotajā hostingā - iztukšojam rindu
     // ar katru cron piezvaniem (maks 45s no request laika).
     Artisan::call('queue:work', [
         '--stop-when-empty' => true,
@@ -57,7 +57,7 @@ Route::get('/admin/crm-properties/{id}/{page?}', function (string $id, ?string $
     return redirect($path, 301);
 })->where(['id' => '[A-Za-z0-9_-]+', 'page' => 'edit']);
 
-// Panelis ir pārcelts uz sākumlapu ("/") — visi oriģinālie /admin/... un
+// Panelis ir pārcelts uz sākumlapu ("/") - visi oriģinālie /admin/... un
 // /public/... URL tiek pārvirzīti uz tīrajiem ceļiem bez /admin.
 Route::redirect('/admin', '/', 301);
 Route::redirect('/admin/{path}', '/{path}', 301)->where('path', '.*');
@@ -111,7 +111,7 @@ Route::get('/api/crm/attachment-proxy', function (Request $request) {
 })->name('crm.attachment.proxy');
 
 // ── Calendar .ics feed (authenticated by token) ───────────────
-// {user} var būt kā slug (raivo-pukes), tā arī vecais skaitliskais id —
+// {user} var būt kā slug (raivo-pukes), tā arī vecais skaitliskais id -
 // lai jau esošās kalendāru parakstīšanās saites paliek derīgas.
 Route::get('/calendar/feed/{user}/{token}.ics', function (string $user, string $token) {
     $feedUser = User::where('slug', $user)->first() ?? User::whereKey((int) $user)->first();
@@ -159,8 +159,8 @@ Route::post('/avatar/upload', function () {
 
 // ── Same-origin image proxy for the photo editor ───────────────
 // Gallery images may live on the WP host (cross-origin). Loading them
-// directly taints the editor canvas — Cropper's CORS fetch fails too since
-// WP sends no ACAO headers — so cropping/saving breaks. This endpoint
+// directly taints the editor canvas - Cropper's CORS fetch fails too since
+// WP sends no ACAO headers - so cropping/saving breaks. This endpoint
 // fetches the remote file server-side and streams it same-origin.
 Route::get('/property/image-proxy', function (Request $request) {
     $url = (string) $request->query('url', '');

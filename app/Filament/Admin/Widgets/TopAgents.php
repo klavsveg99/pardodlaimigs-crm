@@ -88,7 +88,7 @@ class TopAgents extends BaseWidget
 
         return $table
             ->extraAttributes(['class' => 'pdc-top-agents'])
-            ->heading("Top 5 aģenti — {$monthLabel}")
+            ->heading("Top 5 aģenti - {$monthLabel}")
             ->description('Pēc pārdoto īpašumu komisijas šomēnes (kalendāra mēnesis)')
             ->query(
                 // Dummy query to satisfy TableWidget; we override records via ->records()

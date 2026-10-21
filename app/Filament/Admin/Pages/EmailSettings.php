@@ -23,7 +23,7 @@ use Filament\Schemas\Schema;
 use UnitEnum;
 
 /**
- * "Iestatījumi" — tikai administratoram. Rediģē automātisko apsveikumu
+ * "Iestatījumi" - tikai administratoram. Rediģē automātisko apsveikumu
  * e-pastu tekstus (dzimšanas diena, vārdadiena, svētki). Uzdevuma
  * paziņojums paliek iekodēts Task modelī.
  */

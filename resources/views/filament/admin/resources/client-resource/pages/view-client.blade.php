@@ -9,27 +9,27 @@
         <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">E-pasts</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->email ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->email ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tālrunis</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ \App\Support\PhoneFormat::display($record->phone) ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ \App\Support\PhoneFormat::display($record->phone) ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Personas kods</dt>
-                <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">{{ $record->personas_kods ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">{{ $record->personas_kods ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Dzimšanas datums</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->birth_date?->format('d.m.Y') ?? '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->birth_date?->format('d.m.Y') ?? '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Adrese</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->address ?: '—' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->address ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bankas konts</dt>
-                <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">{{ $record->bank_account ?: '—' }}</dd>
+                <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white">{{ $record->bank_account ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Statuss</dt>
@@ -37,11 +37,11 @@
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Avots</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->source ?: '—' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->source ?: '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atbildīgais aģents</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->owner?->name ?: '—' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->owner?->name ?: '-' }}</dd>
             </div>
         </div>
     </x-filament::section>
@@ -83,15 +83,15 @@
         <div class="grid gap-3 grid-cols-1 md:grid-cols-3">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Izveidots</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->created_at?->format('d.m.Y H:i') ?? '—' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->created_at?->format('d.m.Y H:i') ?? '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atjaunināts</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->updated_at?->format('d.m.Y H:i') ?? '—' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->updated_at?->format('d.m.Y H:i') ?? '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">GDPR piekrišana</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->gdpr_consent_at?->format('d.m.Y H:i') ?? '—' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->gdpr_consent_at?->format('d.m.Y H:i') ?? '-' }}</dd>
             </div>
         </div>
     </x-filament::section>

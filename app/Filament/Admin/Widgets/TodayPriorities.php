@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
 use Livewire\Attributes\On;
 
 /**
- * "Šodien jāizdara" — notikumu saraksts bez fiksētām kolonnām. Katrs
+ * "Šodien jāizdara" - notikumu saraksts bez fiksētām kolonnām. Katrs
  * ieraksts pats nes sev līdzi datus (nosaukums, lauki, saite), tāpēc
  * uzdevumus, apskates, mācību piešķīrumus un aizveramos paziņojumus (līdi,
  * novecojuši īpašumi) var rādīt vienā plūsmā. Paziņojumu aizvēršana
@@ -192,7 +192,7 @@ class TodayPriorities extends Widget
         return array_map(fn (array $notice): array => [
             'key' => $notice['key'],
             'type' => $notice['type'],
-            // "Šodien jāizdara" tipos nekrāsojam — tikai nokavētiem
+            // "Šodien jāizdara" tipos nekrāsojam - tikai nokavētiem
             // uzdevumiem paliek sarkanais statuss zemāk.
             'type_color' => 'gray',
             'icon' => $notice['icon'],

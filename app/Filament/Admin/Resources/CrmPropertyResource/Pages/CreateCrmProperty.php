@@ -36,14 +36,14 @@ class CreateCrmProperty extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Pārdevējs nav kolonna — tiek piesaistīts pēc ieraksta izveides.
+        // Pārdevējs nav kolonna - tiek piesaistīts pēc ieraksta izveides.
         if (filled($data['seller_client_id'] ?? null)) {
             $this->sellerClientId = (int) $data['seller_client_id'];
         }
         unset($data['seller_client_id']);
 
         // Agents only see their own properties, so default the owner to the
-        // creator when none is chosen. Fotogrāfam aģents netiek piešķirts —
+        // creator when none is chosen. Fotogrāfam aģents netiek piešķirts -
         // viņš tikai izveido īpašumu un pievieno bildes, atbildīgo aģentu
         // vēlāk norāda kāds cits.
         if (blank($data['owner_user_id'] ?? null) && ! auth()->user()?->can('manage') && ! auth()->user()?->isPhoto()) {
@@ -64,7 +64,7 @@ class CreateCrmProperty extends CreateRecord
         }
 
         // AI piezīmes (modalā textarea) glabājas komponentes stāvoklī, nevis
-        // dehidrētājos datos — pieliekam tās pēc ieraksta izveides.
+        // dehidrētājos datos - pieliekam tās pēc ieraksta izveides.
         $aiNotes = $this->data['ai_notes'] ?? null;
         if (is_array($aiNotes)) {
             $aiNotes = array_filter($aiNotes, fn ($v): bool => filled($v));
@@ -72,7 +72,7 @@ class CreateCrmProperty extends CreateRecord
         }
 
         // AI rezultāts tika ģenerēts pirms ieraksta izveides (Create lapā
-        // ieraksts vēl neeksistē) — saglabājam tiklīdz ieraksts ir.
+        // ieraksts vēl neeksistē) - saglabājam tiklīdz ieraksts ir.
         if ($this->aiResult !== []) {
             $record->update(['ai_result' => $this->aiResult]);
         }

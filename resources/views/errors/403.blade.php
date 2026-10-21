@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="{{ asset('images/favicon-32x32.jpg') }}">
-    <title>403 · Piekļuve aizliegta — Pārdod Laimīgs CRM</title>
+    <title>403 · Piekļuve aizliegta - Pārdod Laimīgs CRM</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body {

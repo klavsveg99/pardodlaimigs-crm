@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Validator;
 
 /**
  * "Nosūtīt" email popup for client attachments. Opened from the
- * attachment rows (see attachments-grid.blade.php) — never a header bar.
+ * attachment rows (see attachments-grid.blade.php) - never a header bar.
  */
 class ClientAttachmentEmailController extends Controller
 {
@@ -250,7 +250,7 @@ class ClientAttachmentEmailController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
-            return response()->json(['message' => 'Nosūtīšana neizdevās — '.$e->getMessage()], 500);
+            return response()->json(['message' => 'Nosūtīšana neizdevās - '.$e->getMessage()], 500);
         }
 
         app(AuditLogger::class)->activity('attachment_email_sent', [
@@ -272,7 +272,7 @@ class ClientAttachmentEmailController extends Controller
     }
 
     /**
-     * @deprecated Use EmailSender::renderHtml() — kept so existing callers
+     * @deprecated Use EmailSender::renderHtml() - kept so existing callers
      * (e.g. PropertyAttachmentEmailController) keep working during migration.
      */
     public static function renderEmailHtml(string $body): string

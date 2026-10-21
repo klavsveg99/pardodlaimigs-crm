@@ -45,7 +45,7 @@ class Viewing extends Model
         });
 
         static::deleted(function (self $viewing) {
-            // Pielikumu atkritumi — dzēšam arī failus (attachable = viewing).
+            // Pielikumu atkritumi - dzēšam arī failus (attachable = viewing).
             $viewing->attachments()->get()->each(function ($attachment) {
                 \Illuminate\Support\Facades\Storage::disk($attachment->disk)->delete($attachment->path);
                 $attachment->delete();
@@ -55,7 +55,7 @@ class Viewing extends Model
 
     /**
      * Vai apskatei norādīts konkrēts laiks. Ja laiks nav norādīts (pusnakts),
-     * to uzskatām par "nav laika" — kalendārā rādām kā visas dienas notikumu.
+     * to uzskatām par "nav laika" - kalendārā rādām kā visas dienas notikumu.
      */
     public function scheduledHasTime(): bool
     {
@@ -76,8 +76,8 @@ class Viewing extends Model
 
     /**
      * Apskates brīdis salīdzinājumiem. Ja laiks nav norādīts, uzskatām to par
-     * visas dienas notikumu — nokavēta tikai pēc dienas beigām, nevis jau
-     * pusnaktī. Ar konkrētu laiku — nokavēta, kad laiks pagājis.
+     * visas dienas notikumu - nokavēta tikai pēc dienas beigām, nevis jau
+     * pusnaktī. Ar konkrētu laiku - nokavēta, kad laiks pagājis.
      */
     public function effectiveScheduledAt(): ?Carbon
     {

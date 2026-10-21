@@ -22,11 +22,11 @@
             <dl class="mt-2 flex flex-col gap-1.5">
                 <div class="flex gap-2">
                     <dt class="w-20 shrink-0 text-gray-500 dark:text-gray-400">Saņēmējs</dt>
-                    <dd class="min-w-0 break-words text-gray-900 dark:text-white">{{ $lastEmail['to'] ?: '—' }}</dd>
+                    <dd class="min-w-0 break-words text-gray-900 dark:text-white">{{ $lastEmail['to'] ?: '-' }}</dd>
                 </div>
                 <div class="flex gap-2">
                     <dt class="w-20 shrink-0 text-gray-500 dark:text-gray-400">Temats</dt>
-                    <dd class="min-w-0 break-words text-gray-900 dark:text-white">{{ $lastEmail['subject'] ?: '—' }}</dd>
+                    <dd class="min-w-0 break-words text-gray-900 dark:text-white">{{ $lastEmail['subject'] ?: '-' }}</dd>
                 </div>
                 @if (! empty($lastEmail['content']))
                     <div class="flex gap-2">

@@ -77,7 +77,7 @@ trait GeneratesAiDescription
 
     /**
      * Izsauc "AI ģenerēt aprakstu" sekcijas darbība no formas (modala forma).
-     * Trait kopā ar lapu komponenti — $this ir pati lapa, un piezīmes raksta
+     * Trait kopā ar lapu komponenti - $this ir pati lapa, un piezīmes raksta
      * TIEŠI $this->data (Set/$get darbības kontekstā norāda uz modāļa shēmu,
      * nevis formas stāvokli).
      */
@@ -116,7 +116,7 @@ trait GeneratesAiDescription
 
     /**
      * Variantu pogas rezultātu popup ("Ģenerēt vēlreiz", "Saīsināt",
-     * "Padarīt pārliecinošāku") — lasa pašreizējos form izteiksmes datus.
+     * "Padarīt pārliecinošāku") - lasa pašreizējos form izteiksmes datus.
      */
     public function generateAi(string $mode = DescriptionGenerator::MODE_FULL, ?string $currentDescription = null): void
     {

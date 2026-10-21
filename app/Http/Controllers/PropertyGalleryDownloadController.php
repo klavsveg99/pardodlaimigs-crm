@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
- * "Lejupielādēt visus" — visu īpašuma galerijas attēlu ZIP arhīvs.
+ * "Lejupielādēt visus" - visu īpašuma galerijas attēlu ZIP arhīvs.
  *
  * Attēli tiek pārkodēti (samazināts izmērs līdz 2560px, JPEG kvalitāte 80),
  * lai arhīvs būtu mazāks pirms ievietošanas ZIP; pārējie faili tiek pievienoti

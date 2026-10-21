@@ -42,7 +42,7 @@ class ViewingResource extends Resource
 
     protected static ?int $navigationSort = 30;
 
-    // Aģenti redz tikai savas apskates — arī atverot tiešu URL.
+    // Aģenti redz tikai savas apskates - arī atverot tiešu URL.
     public static function getEloquentQuery(): EloquentBuilder
     {
         return parent::getEloquentQuery()->when(
@@ -92,7 +92,7 @@ class ViewingResource extends Resource
                     ->pluck('name', 'id')
                     ->all())
                 ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name),
-            // "Nevēlāks kā tagad" tikai izveidojot — pretējā gadījumā vecas
+            // "Nevēlāks kā tagad" tikai izveidojot - pretējā gadījumā vecas
             // apskates saglabāšana editā neizdodas (statuss mainās vēlāk).
             Forms\Components\DateTimePicker::make('scheduled_at')->label('Kad')->native(false)
                 ->minDate(fn (string $operation) => $operation === 'create' ? now() : null)
@@ -133,7 +133,7 @@ class ViewingResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('scheduled_at')
                     ->label('Kad')
-                    ->formatStateUsing(fn ($state, Viewing $record): string => $record->scheduled_display ?? '—')
+                    ->formatStateUsing(fn ($state, Viewing $record): string => $record->scheduled_display ?? '-')
                     ->sortable()
                     ->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->color(fn ($record) => $record->status === 'scheduled' && $record->scheduled_at->isPast() ? 'danger' : null)

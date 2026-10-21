@@ -36,23 +36,37 @@ class Attachment extends Model
 
     /**
      * URL of the small "thumb-" variant (400×300) when it exists, falling back
-     * to the original — used for small table/gallery thumbnails so we do not
+     * to the original - used for small table/gallery thumbnails so we do not
      * download full-resolution images for tiny previews.
      */
     public function thumbUrl(): string
+    {
+        return $this->variantUrl('thumb-');
+    }
+
+    /**
+     * URL of the larger card variant (800×600) used by the public property
+     * grid, falling back to the original when it has not been generated yet.
+     */
+    public function previewUrl(): string
+    {
+        return $this->variantUrl('preview-');
+    }
+
+    private function variantUrl(string $prefix): string
     {
         if (str_starts_with($this->path, 'http://') || str_starts_with($this->path, 'https://')) {
             return $this->cacheBustedUrl();
         }
 
         $dir = str_replace('\\', '/', dirname($this->path));
-        $thumbPath = ($dir === '/' || $dir === '.' ? '' : rtrim($dir, '/').'/').'thumb-'.basename($this->path);
+        $variantPath = ($dir === '/' || $dir === '.' ? '' : rtrim($dir, '/').'/').$prefix.basename($this->path);
 
         try {
             $disk = Storage::disk($this->disk);
-            if ($disk->exists($thumbPath)) {
-                $url = $disk->url($thumbPath);
-                $version = (int) $disk->lastModified($thumbPath);
+            if ($disk->exists($variantPath)) {
+                $url = $disk->url($variantPath);
+                $version = (int) $disk->lastModified($variantPath);
 
                 return $url.($version > 0 ? '?v='.$version : '');
             }

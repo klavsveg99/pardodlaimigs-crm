@@ -13,6 +13,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Tabula apzināti netiek atjaunota — funkcija ir noņemta.
+        // Tabula apzināti netiek atjaunota - funkcija ir noņemta.
     }
 };

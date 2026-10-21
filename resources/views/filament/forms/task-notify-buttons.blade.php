@@ -103,7 +103,7 @@
 </div>
 
 <script>
-    // POST caur fetch (nevis formas submit) — poga uzreiz tiek aizstāta ar
+    // POST caur fetch (nevis formas submit) - poga uzreiz tiek aizstāta ar
     // "Nosūtīts" bez lapas pārlādes. Statuss paliek arī datubāzē. Ja e-pasts
     // jau reiz sūtīts, vispirms apstiprina atkārtotu sūtīšanu ar pēdējā
     // e-pasta saturu.

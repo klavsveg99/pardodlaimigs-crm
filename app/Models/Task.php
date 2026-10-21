@@ -48,7 +48,7 @@ class Task extends Model
         static::deleted(function (self $t) {
             app(AuditLogger::class)->log('delete', 'task', $t->id, $t->toArray(), null);
 
-            // Pielikumi bez saimnieka ir atkritumi — dzēšam arī failus.
+            // Pielikumi bez saimnieka ir atkritumi - dzēšam arī failus.
             $t->attachments()->get()->each(function ($attachment) {
                 Storage::disk($attachment->disk)->delete($attachment->path);
                 $attachment->delete();
@@ -126,7 +126,7 @@ class Task extends Model
 
     /**
      * Send the assignment email to the task's agent. Returns null on success,
-     * otherwise a user-facing error message. Never sent automatically — the
+     * otherwise a user-facing error message. Never sent automatically - the
      * "Nosūtīt paziņojumu" section on the task page triggers it.
      */
     public function sendAssignmentNotificationToAgent(): ?string
@@ -176,7 +176,7 @@ class Task extends Model
      */
     private function sendAssignmentEmail(string $to, string $recipientLabel, string $role): ?string
     {
-        $due = $this->due_display ?? '—';
+        $due = $this->due_display ?? '-';
 
         $rows = ['<p>Jums piešķirts jauns uzdevums: <strong>'.$this->title.'</strong></p>'];
 

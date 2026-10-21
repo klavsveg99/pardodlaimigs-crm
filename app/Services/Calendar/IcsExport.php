@@ -29,7 +29,7 @@ class IcsExport
             $end = $hasTime
                 ? $start->copy()->addMinutes($v->duration_min ?? 60)
                 : $start->copy();
-            $summary = 'Apskate: '.($v->property?->title ?? '—');
+            $summary = 'Apskate: '.($v->property?->title ?? '-');
             $description = collect([
                 $v->client ? 'Klients: '.$v->client->name : null,
                 $v->notes_md ? 'Piezīmes: '.$v->notes_md : null,

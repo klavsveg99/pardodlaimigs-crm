@@ -91,7 +91,7 @@ class ActivityFeed extends BaseWidget
     {
         return $table
             ->heading('Uzņēmuma aktivitātes')
-            ->description('Jaunākie notikumi sistēmā — kas, ko un kad izdarīja')
+            ->description('Jaunākie notikumi sistēmā - kas, ko un kad izdarīja')
             ->query(fn () => $this->getQuery())
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')
@@ -150,9 +150,9 @@ class ActivityFeed extends BaseWidget
     {
         return AuditLog::query()
             ->with(['actor'])
-            // WPForms background sync runs constantly — noise, not company activity.
+            // WPForms background sync runs constantly - noise, not company activity.
             ->where('action', '!=', 'wpform_sync')
-            // Darījumi no longer exist in the system — hide their legacy rows.
+            // Darījumi no longer exist in the system - hide their legacy rows.
             ->where('entity', '!=', 'deal')
             ->orderByDesc('created_at');
     }
@@ -275,7 +275,7 @@ class ActivityFeed extends BaseWidget
             return mb_substr($text, 0, 137).'…';
         }
 
-        return $text !== '' ? $text : ($log->entity.' #'.($log->entity_id ?? '—'));
+        return $text !== '' ? $text : ($log->entity.' #'.($log->entity_id ?? '-'));
     }
 
     protected function entityTitle(AuditLog $log, array $before, array $after): string
@@ -294,7 +294,7 @@ class ActivityFeed extends BaseWidget
             return $label.$id.': “'.$name.'”';
         }
 
-        // Viewing without title — show property/client context
+        // Viewing without title - show property/client context
         if ($log->entity === 'viewing') {
             return $label.$id.$this->viewingContext($data);
         }
@@ -403,7 +403,7 @@ class ActivityFeed extends BaseWidget
             $text .= ($text !== '' ? '; ' : '').'un vēl '.($total - count($changes)).'…';
         }
 
-        return $text !== '' ? 'Mainīts — '.$text : '';
+        return $text !== '' ? 'Mainīts - '.$text : '';
     }
 
     protected function countChanges(array $before, array $after, array $skip): int
@@ -432,7 +432,7 @@ class ActivityFeed extends BaseWidget
         if ($b === null && $a === '') {
             return true;
         }
-        // Audit snapshots may hold arrays (ai_notes, image_urls, ...) —
+        // Audit snapshots may hold arrays (ai_notes, image_urls, ...) -
         // comparing them as strings crashes ("Array to string conversion").
         if (is_array($a) || is_array($b)) {
             return $a == $b;
@@ -445,7 +445,7 @@ class ActivityFeed extends BaseWidget
     }
 
     /**
-     * Audit snapshots may hold arrays/objects — only scalars render as text.
+     * Audit snapshots may hold arrays/objects - only scalars render as text.
      */
     protected function textValue(mixed $v): ?string
     {
@@ -459,7 +459,7 @@ class ActivityFeed extends BaseWidget
     protected function valueText(mixed $v): string
     {
         if ($v === null || $v === '') {
-            return '—';
+            return '-';
         }
         if (is_bool($v)) {
             return $v ? 'jā' : 'nē';
@@ -468,7 +468,7 @@ class ActivityFeed extends BaseWidget
             return count($v).' vien.';
         }
         // Audit snapshots sometimes hold double-encoded JSON strings
-        // (model getChanges() raw attributes, e.g. ai_notes) — render
+        // (model getChanges() raw attributes, e.g. ai_notes) - render
         // them as item counts instead of dumping raw JSON.
         if (is_string($v) && isset($v[0]) && ($v[0] === '{' || $v[0] === '[')) {
             $decoded = json_decode($v, true);

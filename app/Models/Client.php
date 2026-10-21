@@ -61,7 +61,7 @@ class Client extends Model
 
     public function getStatusLabelAttribute(): string
     {
-        return self::STATUSES[$this->status] ?? ($this->status ?? '—');
+        return self::STATUSES[$this->status] ?? ($this->status ?? '-');
     }
 
     protected $with = ['attachments'];
@@ -175,7 +175,7 @@ class Client extends Model
             }
         });
 
-        // "Laimīgos" klientus (noslēgts darījums) dzēst nedrīkst — ne ar
+        // "Laimīgos" klientus (noslēgts darījums) dzēst nedrīkst - ne ar
         // mīksto, ne neatgriezenisko dzēšanu, ne adminiem, ne aģentiem.
         static::deleting(fn (Client $client): bool => ! $client->isLaimigs());
         static::forceDeleting(fn (Client $client): bool => ! $client->isLaimigs());

@@ -3,7 +3,7 @@
 
     <x-filament-panels::unsaved-action-changes-alert />
 
-    {{-- Shared "Paldies par sadarbību" popup — atveras ar
+    {{-- Shared "Paldies par sadarbību" popup - atveras ar
          `pdc-open-client-email` notikumu no rindas "Nosūtīt" pogas. --}}
     @include('filament.partials.property-client-email-popup')
 </div>

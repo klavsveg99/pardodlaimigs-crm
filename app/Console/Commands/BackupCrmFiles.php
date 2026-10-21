@@ -14,13 +14,13 @@ use ZipArchive;
 
 /**
  * Daily file backup of EVERYTHING users upload to the CRM's public storage
- * disk — property images/plans, plus attachments on clients, tasks,
+ * disk - property images/plans, plus attachments on clients, tasks,
  * viewings, avatars etc. The whole disk (`storage/app/public`) is archived,
  * so every future attachment subdirectory is covered automatically.
  *
  * Produces `<dir>/files-YYYY-MM-DD.zip` and keeps only the newest N copies
  * (same retention as the database backup). Photos dominate the payload and
- * are already optimized server-side — the zip is stored with default
+ * are already optimized server-side - the zip is stored with default
  * compression, which is enough without slowing uploads of the archive.
  */
 class BackupCrmFiles extends Command
@@ -46,7 +46,7 @@ class BackupCrmFiles extends Command
         ));
 
         if ($count === 0) {
-            $this->info('Nav datņu, ko rezervēt — izlaista.');
+            $this->info('Nav datņu, ko rezervēt - izlaista.');
 
             return self::SUCCESS;
         }
@@ -88,7 +88,7 @@ class BackupCrmFiles extends Command
                 $relative = ltrim(str_replace($diskPath, '', str_replace('\\', '/', $file->getPathname())), '/');
 
                 if (! $zip->addFile($file->getPathname(), $relative)) {
-                    // addFile failures would silently lose files — fail loudly.
+                    // addFile failures would silently lose files - fail loudly.
                     throw new RuntimeException('Neizdevās pievienot '.$file->getPathname());
                 }
 

@@ -37,7 +37,7 @@ class AgentYearlyCommission extends BaseWidget
 
         return $table
             ->extraAttributes(['class' => 'pdc-yearly-commission'])
-            ->heading("Aģentu komisijas šogad — {$yearLabel}")
+            ->heading("Aģentu komisijas šogad - {$yearLabel}")
             ->description('Pēc pārdoto īpašumu komisijas (ārējie līdi: 20% no komisijas)')
             ->query(User::query()->whereRaw('1 = 0'))
             ->records(fn () => $rows)
@@ -76,7 +76,7 @@ class AgentYearlyCommission extends BaseWidget
                     ->badge()
                     ->formatStateUsing(fn ($state, $record) => $record['avg_percent'] !== null
                         ? number_format((float) $record['avg_percent'], 2, ',', ' ').' %'
-                        : '—'),
+                        : '-'),
             ])
             ->paginated(false)
             ->emptyStateHeading('Šogad vēl nav pārdotu īpašumu')

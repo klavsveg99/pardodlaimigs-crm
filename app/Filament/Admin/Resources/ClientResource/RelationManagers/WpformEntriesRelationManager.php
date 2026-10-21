@@ -43,26 +43,26 @@ class WpformEntriesRelationManager extends RelationManager
                         "(SELECT json_extract(je.value, '$.value') FROM json_each(COALESCE(fields, '[]')) je WHERE json_extract(je.value, '$.name') = ? LIMIT 1) ".($direction === 'desc' ? 'DESC' : 'ASC'),
                         ['E-pasts'],
                     ))
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 Tables\Columns\TextColumn::make('name')->label('Vārds')
                     ->getStateUsing(fn ($record) => $record->fieldValue('Jūsu vārds'))
                     ->sortable(query: fn ($query, $direction) => $query->orderByRaw(
                         "(SELECT json_extract(je.value, '$.value') FROM json_each(COALESCE(fields, '[]')) je WHERE json_extract(je.value, '$.name') = ? LIMIT 1) ".($direction === 'desc' ? 'DESC' : 'ASC'),
                         ['Jūsu vārds'],
                     ))
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 Tables\Columns\TextColumn::make('phone')->label('Tālrunis')->formatStateUsing(fn ($state) => PhoneFormat::display((string) $state))
                     ->getStateUsing(fn ($record) => $record->fieldValue('Telefona numurs'))
                     ->sortable(query: fn ($query, $direction) => $query->orderByRaw(
                         "(SELECT json_extract(je.value, '$.value') FROM json_each(COALESCE(fields, '[]')) je WHERE json_extract(je.value, '$.name') = ? LIMIT 1) ".($direction === 'desc' ? 'DESC' : 'ASC'),
                         ['Telefona numurs'],
                     ))
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 Tables\Columns\TextColumn::make('status')->label('Statuss')
                     ->badge()
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => WpformEntryResource::STATUSES[$state] ?? $state ?? '—')
-                    ->placeholder('—'),
+                    ->formatStateUsing(fn ($state) => WpformEntryResource::STATUSES[$state] ?? $state ?? '-')
+                    ->placeholder('-'),
             ])
             ->actions([
                 Actions\ActionGroup::make([

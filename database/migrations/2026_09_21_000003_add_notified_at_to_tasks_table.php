@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Persist "Nosūtīts" for the manual task notification buttons — previously
+     * Persist "Nosūtīts" for the manual task notification buttons - previously
      * the sent state only survived the redirect that followed the POST.
      */
     public function up(): void

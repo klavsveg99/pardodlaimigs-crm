@@ -73,7 +73,7 @@ trait HasSlug
     }
 
     /**
-     * Vecie permalinki ar skaitlisko id (/clients/87) paliek derīgi —
+     * Vecie permalinki ar skaitlisko id (/clients/87) paliek derīgi -
      * binding meklē gan pēc slug, gan pēc id.
      */
     public function resolveRouteBindingQuery($query, $value, $field = null)

@@ -27,7 +27,7 @@
             }
         },
         close() {
-            // Saglabā popup rediģētos tekstus ierakstā — aizvēršana nezaudē
+            // Saglabā popup rediģētos tekstus ierakstā - aizvēršana nezaudē
             // rezultātu.
             this.$wire.saveAiResult({
                 title: this.result.title,
@@ -41,7 +41,7 @@
         reopenInput() {
             // Atgriežas uz AI ievades modāli (piezīmēm), nevis ģenerē
             // no jauna ar esošajiem noteikumiem. Filament mountAction
-            // no JS gribu preset params — tāpēc vienkārši nospiežam pašu
+            // no JS gribu preset params - tāpēc vienkārši nospiežam pašu
             // sadaļas galvenes AI pogu (redzama vienmēr, kad AI nav tukš).
             this.close();
             const trigger = [...document.querySelectorAll('button')].find((b) => b.textContent.trim().includes('AI ģenerēt aprakstu'));

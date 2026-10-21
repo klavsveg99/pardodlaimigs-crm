@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     // 25 MB. Must stay ABOVE the web PHP limits so the originals actually
-    // reach the server — ImageOptimizer shrinks them right after upload.
+    // reach the server - ImageOptimizer shrinks them right after upload.
     'max_size_kb' => env('ATTACHMENT_MAX_SIZE_KB', 25600),
 
     'accepted_mimes' => [

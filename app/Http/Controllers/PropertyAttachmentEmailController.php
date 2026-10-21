@@ -234,7 +234,7 @@ class PropertyAttachmentEmailController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
-            return response()->json(['message' => 'Nosūtīšana neizdevās — '.$e->getMessage()], 500);
+            return response()->json(['message' => 'Nosūtīšana neizdevās - '.$e->getMessage()], 500);
         }
 
         app(AuditLogger::class)->activity('attachment_email_sent', [
@@ -257,7 +257,7 @@ class PropertyAttachmentEmailController extends Controller
     }
 
     /**
-     * "Nosūtīt" e-pasts saistītajam klientam (bez pielikumiem) — tiek izmantots
+     * "Nosūtīt" e-pasts saistītajam klientam (bez pielikumiem) - tiek izmantots
      * "Paldies par sadarbību" pateicības e-pastam īpašuma skata lapā.
      */
     public function sendToClient(Request $request, string $propertySlug, int $client): JsonResponse
@@ -294,7 +294,7 @@ class PropertyAttachmentEmailController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
-            return response()->json(['message' => 'Nosūtīšana neizdevās — '.$e->getMessage()], 500);
+            return response()->json(['message' => 'Nosūtīšana neizdevās - '.$e->getMessage()], 500);
         }
 
         app(AuditLogger::class)->activity('client_email_sent', [

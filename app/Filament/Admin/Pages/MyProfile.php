@@ -22,7 +22,7 @@ use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * "Mans profils" — ļauj arī ne-adminam (aģentam) pārvaldīt savus aģenta
+ * "Mans profils" - ļauj arī ne-adminam (aģentam) pārvaldīt savus aģenta
  * datus (Vārds, E-pasts, Tālrunis, foto, amats, apraksts, sociālie tīkli,
  * biroja adrese). Publiskā profila daļa atbilst Aģenti-iekļautajiem laukiem.
  */
@@ -45,7 +45,7 @@ class MyProfile extends Page
 
     public static function shouldRegisterNavigation(): bool
     {
-        // Adminiem nav vajadzīgs — viņiem ir pilna Aģenti sadaļa.
+        // Adminiem nav vajadzīgs - viņiem ir pilna Aģenti sadaļa.
         return static::canAccess() && auth()->user()?->can('manage') === false;
     }
 

@@ -12,7 +12,7 @@
         lat: null,
         lng: null,
         // Marker un Map glabājam slēguma īpašībā caursējumā lai Proxy
-        // nesabojā privāto klašu metodes. Vienmēr VIENS pin — klikšķis vai
+        // nesabojā privāto klašu metodes. Vienmēr VIENS pin - klikšķis vai
         // vilkšana pārvieto to, nekad neizveido otru.
         initMap() {
             if (!this.$wire) {
@@ -24,7 +24,7 @@
                 return;
             }
             if (this.map) {
-                // Jau uzsākts (arī pēc Livewire morph) — neatkārtojam: pretējā
+                // Jau uzsākts (arī pēc Livewire morph) - neatkārtojam: pretējā
                 // gadījumā dubultos klikšķa listeneri un iespējams pin.
                 return;
             }
@@ -82,13 +82,13 @@
 
             this.setPin = setPin;
 
-            // Jauns īpašums BEZ saglabātām koordinātām — NAV nav sākotnējā
+            // Jauns īpašums BEZ saglabātām koordinātām - NAV nav sākotnējā
             // pin; lietotājam jāuzliek pats (obligāts pirms saglabāsanās).
             if (hasCoords) {
                 setPin(new google.maps.LatLng(parseFloat(self.lat), parseFloat(self.lng)), false);
             }
 
-            // Šo daļu reģistrējam TIKAI vienreiz — līdz ar Map izveidi.
+            // Šo daļu reģistrējam TIKAI vienreiz - līdz ar Map izveidi.
             this.map.addListener('click', (e) => {
                 if (!e.latLng) return;
                 this.map.panTo(e.latLng);

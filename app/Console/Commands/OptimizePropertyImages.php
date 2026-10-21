@@ -13,9 +13,10 @@ class OptimizePropertyImages extends Command
 {
     protected $signature = 'pdc:optimize-images
         {--property= : Only optimize attachments of this attachable_id}
+        {--previews-only : Only generate the 800px card previews, leaving the originals untouched}
         {--dry-run : Report what would change without writing anything}';
 
-    protected $description = 'Downscale + optimise all local image attachments (max 1920px) and generate thumbnails.';
+    protected $description = 'Downscale + optimise all local image attachments (max 1920px) and generate the thumbnail and card preview variants.';
 
     public function handle(ImageOptimizer $optimizer): int
     {
@@ -25,6 +26,7 @@ class OptimizePropertyImages extends Command
             ->where('path', 'NOT LIKE', 'http://%')
             ->where('path', 'NOT LIKE', 'https://%')
             ->where('path', 'NOT LIKE', 'thumb-%')
+            ->where('path', 'NOT LIKE', 'preview-%')
             ->orderBy('id');
 
         if ($property = $this->option('property')) {
@@ -40,14 +42,16 @@ class OptimizePropertyImages extends Command
 
         $this->info("Processing {$total} image attachment(s)…");
         $dryRun = (bool) $this->option('dry-run');
+        $previewsOnly = (bool) $this->option('previews-only');
 
         $checked = 0;
         $changed = 0;
         $unchanged = 0;
         $skipped = 0;
         $missing = 0;
+        $previews = 0;
 
-        $query->chunk(100, function ($attachments) use ($optimizer, $dryRun, &$checked, &$changed, &$unchanged, &$skipped, &$missing) {
+        $query->chunk(100, function ($attachments) use ($optimizer, $dryRun, $previewsOnly, &$checked, &$changed, &$unchanged, &$skipped, &$missing, &$previews) {
             foreach ($attachments as $attachment) {
                 $checked++;
 
@@ -55,6 +59,17 @@ class OptimizePropertyImages extends Command
                 if (! is_file($path)) {
                     $missing++;
                     $this->line("  [SKIP] #{$attachment->id} missing file: {$attachment->path}");
+
+                    continue;
+                }
+
+                if ($previewsOnly) {
+                    if ($optimizer->preview($path)) {
+                        $previews++;
+                        $this->line("  [OK]   #{$attachment->id} preview generated: {$attachment->path}");
+                    } else {
+                        $skipped++;
+                    }
 
                     continue;
                 }
@@ -91,15 +106,10 @@ class OptimizePropertyImages extends Command
         });
 
         $this->newLine();
-        $this->info(sprintf(
-            'Done. checked=%d changed=%d unchanged=%d skipped=%d missing=%d%s',
-            $checked,
-            $changed,
-            $unchanged,
-            $skipped,
-            $missing,
-            $dryRun ? ' (dry-run)' : '',
-        ));
+        $summary = $previewsOnly
+            ? sprintf('Done. checked=%d previews=%d skipped=%d missing=%d', $checked, $previews, $skipped, $missing)
+            : sprintf('Done. checked=%d changed=%d unchanged=%d skipped=%d missing=%d', $checked, $changed, $unchanged, $skipped, $missing);
+        $this->info($summary.($dryRun ? ' (dry-run)' : ''));
 
         return self::SUCCESS;
     }

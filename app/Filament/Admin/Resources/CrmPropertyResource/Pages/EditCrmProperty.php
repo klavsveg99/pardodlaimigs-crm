@@ -28,7 +28,7 @@ class EditCrmProperty extends EditRecord
     use SyncsAttachments;
 
     /**
-     * Vai pēdējā saglabāšanā statuss tika mainīts uz "Pārdots" — tad pēc
+     * Vai pēdējā saglabāšanā statuss tika mainīts uz "Pārdots" - tad pēc
      * saglabāšanas piedāvājam uzreiz piesaistīt pircēju.
      */
     protected bool $statusChangedToSold = false;
@@ -50,7 +50,7 @@ class EditCrmProperty extends EditRecord
     }
 
     /**
-     * "Saglabāt izmaiņas" / "Atcelt" pogas pārceltas uz VISS apakšu — pēc
+     * "Saglabāt izmaiņas" / "Atcelt" pogas pārceltas uz VISS apakšu - pēc
      * saistīto ierakstu sadaļām (Piesaistītie klienti), nevis starp formu
      * un Piesaistītie klienti (pēc noklusējuma).
      */
@@ -69,7 +69,7 @@ class EditCrmProperty extends EditRecord
 
     public function getRelationManagersContentComponent(): Component
     {
-        // Fotogrāfam nav pieejami saistīto klientu pārvaldības bloki —
+        // Fotogrāfam nav pieejami saistīto klientu pārvaldības bloki -
         // tikai nosaukums un galerija.
         if (auth()->user()?->isPhoto()) {
             return Group::make([
@@ -84,7 +84,7 @@ class EditCrmProperty extends EditRecord
     }
 
     /**
-     * Apakšējā "Saglabāt izmaiņas" poga ir ārā no <form> elementa —
+     * Apakšējā "Saglabāt izmaiņas" poga ir ārā no <form> elementa -
      * HTML submit vairs nedarbojas, tāpēc saglabāšana notiek tieši ar
      * Livewire save() izsaukumu (kā augšējai "Saglabāt" pogai).
      */
@@ -98,7 +98,7 @@ class EditCrmProperty extends EditRecord
 
     /**
      * Autosave tikai melnrakstiem ("jauniem" īpašumiem). Publicētiem un
-     * pārdotiem īpašumiem katra izmaiņa jāsaglabā ar "Saglabāt" — citādi
+     * pārdotiem īpašumiem katra izmaiņa jāsaglabā ar "Saglabāt" - citādi
      * katrs taustiņšienis netīšām pārraksta jau publicētos datus.
      */
     protected function canAutosave(): bool
@@ -125,7 +125,7 @@ class EditCrmProperty extends EditRecord
         $this->statusChangedToSold = $previousStatus !== 'sold' && $record->status === 'sold';
 
         // AI piezīmes tiek glabātas komponentes stāvoklī (modalā textarea),
-        // nevis caur shēmas dehidrāciju — saglabājam tās šeit.
+        // nevis caur shēmas dehidrāciju - saglabājam tās šeit.
         $aiNotes = $this->data['ai_notes'] ?? null;
         if (is_array($aiNotes)) {
             $aiNotes = array_filter($aiNotes, fn ($v): bool => filled($v));
@@ -133,7 +133,7 @@ class EditCrmProperty extends EditRecord
         }
 
         // Versija tiek fiksēta tikai pie manuālas saglabāšanas, nevis pie
-        // melnraksta autosave — citādi katra taustiņšienis radītu jaunu versiju.
+        // melnraksta autosave - citādi katra taustiņšienis radītu jaunu versiju.
         if (! $wasAutosave && $record->wasChanged('description')) {
             $this->storeDescriptionRevision($record);
         }

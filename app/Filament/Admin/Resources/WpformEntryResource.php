@@ -43,7 +43,7 @@ class WpformEntryResource extends Resource
 
     // "deleted" is reached only through the trash action, which also writes
     // the WordPress re-sync tombstone. Never expose it as a plain status
-    // choice — a raw status update would leave the entry resurrectable.
+    // choice - a raw status update would leave the entry resurrectable.
     public const SELECTABLE_STATUSES = [
         'new' => 'Jauns',
         'review' => 'Izvērtēts',
@@ -67,7 +67,7 @@ class WpformEntryResource extends Resource
 
     protected static ?int $navigationSort = 30;
 
-    // Pieteikumi ir konfidenciāli — pieejami tikai administratoriem
+    // Pieteikumi ir konfidenciāli - pieejami tikai administratoriem
     // (slēpti arī navigācijā un klienta skatā).
     public static function canAccess(): bool
     {
@@ -144,7 +144,7 @@ class WpformEntryResource extends Resource
                 Tables\Columns\TextColumn::make('form_name')->label('Forma')->badge()->sortable(),
                 Tables\Columns\TextColumn::make('email')->label('E-pasts')
                     ->getStateUsing(fn (WpformEntry $record) => $record->fieldValue('E-pasts'))
-                    // fields is a JSON array of {name, value} objects — sort
+                    // fields is a JSON array of {name, value} objects - sort
                     // via json_each lookup, not a simple key path.
                     ->sortable(query: fn ($query, $direction) => $query->orderByRaw(
                         "(SELECT json_extract(je.value, '$.value') FROM json_each(COALESCE(fields, '[]')) je WHERE json_extract(je.value, '$.name') = ? LIMIT 1) ".($direction === 'desc' ? 'DESC' : 'ASC'),

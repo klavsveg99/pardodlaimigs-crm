@@ -116,7 +116,7 @@
     }
 
     /* ── Day grid ──────────────────────────────────────────────── */
-    /* Calendar page "Aģents" filter select — explicit styling for light + dark */
+    /* Calendar page "Aģents" filter select - explicit styling for light + dark */
     .pdc-agent-filter,
     #agent-filter {
         display: inline-block;
@@ -173,7 +173,7 @@
     }
 
     /* Agent filter row above the calendar. Tailwind utilities (flex/mb-4)
-       are not in the compiled app.css, so the row needs explicit spacing —
+       are not in the compiled app.css, so the row needs explicit spacing -
        otherwise the select sits flush against the calendar card. */
     .pdc-agent-filter-row {
         display: flex;
@@ -397,7 +397,7 @@
 
         /* List view on mobile: the dot is hidden, but its graphic column
            still reserved width and squeezed the title into a narrow wrapped
-           column — worst on all-day rows, which have no time cell. Drop the
+           column - worst on all-day rows, which have no time cell. Drop the
            graphic cell, pair time + title left-aligned, and left-align the
            day header (FullCalendar floats the date to the right by default). */
         .fc .fc-list-event {
@@ -458,7 +458,7 @@
         }
     }
 
-    /* ── Dark mode — match the gray tones of the rest of the panel ── */
+    /* ── Dark mode - match the gray tones of the rest of the panel ── */
     .dark .fc {
         --fc-border-color: #3f3f46;
         --fc-page-bg-color: #18181b;
@@ -604,7 +604,7 @@
                         const prefix = e.type === 'task' ? '[Uzdevums] ' : '[Apskate] ';
                         return {
                             id: e.id,
-                            title: prefix + e.title + ' – ' + e.client,
+                            title: prefix + e.title + ' - ' + e.client,
                             start: e.start,
                             end: e.end,
                             backgroundColor: e.color,
@@ -646,7 +646,7 @@
                         eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false },
                         slotLabelFormat: { hour: '2-digit', minute: '2-digit', meridiem: false },
                         // On mobile show only 2-letter day names in both month and week/timegrid headers.
-                        // (v6 passes a DateEnv marker object here — not a real Date — so build the date from its fields.)
+                        // (v6 passes a DateEnv marker object here - not a real Date - so build the date from its fields.)
                         dayHeaderFormat: (info) => {
                             const d = info.date;
                             const dt = new Date(Date.UTC(d.year, d.month, d.day));

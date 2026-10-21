@@ -45,7 +45,7 @@ class TaskResource extends Resource
 
     protected static ?int $navigationSort = 20;
 
-    // Aģenti redz tikai savam aģentam piesaistītos uzdevumus — arī
+    // Aģenti redz tikai savam aģentam piesaistītos uzdevumus - arī
     // atverot tiešu URL.
     public static function getEloquentQuery(): EloquentBuilder
     {
@@ -60,7 +60,7 @@ class TaskResource extends Resource
         return $schema->schema([
             Forms\Components\TextInput::make('title')->label('Nosaukums')->required()->columnSpanFull(),
             Forms\Components\Textarea::make('body')->label('Apraksts')->rows(3)->columnSpanFull(),
-            // "Nevēlāks kā tagad" tikai izveidojot — pretējā gadījumā veca
+            // "Nevēlāks kā tagad" tikai izveidojot - pretējā gadījumā veca
             // (nokavēta) uzdevuma saglabāšana editā neizdodas.
             Forms\Components\DateTimePicker::make('due_at')->label('Līdz')->native(false)
                 ->minDate(fn (string $operation) => $operation === 'create' ? now() : null)
@@ -121,7 +121,7 @@ class TaskResource extends Resource
                 ->recordSendable()
                 ->columnSpanFull(),
 
-            // Paziņojumi netiek sūtīti automātiski — tos izsūta tikai ar
+            // Paziņojumi netiek sūtīti automātiski - tos izsūta tikai ar
             // pogām. Bloks redzams tikai esošam ierakstam.
             Section::make('Nosūtīt paziņojumu')
                 ->columnSpanFull()
@@ -177,19 +177,19 @@ class TaskResource extends Resource
                 Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable()->weight('bold')->wrap()
                     ->url(fn ($record) => route('filament.admin.resources.tasks.edit', $record)),
                 Tables\Columns\TextColumn::make('due_at')->label('Līdz')
-                    ->formatStateUsing(fn ($state, Task $record): string => $record->due_display ?? '—')
+                    ->formatStateUsing(fn ($state, Task $record): string => $record->due_display ?? '-')
                     ->sortable()->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->color(fn ($record) => $record->isOverdue() ? 'danger' : null)
                     ->icon(fn ($record) => $record->isOverdue() ? 'heroicon-o-exclamation-triangle' : null)
                     ->iconColor('warning'),
                 Tables\Columns\TextColumn::make('assignedTo.name')->label('Aģents')->sortable()
                     ->url(fn ($record) => $record->assigned_user_id ? route('filament.admin.resources.users.edit', $record->assigned_user_id) : null),
-                Tables\Columns\TextColumn::make('izpilditajs.name')->label('Izpildītājs')->sortable()->placeholder('—'),
+                Tables\Columns\TextColumn::make('izpilditajs.name')->label('Izpildītājs')->sortable()->placeholder('-'),
                 Tables\Columns\TextColumn::make('client.name')->label('Klients')->sortable()
                     ->url(fn ($record) => $record->client_id ? route('filament.admin.resources.clients.view', $record->client_id) : null),
                 Tables\Columns\TextColumn::make('property.selection_label')->label('Īpašums')->wrap()
-                    ->placeholder('—')
-                    // selection_label is a computed accessor — sort by the
+                    ->placeholder('-')
+                    // selection_label is a computed accessor - sort by the
                     // underlying property title via subquery.
                     ->sortable(query: fn ($query, $direction) => $query->orderBy(
                         CrmProperty::query()->select('title')->whereColumn('crm_properties.id', 'tasks.property_id'),

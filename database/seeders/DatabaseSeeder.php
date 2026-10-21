@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        // Sēšana ir aizliegta produkcijā — reālie dati drīkst zaudēt tikai
+        // Sēšana ir aizliegta produkcijā - reālie dati drīkst zaudēt tikai
         // izmantojot migrācijas, nevis db:seed.
         if (config('app.env') === 'production') {
             return;

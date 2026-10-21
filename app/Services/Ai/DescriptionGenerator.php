@@ -12,7 +12,7 @@ use RuntimeException;
 /**
  * AI teksta ģenerators īpašumu aprakstiem.
  *
- * Balstās strikti uz CRM datos un aģenta ievadītajām piezīmēm — modelim ir
+ * Balstās strikti uz CRM datos un aģenta ievadītajām piezīmēm - modelim ir
  * aizliegts izdomāt faktus. Atbalsta Gemini un OpenAI;
  * pietiek vienas konfigurētas atslēgas.
  */
@@ -35,7 +35,7 @@ class DescriptionGenerator
     public function generate(array $context, array $notes, string $mode = self::MODE_FULL, ?string $currentDescription = null): array
     {
         // Modelis reizēm nogriež garu atbildi vidū (domu žetoni apēd
-        // izvades budžetu) — tad decodeJson met izņēmumu; mēģinām vēlreiz.
+        // izvades budžetu) - tad decodeJson met izņēmumu; mēģinām vēlreiz.
         try {
             $payload = $this->callModel($this->buildPrompt($context, $notes, $mode, $currentDescription));
         } catch (RuntimeException $e) {
@@ -57,7 +57,7 @@ class DescriptionGenerator
             'title' => (string) $payload['title'],
             'facebook' => (string) $payload['facebook'],
             'instagram' => (string) $payload['instagram'],
-            // PDF variants ir papildu lauks — ja modelis to aizmirst, pārējie
+            // PDF variants ir papildu lauks - ja modelis to aizmirst, pārējie
             // teksti netiek zaudēti; PDF ģeneratorā paliek pieejama atsevišķā
             // "AI ģenerēt" poga.
             'pdf' => is_string($payload['pdf'] ?? null) ? (string) $payload['pdf'] : '',
@@ -123,7 +123,7 @@ class DescriptionGenerator
                     'temperature' => 0.7,
                     'responseMimeType' => 'application/json',
                     // "Thinking" (domu) žetoni rēķinās kopā ar atbildes tekstiem
-                    // maxOutputTokens limitā — ar zemu limitu strukturēti
+                    // maxOutputTokens limitā - ar zemu limitu strukturēti
                     // WEB+ss.com teksti tika nogriezti vidū un JSON nebija
                     // derīgs. Modelis atbalsta līdz 65536.
                     'maxOutputTokens' => (int) config('services.gemini.max_output_tokens', 65536),
@@ -188,7 +188,7 @@ class DescriptionGenerator
 
         if (! is_array($decoded)) {
             // Models may prepend a sentence or append text around the JSON
-            // object — extract the outermost {...} and retry.
+            // object - extract the outermost {...} and retry.
             $start = mb_strpos($text, '{');
             $end = mb_strrpos($text, '}');
             if ($start !== false && $end !== false && $end > $start) {
@@ -219,7 +219,7 @@ class DescriptionGenerator
             : 'null';
 
         $instruction = match ($mode) {
-            self::MODE_SHORTEN => 'REŽĪMS: SAĪSINĀT. Paņem esošo aprakstu ( zemāk "esošais_apraksts" ) un saīsini to KVANTITATĪVI: gala apraksta vārdu skaitam JĀBŪT aptuveni 60% no esošā apraksta vārdu skaita (skaiti pirms raksti). Saglabā visus faktus un NEIZDOMĀ neko jaunu. Pārģenerē arī citos formātos (ss.lv, Facebook, Instagram, virsrakstu) no saīsinātā apraksta — arī tie īsāki.',
+            self::MODE_SHORTEN => 'REŽĪMS: SAĪSINĀT. Paņem esošo aprakstu ( zemāk "esošais_apraksts" ) un saīsini to KVANTITATĪVI: gala apraksta vārdu skaitam JĀBŪT aptuveni 60% no esošā apraksta vārdu skaita (skaiti pirms raksti). Saglabā visus faktus un NEIZDOMĀ neko jaunu. Pārģenerē arī citos formātos (ss.lv, Facebook, Instagram, virsrakstu) no saīsinātā apraksta - arī tie īsāki.',
             self::MODE_PERSUASIVE => 'REŽĪMS: PADARĪT PĀRLIECINOŠĀKU. Paņem esošo aprakstu un padari to pārliecinošāku pārdošanai (dzīvīgāks tonis, uzsvars uz ieguvumiem, aicinoša noslēguma frāze), bet NEDRĪKST pievienot jaunus faktus, ko dati neapstiprina, un garums drīkst atšķirties no esošā ne vairāk kā ±15%. Pārģenerē arī citos formātos.',
             default => $currentDescription === null
                 ? 'REŽĪMS: ĢENERĒT NO DATIEM.'
@@ -228,20 +228,20 @@ class DescriptionGenerator
 
         return <<<PROMPT
 Tu esi nekustamo īpašumu aģentūras "Pārdod Laimīgs" tekstu autors. Raksti latviešu valodā.
-NEVIS vienkārši "bliez" visu informāciju teikumu pēc teikuma — veido profesionālu sludinājumu ar skaidru struktūru, virsrakstiem, rindkopām, aizzīmēm un pārdošanas loģiku.
+NEVIS vienkārši "bliez" visu informāciju teikumu pēc teikuma - veido profesionālu sludinājumu ar skaidru struktūru, virsrakstiem, rindkopām, aizzīmēm un pārdošanas loģiku.
 WEB un ss.com teksti balstās uz tiem pašiem CRM datiem, bet noformējums pielāgots konkrētajai platformai.
 
 {$instruction}
 
 4.2. AI ĢENERĒŠANAS NOTEIKUMI:
-- Vispirms izvērtē ievadītos datus un nosaki spēcīgākos pārdošanas argumentus — tos izcel pirmos.
+- Vispirms izvērtē ievadītos datus un nosaki spēcīgākos pārdošanas argumentus - tos izcel pirmos.
 - Virsrakstam jābūt uzmanību piesaistošam, profesionālam un balstītam faktos.
 - Tekstu veido īsās, pārskatāmās rindkopās (2-4 teikumi katrā), nevis vienā garā blokā.
 - Būtiskos parametrus izdali atsevišķā blokā.
 - Telpu, aprīkojuma un priekšrocību uzskaitījumos izmanto aizzīmes.
 - Īpaši izdevīgus iegādes nosacījumus (no piezīmes "investment": Altum, hipotekārais kredīts u.c.) izcel atsevišķā sadaļā, JA tādi ievadīti.
 - Noslēgumā vienmēr skaidrs aicinājums sazināties un pieteikt apskati.
-- Ja informācija nav ievadīta, to NEDRĪKST izdomāt un NEDRĪKST veidot tukšu sadaļu — sadaļu vienkārši izlaid.
+- Ja informācija nav ievadīta, to NEDRĪKST izdomāt un NEDRĪKST veidot tukšu sadaļu - sadaļu vienkārši izlaid.
 - NEDRĪKST izdomāt nevienu faktu, kas nav datos vai aģenta piezīmēs: ne attālumus, ne infrastruktūru (skolas, veikali, transports), ne apkures veidu, ne priekšrocības.
 - Neizmanto tukšas vai pārspīlētas frāzes bez seguma datos.
 - Cenu piemini tikai, ja tā norādīta datos.
@@ -255,19 +255,19 @@ AĢENTA PIEZĪMES (var būt tukšas; advantages=atrašanās/piekļuve/skats, tec
 ESOŠAIS APRAKSTS (tikai saīsināšanas/pārliecinošāka režīmiem):
 {$currentJson}
 
-4.3. WEB SLUDINĀJUMA STRUKTŪRA ("description" — HTML, tikai <p>/<br>/<strong>/<ul>/<li> tagi, bez Markdown):
+4.3. WEB SLUDINĀJUMA STRUKTŪRA ("description" - HTML, tikai <p>/<br>/<strong>/<ul>/<li> tagi, bez Markdown):
 Secība: Virsraksts (atsevišķā "title" laukā) → īss pārliecinošs ievads → Galvenie parametri (atsevišķs bloks) → Detalizēts apraksts → Telpas/aprīkojums ar aizzīmēm (<ul><li>) → Apkure un izmaksas (ja zināmas) → Konstrukcija/tehniskais stāvoklis (ja zināms) → Atrašanās vieta un apkārtne → Īpaši izdevīgi iegādes nosacījumi (TIKAI ja ievadīti) → Noslēguma pārdošanas arguments → Aicinājums sazināties/pieteikt apskati. Pēc LV daļas tāds pats EN tulkojums, balstīts TIKAI uz tiem pašiem faktiem: <p><strong>[LV]</strong><br>...</p> tad <p><strong>[EN]</strong><br>...</p>.
 
-4.4. SS.COM STRUKTŪRA ("description_ss" — vienkāršs teksts bez HTML, kompakts bet ar skaidriem blokiem):
-Īss uzmanību piesaistošs virsraksts (pirmā rinda) → 2–4 teikumu galvenais apraksts → Svarīgākie parametri katrs savā rindā → Galvenās priekšrocības ar aizzīmēm ("- " katras rindas sākumā) → Svarīgākie iegādes nosacījumi (ja attiecināms) → Atrašanās vietas priekšrocības → Īss aicinājums sazināties. Pēc LV daļas tāds pats EN tulkojums, balstīts TIKAI uz tiem pašiem faktiem, atdalīts ar rindu "———— EN ————": LV bloks tad EN bloks (identiska struktūra angļu valodā).
+4.4. SS.COM STRUKTŪRA ("description_ss" - vienkāršs teksts bez HTML, kompakts bet ar skaidriem blokiem):
+Īss uzmanību piesaistošs virsraksts (pirmā rinda) → 2-4 teikumu galvenais apraksts → Svarīgākie parametri katrs savā rindā → Galvenās priekšrocības ar aizzīmēm ("- " katras rindas sākumā) → Svarīgākie iegādes nosacījumi (ja attiecināms) → Atrašanās vietas priekšrocības → Īss aicinājums sazināties. Pēc LV daļas tāds pats EN tulkojums, balstīts TIKAI uz tiem pašiem faktiem, atdalīts ar rindu "---- EN ----": LV bloks tad EN bloks (identiska struktūra angļu valodā).
 
 ATGRIEZT TIKAI JSON ar šādām atslēgām:
 - "description": WEB variants pēc 4.3. struktūras (HTML).
 - "description_ss": ss.com variants pēc 4.4. struktūras (tīrs teksts).
 - "title": īss sludinājuma virsraksta variants (maks. ~60 rakstzīmes, bez cenas, latviski).
-- "facebook": Facebook ieraksts (600–900 rakstzīmes); strukturēts: piesaistoša ievadrinda → 2–4 teikumi par īpašumu → bloks "Galvenie fakti:" ar 3–6 rindām (cena/platība/istabas/atradne — tikai aizpildītie dati) → noslēguma aicinājums pieteikt apskati un kontaktinformācijas akcents. Maksimums 2–3 emoji visā tekstā, tikai piemērotās vietās (piem. ievadrindā un aicinājumā). Bez izdomātiem faktiem.
+- "facebook": Facebook ieraksts (600-900 rakstzīmes); strukturēts: piesaistoša ievadrinda → 2-4 teikumi par īpašumu → bloks "Galvenie fakti:" ar 3-6 rindām (cena/platība/istabas/atradne - tikai aizpildītie dati) → noslēguma aicinājums pieteikt apskati un kontaktinformācijas akcents. Maksimums 2-3 emoji visā tekstā, tikai piemērotās vietās (piem. ievadrindā un aicinājumā). Bez izdomātiem faktiem.
 - "instagram": īss uzrunājošs Instagram/Reels apraksts (1-3 teikumi, 3-6 atbilstoši hashtag, piem. #nekustamieipasumi #pardodlaimigs).
-- "pdf": īss mārketinga apraksts A4 PDF bukletam. TIKAI latviešu valodā, BEZ virsraksta un emocijzīmēm. MAKSIMUMU 500 rakstzīmes (ieskaitot atstarpes) — skaiti rakstzīmes pirms atbildes. Formatējums: tikai <p>, <br>, <strong>, <em>, <u>, <ul>, <li> tagi (bez Markdown). Struktūra: 1-2 īsas ievada rindkopas ar spēcīgākajiem argumentiem, tad 3-5 aizzīmes (<ul><li>) ar galvenajiem faktiem (cena, platība, istabas, atrašanās vieta), tad viena noslēguma aicinājuma rinda. Bez izdomātiem faktiem.
+- "pdf": īss mārketinga apraksts A4 PDF bukletam. TIKAI latviešu valodā, BEZ virsraksta un emocijzīmēm. MAKSIMUMU 500 rakstzīmes (ieskaitot atstarpes) - skaiti rakstzīmes pirms atbildes. Formatējums: tikai <p>, <br>, <strong>, <em>, <u>, <ul>, <li> tagi (bez Markdown). Struktūra: 1-2 īsas ievada rindkopas ar spēcīgākajiem argumentiem, tad 3-5 aizzīmes (<ul><li>) ar galvenajiem faktiem (cena, platība, istabas, atrašanās vieta), tad viena noslēguma aicinājuma rinda. Bez izdomātiem faktiem.
 PROMPT;
     }
 
@@ -302,11 +302,11 @@ PROMPT;
 Tu esi nekustamo īpašumu aģentūras "Pārdod Laimīgs" tekstu autors. Raksti latviešu valodā.
 
 Izveido ĪSU mārketinga aprakstu A4 PDF bukletam (klientam paredzēts izdrukājams buklets).
-- MAKSIMUMU {$max} rakstzīmes (ieskaitot atstarpes) — skaiti rakstzīmes pirms atbildes un iekļaujies limitā.
+- MAKSIMUMU {$max} rakstzīmes (ieskaitot atstarpes) - skaiti rakstzīmes pirms atbildes un iekļaujies limitā.
 - TIKAI latviešu valodā. Bez virsraksta, bez emocijzīmēm.
 - Formatējums: tikai <p>, <br>, <strong>, <em>, <u>, <ul>, <li> tagi. Bez Markdown, bez atribūtiem.
-- Struktūra: 1-2 īsas ievada rindkopas ar spēcīgākajiem pārdošanas argumentiem, tad 3-5 aizzīmes (<ul><li>) ar galvenajiem faktiem (cena, platība, istabas, atrašanās vieta — tikai aizpildītie dati), tad viena noslēguma aicinājuma rinda.
-- Izmanto tikai CRM datos esošos faktus — NEDRĪKST izdomāt neko (ne attālumus, ne infrastruktūru, ne apkuri).
+- Struktūra: 1-2 īsas ievada rindkopas ar spēcīgākajiem pārdošanas argumentiem, tad 3-5 aizzīmes (<ul><li>) ar galvenajiem faktiem (cena, platība, istabas, atrašanās vieta - tikai aizpildītie dati), tad viena noslēguma aicinājuma rinda.
+- Izmanto tikai CRM datos esošos faktus - NEDRĪKST izdomāt neko (ne attālumus, ne infrastruktūru, ne apkuri).
 
 DATI (CRM formas lauki):
 {$dataJson}

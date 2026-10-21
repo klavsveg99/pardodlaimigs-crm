@@ -111,6 +111,7 @@ class CrmPropertyFeedController extends Controller
                     ->map(fn (Attachment $attachment): array => [
                         'url' => $attachment->cacheBustedUrl(),
                         'thumb_url' => $attachment->thumbUrl(),
+                        'preview_url' => $attachment->previewUrl(),
                     ])
                     ->all();
 

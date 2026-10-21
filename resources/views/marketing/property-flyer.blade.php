@@ -89,7 +89,7 @@
         .field input:focus, .field textarea:focus { outline: 2px solid rgba(40,88,84,0.25); border-color: var(--pdc-primary); }
         .field textarea { resize: vertical; min-height: 7rem; }
         /* Native file inputs have an intrinsic width that can exceed narrow
-           viewports — force them to fit the panel. */
+           viewports - force them to fit the panel. */
         .field input[type=file] { width: 100%; max-width: 100%; font-size: 0.8rem; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; min-width: 0; }
         .hint { font-size: 0.72rem; color: #9ca3af; margin-top: 0.2rem; }
@@ -202,7 +202,7 @@
         .flyer-meta { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f3f4f6; }
         .flyer-meta span { color: #9ca3af; font-size: 11px; }
 
-        /* PDF capture klons — fiksēts A4. */
+        /* PDF capture klons - fiksēts A4. */
         .flyer-capture { width: 794px !important; height: 1122px !important; min-height: 1122px !important; overflow: hidden !important; padding: 45px !important; box-shadow: none !important; }
 
         @page { size: A4; margin: 0; }
@@ -815,7 +815,7 @@
             }
             // Uz laiku pārslēdz īsto priekšskatījuma lapu A4 režīmā (bez
             // mērogošanas), lai html2canvas to uzzīmētu pilnā izmērā.
-            // Klons ārpus ekrāna netiek izmantots — tas radīja tukšu PDF.
+            // Klons ārpus ekrāna netiek izmantots - tas radīja tukšu PDF.
             const scalerEl = document.getElementById('preview-scaler');
             const stageEl = document.querySelector('.preview-stage');
             async function withCaptureMode(run) {
@@ -862,7 +862,7 @@
                     if (status) { status.textContent = 'PDF sagatavots.'; }
                 } catch (error) {
                     console.warn('PDF ģenerēšana neizdevās:', error);
-                    if (status) { status.textContent = 'Neizdevās ģenerēt PDF — atverama drukas forma.'; }
+                    if (status) { status.textContent = 'Neizdevās ģenerēt PDF - atverama drukas forma.'; }
                     window.print();
                 } finally {
                     button.disabled = false;

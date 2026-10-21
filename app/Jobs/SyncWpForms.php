@@ -26,10 +26,10 @@ use Illuminate\Support\Facades\DB;
  *
  * CRM changes persist across syncs:
  *  - entries deleted in the CRM are skipped via `wpform_entry_deletions`
- *    tombstones (see the WpformEntry model `deleted` hook) — an entry the
+ *    tombstones (see the WpformEntry model `deleted` hook) - an entry the
  *    user removed is never re-created, even if WordPress re-sends it;
  *  - CRM-owned columns (`status`, `viewed`, `starred`, `client_id`) are
- *    only populated on CREATE — updates refresh the WP-owned payload
+ *    only populated on CREATE - updates refresh the WP-owned payload
  *    (fields, labels, timestamps) without resetting manual CRM edits.
  */
 class SyncWpForms implements ShouldQueue
@@ -119,7 +119,7 @@ class SyncWpForms implements ShouldQueue
     }
 
     /**
-     * WP-owned payload subset — everything `row()` provides EXCEPT the
+     * WP-owned payload subset - everything `row()` provides EXCEPT the
      * CRM-managed columns (`status`, `viewed`, `starred`).
      *
      * @return array<string, mixed>

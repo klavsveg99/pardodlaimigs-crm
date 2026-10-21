@@ -3,7 +3,7 @@
         <dl class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Iesniegts</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->created_at?->format('d.m.Y H:i') ?? '—' }}</dd>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->created_at?->format('d.m.Y H:i') ?? '-' }}</dd>
             </div>
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Klients</dt>
@@ -26,7 +26,7 @@
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Statuss</dt>
                 <dd class="mt-1">
                     <x-filament::badge :color="\App\Filament\Admin\Resources\WpformEntryResource::STATUS_COLORS[$record->status] ?? 'gray'">
-                        {{ \App\Filament\Admin\Resources\WpformEntryResource::STATUSES[$record->status] ?? $record->status ?? '—' }}
+                        {{ \App\Filament\Admin\Resources\WpformEntryResource::STATUSES[$record->status] ?? $record->status ?? '-' }}
                     </x-filament::badge>
                 </dd>
             </div>
@@ -45,7 +45,7 @@
                     @if (is_array($value))
                         {{ implode(', ', array_map(fn ($v) => (string) $v, $value)) }}
                     @elseif ($value === '' || $value === null)
-                        <span class="text-gray-400 dark:text-gray-500">—</span>
+                        <span class="text-gray-400 dark:text-gray-500">-</span>
                     @else
                         {!! nl2br(trim(e($value))) !!}
                     @endif

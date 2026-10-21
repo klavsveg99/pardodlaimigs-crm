@@ -9,7 +9,7 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Never expose "/public/" in the visible URL — 301 to the clean path.
+    # Never expose "/public/" in the visible URL - 301 to the clean path.
     # (%{THE_REQUEST} is the original client request line, so internal
     # rewrites below cannot trigger this rule again.)
     RewriteCond %{THE_REQUEST} \s/public/([^\s?#]*)

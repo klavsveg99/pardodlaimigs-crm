@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Darījumi (deals) were removed from the CRM entirely — the property
+     * Darījumi (deals) were removed from the CRM entirely - the property
      * itself carries the sale lifecycle (status, gala cena, komisija,
      * sold_at). Drop the table and its references.
      */
@@ -24,7 +24,7 @@ return new class extends Migration
         });
 
         Schema::table('activities', function (Blueprint $t) {
-            // Composite index references deal_id — must go before the column.
+            // Composite index references deal_id - must go before the column.
             try {
                 $t->dropIndex('activities_deal_id_created_at_index');
             } catch (\Throwable) {
@@ -40,6 +40,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Deals are gone for good — nothing to restore.
+        // Deals are gone for good - nothing to restore.
     }
 };

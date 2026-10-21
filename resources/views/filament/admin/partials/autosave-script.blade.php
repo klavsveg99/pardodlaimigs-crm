@@ -1,7 +1,7 @@
 <div id="pdc-autosave-marker" hidden data-debounce="{{ (int) ($debounce ?? 1500) }}"></div>
 <script>
 (function () {
-    // Attach once — Livewire SPA navigation re-executes this script on every
+    // Attach once - Livewire SPA navigation re-executes this script on every
     // edit page visit, but document-level listeners from previous visits persist.
     if (window.__pdcAutosaveAttached) {
         return;
@@ -23,7 +23,7 @@
     }
 
     // Ignore keystrokes inside table search / filters / relation managers /
-    // topbar / sidebar — autosave must only react to the main resource form.
+    // topbar / sidebar - autosave must only react to the main resource form.
     function insideMainForm(target) {
         if (!target || !target.closest) {
             return false;
@@ -32,7 +32,7 @@
         if (target.closest('[data-filament-table], .fi-ta-header-toolbar, .fi-ta-filters, .fi-table-filters')) {
             return false;
         }
-        // Topbar (global search) and sidebar must never trigger autosave —
+        // Topbar (global search) and sidebar must never trigger autosave -
         // calling `autosave` on those components 500s (MethodNotFoundException).
         if (target.closest('.fi-topbar, .fi-sidebar, [data-filament-topbar], [data-filament-sidebar]')) {
             return false;
@@ -69,7 +69,7 @@
         }
         clearTimeout(timer);
         // `change` (selects like Pieteikuma avots) also triggers a Livewire `live()`
-        // round-trip — wait a bit longer so autosave never overlaps it
+        // round-trip - wait a bit longer so autosave never overlaps it
         // (overlapping requests caused snapshot-mismatch page errors).
         var wait = debounceMs();
         if (e && e.type === 'change') {
@@ -90,7 +90,7 @@
                     window.Livewire.dispatch('pdc-autosave-tick');
                 }
             } catch (err) {
-                // ignore — next keystroke will retry
+                // ignore - next keystroke will retry
             }
         }, wait);
     }

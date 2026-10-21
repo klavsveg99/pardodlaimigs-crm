@@ -39,7 +39,7 @@ class TasksRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable()
                     ->url(fn ($record) => route('filament.admin.resources.tasks.edit', $record)),
                 Tables\Columns\TextColumn::make('due_at')->label('Līdz')
-                    ->formatStateUsing(fn ($state, $record): string => $record->due_display ?? '—')
+                    ->formatStateUsing(fn ($state, $record): string => $record->due_display ?? '-')
                     ->sortable()->extraCellAttributes(['class' => 'pdc-nowrap'])
                     ->color(fn ($record) => $record->isOverdue() ? 'danger' : null)
                     ->icon(fn ($record) => $record->isOverdue() ? 'heroicon-o-exclamation-triangle' : null)

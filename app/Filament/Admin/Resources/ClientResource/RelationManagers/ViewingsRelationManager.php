@@ -42,11 +42,11 @@ class ViewingsRelationManager extends RelationManager
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('scheduled_at')->label('Kad')
-                    ->formatStateUsing(fn ($state, Viewing $record): string => $record->scheduled_display ?? '—')
+                    ->formatStateUsing(fn ($state, Viewing $record): string => $record->scheduled_display ?? '-')
                     ->sortable()
                     ->url(fn ($record) => route('filament.admin.resources.viewings.edit', $record)),
                 Tables\Columns\TextColumn::make('property.title')->label('Īpašums')->limit(40)->sortable()
-                    // Apskates mērķē uz CRM īpašumiem; bez īpašuma — teksts.
+                    // Apskates mērķē uz CRM īpašumiem; bez īpašuma - teksts.
                     ->url(function ($record): ?string {
                         return $record->property_id
                             ? CrmPropertyResource::getUrl('view', ['record' => $record->property])
@@ -57,7 +57,7 @@ class ViewingsRelationManager extends RelationManager
                         'scheduled' => 'Ieplānota',
                         'completed' => 'Pabeigta',
                         'cancelled' => 'Atcelta',
-                    ][$state] ?? ($state ?? '—')),
+                    ][$state] ?? ($state ?? '-')),
                 Tables\Columns\TextColumn::make('agent.name')->label('Aģents')->sortable(),
             ])
             ->headerActions([

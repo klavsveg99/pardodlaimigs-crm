@@ -96,7 +96,8 @@
       "close": "Aizvērt",
       "noResults": "Šiem kritērijiem īpašumi nav atrasti.",
       "priceFrom": "Cena pēc pieprasījuma",
-      "viewMoreProperties": "Skatīt visus īpašumus"
+      "viewMoreProperties": "Skatīt visus īpašumus",
+      "formCommercial": "Komerciāls īpašums"
     },
     "en": {
       "name": "English",
@@ -193,7 +194,8 @@
       "close": "Close",
       "noResults": "No properties match these filters.",
       "priceFrom": "Price on request",
-      "viewMoreProperties": "View all properties"
+      "viewMoreProperties": "View all properties",
+      "formCommercial": "Commercial property"
     },
     "ru": {
       "name": "Русский",
@@ -290,7 +292,8 @@
       "close": "Закрыть",
       "noResults": "По этим критериям объекты не найдены.",
       "priceFrom": "Цена по запросу",
-      "viewMoreProperties": "Показать все объекты"
+      "viewMoreProperties": "Показать все объекты",
+      "formCommercial": "Коммерческая недвижимость"
     },
     "de": {
       "name": "Deutsch",
@@ -387,7 +390,8 @@
       "close": "Schließen",
       "noResults": "Keine Immobilien für diese Kriterien gefunden.",
       "priceFrom": "Preis auf Anfrage",
-      "viewMoreProperties": "Alle Objekte anzeigen"
+      "viewMoreProperties": "Alle Objekte anzeigen",
+      "formCommercial": "Gewerbeimmobilie"
     }
   },
   "translatedCategories": {

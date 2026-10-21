@@ -71,7 +71,7 @@ class PhoneFormat
             }
         }
 
-        // Nav atpazīts prefikss — atstājam tā, kā ir.
+        // Nav atpazīts prefikss - atstājam tā, kā ir.
         return '+'.$digits;
     }
 }

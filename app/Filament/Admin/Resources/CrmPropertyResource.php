@@ -53,14 +53,14 @@ class CrmPropertyResource extends Resource
 
     protected static ?int $navigationSort = 20;
 
-    // Aģenti redz TIKAI savus īpašumus — arī atverot tiešu URL (edit/view
+    // Aģenti redz TIKAI savus īpašumus - arī atverot tiešu URL (edit/view
     // maršrutu binding izmanto šo pašu vaicājumu).
     public static function getEloquentQuery(): EloquentBuilder
     {
         $user = auth()->user();
 
         // Fotogrāfs redz visus īpašumus (jāvar pievienot bildes jebkuram),
-        // aģents — tikai savus.
+        // aģents - tikai savus.
         return parent::getEloquentQuery()->when(
             ! $user?->can('manage') && ! $user?->isPhoto(),
             fn ($query) => $query->where('owner_user_id', auth()->id()),
@@ -69,7 +69,7 @@ class CrmPropertyResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        // "photo" loma drīkst rediģēt nosaukumu, kategoriju un galeriju —
+        // "photo" loma drīkst rediģēt nosaukumu, kategoriju un galeriju -
         // pārējie lauki formā vispār netiek parādīti. Kategorija ir obligāta
         // arī fotogrāfa izveidotajam īpašumam.
         if (auth()->user()?->isPhoto()) {
@@ -206,7 +206,7 @@ class CrmPropertyResource extends Resource
                                     $final = (float) ($get('final_price_eur') ?? 0);
                                     $comm = (float) ($get('commission_eur') ?? 0);
                                     if ($final <= 0 || $comm <= 0) {
-                                        return '—';
+                                        return '-';
                                     }
                                     $percent = $comm / $final * 100;
 
@@ -279,7 +279,7 @@ class CrmPropertyResource extends Resource
                                 ->openUrlInNewTab()
                         )
                         ->validationMessages([
-                            'required' => 'Pārdevējs ir obligāts — īpašumu nevar izveidot bez pārdevēja.',
+                            'required' => 'Pārdevējs ir obligāts - īpašumu nevar izveidot bez pārdevēja.',
                         ])
                         ->columnSpanFull(),
                 ])->columnSpan(1),
@@ -291,7 +291,7 @@ class CrmPropertyResource extends Resource
                     Forms\Components\TextInput::make('land_m2')->label('Zemes platība (m²)')->numeric(),
                     Forms\Components\TextInput::make('kadastra_nr')
                         ->label('Kadastra nr.')
-                        // Kadastre nav prasīts dzēšanas plūsmai — statuss "Dzēsts"
+                        // Kadastre nav prasīts dzēšanas plūsmai - statuss "Dzēsts"
                         // jāvar saglabāt bez kadastra numura (CRM 2.1, #4).
                         ->required(fn (Get $get): bool => ($get('status') ?? '') !== 'deleted')
                         ->string()
@@ -299,7 +299,7 @@ class CrmPropertyResource extends Resource
                         ->minLength(11)
                         ->rules(['regex:/^\d{11}$/'])
                         // NOTE: do NOT add an x-on:paste handler that calls
-                        // preventDefault() and assigns $el.value — programmatic
+                        // preventDefault() and assigns $el.value - programmatic
                         // assignment never fires an `input` event, so Livewire's
                         // wire:model never syncs the pasted value and Save fails
                         // with "Kadastra nr. ir obligāts lauks" while the input
@@ -370,7 +370,7 @@ class CrmPropertyResource extends Resource
                 ->columnSpanFull()
                 ->headerActions([
                     // Standarta Filament modāls ar CRM datu pārskatu un
-                    // 4 papildu ievadēm — zaļa poga WYSIWYG bloka galvenē.
+                    // 4 papildu ievadēm - zaļa poga WYSIWYG bloka galvenē.
                     // CRM 2.2: modāls rāda "Informācija no CRM" (automātiski
                     // savāktie dati), lai aģentam nav jādomā, kur ko ievadīt.
                     Actions\Action::make('ai_generator')
@@ -391,7 +391,7 @@ class CrmPropertyResource extends Resource
                                 ->label('Priekšrocības')
                                 ->rows(3)
                                 ->extraInputAttributes([':disabled' => '$wire.aiGenerating'])
-                                ->helperText('Galvenais pārdošanas akcents; 3–7 svarīgākās priekšrocības; teritorija (pagalms, dārzs, žogs, piebraucamais ceļš, ainava); apkārtne (attālumi, veikali, skolas, transports, ezers/mežs).'),
+                                ->helperText('Galvenais pārdošanas akcents; 3-7 svarīgākās priekšrocības; teritorija (pagalms, dārzs, žogs, piebraucamais ceļš, ainava); apkārtne (attālumi, veikali, skolas, transports, ezers/mežs).'),
                             Forms\Components\Textarea::make('technical')
                                 ->label('Tehniskā informācija')
                                 ->rows(3)
@@ -423,7 +423,7 @@ class CrmPropertyResource extends Resource
                         ->label('Sagatavotie teksti')
                         ->color('gray')
                         ->action(fn ($livewire) => $livewire->showSavedAiResult()),
-                    // Rezerves šablona ģenerators — redzams tikai, ja nav
+                    // Rezerves šablona ģenerators - redzams tikai, ja nav
                     // konfigurēta neviena AI atslēga (GEMINI/OPENAI).
                     Actions\Action::make('ai_generate_description')
                         ->visible(fn (): bool => blank(config('services.gemini.key')) && blank(config('services.openai.key')))
@@ -467,7 +467,7 @@ class CrmPropertyResource extends Resource
 
                             $type = strtolower($category);
                             $locParts = array_filter([$city, $address]);
-                            $locText = $locParts ? ' — '.implode(', ', $locParts) : '';
+                            $locText = $locParts ? ' - '.implode(', ', $locParts) : '';
 
                             $feat = [];
                             if ($beds > 0) {
@@ -513,19 +513,19 @@ class CrmPropertyResource extends Resource
                             $lvLines = [];
                             $lvLines[] = Str::ucfirst($prefix).' '.strtolower($type).$locText.($featText ? '. '.$featText.'.' : '.');
                             $lvLines[] = '';
-                            $lvLines[] = $title ? '“'.$title.'” — mājīgs un pārdomāts piedāvājums, kas piemērots gan dzīvošanai, gan investīcijai.' : '';
+                            $lvLines[] = $title ? '“'.$title.'” - mājīgs un pārdomāts piedāvājums, kas piemērots gan dzīvošanai, gan investīcijai.' : '';
                             if ($price > 0) {
                                 $lvLines[] = 'Cena: '.number_format($price, 0, ',', ' ').' €.';
                                 $lvLines[] = '';
                             }
-                            $lvLines[] = 'Īpašums izceļas ar labu atrašanās vietu, sakārtotu dokumentāciju un iespēju pielāgot telpas savām vajadzībām. Plašāks apraksts un foto — pielikumos.';
+                            $lvLines[] = 'Īpašums izceļas ar labu atrašanās vietu, sakārtotu dokumentāciju un iespēju pielāgot telpas savām vajadzībām. Plašāks apraksts un foto - pielikumos.';
                             $lvLines[] = '';
                             $lvLines[] = 'Interesē šis īpašums? Sazinies ar mums, lai pieteiktu apskati un uzzinātu vairāk!';
                             $lvLines[] = '';
-                            $lvLines[] = 'Pārdod Laimīgs — nekustamo īpašumu aģentūra.';
+                            $lvLines[] = 'Pārdod Laimīgs - nekustamo īpašumu aģentūra.';
                             $lvText = implode("\n", array_filter($lvLines, fn ($l) => $l !== null));
 
-                            // --- EN: pure template (no MyMemory call — was rate-limited) ---
+                            // --- EN: pure template (no MyMemory call - was rate-limited) ---
                             $typeEn = match (strtolower($category)) {
                                 'dzīvoklis' => 'apartment',
                                 'māja' => 'house',
@@ -546,7 +546,7 @@ class CrmPropertyResource extends Resource
                             $enLines[] = $prefixEn.': '.$typeEn.($city ? ' in '.$city : '').($featText ? '. '.$featText.'.' : '.');
                             $enLines[] = '';
                             if ($title) {
-                                $enLines[] = '"'.$title.'" — a well-planned property suitable for living or investment.';
+                                $enLines[] = '"'.$title.'" - a well-planned property suitable for living or investment.';
                             }
                             if ($price > 0) {
                                 $enLines[] = 'Price: EUR '.number_format($price, 0, ',', ' ').'.';
@@ -556,7 +556,7 @@ class CrmPropertyResource extends Resource
                             $enLines[] = '';
                             $enLines[] = 'Interested? Get in touch to schedule a viewing!';
                             $enLines[] = '';
-                            $enLines[] = 'Pārdod Laimīgs — real estate agency.';
+                            $enLines[] = 'Pārdod Laimīgs - real estate agency.';
                             $enText = implode("\n", array_filter($enLines, fn ($l) => $l !== null));
 
                             $html = '<p><strong>[LV]</strong><br>'.nl2br(e($lvText)).'</p>'
@@ -629,7 +629,7 @@ class CrmPropertyResource extends Resource
     /**
      * "Informācija no CRM" dati AI modālam (CRM 2.2): automātiski savāktie
      * īpašuma lauki no pašreizējās formas stāvokļa (ar kritumu uz saglabāto
-     * ierakstu, ja formas lauks vēl nav aizpildīts — svarīgi Create lapā).
+     * ierakstu, ja formas lauks vēl nav aizpildīts - svarīgi Create lapā).
      *
      * @return array<string, string> tikai aizpildītie lauki
      */
@@ -744,7 +744,7 @@ class CrmPropertyResource extends Resource
                     ->formatStateUsing(fn ($state) => CrmProperty::STATUSES[$state] ?? $state),
                 Tables\Columns\TextColumn::make('city')->label('Pilsēta/rajons')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('kadastra_nr')->label('Kadastra nr.')->sortable()
-                    ->placeholder(fn ($state) => $state ? null : '—')
+                    ->placeholder(fn ($state) => $state ? null : '-')
                     ->icon(fn ($state) => $state ? null : 'heroicon-o-exclamation-triangle')
                     ->iconColor('warning'),
                 Tables\Columns\TextColumn::make('price_eur')->label('Cena')
@@ -770,7 +770,7 @@ class CrmPropertyResource extends Resource
                 Actions\ActionGroup::make([
                     // Ātrā darbība "Mainīt statusu": vienā modālī nomaina
                     // statusu. Katram statusam tiek prasīti tikai tam
-                    // nepieciešamie lauki — "Pārdots" prasa gala cenu un
+                    // nepieciešamie lauki - "Pārdots" prasa gala cenu un
                     // komisiju (un izsauc svinību animāciju), pārējie tikai
                     // pašu statusu.
                     Actions\Action::make('change_status')
@@ -905,7 +905,7 @@ class CrmPropertyResource extends Resource
                     LawyerDocumentAction::make(),
                     Actions\ViewAction::make()->label('Skatīt')->color('gray'),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),
-                    // Mīkstā dzēšana (CRM 2.1, #1): statuss "Dzēsts" — dati,
+                    // Mīkstā dzēšana (CRM 2.1, #1): statuss "Dzēsts" - dati,
                     // bildes un vēsture paliek; WP sinhronizācija automātiski
                     // noņem īpašumu no mājaslapas (deleted → draft).
                     Actions\Action::make('delete_property')
@@ -944,7 +944,7 @@ class CrmPropertyResource extends Resource
                         }),
                     // Neatgriezeniska dzēšana (CRM 2.2, #1): tikai "Dzēstie"
                     // sadaļā un tikai administratoram. Atšķirībā no "Dzēst"
-                    // (statuss → "Dzēsts") šī darbība ierakstu IZŅEM no CRM —
+                    // (statuss → "Dzēsts") šī darbība ierakstu IZŅEM no CRM -
                     // bildes dzēš no diska, pivot un apraksta versijas kaskādē
                     // datubāzē; WP pusē īpašums jau ir atspiests (statuss
                     // "Dzēsts") un pēc dzēšanas pazūd no feeda.

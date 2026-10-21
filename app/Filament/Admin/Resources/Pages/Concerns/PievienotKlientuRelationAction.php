@@ -18,7 +18,7 @@ use Illuminate\Validation\ValidationException;
  * Single AttachAction for the property's Piesaistītie klienti
  * relation manager / view page.  Simple interface: pick an EXISTING
  * client and choose the relation (Pārdevējs / Pircējs).  Pircējs is
- * only selectable when the property status is Pārdots (sold) — the
+ * only selectable when the property status is Pārdots (sold) - the
  * hint tooltip on the field explains this.
  */
 trait PievienotKlientuRelationAction
@@ -35,8 +35,8 @@ trait PievienotKlientuRelationAction
             ->color('gray')
             ->icon('heroicon-o-user-plus')
             ->modalHeading('Pievienot klientu')
-            // Rāda tikai, kamēr trūkst attiecīgās lomas: pirms pārdošanas —
-            // pārdevēja; pārdotam — pircēja.
+            // Rāda tikai, kamēr trūkst attiecīgās lomas: pirms pārdošanas -
+            // pārdevēja; pārdotam - pircēja.
             ->visible(function (): bool {
                 try {
                     return $this->getPievienotKlientuProperty()->canAttachClient();
@@ -174,7 +174,7 @@ trait PievienotKlientuRelationAction
                     return $rec;
                 }
             } catch (\Throwable) {
-                // Component not mounted yet — fall through.
+                // Component not mounted yet - fall through.
             }
         }
 

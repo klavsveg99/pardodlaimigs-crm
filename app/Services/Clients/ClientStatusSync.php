@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
  * "Laimīgs" = klientam ir vismaz viens noslēgts darījums (pārdevējs vai
  * pircējs pārdotam īpašumam) UN šobrīd nav neviena aktīva īpašuma
  * pārdošanā (pārdevēja loma statusā "Pārdošanā"/"Melnraksts"). Līds vienmēr
- * paliek Līds — tas ir aktīvs pārdošanas process.
+ * paliek Līds - tas ir aktīvs pārdošanas process.
  */
 class ClientStatusSync
 {

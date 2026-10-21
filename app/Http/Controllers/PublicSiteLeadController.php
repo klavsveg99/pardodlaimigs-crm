@@ -67,6 +67,7 @@ class PublicSiteLeadController extends Controller
             'house' => 'Māja',
             'land' => 'Zeme',
             'forest' => 'Mežs',
+            'commercial' => 'Komerciāls īpašums',
         ];
 
         $data = $request->validate([

@@ -289,7 +289,7 @@ class RecordAttachmentEmailController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
-            return response()->json(['message' => 'Nosūtīšana neizdevās — '.$e->getMessage()], 500);
+            return response()->json(['message' => 'Nosūtīšana neizdevās - '.$e->getMessage()], 500);
         }
 
         app(AuditLogger::class)->activity('attachment_email_sent', [

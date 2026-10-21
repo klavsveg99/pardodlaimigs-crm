@@ -104,12 +104,12 @@ class CrmProperty extends Model
                 ]);
             }
 
-            // Cena pēc noklusējuma 0 (shēma price_eur NOT NULL) — pretējā
+            // Cena pēc noklusējuma 0 (shēma price_eur NOT NULL) - pretējā
             // gadījumā "Cena (€)" tukšā forma izmet SQL 500, nevis validāciju.
             if ($property->price_eur === null) {
                 $property->price_eur = 0;
             }
-            // Slug ir obligāts maršrutēšanai — ģenerējam no nosaukuma un
+            // Slug ir obligāts maršrutēšanai - ģenerējam no nosaukuma un
             // atjaunojam, kad nosaukums mainās, lai permalinki vienmēr
             // atspoguļo titulu.
             if (
@@ -130,7 +130,7 @@ class CrmProperty extends Model
                     // mainīts (atkārtoti pārdodot, datums tiek atjaunots).
                     $property->sold_at = now();
                 } else {
-                    // Statuss mainīts prom no "Pārdots" — noņemam pārdošanas
+                    // Statuss mainīts prom no "Pārdots" - noņemam pārdošanas
                     // datumu, lai īpašums vairs neparādās pārdošanas
                     // statistikā un "Ātrākais pārdošanas cikls" kategorijā.
                     $property->sold_at = null;
@@ -183,7 +183,7 @@ class CrmProperty extends Model
 
     /**
      * Vai īpašumam vēl var piesaistīt klientu. Pirms pārdošanas tikai, ja nav
-     * pārdevēja; pārdotam — ja nav pircēja. Kad attiecīgā loma jau aizpildīta,
+     * pārdevēja; pārdotam - ja nav pircēja. Kad attiecīgā loma jau aizpildīta,
      * "Pievienot klientu" poga vairs netiek rādīta.
      */
     public function canAttachClient(): bool
@@ -244,7 +244,7 @@ class CrmProperty extends Model
 
     public function getLeadSourceLabelAttribute(): string
     {
-        return self::LEAD_SOURCES[$this->lead_source] ?? ($this->lead_source ?? '—');
+        return self::LEAD_SOURCES[$this->lead_source] ?? ($this->lead_source ?? '-');
     }
 
     public function getSelectionLabelAttribute(): string
@@ -269,7 +269,7 @@ class CrmProperty extends Model
 
             if (filled($this->wp_post_id)) {
                 // Rezervēts ir publiski redzams (mu-plugin to publicē), tāpēc
-                // preview parametru tam nevajag — tikai melnrakstam, pārdotam
+                // preview parametru tam nevajag - tikai melnrakstam, pārdotam
                 // un dzēstam.
                 $needsPreview = in_array($this->status, ['draft', 'sold', 'deleted'], true);
                 $preview = $needsPreview ? '&post_type=property&preview=true' : '';
@@ -299,7 +299,7 @@ class CrmProperty extends Model
 
     public function getPartnershipLabelAttribute(): string
     {
-        return self::PARTNERSHIP_PERIODS[$this->partnership_months] ?? '—';
+        return self::PARTNERSHIP_PERIODS[$this->partnership_months] ?? '-';
     }
 
     /**
@@ -370,7 +370,7 @@ class CrmProperty extends Model
             'crm_id' => $this->id,
             'sort_order' => $this->sort_order ?? $this->id,
             'agent' => $agent,
-            // Tikai galerijas pielikumi (Attachments) — tie ir vienīgā CRM
+            // Tikai galerijas pielikumi (Attachments) - tie ir vienīgā CRM
             // galerija. Vecais image_urls lauks ir mantojums no WP importa un
             // nav redzams CRM galerijā, tāpēc to vairs nesūtām uz WP; citādi
             // priekšpusē parādījās bildes, kas nav CRM galerijā.

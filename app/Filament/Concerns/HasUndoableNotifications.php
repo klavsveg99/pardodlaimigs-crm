@@ -16,7 +16,7 @@ use Livewire\Attributes\On;
  * dispatches the {@see self::UNDO_EVENT} Livewire event; whichever mounted
  * component implements {@see applyUndo()} for that key reverts the change.
  *
- * Only the record id travels in the event payload — the revert always
+ * Only the record id travels in the event payload - the revert always
  * re-queries the record using the same scoping as the original action, so a
  * forged event cannot modify arbitrary data.
  */
