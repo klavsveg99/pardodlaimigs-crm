@@ -1210,6 +1210,14 @@ html.dark .rounded-xl .text-emerald-900 {
         table-layout: fixed !important;
     }
 
+    /* Column titles must start at the same x as the values they label.
+       Filament insets cell text by 0.75rem per side while these headers use
+       0.375rem, which left every title 6px to the left. Cells take the header
+       inset instead; the fixed layout keeps the table inside the panel. */
+    .fi-ta.pdc-properties-table .fi-ta-table .fi-ta-text {
+        padding-inline: 0.375rem !important;
+    }
+
     /* The thumbnail needs its 60px, not another 24px of cell padding. */
     .fi-ta.pdc-properties-table .fi-ta-table .fi-ta-image {
         padding-inline: 0 !important;
