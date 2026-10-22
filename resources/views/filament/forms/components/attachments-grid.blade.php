@@ -12,7 +12,9 @@
     // property-document grids use rows), independent of whether send actions
     // are currently possible - on the create page the files should already
     // render as rows, exactly like they will after the record is saved.
-    $isRowMode = $isSendable() || $isPropertySendable() || $isRecordSendable();
+    // listMode() opts a field without send actions (knowledge base) into the
+    // same rows, which also carries the "Pievienot failus" add-more button.
+    $isRowMode = $isListMode() || $isSendable() || $isPropertySendable() || $isRecordSendable();
 
     $isSendable = $isSendable();
     $isPropertySendable = $isPropertySendable();
@@ -1279,7 +1281,7 @@
                         <span x-show="file.created" x-text="file.created"></span>
                         <span x-show="file.created && sizeLabel(file.size)">·</span>
                         <span x-show="sizeLabel(file.size)" x-text="sizeLabel(file.size)"></span>
-                        @if($isRowMode)
+                        @if($isRowMode && $canSend)
                         <button type="button" x-on:click.stop="resendFile(file)" x-bind:style="{ display: file.sentAt ? 'inline-flex' : 'none' }" x-bind:title="(file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts') + ' · nospied, lai nosūtītu vēlreiz'" class="fi-badge fi-color-success fi-color" style="display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer;" x-cloak>
                             <svg style="width: 0.8rem; height: 0.8rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                             <span x-text="file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts'">Nosūtīts klientam</span>

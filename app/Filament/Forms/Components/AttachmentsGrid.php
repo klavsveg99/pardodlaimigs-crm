@@ -23,6 +23,13 @@ class AttachmentsGrid extends Field
      */
     public bool $addButtonAlignRight = false;
 
+    /**
+     * Rindu saraksts arī tad, ja laukam nav sūtīšanas darbību (piem. zināšanu
+     * bāzes faili). Bez tā šādi lauki renderējas kā kartīšu režģis, kas nav
+     * sapārots ar klienta/īpašuma pielikumu rindām.
+     */
+    public bool $listMode = false;
+
     public bool $sendable = false;
 
     public bool $propertySendable = false;
@@ -162,6 +169,18 @@ class AttachmentsGrid extends Field
         $this->addButtonAlignRight = $addButtonAlignRight;
 
         return $this;
+    }
+
+    public function listMode(bool $listMode = true): static
+    {
+        $this->listMode = $listMode;
+
+        return $this;
+    }
+
+    public function isListMode(): bool
+    {
+        return $this->listMode;
     }
 
     public function isAddButtonAlignRight(): bool

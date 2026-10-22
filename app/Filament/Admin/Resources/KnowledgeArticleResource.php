@@ -142,6 +142,7 @@ class KnowledgeArticleResource extends Resource
                     .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
                 ->reorderable(false)
                 ->multiselect(false)
+                ->listMode()
                 ->collection('knowledge')
                 ->columnSpanFull(),
         ])->columns(2);
