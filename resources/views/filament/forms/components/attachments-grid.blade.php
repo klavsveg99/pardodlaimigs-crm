@@ -213,7 +213,8 @@
             .'x-on:dragend="onDragEnd($event)" '
             .'x-on:touchstart.passive="onTouchStart($event, index)" '
             .'x-on:touchmove="onTouchMove($event)" '
-            .'x-on:touchend="onTouchEnd($event, index)"'
+            .'x-on:touchend="onTouchEnd($event)" '
+            .'x-on:touchcancel="onTouchCancel($event)"'
         : '';
 @endphp
 
@@ -365,6 +366,27 @@
     .dark .pdc-attach-name { color: #f3f4f6 !important; }
     .dark .pdc-attach-meta { color: #9ca3af !important; }
     .dark .pdc-attach-del { color: #9ca3af !important; border-color: #27303a !important; }
+    /* Lightbox quick actions (edit/delete/send next to download) */
+    .pdc-lb-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        height: 2.1rem;
+        padding: 0 0.8rem;
+        border-radius: 0.5rem;
+        background: rgba(255,255,255,0.12);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.22);
+        font-size: 0.8rem;
+        font-weight: 600;
+        line-height: 1;
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+    .pdc-lb-action:hover { background: rgba(255,255,255,0.22); }
+    .pdc-lb-action-danger { background: rgba(207,46,46,0.8); border-color: rgba(255,255,255,0.25); }
+    .pdc-lb-action-danger:hover { background: rgba(207,46,46,0.95); }
     @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 
@@ -428,7 +450,6 @@
             this.proxyUrl = this.$el.dataset.proxyUrl || null;
             this.csrfToken = document.querySelector('meta[name=&quot;csrf-token&quot;]')?.content || document.querySelector('meta[name=csrf-token]')?.content;
             this._waLink = this.$el.dataset.waLink || '';
-            this._root = this.$el;
             window.__pdcAttachments = this;
             // Load cropper.js if not already loaded
             if (!window.Cropper && !document.querySelector('script[data-cropper]')) {
@@ -575,6 +596,7 @@
 
             this.files = this.files.filter(f => f.id !== id);
             this.selected = this.selected.filter(s => s !== id);
+            this.clampLightbox();
             this.sync();
         },
         onDragStart(e, index) {
@@ -589,6 +611,8 @@
             e.currentTarget.classList.add('pdc-drag-over');
         },
         onDragLeave(e) {
+            // dragleave also fires when moving onto a child of the card.
+            if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) return;
             e.currentTarget.classList.remove('pdc-drag-over');
         },
         // Shared insertion: drop position is before/after the hovered card
@@ -629,47 +653,92 @@
         onDragEnd(e) {
             e.currentTarget.classList.remove('pdc-dragging');
             this.draggedIndex = null;
-            this.$el.querySelectorAll('[data-attach-card]').forEach(el => el.classList.remove('pdc-drag-over','pdc-dragging'));
+            // DOM queries must start from the card itself: the Alpine $el
+            // magic and the cached root are not reliable with two attachment
+            // grids on the same page (gallery + documents).
+            const grid = e.currentTarget.parentElement;
+            if (grid) grid.querySelectorAll('[data-attach-card]').forEach(el => el.classList.remove('pdc-drag-over','pdc-dragging'));
         },
         touchDragId: null,
+        touchStartEl: null,
+        touchGrid: null,
+        touchStartX: 0,
         touchStartY: 0,
+        touchDragging: false,
+        touchTimer: null,
+        suppressClick: false,
+        // Touch reorder: a short long-press starts the drag, so a plain tap
+        // still opens the lightbox and a swipe still scrolls the page. Any
+        // movement before the press completes cancels it (that was a scroll).
         onTouchStart(e, index) {
-            if (e.touches.length !== 1) return;
+            if (e.touches.length !== 1 || this.editorOpen) return;
+            clearTimeout(this.touchTimer);
             this.touchDragId = index;
+            this.touchStartEl = e.currentTarget;
+            this.touchGrid = e.currentTarget.parentElement;
+            this.touchStartX = e.touches[0].clientX;
             this.touchStartY = e.touches[0].clientY;
-            e.currentTarget.classList.add('pdc-dragging');
+            this.touchDragging = false;
+            this.suppressClick = false;
+            this.touchTimer = setTimeout(() => {
+                if (this.touchDragId === null) return;
+                this.touchDragging = true;
+                this.suppressClick = true;
+                if (this.touchStartEl) this.touchStartEl.classList.add('pdc-dragging');
+                if (navigator.vibrate) navigator.vibrate(10);
+            }, 350);
         },
         onTouchMove(e) {
             if (this.touchDragId === null || e.touches.length !== 1) return;
-            e.preventDefault();
-            const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-            if (!el) return;
-            const card = el.closest('[data-attach-card]');
-            this.$el.querySelectorAll('[data-attach-card]').forEach(c => c.classList.remove('pdc-drag-over'));
-            if (card) card.classList.add('pdc-drag-over');
-        },
-        onTouchEnd(e, index) {
-            if (this.touchDragId === null) return;
-            const t = (e.changedTouches && e.changedTouches[0]) || null;
-            let targetIndex = index;
-            let targetCard = null;
-            if (t) {
-                const el = document.elementFromPoint(t.clientX, t.clientY);
-                if (el) {
-                    const card = el.closest('[data-attach-card]');
-                    if (card) {
-                        targetCard = card;
-                        const idxAttr = Array.from(this.$el.querySelectorAll('[data-attach-card]')).indexOf(card);
-                        if (idxAttr >= 0) targetIndex = idxAttr;
-                    }
+            const t = e.touches[0];
+            if (!this.touchDragging) {
+                if (Math.abs(t.clientX - this.touchStartX) > 8 || Math.abs(t.clientY - this.touchStartY) > 8) {
+                    clearTimeout(this.touchTimer);
+                    this.touchDragId = null;
                 }
+                return;
             }
+            e.preventDefault();
+            if (!this.touchGrid) return;
+            this.touchGrid.querySelectorAll('[data-attach-card]').forEach(c => c.classList.remove('pdc-drag-over'));
+            const el = document.elementFromPoint(t.clientX, t.clientY);
+            const card = el ? el.closest('[data-attach-card]') : null;
+            if (card && this.touchGrid.contains(card)) card.classList.add('pdc-drag-over');
+        },
+        onTouchEnd(e) {
+            clearTimeout(this.touchTimer);
+            if (!this.touchDragging) {
+                this.touchDragId = null;
+                return;
+            }
+            this.touchDragging = false;
             const from = this.touchDragId;
             this.touchDragId = null;
-            this.$el.querySelectorAll('[data-attach-card]').forEach(c => c.classList.remove('pdc-drag-over','pdc-dragging'));
-            if (this.moveItem(from, targetIndex, t ? t.clientX : null, t ? t.clientY : null, targetCard)) {
+            const cards = Array.from((this.touchGrid || e.currentTarget.parentElement).querySelectorAll('[data-attach-card]'));
+            cards.forEach(c => c.classList.remove('pdc-drag-over','pdc-dragging'));
+            // The click that follows the release must not open the lightbox.
+            setTimeout(() => { this.suppressClick = false; }, 400);
+            const t = (e.changedTouches && e.changedTouches[0]) || null;
+            if (from === null || !t) return;
+            const el = document.elementFromPoint(t.clientX, t.clientY);
+            const card = el ? el.closest('[data-attach-card]') : null;
+            const targetIndex = card ? cards.indexOf(card) : -1;
+            if (targetIndex < 0) return;
+            if (this.moveItem(from, targetIndex, t.clientX, t.clientY, card)) {
                 this.sync();
             }
+        },
+        onTouchCancel(e) {
+            clearTimeout(this.touchTimer);
+            this.touchDragId = null;
+            this.touchDragging = false;
+            const grid = this.touchGrid || e.currentTarget.parentElement;
+            if (grid) grid.querySelectorAll('[data-attach-card]').forEach(c => c.classList.remove('pdc-drag-over','pdc-dragging'));
+        },
+        onCardClick(e, index) {
+            if (this.suppressClick) { this.suppressClick = false; return; }
+            if (e.target.closest('button, a')) return;
+            this.openLightbox(index);
         },
         openLightbox(index) {
             if (this.editorOpen) return;
@@ -686,6 +755,23 @@
         },
         lightboxNext() {
             this.lightboxIndex = this.lightboxIndex < this.files.length - 1 ? this.lightboxIndex + 1 : 0;
+        },
+        // The lightbox can delete the current image; keep the index inside the
+        // list (and close it when the last file is gone).
+        clampLightbox() {
+            if (!this.files.length) { this.closeLightbox(); return; }
+            if (this.lightboxIndex > this.files.length - 1) this.lightboxIndex = this.files.length - 1;
+        },
+        editFromLightbox() {
+            const index = this.lightboxIndex;
+            if (!this.files[index]) return;
+            this.closeLightbox();
+            this.openEditor(index);
+        },
+        deleteFromLightbox() {
+            const file = this.lightboxFile;
+            if (!file) return;
+            this.removeFile(file.id);
         },
         get lightboxFile() { return this.files[this.lightboxIndex] || null; },
         editUrl(file) {
@@ -1042,17 +1128,16 @@
     </div>
 
     @if(! $isRowMode)
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" x-on:dragover.prevent>
         <template x-for="(file, index) in files" :key="file.id">
             <div
                 data-attach-card
                 class="group pdc-attach-card"
-                style="position: relative; border-radius: 0.75rem; overflow: hidden; aspect-ratio: 16/9; background: #f9fafb; transition: all 0.2s ease; cursor: grab; border: 1px solid #e5e7eb;"
+                style="position: relative; border-radius: 0.75rem; overflow: hidden; aspect-ratio: 16/9; background: #f9fafb; transition: all 0.2s ease; cursor: grab; border: 1px solid #e5e7eb; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;"
                 :style="{ border: selected.includes(file.id) ? '2px solid var(--pdc-primary)' : '1px solid #e5e7eb', boxShadow: selected.includes(file.id) ? '0 0 0 3px rgba(40,88,84,0.2)' : 'none' }"
                 {!! $cardDragAttrs !!}
-                x-on:click="if (! $event.target.closest('button')) openLightbox(index)"
+                x-on:click="onCardClick($event, index)"
                 title="Velc, lai pārkārtotu • Klikšķini, lai apskatītu"
-                style="touch-action: none;"
             >
                 <template x-if="isImage(file)">
                     <img
@@ -1376,7 +1461,7 @@
                     <span style="font-size: 0.95rem;">Atvērt failu</span>
                 </a>
             </template>
-            <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap: wrap; justify-content:center;">
+            <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap: wrap; justify-content:center; max-width: calc(100vw - 8rem);">
                 <span style="background: var(--pdc-primary); color:white; font-size:0.78rem; font-weight:600; padding:0.3rem 0.7rem; border-radius:9999px;" x-text="(lightboxIndex+1) + ' / ' + files.length"></span>
                 <span style="background: var(--pdc-primary); color:white; font-size:0.78rem; font-weight:600; padding:0.3rem 0.7rem; border-radius:0.5rem; max-width: 60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" x-text="lightboxFile?.name"></span>
                 <a x-bind:href="lightboxFile?.url" target="_blank"
@@ -1384,6 +1469,28 @@
                     <i class="fa-solid fa-download" style="font-size: 0.85rem;"></i>
                     <span>Lejupielādēt</span>
                 </a>
+            </div>
+            {{-- Quick actions live here on touch screens, where the thumbnail
+                 hover actions cannot be reached. --}}
+            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; justify-content:center; max-width: calc(100vw - 8rem);">
+                @if(! $isView)
+                    <button type="button" x-on:click.stop="editFromLightbox()" class="pdc-lb-action" title="Rediģēt attēlu">
+                        <i class="fa-solid fa-pen-to-square" style="font-size: 0.85rem;"></i>
+                        <span>Rediģēt</span>
+                    </button>
+                @endif
+                @if($isSendable || ($isPropertySendable && $canSend))
+                    <button type="button" x-show="typeof lightboxFile?.id === 'number'" x-on:click.stop="sendFile(lightboxFile)" class="pdc-lb-action" title="Nosūtīt ar e-pastu">
+                        <i class="fa-solid fa-envelope" style="font-size: 0.85rem;"></i>
+                        <span>Nosūtīt</span>
+                    </button>
+                @endif
+                @if($isDeletable && ! $isView)
+                    <button type="button" x-on:click.stop="deleteFromLightbox()" class="pdc-lb-action pdc-lb-action-danger" title="Dzēst failu">
+                        <i class="fa-solid fa-trash-can" style="font-size: 0.85rem;"></i>
+                        <span>Dzēst</span>
+                    </button>
+                @endif
             </div>
         </div>
         </div>

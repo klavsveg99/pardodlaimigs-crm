@@ -220,9 +220,17 @@
                     </button>
                     <div style="max-width:90vw; max-height:90vh; display:flex; flex-direction:column; align-items:center; gap:0.75rem;">
                         <img :src="current?.url" :alt="current?.name" style="max-width:90vw; max-height:78vh; object-fit:contain; border-radius:0.5rem; box-shadow:0 8px 32px rgba(0,0,0,0.5);"/>
-                        <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
+                        <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; justify-content:center; max-width: calc(100vw - 8rem);">
                             <span style="background:var(--pdc-primary); color:white; font-size:0.78rem; font-weight:600; padding:0.3rem 0.7rem; border-radius:9999px;" x-text="(index+1)+' / '+items.length"></span>
                             <span style="background:var(--pdc-primary); color:white; font-size:0.78rem; font-weight:600; padding:0.3rem 0.7rem; border-radius:0.5rem; max-width:60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" x-text="current?.name"></span>
+                            {{-- Thumbnail download action is hover-only, so the lightbox
+                                 carries it for touch screens. --}}
+                            <a x-bind:href="current?.url" x-bind:download="current?.name" target="_blank"
+                               title="Lejupielādēt"
+                               style="display:inline-flex; align-items:center; gap:0.3rem; color:white; font-size:0.8rem; font-weight:600; padding:0.3rem 0.7rem; border-radius:9999px; background:var(--pdc-primary); text-decoration:none; border:1px solid rgba(255,255,255,0.3);">
+                                <i class="fa-solid fa-download" style="font-size:0.85rem;"></i>
+                                <span>Lejupielādēt</span>
+                            </a>
                             <span x-show="index===0" style="background:var(--pdc-primary); color:white; font-size:0.7rem; font-weight:700; padding:0.3rem 0.6rem; border-radius:0.4rem; letter-spacing:0.04em;">GALVENĀ</span>
                         </div>
                     </div>

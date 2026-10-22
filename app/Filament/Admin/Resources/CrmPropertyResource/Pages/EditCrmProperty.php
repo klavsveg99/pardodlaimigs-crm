@@ -25,7 +25,12 @@ class EditCrmProperty extends EditRecord
     use AttachSellerAction;
     use AutosavesForm;
     use GeneratesAiDescription;
-    use SyncsAttachments;
+    use SyncsAttachments {
+        // The sold-status hook below overrides the trait's afterSave(), which
+        // would otherwise never run - the alias keeps the gallery/documents
+        // sync alive on every save.
+        afterSave as protected syncAttachmentsAfterSave;
+    }
 
     /**
      * Vai pēdējā saglabāšanā statuss tika mainīts uz "Pārdots" - tad pēc
@@ -147,6 +152,10 @@ class EditCrmProperty extends EditRecord
      */
     protected function afterSave(): void
     {
+        // Gallery/documents (attachment rows) are synced by the trait; the
+        // sold-status prompt below must not skip it.
+        $this->syncAttachmentsAfterSave();
+
         $changedToSold = $this->statusChangedToSold && ! $this->isAutosaveRun;
         $this->statusChangedToSold = false;
 
