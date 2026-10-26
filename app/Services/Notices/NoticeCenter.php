@@ -21,7 +21,8 @@ use Illuminate\Support\Collection;
  * Paziņojumu veidi:
  *  - follow_up: līdi, kuriem pienācis norādītais saziņas datums (atbildīgajam
  *    aģentam). Paliek redzams katru dienu, līdz to aizver;
- *  - lead: klienti ar statusu "Līds" (atbildīgajam aģentam), atgriežas katru dienu;
+ *  - lead: klienti ar statusu "Līds" bez norādīta saziņas datuma
+ *    (atbildīgajam aģentam), atgriežas katru dienu;
  *  - stale_property: aktīvi īpašumi, kuru cena/statuss nav mainīti 45 dienas.
  *
  * Klientu dzimšanas dienu apsveikumus tagad sūta automātiski (pdc:send-greetings),
@@ -124,12 +125,10 @@ class NoticeCenter
                 $query->where('created_at', '<', now()->startOfDay())
                     ->orWhereColumn('updated_at', '>', 'created_at');
             })
-            // Ja līdam jau ir pienācis saziņas datums, rāda konkrēto
-            // Follow-up atgādinājumu, nevis vispārīgo līda paziņojumu.
-            ->where(function ($query): void {
-                $query->whereNull('follow_up_at')
-                    ->orWhereDate('follow_up_at', '>', now()->toDateString());
-            })
+            // Ja līdam ir norādīts saziņas datums, vispārīgo līda paziņojumu
+            // nerāda - konkrētais Follow-up atgādinājums parādās tikai no tā
+            // datuma (skat. followUpNotices), nevis katru dienu pirms tam.
+            ->whereNull('follow_up_at')
             ->with('owner')
             ->orderBy('updated_at')
             ->get()

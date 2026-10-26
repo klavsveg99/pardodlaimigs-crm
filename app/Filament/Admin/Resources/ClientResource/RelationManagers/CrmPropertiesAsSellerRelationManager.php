@@ -7,6 +7,7 @@ use App\Models\ClientCrmProperty;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Resources\Pages\EditRecord;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -30,12 +31,16 @@ class CrmPropertiesAsSellerRelationManager extends RelationManager
     }
 
     /**
-     * Allow attaching/detaching on the client VIEW page too - Filament denies
-     * these actions on ViewRecord pages by default, which hid the buttons.
+     * Īpašumus klientam pievieno tikai rediģēšanas lapā; skata lapā
+     * "Pievienot īpašumu" nav pieejams. Noņemšana paliek pieejama arī skatā.
      */
     public function getDefaultActionAuthorizationResponse(Actions\Action $action): ?Response
     {
-        if ($action instanceof Actions\AttachAction || $action instanceof Actions\DetachAction) {
+        if ($action instanceof Actions\AttachAction) {
+            return is_a($this->getPageClass(), EditRecord::class, true) ? null : Response::deny();
+        }
+
+        if ($action instanceof Actions\DetachAction) {
             return null;
         }
 

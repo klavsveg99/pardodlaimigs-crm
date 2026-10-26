@@ -36,7 +36,7 @@ class TasksRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')->label('Uzdevums')->searchable()->sortable()
+                Tables\Columns\TextColumn::make('title')->label('Uzdevums')->sortable()
                     ->url(fn ($record) => route('filament.admin.resources.tasks.edit', $record)),
                 Tables\Columns\TextColumn::make('due_at')->label('Līdz')
                     ->formatStateUsing(fn ($state, $record): string => $record->due_display ?? '-')
