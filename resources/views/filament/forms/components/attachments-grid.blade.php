@@ -1069,7 +1069,7 @@
         style="display: none;"
         x-on:change="handleUpload($event)"
     />
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+    <div x-show="files.length > 0" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
         <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
             @if($isMultiselect && !$isView)
                 <template x-if="files.length > 0">

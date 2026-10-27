@@ -166,7 +166,7 @@ class KnowledgeArticleResource extends Resource
                 ->visible(fn (Get $get): bool => $get('type') === 'course')
                 ->columnSpanFull(),
             AttachmentsGrid::make('attachments')
-                ->label('Faili un video')
+                ->label('Pielikumi')
                 ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
                     .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
                 ->reorderable(false)
