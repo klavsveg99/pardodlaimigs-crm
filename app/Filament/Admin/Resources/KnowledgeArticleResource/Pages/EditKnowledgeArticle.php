@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Resources\KnowledgeArticleResource\Pages;
 
 use App\Filament\Admin\Resources\KnowledgeArticleResource;
+use App\Filament\Admin\Resources\KnowledgeArticleResource\Pages\Concerns\AssignsKnowledgeArticle;
 use App\Filament\Admin\Resources\Pages\Concerns\SyncsAttachments;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
 class EditKnowledgeArticle extends EditRecord
 {
+    use AssignsKnowledgeArticle;
     use SyncsAttachments;
 
     protected static string $resource = KnowledgeArticleResource::class;
@@ -28,6 +30,7 @@ class EditKnowledgeArticle extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            $this->assignKnowledgeAction(),
             Actions\ViewAction::make()->label('Skatīt materiālu')->color('gray'),
             Actions\DeleteAction::make()
                 ->label('Dzēst materiālu')

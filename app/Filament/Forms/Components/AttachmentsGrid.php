@@ -53,6 +53,18 @@ class AttachmentsGrid extends Field
         return parent::make($name);
     }
 
+    /**
+     * Filament render the custom view through the standard field wrapper so
+     * the label and helper text above attachments are not lost.
+     */
+    public function toHtml(): string
+    {
+        return $this->wrapEmbeddedHtml(
+            $this->renderView($this->getView())->render(),
+            labelTag: 'div',
+        );
+    }
+
     public function collection(string $collection): static
     {
         $this->collection = $collection;

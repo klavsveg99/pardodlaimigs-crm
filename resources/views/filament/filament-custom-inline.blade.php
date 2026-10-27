@@ -1426,6 +1426,13 @@ html.dark .rounded-xl .text-emerald-900 {
     margin-bottom: 0 !important;
 }
 
+/* Form bottom action bars (Saglabāt / Atcelt) keep at least 40px from the
+   last field: the form grid already contributes a 24px row gap, so this
+   adds the remaining 16px on every edit/create form. */
+.fi-sc-form .fi-sc-actions {
+    margin-top: 1rem !important;
+}
+
 .fi-wi-stats-overview {
     margin-bottom: 0.5rem !important;
 }
