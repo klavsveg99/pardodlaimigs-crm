@@ -83,7 +83,7 @@ class UserResource extends Resource
                     ->maxLength(255),
             ])->columns(2),
 
-            Section::make('Aģenta publiskais profils')->schema([
+            Section::make('Aģenta publiskais profils')->columnSpanFull()->schema([
                 AvatarEditor::make('avatar_path')
                     ->label('Foto')
                     ->columnSpanFull(),

@@ -16,6 +16,7 @@ use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -66,6 +67,8 @@ class TaskResource extends Resource
             Forms\Components\DateTimePicker::make('due_at')->label('Līdz')->native(false)
                 ->minDate(fn (string $operation) => $operation === 'create' ? now() : null)
                 ->required()
+                // Bez ieslēgta laika rāda tikai datumu - 00:00 nav jāparādās.
+                ->time(fn (Get $get): bool => (bool) $get('due_has_time'))
                 // Aģenta lauks (blakus kolonnā) nav redzams ne-adminiem;
                 // tad šis lauks aizņem visu rindu.
                 ->columnSpan(['default' => AgentField::siblingSpan()]),
@@ -73,6 +76,15 @@ class TaskResource extends Resource
                 ->relationship('assignedTo', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())->required()->searchable()->preload()->optionsLimit(20)
                 ->visible(AgentField::visible())
                 ->disabled(AgentField::disabled()),
+            Forms\Components\Toggle::make('due_has_time')
+                ->label('Norādīt laiku')
+                ->live()
+                ->dehydrated(false)
+                ->afterStateHydrated(function (Forms\Components\Toggle $component): void {
+                    $record = $component->getRecord();
+                    $component->state($record instanceof Task && $record->dueHasTime());
+                })
+                ->columnSpanFull(),
             Forms\Components\Select::make('izpilditajs_id')->label('Izpildītājs')
                 ->relationship('izpilditajs', 'name')
                 ->getOptionLabelUsing(fn ($value): ?string => Izpilditajs::find($value)?->display_label)

@@ -6,6 +6,7 @@ use Filament\Actions;
 use Filament\Forms;
 use App\Support\AgentField;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -24,7 +25,13 @@ class TasksRelationManager extends RelationManager
         return $schema->schema([
             Forms\Components\TextInput::make('title')->label('Uzdevums')->required(),
             Forms\Components\Textarea::make('body')->label('Apraksts')->rows(3),
-            Forms\Components\DateTimePicker::make('due_at')->label('Līdz')->native(false),
+            Forms\Components\DateTimePicker::make('due_at')->label('Līdz')->native(false)
+                ->time(fn (Get $get): bool => (bool) $get('due_has_time')),
+            Forms\Components\Toggle::make('due_has_time')
+                ->label('Norādīt laiku')
+                ->live()
+                ->dehydrated(false)
+                ->default(false),
             Forms\Components\Select::make('assigned_user_id')->label('Aģents')
                 ->relationship('assignedTo', 'name', modifyQueryUsing: fn (EloquentBuilder $query) => $query->assignable())->searchable()->preload()->optionsLimit(20)
                 ->visible(AgentField::visible())
