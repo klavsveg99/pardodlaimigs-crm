@@ -35,6 +35,11 @@ use UnitEnum;
 
 class CrmPropertyResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return ! (auth()->user()?->isStudent() ?? false);
+    }
+
     protected static ?string $model = CrmProperty::class;
 
     protected static ?string $slug = 'properties';

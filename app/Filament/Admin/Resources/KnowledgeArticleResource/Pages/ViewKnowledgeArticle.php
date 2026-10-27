@@ -6,6 +6,7 @@ namespace App\Filament\Admin\Resources\KnowledgeArticleResource\Pages;
 
 use App\Filament\Admin\Resources\KnowledgeArticleResource;
 use App\Models\KnowledgeAssignment;
+use App\Models\KnowledgeCompletion;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Forms\Components\DatePicker;
@@ -28,16 +29,16 @@ class ViewKnowledgeArticle extends ViewRecord
 
         if (auth()->user()?->can('manage') ?? false) {
             $actions[] = Actions\Action::make('assign')
-                ->label('Piešķirt aģentiem')
+                ->label('Piešķirt lietotājiem')
                 ->icon('heroicon-o-user-plus')
                 ->color('gray')
                 ->form([
                     Select::make('user_ids')
-                        ->label('Aģenti')
+                        ->label('Lietotāji')
                         ->multiple()
                         ->searchable()
                         ->preload()
-                        ->options(fn (): array => User::query()->where('role', 'aģents')->orderBy('name')->pluck('name', 'id')->all())
+                        ->options(fn (): array => User::query()->whereIn('role', ['aģents', 'student'])->orderBy('name')->pluck('name', 'id')->all())
                         ->required(),
                     DatePicker::make('due_at')->label('Izpildes termiņš')->native(false)->minDate(today()),
                 ])
@@ -45,7 +46,7 @@ class ViewKnowledgeArticle extends ViewRecord
                     abort_unless(auth()->user()?->can('manage'), 403);
 
                     $userIds = User::query()
-                        ->where('role', 'aģents')
+                        ->whereIn('role', ['aģents', 'student'])
                         ->whereIn('id', $data['user_ids'])
                         ->pluck('id')
                         ->all();
@@ -71,7 +72,7 @@ class ViewKnowledgeArticle extends ViewRecord
                         }
                     }
 
-                    Notification::make()->title('Materiāls piešķirts aģentiem')->success()->send();
+                    Notification::make()->title('Materiāls piešķirts lietotājiem')->success()->send();
                 });
 
             $actions[] = Actions\EditAction::make()->label('Rediģēt materiālu')->color('gray');
@@ -88,9 +89,24 @@ class ViewKnowledgeArticle extends ViewRecord
             ->label('Atzīmēt kā pabeigtu')
             ->icon('heroicon-o-check')
             ->color('success')
-            ->visible(fn (): bool => $this->pendingAssignment() !== null)
+            ->visible(fn (): bool => ! (auth()->user()?->can('manage') ?? false) && ! $this->hasCompleted())
             ->action(function (): void {
-                $this->pendingAssignment()?->update(['completed_at' => now()]);
+                $assignment = $this->pendingAssignment();
+
+                if ($assignment) {
+                    $assignment->update(['completed_at' => now()]);
+                } elseif ($this->record->is_public) {
+                    KnowledgeCompletion::query()->updateOrCreate(
+                        [
+                            'knowledge_article_id' => $this->record->id,
+                            'user_id' => auth()->id(),
+                        ],
+                        ['completed_at' => now()],
+                    );
+                } else {
+                    return;
+                }
+
                 Notification::make()->title('Materiāls atzīmēts kā pabeigts')->success()->send();
             });
 
@@ -104,5 +120,22 @@ class ViewKnowledgeArticle extends ViewRecord
             ->whereNull('completed_at')
             ->oldest()
             ->first();
+    }
+
+    /**
+     * Vai lietotājs jau ir pabeidzis materiālu - vai nu izpildot piešķīrumu,
+     * vai pats atzīmējot brīvi pieejamu materiālu.
+     */
+    public function hasCompleted(): bool
+    {
+        if ($this->pendingAssignment() !== null) {
+            return false;
+        }
+
+        return $this->record->completions()->where('user_id', auth()->id())->exists()
+            || $this->record->assignments()
+                ->where('assigned_user_id', auth()->id())
+                ->whereNotNull('completed_at')
+                ->exists();
     }
 }

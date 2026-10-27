@@ -7,6 +7,7 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\KnowledgeArticleResource\Pages;
 use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Models\KnowledgeArticle;
+use App\Models\KnowledgeAssignment;
 use App\Models\KnowledgeCategory;
 use Filament\Actions;
 use Filament\Forms;
@@ -86,16 +87,40 @@ class KnowledgeArticleResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery()->with('category');
+        $user = auth()->user();
 
-        // Aģents redz tikai tos materiālus, kas viņam piešķirti.
-        if (! (auth()->user()?->can('manage') ?? false)) {
-            $query->whereHas(
-                'assignments',
-                fn (Builder $assignment): Builder => $assignment->where('assigned_user_id', auth()->id()),
-            );
+        if ($user?->can('manage')) {
+            return $query;
         }
 
-        return $query;
+        // Fotogrāfs redz tikai viņam piešķirtos materiālus. Aģents un
+        // students papildus redz materiālus ar atzīmi "Pieejams visiem"
+        // (bez piešķiršanas un izpildes termiņa).
+        if ($user?->isPhoto()) {
+            return $query
+                ->whereHas(
+                    'assignments',
+                    fn (Builder $assignment): Builder => $assignment->where('assigned_user_id', $user->id),
+                )
+                ->with([
+                    'assignments' => fn ($assignment) => $assignment->where('assigned_user_id', $user->id),
+                    'completions' => fn ($completion) => $completion->where('user_id', $user->id),
+                ]);
+        }
+
+        return $query
+            ->where(function (Builder $query) use ($user): void {
+                $query->where('is_public', true)
+                    ->orWhereHas(
+                        'assignments',
+                        fn (Builder $assignment): Builder => $assignment->where('assigned_user_id', $user?->id),
+                    );
+            })
+            // Saraksta statusa kolonnai - tikai šī lietotāja ieraksti.
+            ->with([
+                'assignments' => fn ($assignment) => $assignment->where('assigned_user_id', $user?->id),
+                'completions' => fn ($completion) => $completion->where('user_id', $user?->id),
+            ]);
     }
 
     public static function form(Schema $schema): Schema
@@ -112,6 +137,10 @@ class KnowledgeArticleResource extends Resource
                 ->label('Kategorija')
                 ->options(fn (): array => KnowledgeCategory::query()->orderBy('name')->pluck('name', 'id')->all())
                 ->searchable()->preload()->nullable(),
+            Forms\Components\Toggle::make('is_public')
+                ->label('Pieejams visiem')
+                ->helperText('Redzams visiem aģentiem un studentiem arī bez piešķiršanas.')
+                ->default(false),
             Forms\Components\Textarea::make('summary')->label('Īss apraksts')->rows(2)->columnSpanFull(),
             Forms\Components\RichEditor::make('body')->label('Saturs')->columnSpanFull(),
             Forms\Components\Repeater::make('video_urls')
@@ -195,9 +224,15 @@ class KnowledgeArticleResource extends Resource
             View::make('filament.infolists.knowledge-assignments')
                 ->viewData(fn (): array => [
                     'assignments' => $record?->assignments()->with(['assignedTo', 'assignedBy'])->latest()->get() ?? collect(),
+                    'completions' => (auth()->user()?->can('manage') ?? false)
+                        ? ($record?->completions()->with('user')->latest('completed_at')->get() ?? collect())
+                        : collect(),
+                    'myCompletion' => $record?->completions()->where('user_id', auth()->id())->first(),
                     'isAdmin' => auth()->user()?->can('manage') ?? false,
+                    'isPublic' => (bool) $record?->is_public,
                 ])
                 ->visible(fn (): bool => (auth()->user()?->can('manage') ?? false)
+                    || ($record?->is_public ?? false)
                     || ($record?->assignments()->where('assigned_user_id', auth()->id())->exists() ?? false))
                 ->columnSpanFull(),
         ])->columns(1);
@@ -213,6 +248,30 @@ class KnowledgeArticleResource extends Resource
                         ? null
                         : static::getUrl('view', ['record' => $record])),
                 Tables\Columns\TextColumn::make('type')->label('Veids')->badge()->formatStateUsing(fn (string $state): string => KnowledgeArticle::TYPES[$state] ?? $state)->color('gray'),
+                Tables\Columns\IconColumn::make('is_public')->label('Visiem')->boolean()
+                    ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Statuss')
+                    ->badge()
+                    ->visible(fn (): bool => ! (auth()->user()?->can('manage') ?? false))
+                    ->getStateUsing(function (KnowledgeArticle $record): string {
+                        $hasPending = $record->assignments->contains(
+                            fn (KnowledgeAssignment $assignment): bool => $assignment->completed_at === null,
+                        );
+
+                        if ($hasPending) {
+                            return 'Jāizpilda';
+                        }
+
+                        return $record->completions->isNotEmpty() || $record->assignments->isNotEmpty()
+                            ? 'Pabeigts'
+                            : 'Pieejams';
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'Pabeigts' => 'success',
+                        'Jāizpilda' => 'warning',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('category.name')->label('Kategorija')->placeholder('-')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('summary')->label('Apraksts')->searchable()->limit(90)->wrap()->toggleable(),
                 Tables\Columns\TextColumn::make('body')->label('Saturs')->searchable()->formatStateUsing(fn (?string $state): string => strip_tags((string) $state))->limit(100)->toggleable(isToggledHiddenByDefault: true),

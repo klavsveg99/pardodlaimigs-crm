@@ -21,10 +21,11 @@ class KnowledgeArticle extends Model
     ];
 
     protected $fillable = [
-        'knowledge_category_id', 'title', 'type', 'summary', 'body', 'video_urls', 'steps',
+        'knowledge_category_id', 'title', 'type', 'is_public', 'summary', 'body', 'video_urls', 'steps',
     ];
 
     protected $casts = [
+        'is_public' => 'boolean',
         'video_urls' => 'array',
         'steps' => 'array',
     ];
@@ -47,6 +48,11 @@ class KnowledgeArticle extends Model
     public function assignments(): HasMany
     {
         return $this->hasMany(KnowledgeAssignment::class);
+    }
+
+    public function completions(): HasMany
+    {
+        return $this->hasMany(KnowledgeCompletion::class);
     }
 
     public function attachments(): MorphMany

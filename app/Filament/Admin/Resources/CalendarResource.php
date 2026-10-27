@@ -14,7 +14,8 @@ class CalendarResource extends Resource
 {
     public static function canAccess(): bool
     {
-        return ! auth()->user()?->isPhoto();
+        return ! (auth()->user()?->isPhoto() ?? false)
+            && ! (auth()->user()?->isStudent() ?? false);
     }
 
     protected static ?string $model = null;

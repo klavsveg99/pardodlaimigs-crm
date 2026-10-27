@@ -63,7 +63,7 @@ Route::redirect('/admin', '/', 301);
 Route::redirect('/admin/{path}', '/{path}', 301)->where('path', '.*');
 
 Route::get('/api/badges', function () {
-    if (! auth()->check()) {
+    if (! auth()->check() || auth()->user()?->isStudent()) {
         return response()->json(['tasks' => 0, 'wpforms' => 0], 200);
     }
 

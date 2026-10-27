@@ -26,7 +26,7 @@ class CalendarQuickAddController extends Controller
     public function options(Request $request): JsonResponse
     {
         $user = $request->user();
-        abort_if($user->isPhoto(), 403);
+        abort_if($user->isPhoto() || $user->isStudent(), 403);
 
         // Aģentu izvēlne redzama tikai administratoram; aģents vienmēr ir
         // pats veidotājs.
@@ -50,7 +50,7 @@ class CalendarQuickAddController extends Controller
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
-        abort_if($user->isPhoto(), 403);
+        abort_if($user->isPhoto() || $user->isStudent(), 403);
 
         $type = (string) $request->input('type', '');
 

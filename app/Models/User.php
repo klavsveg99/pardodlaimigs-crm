@@ -61,13 +61,22 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
+     * "student" loma redz tikai zināšanu bāzi - bez CRM sadaļām, paneļa
+     * pārskata un paziņojumiem.
+     */
+    public function isStudent(): bool
+    {
+        return ($this->role ?? null) === 'student';
+    }
+
+    /**
      * Lietotāji, kurus var izvēlēties aģentu izvēlnēs. Izslēdz "Fotogrāfs"
-     * lomu, jo fotogrāfu nevar piešķirt kā atbildīgo aģentu.
+     * un "Students" lomas, jo tās nevar būt atbildīgie aģenti.
      */
     public function scopeAssignable(Builder $query): Builder
     {
         return $query->where(function (Builder $query): void {
-            $query->where('role', '!=', 'photo')->orWhereNull('role');
+            $query->whereNotIn('role', ['photo', 'student'])->orWhereNull('role');
         });
     }
 
@@ -76,6 +85,7 @@ class User extends Authenticatable implements FilamentUser
         return match ($this->role) {
             'admin' => 'Administrators',
             'photo' => 'Fotogrāfs',
+            'student' => 'Students',
             default => 'Aģents',
         };
     }

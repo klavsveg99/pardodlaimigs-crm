@@ -39,6 +39,11 @@ class NoticeCenter
     /** @return array<int, array<string, mixed>> */
     public function forUser(User $user): array
     {
+        // Students redz tikai zināšanu bāzi - CRM paziņojumi viņu neskar.
+        if ($user->isStudent()) {
+            return [];
+        }
+
         $dismissals = NotificationDismissal::query()
             ->where('user_id', $user->id)
             ->get()
