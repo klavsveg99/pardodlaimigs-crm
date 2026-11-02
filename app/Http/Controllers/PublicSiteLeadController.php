@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\CrmProperty;
 use App\Models\WpformEntry;
 use App\Services\Site\SiteContent;
 use Illuminate\Http\JsonResponse;
@@ -35,13 +36,28 @@ class PublicSiteLeadController extends Controller
      */
     public function storeApi(Request $request): JsonResponse
     {
-        $locale = in_array($request->input('locale'), (array) config('site.locales'), true)
-            ? (string) $request->input('locale')
-            : 'lv';
-
-        $this->createEntry($request, $locale);
+        $this->createEntry($request, $this->locale($request));
 
         return response()->json(['ok' => true], 201);
+    }
+
+    /**
+     * Buyer's enquiry about one listing, sent from the property page popup.
+     * Kept apart from the valuation form because the fields a buyer fills in
+     * are different from the ones a seller does.
+     */
+    public function storeEnquiryApi(Request $request): JsonResponse
+    {
+        $this->createEnquiry($request, $this->locale($request));
+
+        return response()->json(['ok' => true], 201);
+    }
+
+    private function locale(Request $request): string
+    {
+        return in_array($request->input('locale'), (array) config('site.locales'), true)
+            ? (string) $request->input('locale')
+            : 'lv';
     }
 
     private function storeForLocale(Request $request, string $locale): RedirectResponse
@@ -87,19 +103,11 @@ class PublicSiteLeadController extends Controller
             'website' => ['nullable', 'string', 'max:0'],
         ]);
 
-        // The national number has to be as long as the chosen country's numbers
-        // are, otherwise the country code is what is wrong, not the number.
-        $rule = $prefixes[$data['phone_prefix']];
-        $digits = (string) preg_replace('/\D/', '', $data['phone']);
-        if (strlen($digits) < $rule['min'] || strlen($digits) > $rule['max']) {
-            throw ValidationException::withMessages(['phone' => $copy['formPhoneInvalid'] ?? 'Enter a valid phone number.']);
-        }
+        $phone = $this->phoneNumber($data, $prefixes, $copy);
 
         if (! $this->recaptchaPasses($request)) {
             throw ValidationException::withMessages(['recaptcha_token' => $copy['formCaptchaFailed'] ?? 'The security check failed.']);
         }
-
-        $phone = '+'.$rule['dial'].' '.$digits;
 
         $fields = [
             ['id' => 1, 'name' => 'Īpašuma veids', 'type' => 'select', 'value' => $types[$data['property_type']]],
@@ -129,6 +137,78 @@ class PublicSiteLeadController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    private function createEnquiry(Request $request, string $locale): void
+    {
+        if ($request->filled('website')) {
+            return;
+        }
+
+        $copy = $this->content->strings($locale);
+        $prefixes = (array) config('site.phone_prefixes');
+
+        $data = $request->validate([
+            'property_slug' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
+            'phone_prefix' => ['required', 'string', Rule::in(array_keys($prefixes))],
+            'phone' => ['required', 'string', 'max:30'],
+            'email' => ['required', 'email:rfc', 'max:255'],
+            'message' => ['nullable', 'string', 'max:2000'],
+            'consent' => ['accepted'],
+            'website' => ['nullable', 'string', 'max:0'],
+        ]);
+
+        $phone = $this->phoneNumber($data, $prefixes, $copy);
+
+        if (! $this->recaptchaPasses($request)) {
+            throw ValidationException::withMessages(['recaptcha_token' => $copy['formCaptchaFailed'] ?? 'The security check failed.']);
+        }
+
+        $property = CrmProperty::query()
+            ->with('owner')
+            ->where('slug', $data['property_slug'])
+            ->first();
+
+        $fields = [
+            ['id' => 1, 'name' => 'Īpašums', 'type' => 'text', 'value' => (string) ($property?->title ?? $data['property_slug'])],
+            ['id' => 2, 'name' => 'Īpašuma saite', 'type' => 'text', 'value' => 'https://pardodlaimigs.lv/ipasums/'.$data['property_slug'].'/'],
+            ['id' => 3, 'name' => 'Aģents', 'type' => 'text', 'value' => (string) ($property?->owner?->name ?? '')],
+            ['id' => 4, 'name' => 'Jūsu vārds', 'type' => 'text', 'value' => $data['name']],
+            ['id' => 5, 'name' => 'Telefona numurs', 'type' => 'tel', 'value' => $phone],
+            ['id' => 6, 'name' => 'E-pasts', 'type' => 'email', 'value' => $data['email']],
+            ['id' => 7, 'name' => 'Ziņa', 'type' => 'textarea', 'value' => $data['message'] ?? ''],
+            ['id' => 8, 'name' => 'Privātuma politika', 'type' => 'checkbox', 'value' => 'Piekritu'],
+        ];
+
+        WpformEntry::query()->create([
+            'external_id' => 'site:'.Str::uuid(),
+            'entry_id' => (int) floor(microtime(true) * 1000),
+            'form_id' => 0,
+            'form_name' => 'Pieprasījums par īpašumu',
+            'status' => 'new',
+            'viewed' => false,
+            'starred' => false,
+            'ip_address' => $request->ip(),
+            'fields' => $fields,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * The national number has to be as long as the chosen country's numbers
+     * are, otherwise the country code is what is wrong, not the number.
+     */
+    private function phoneNumber(array $data, array $prefixes, array $copy): string
+    {
+        $rule = $prefixes[$data['phone_prefix']];
+        $digits = (string) preg_replace('/\D/', '', $data['phone']);
+        if (strlen($digits) < $rule['min'] || strlen($digits) > $rule['max']) {
+            throw ValidationException::withMessages(['phone' => $copy['formPhoneInvalid'] ?? 'Enter a valid phone number.']);
+        }
+
+        return '+'.$rule['dial'].' '.$digits;
     }
 
     /**

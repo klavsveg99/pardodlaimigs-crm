@@ -27,3 +27,7 @@ Route::get('/public/property-statuses', [CrmPropertyFeedController::class, 'publ
 // Valuation/contact form from /new/. Cross-origin JSON with reCAPTCHA.
 Route::post('/public/leads', [PublicSiteLeadController::class, 'storeApi'])
     ->middleware('throttle:10,1');
+
+// Buyer's enquiry about one listing, from the property page popup.
+Route::post('/public/enquiries', [PublicSiteLeadController::class, 'storeEnquiryApi'])
+    ->middleware('throttle:10,1');
