@@ -23,6 +23,14 @@ class User extends Authenticatable implements FilamentUser
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasSlug, Notifiable, SoftDeletes;
 
+    /** Lomu nosaukumi formām un filtriem. */
+    public const ROLE_LABELS = [
+        'aģents' => 'Aģents',
+        'student' => 'Students',
+        'photo' => 'Fotogrāfs',
+        'admin' => 'Administrators',
+    ];
+
     protected static function booted(): void
     {
         static::creating(function (self $user) {

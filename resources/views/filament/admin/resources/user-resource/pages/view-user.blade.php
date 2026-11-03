@@ -30,7 +30,7 @@
         }
 
         $hasActiveFilters = filled($activeSearch) || filled($activeCategory) || filled($activeStatus);
-        $hasSoldFilters = filled($soldSearch) || filled($soldSource) || $soldOnlyIncomplete;
+        $hasSoldFilters = filled($soldSearch) || filled($soldSource);
         $soldProperties = $report['sold'];
     @endphp
 
@@ -89,17 +89,6 @@
             flex: 0 1 auto;
             max-width: 100%;
         }
-        .pdc-report-check {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.8rem;
-            color: #4b5563;
-            cursor: pointer;
-        }
-        .pdc-report-check input {
-            accent-color: var(--pdc-primary, #285854);
-        }
         .pdc-report-clear {
             padding: 0.4rem 0.2rem;
             border: 0;
@@ -116,9 +105,6 @@
             background: #111827;
             border-color: #374151;
             color: #f3f4f6;
-        }
-        html.dark .pdc-report-check {
-            color: #9ca3af;
         }
         html.dark .pdc-report-clear {
             color: #98bcb8;
@@ -325,7 +311,6 @@
             .pdc-report-toolbar select {
                 width: 100%;
             }
-            .pdc-report-check,
             .pdc-report-clear {
                 align-self: flex-start;
             }
@@ -579,10 +564,6 @@
                     <option value="{{ $value }}">{{ $label }}</option>
                 @endforeach
             </select>
-            <label class="pdc-report-check">
-                <input type="checkbox" wire:model.live="soldOnlyIncomplete">
-                <span>Tikai nepilnīgi dati</span>
-            </label>
             @if ($hasSoldFilters)
                 <button type="button" class="pdc-report-clear" wire:click="clearSoldFilters">Notīrīt</button>
             @endif

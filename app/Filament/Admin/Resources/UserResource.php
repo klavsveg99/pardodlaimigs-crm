@@ -49,12 +49,7 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('name')->label('Vārds')->required()->maxLength(255),
                 Forms\Components\TextInput::make('email')->label('E-pasts')->email()->required()->maxLength(255)->unique(ignoreRecord: true),
                 Forms\Components\Select::make('role')->label('Loma')
-                    ->options([
-                        'aģents' => 'Aģents',
-                        'student' => 'Students',
-                        'photo' => 'Fotogrāfs',
-                        'admin' => 'Administrators',
-                    ])
+                    ->options(User::ROLE_LABELS)
                     ->searchable()
                     ->default('aģents')
                     ->required()
@@ -134,6 +129,7 @@ class UserResource extends Resource
 
         return $table
             ->extraAttributes(['class' => 'pdc-users-table'])
+            ->header(view('filament.admin.resources.user-resource.partials.role-filter'))
             ->columns([
                 Tables\Columns\ImageColumn::make('avatar_path')->label('Foto')->disk('public')->circular()->defaultImageUrl(asset('images/no-photo.svg')),
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable(),
@@ -148,16 +144,6 @@ class UserResource extends Resource
                         'admin' => 'Administrators',
                         default => $state ?: '-',
                     }),
-            ])
-            ->filters([
-                Tables\Filters\SelectFilter::make('role')
-                    ->label('Loma')
-                    ->options([
-                        'aģents' => 'Aģents',
-                        'student' => 'Students',
-                        'photo' => 'Fotogrāfs',
-                        'admin' => 'Administrators',
-                    ]),
             ])
             ->actions([
                 Actions\ActionGroup::make([

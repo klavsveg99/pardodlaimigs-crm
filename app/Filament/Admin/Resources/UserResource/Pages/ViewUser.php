@@ -37,8 +37,6 @@ class ViewUser extends ViewRecord
 
     public string $soldSource = '';
 
-    public bool $soldOnlyIncomplete = false;
-
     public int $soldPage = 1;
 
     public function mount(int|string $record): void
@@ -97,11 +95,6 @@ class ViewUser extends ViewRecord
         $this->soldPage = 1;
     }
 
-    public function updatedSoldOnlyIncomplete(): void
-    {
-        $this->soldPage = 1;
-    }
-
     public function clearActiveFilters(): void
     {
         $this->activeSearch = '';
@@ -114,7 +107,6 @@ class ViewUser extends ViewRecord
     {
         $this->soldSearch = '';
         $this->soldSource = '';
-        $this->soldOnlyIncomplete = false;
         $this->soldPage = 1;
     }
 
@@ -226,8 +218,7 @@ class ViewUser extends ViewRecord
 
         $soldFiltered = $allSold
             ->filter(fn (CrmProperty $property): bool => $this->matchesSearch($property, $this->soldSearch)
-                && ($this->soldSource === '' || $property->lead_source === $this->soldSource)
-                && (! $this->soldOnlyIncomplete || $property->commission_eur === null || $property->sold_at === null))
+                && ($this->soldSource === '' || $property->lead_source === $this->soldSource))
             ->values();
 
         $soldDatedFiltered = $soldFiltered->filter(fn (CrmProperty $property): bool => $property->sold_at !== null);
