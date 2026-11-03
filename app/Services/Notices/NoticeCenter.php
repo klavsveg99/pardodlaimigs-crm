@@ -177,8 +177,8 @@ class NoticeCenter
                 'key' => self::STALE_KEY_PREFIX.$property->id,
                 'type' => 'Īpašums',
                 'type_color' => 'gray',
-                'icon' => 'heroicon-o-exclamation-triangle',
-                'urgent' => true,
+                'icon' => 'heroicon-o-building-office-2',
+                'urgent' => false,
                 'title' => $property->title,
                 'url' => CrmPropertyResource::getUrl('view', ['record' => $property]),
                 'fields' => [
