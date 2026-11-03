@@ -20,9 +20,6 @@
         if ($report['missing_commission'] > 0) {
             $missingParts[] = 'komisija - '.$report['missing_commission'];
         }
-        if ($report['missing_percent'] > 0) {
-            $missingParts[] = 'aģenta % - '.$report['missing_percent'];
-        }
 
         $warningText = $missingParts === [] ? '' : 'Nepilnīgi dati: '.implode(', ', $missingParts).'.';
         if ($report['undated_count'] > 0) {
@@ -448,10 +445,10 @@
                                     @endif
                                 </td>
                                 <td class="pdc-report-num" data-label="Aģenta %">
-                                    @if ($property->agent_percent === null)
+                                    @if ($property->commission_percent === null)
                                         <span class="pdc-report-missing">Nav ievadīts</span>
                                     @else
-                                        {{ number_format((float) $property->agent_percent, 2, ',', ' ') }} %
+                                        {{ number_format($property->commission_percent, 2, ',', ' ') }} %
                                     @endif
                                 </td>
                             </tr>

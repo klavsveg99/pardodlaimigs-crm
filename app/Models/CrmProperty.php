@@ -58,7 +58,7 @@ class CrmProperty extends Model
         'lead_source', 'lead_source_name', 'lead_source_commission', 'beds', 'baths',
         'size_m2', 'land_m2', 'kadastra_nr', 'city', 'address', 'zip',
         'lat', 'lng', 'owner_user_id', 'sort_order',
-        'final_price_eur', 'commission_eur', 'agent_percent', 'sold_at', 'ai_notes', 'ai_result', 'legal_data',
+        'final_price_eur', 'commission_eur', 'sold_at', 'ai_notes', 'ai_result', 'legal_data',
     ];
 
     protected $casts = [
@@ -66,7 +66,6 @@ class CrmProperty extends Model
         'price_eur' => 'decimal:2',
         'final_price_eur' => 'decimal:2',
         'commission_eur' => 'decimal:2',
-        'agent_percent' => 'decimal:2',
         'lead_source_commission' => 'decimal:2',
         'sold_at' => 'datetime',
         'sale_started_at' => 'date',

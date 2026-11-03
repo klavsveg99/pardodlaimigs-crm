@@ -149,7 +149,6 @@ class ViewUser extends ViewRecord
             'total_commission' => $totalCommission,
             'total_price' => $totalPrice,
             'missing_commission' => $allSold->whereNull('commission_eur')->count(),
-            'missing_percent' => $allSold->whereNull('agent_percent')->count(),
             'undated_count' => $undated->count(),
         ];
     }

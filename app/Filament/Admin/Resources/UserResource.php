@@ -62,14 +62,6 @@ class UserResource extends Resource
                     ->live()
                     ->columnSpanFull()
                     ->dehydrateStateUsing(fn ($state) => $state === 'agent' ? 'aģents' : $state),
-                Forms\Components\TextInput::make('default_commission_percent')
-                    ->label('Aģenta komisijas % (noklusējums)')
-                    ->numeric()
-                    ->minValue(0)
-                    ->maxValue(100)
-                    ->suffix('%')
-                    ->placeholder('Nav norādīts')
-                    ->columnSpanFull(),
             ])->columns(2),
 
             Section::make('Parole')->schema([
