@@ -30,7 +30,9 @@
         }
 
         $hasActiveFilters = filled($activeSearch) || filled($activeCategory) || filled($activeStatus);
+        $hasAppliedActiveFilters = filled($activeCategory) || filled($activeStatus);
         $hasSoldFilters = filled($soldSearch) || filled($soldSource);
+        $hasAppliedSoldFilters = filled($soldSource);
         $soldProperties = $report['sold'];
     @endphp
 
@@ -61,9 +63,9 @@
             color: #f3f4f6;
         }
 
-        .pdc-report-toolbar {
+        .pdc-report-table-bar {
+            position: relative;
             display: flex;
-            flex-wrap: wrap;
             align-items: center;
             gap: 0.5rem;
             margin-bottom: 0.85rem;
@@ -82,32 +84,118 @@
             box-shadow: 0 0 0 2px rgba(40, 88, 84, 0.18);
         }
         .pdc-report-search {
-            flex: 1 1 15rem;
+            flex: 1 1 auto;
             min-width: 0;
+            max-width: 22rem;
         }
-        .pdc-report-toolbar select {
-            flex: 0 1 auto;
-            max-width: 100%;
+        .pdc-report-filter-btn {
+            position: relative;
+            flex: none;
         }
-        .pdc-report-clear {
-            padding: 0.4rem 0.2rem;
+        .pdc-report-filter-wrap {
+            position: relative;
+            flex: none;
+        }
+        .pdc-report-filter-dot {
+            position: absolute;
+            top: 0.35rem;
+            right: 0.35rem;
+            width: 0.4rem;
+            height: 0.4rem;
+            border-radius: 9999px;
+            background: var(--pdc-primary, #285854);
+        }
+        .pdc-report-filter-panel {
+            position: absolute;
+            top: calc(100% + 0.4rem);
+            right: 0;
+            z-index: 50;
+            width: 18rem;
+            max-width: calc(100vw - 2rem);
+            padding: 0.85rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            background: #ffffff;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+        }
+        .pdc-report-filter-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.65rem;
+        }
+        .pdc-report-filter-heading {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #111827;
+        }
+        .pdc-report-filter-reset {
+            padding: 0;
             border: 0;
             background: transparent;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 600;
             color: var(--pdc-primary, #285854);
             cursor: pointer;
         }
-        .pdc-report-clear:hover {
+        .pdc-report-filter-reset:hover {
             text-decoration: underline;
+        }
+        .pdc-report-filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-top: 0.6rem;
+        }
+        .pdc-report-filter-field > span {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+        .pdc-report-filter-field select {
+            width: 100%;
+        }
+        .pdc-report-filter-apply {
+            width: 100%;
+            margin-top: 0.85rem;
+            padding: 0.45rem 0.75rem;
+            border: 1px solid var(--pdc-primary, #285854);
+            border-radius: 0.5rem;
+            background: var(--pdc-primary, #285854);
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #ffffff;
+            cursor: pointer;
         }
         html.dark .pdc-report-control {
             background: #111827;
             border-color: #374151;
             color: #f3f4f6;
         }
-        html.dark .pdc-report-clear {
+        html.dark .pdc-report-filter-dot {
+            background: #98bcb8;
+        }
+        html.dark .pdc-report-filter-panel {
+            border-color: #27303a;
+            background: #0b0f14;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+        }
+        html.dark .pdc-report-filter-heading {
+            color: #f3f4f6;
+        }
+        html.dark .pdc-report-filter-reset {
             color: #98bcb8;
+        }
+        html.dark .pdc-report-filter-field > span {
+            color: #9ca3af;
+        }
+        html.dark .pdc-report-filter-apply {
+            border-color: var(--pdc-primary, #285854);
+            background: var(--pdc-primary, #285854);
+            color: #ffffff;
         }
 
         .pdc-report-pager {
@@ -301,18 +389,11 @@
            pārnesti uz katras šūnas data-label, lai tabulas nav jāritina
            horizontāli. Mēnešu tabula paliek tabula - tai pietiek vietas. */
         @media (max-width: 639px) {
-            .pdc-report-toolbar {
-                flex-direction: column;
-                align-items: stretch;
-            }
             .pdc-report-search {
-                flex: 1 1 auto;
+                max-width: none;
             }
-            .pdc-report-toolbar select {
-                width: 100%;
-            }
-            .pdc-report-clear {
-                align-self: flex-start;
+            .pdc-report-filter-panel {
+                width: min(18rem, calc(100vw - 2rem));
             }
             .pdc-report-table--cards thead {
                 display: none;
@@ -446,7 +527,7 @@
     </x-filament::section>
 
     <x-filament::section heading="Objekti pārdošanā">
-        <div class="pdc-report-toolbar">
+        <div class="pdc-report-table-bar" x-data="{ filtersOpen: false }">
             <input
                 type="search"
                 class="pdc-report-control pdc-report-search"
@@ -454,29 +535,59 @@
                 aria-label="Meklēt aktīvos objektus"
                 wire:model.live.debounce.400ms="activeSearch"
             >
-            <select
-                class="pdc-report-control"
-                aria-label="Filtrēt pēc tipa"
-                wire:model.live="activeCategory"
-            >
-                <option value="">Visi tipi</option>
-                @foreach (\App\Models\CrmProperty::CATEGORIES as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </select>
-            <select
-                class="pdc-report-control"
-                aria-label="Filtrēt pēc statusa"
-                wire:model.live="activeStatus"
-            >
-                <option value="">Visi statusi</option>
-                @foreach (array_intersect_key(\App\Models\CrmProperty::STATUSES, ['published' => true, 'reserved' => true]) as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </select>
-            @if ($hasActiveFilters)
-                <button type="button" class="pdc-report-clear" wire:click="clearActiveFilters">Notīrīt</button>
-            @endif
+            <div class="pdc-report-filter-wrap" x-on:click.outside="filtersOpen = false">
+                <button
+                    type="button"
+                    class="fi-icon-btn fi-size-md pdc-report-filter-btn"
+                    title="Filtrēt"
+                    aria-label="Filtrēt"
+                    aria-haspopup="true"
+                    x-bind:aria-expanded="filtersOpen"
+                    x-on:click="filtersOpen = ! filtersOpen"
+                >
+                    <x-filament::icon icon="heroicon-o-funnel" class="fi-icon fi-size-md" />
+                    @if ($hasAppliedActiveFilters)
+                        <span class="pdc-report-filter-dot" aria-hidden="true"></span>
+                    @endif
+                </button>
+
+                <div
+                    class="pdc-report-filter-panel"
+                    x-show="filtersOpen"
+                    x-cloak
+                >
+                    <div class="pdc-report-filter-head">
+                        <span class="pdc-report-filter-heading">Filtri</span>
+                        @if ($hasAppliedActiveFilters)
+                            <button type="button" class="pdc-report-filter-reset" wire:click="clearActiveFilters">Atiestatīt filtrus</button>
+                        @endif
+                    </div>
+                    <label class="pdc-report-filter-field">
+                        <span>Tips</span>
+                        <select class="pdc-report-control" wire:model="activeCategoryDraft">
+                            <option value="">Visi tipi</option>
+                            @foreach (\App\Models\CrmProperty::CATEGORIES as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label class="pdc-report-filter-field">
+                        <span>Statuss</span>
+                        <select class="pdc-report-control" wire:model="activeStatusDraft">
+                            <option value="">Visi statusi</option>
+                            @foreach (array_intersect_key(\App\Models\CrmProperty::STATUSES, ['published' => true, 'reserved' => true]) as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <button
+                        type="button"
+                        class="pdc-report-filter-apply"
+                        wire:click="applyActiveFilters"
+                        x-on:click="filtersOpen = false"
+                    >Apply filters</button>
+                </div>
+            </div>
         </div>
 
         @if ($report['active']->isEmpty())
@@ -546,7 +657,7 @@
     </x-filament::section>
 
     <x-filament::section heading="Pārdotie objekti un saņemtā komisija">
-        <div class="pdc-report-toolbar">
+        <div class="pdc-report-table-bar" x-data="{ filtersOpen: false }">
             <input
                 type="search"
                 class="pdc-report-control pdc-report-search"
@@ -554,19 +665,50 @@
                 aria-label="Meklēt pārdotos objektus"
                 wire:model.live.debounce.400ms="soldSearch"
             >
-            <select
-                class="pdc-report-control"
-                aria-label="Filtrēt pēc pieteikuma avota"
-                wire:model.live="soldSource"
-            >
-                <option value="">Visi avoti</option>
-                @foreach (\App\Models\CrmProperty::LEAD_SOURCES as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </select>
-            @if ($hasSoldFilters)
-                <button type="button" class="pdc-report-clear" wire:click="clearSoldFilters">Notīrīt</button>
-            @endif
+            <div class="pdc-report-filter-wrap" x-on:click.outside="filtersOpen = false">
+                <button
+                    type="button"
+                    class="fi-icon-btn fi-size-md pdc-report-filter-btn"
+                    title="Filtrēt"
+                    aria-label="Filtrēt"
+                    aria-haspopup="true"
+                    x-bind:aria-expanded="filtersOpen"
+                    x-on:click="filtersOpen = ! filtersOpen"
+                >
+                    <x-filament::icon icon="heroicon-o-funnel" class="fi-icon fi-size-md" />
+                    @if ($hasAppliedSoldFilters)
+                        <span class="pdc-report-filter-dot" aria-hidden="true"></span>
+                    @endif
+                </button>
+
+                <div
+                    class="pdc-report-filter-panel"
+                    x-show="filtersOpen"
+                    x-cloak
+                >
+                    <div class="pdc-report-filter-head">
+                        <span class="pdc-report-filter-heading">Filtri</span>
+                        @if ($hasAppliedSoldFilters)
+                            <button type="button" class="pdc-report-filter-reset" wire:click="clearSoldFilters">Atiestatīt filtrus</button>
+                        @endif
+                    </div>
+                    <label class="pdc-report-filter-field">
+                        <span>Pieteikuma avots</span>
+                        <select class="pdc-report-control" wire:model="soldSourceDraft">
+                            <option value="">Visi avoti</option>
+                            @foreach (\App\Models\CrmProperty::LEAD_SOURCES as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <button
+                        type="button"
+                        class="pdc-report-filter-apply"
+                        wire:click="applySoldFilters"
+                        x-on:click="filtersOpen = false"
+                    >Apply filters</button>
+                </div>
+            </div>
         </div>
 
         @if ($soldProperties->isEmpty())

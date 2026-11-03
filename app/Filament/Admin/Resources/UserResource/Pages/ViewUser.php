@@ -31,11 +31,17 @@ class ViewUser extends ViewRecord
 
     public string $activeStatus = '';
 
+    public string $activeCategoryDraft = '';
+
+    public string $activeStatusDraft = '';
+
     public int $activePage = 1;
 
     public string $soldSearch = '';
 
     public string $soldSource = '';
+
+    public string $soldSourceDraft = '';
 
     public int $soldPage = 1;
 
@@ -95,18 +101,32 @@ class ViewUser extends ViewRecord
         $this->soldPage = 1;
     }
 
+    public function applyActiveFilters(): void
+    {
+        $this->activeCategory = $this->activeCategoryDraft;
+        $this->activeStatus = $this->activeStatusDraft;
+        $this->activePage = 1;
+    }
+
+    public function applySoldFilters(): void
+    {
+        $this->soldSource = $this->soldSourceDraft;
+        $this->soldPage = 1;
+    }
+
     public function clearActiveFilters(): void
     {
-        $this->activeSearch = '';
         $this->activeCategory = '';
         $this->activeStatus = '';
+        $this->activeCategoryDraft = '';
+        $this->activeStatusDraft = '';
         $this->activePage = 1;
     }
 
     public function clearSoldFilters(): void
     {
-        $this->soldSearch = '';
         $this->soldSource = '';
+        $this->soldSourceDraft = '';
         $this->soldPage = 1;
     }
 
