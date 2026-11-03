@@ -1,18 +1,4 @@
 <x-filament-panels::page>
-    <x-slot name="heading">
-        <div class="pdc-agent-heading">
-            <img
-                class="pdc-agent-avatar"
-                src="{{ $record->avatar_url ?: asset('images/no-photo.svg') }}"
-                alt=""
-            >
-            <div>
-                <h1 class="fi-header-heading">{{ $record->name }}</h1>
-                <p class="pdc-agent-subheading">{{ $record->role_label }} · {{ $record->email }}</p>
-            </div>
-        </div>
-    </x-slot>
-
     @php
         $report = $this->getReport();
         $years = $this->getYearOptions();
@@ -50,28 +36,6 @@
     @endphp
 
     <style>
-        .pdc-agent-heading {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .pdc-agent-avatar {
-            flex: none;
-            width: 2.6rem;
-            height: 2.6rem;
-            border-radius: 9999px;
-            object-fit: cover;
-            background: #f3f4f6;
-        }
-        .pdc-agent-subheading {
-            margin: 0.15rem 0 0;
-            font-size: 0.85rem;
-            color: #6b7280;
-        }
-        html.dark .pdc-agent-subheading {
-            color: #9ca3af;
-        }
-
         .pdc-agent-year {
             display: inline-flex;
             align-items: center;
