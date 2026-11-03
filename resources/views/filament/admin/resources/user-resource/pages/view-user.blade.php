@@ -29,7 +29,9 @@
             $warningText .= ' Komisija bez ievadītās summas kopsummā nav iekļauta.';
         }
 
-        $soldProperties = $report['sold']->concat($report['undated']);
+        $hasActiveFilters = filled($activeSearch) || filled($activeCategory) || filled($activeStatus);
+        $hasSoldFilters = filled($soldSearch) || filled($soldSource) || $soldOnlyIncomplete;
+        $soldProperties = $report['sold'];
     @endphp
 
     <style>
@@ -57,6 +59,107 @@
             background: #111827;
             border-color: #374151;
             color: #f3f4f6;
+        }
+
+        .pdc-report-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.85rem;
+        }
+        .pdc-report-control {
+            padding: 0.4rem 0.6rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background: #ffffff;
+            font-size: 0.82rem;
+            color: #111827;
+        }
+        .pdc-report-control:focus {
+            outline: none;
+            border-color: var(--pdc-primary, #285854);
+            box-shadow: 0 0 0 2px rgba(40, 88, 84, 0.18);
+        }
+        .pdc-report-search {
+            flex: 1 1 15rem;
+            min-width: 0;
+        }
+        .pdc-report-toolbar select {
+            flex: 0 1 auto;
+            max-width: 100%;
+        }
+        .pdc-report-check {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            color: #4b5563;
+            cursor: pointer;
+        }
+        .pdc-report-check input {
+            accent-color: var(--pdc-primary, #285854);
+        }
+        .pdc-report-clear {
+            padding: 0.4rem 0.2rem;
+            border: 0;
+            background: transparent;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--pdc-primary, #285854);
+            cursor: pointer;
+        }
+        .pdc-report-clear:hover {
+            text-decoration: underline;
+        }
+        html.dark .pdc-report-control {
+            background: #111827;
+            border-color: #374151;
+            color: #f3f4f6;
+        }
+        html.dark .pdc-report-check {
+            color: #9ca3af;
+        }
+        html.dark .pdc-report-clear {
+            color: #98bcb8;
+        }
+
+        .pdc-report-pager {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        .pdc-report-pager-buttons {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .pdc-report-page-btn {
+            padding: 0.3rem 0.55rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.4rem;
+            background: #ffffff;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #374151;
+            cursor: pointer;
+        }
+        .pdc-report-page-btn:disabled {
+            opacity: 0.45;
+            cursor: default;
+        }
+        html.dark .pdc-report-pager {
+            color: #9ca3af;
+        }
+        html.dark .pdc-report-page-btn {
+            background: #111827;
+            border-color: #374151;
+            color: #e5e7eb;
         }
 
         .pdc-agent-stats {
@@ -212,6 +315,20 @@
            pārnesti uz katras šūnas data-label, lai tabulas nav jāritina
            horizontāli. Mēnešu tabula paliek tabula - tai pietiek vietas. */
         @media (max-width: 639px) {
+            .pdc-report-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .pdc-report-search {
+                flex: 1 1 auto;
+            }
+            .pdc-report-toolbar select {
+                width: 100%;
+            }
+            .pdc-report-check,
+            .pdc-report-clear {
+                align-self: flex-start;
+            }
             .pdc-report-table--cards thead {
                 display: none;
             }
@@ -323,7 +440,7 @@
         <div class="pdc-agent-stats">
             <div class="pdc-agent-stat">
                 <span class="pdc-agent-stat-label">Objekti pārdošanā</span>
-                <span class="pdc-agent-stat-value">{{ $report['active']->count() }}</span>
+                <span class="pdc-agent-stat-value">{{ $report['active_total'] }}</span>
             </div>
             <div class="pdc-agent-stat">
                 <span class="pdc-agent-stat-label">Pārdoti objekti · {{ $this->year }}</span>
@@ -344,11 +461,44 @@
     </x-filament::section>
 
     <x-filament::section heading="Objekti pārdošanā">
+        <div class="pdc-report-toolbar">
+            <input
+                type="search"
+                class="pdc-report-control pdc-report-search"
+                placeholder="Meklēt objektu"
+                aria-label="Meklēt aktīvos objektus"
+                wire:model.live.debounce.400ms="activeSearch"
+            >
+            <select
+                class="pdc-report-control"
+                aria-label="Filtrēt pēc tipa"
+                wire:model.live="activeCategory"
+            >
+                <option value="">Visi tipi</option>
+                @foreach (\App\Models\CrmProperty::CATEGORIES as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </select>
+            <select
+                class="pdc-report-control"
+                aria-label="Filtrēt pēc statusa"
+                wire:model.live="activeStatus"
+            >
+                <option value="">Visi statusi</option>
+                @foreach (array_intersect_key(\App\Models\CrmProperty::STATUSES, ['published' => true, 'reserved' => true]) as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </select>
+            @if ($hasActiveFilters)
+                <button type="button" class="pdc-report-clear" wire:click="clearActiveFilters">Notīrīt</button>
+            @endif
+        </div>
+
         @if ($report['active']->isEmpty())
             <div class="pdc-empty-state">
                 <div class="pdc-empty-state-inner">
                     <i class="fa-solid fa-house" aria-hidden="true"></i>
-                    <span>Aktīvu objektu nav</span>
+                    <span>{{ $hasActiveFilters ? 'Nav rezultātu' : 'Aktīvu objektu nav' }}</span>
                 </div>
             </div>
         @else
@@ -386,15 +536,63 @@
                     </tbody>
                 </table>
             </div>
+
+            @if ($report['active']->hasPages())
+                <div class="pdc-report-pager">
+                    <span>Rāda {{ $report['active']->firstItem() }}-{{ $report['active']->lastItem() }} no {{ $report['active']->total() }}</span>
+                    <div class="pdc-report-pager-buttons">
+                        <button
+                            type="button"
+                            class="pdc-report-page-btn"
+                            wire:click="setActivePage({{ $report['active']->currentPage() - 1 }})"
+                            @disabled($report['active']->onFirstPage())
+                        >Iepriekšējā</button>
+                        <span>{{ $report['active']->currentPage() }} / {{ $report['active']->lastPage() }}</span>
+                        <button
+                            type="button"
+                            class="pdc-report-page-btn"
+                            wire:click="setActivePage({{ $report['active']->currentPage() + 1 }})"
+                            @disabled(! $report['active']->hasMorePages())
+                        >Nākamā</button>
+                    </div>
+                </div>
+            @endif
         @endif
     </x-filament::section>
 
     <x-filament::section heading="Pārdotie objekti un saņemtā komisija">
+        <div class="pdc-report-toolbar">
+            <input
+                type="search"
+                class="pdc-report-control pdc-report-search"
+                placeholder="Meklēt objektu"
+                aria-label="Meklēt pārdotos objektus"
+                wire:model.live.debounce.400ms="soldSearch"
+            >
+            <select
+                class="pdc-report-control"
+                aria-label="Filtrēt pēc pieteikuma avota"
+                wire:model.live="soldSource"
+            >
+                <option value="">Visi avoti</option>
+                @foreach (\App\Models\CrmProperty::LEAD_SOURCES as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </select>
+            <label class="pdc-report-check">
+                <input type="checkbox" wire:model.live="soldOnlyIncomplete">
+                <span>Tikai nepilnīgi dati</span>
+            </label>
+            @if ($hasSoldFilters)
+                <button type="button" class="pdc-report-clear" wire:click="clearSoldFilters">Notīrīt</button>
+            @endif
+        </div>
+
         @if ($soldProperties->isEmpty())
             <div class="pdc-empty-state">
                 <div class="pdc-empty-state-inner">
                     <i class="fa-solid fa-euro-sign" aria-hidden="true"></i>
-                    <span>Pārdoto objektu nav</span>
+                    <span>{{ $hasSoldFilters ? 'Nav rezultātu' : 'Pārdoto objektu nav' }}</span>
                 </div>
             </div>
         @else
@@ -457,13 +655,34 @@
                     <tfoot>
                         <tr>
                             <td colspan="2" class="pdc-report-total-label">Kopā {{ $this->year }}</td>
-                            <td class="pdc-report-num" data-label="Pārdošanas cena">{{ $money($report['total_price']) }}</td>
-                            <td class="pdc-report-num" data-label="Komisija kopā">{{ $money($report['total_commission']) }}</td>
+                            <td class="pdc-report-num" data-label="Pārdošanas cena">{{ $money($report['table_total_price']) }}</td>
+                            <td class="pdc-report-num" data-label="Komisija kopā">{{ $money($report['table_total_commission']) }}</td>
                             <td></td>
                         </tr>
                     </tfoot>
                 </table>
             </div>
+
+            @if ($report['sold']->hasPages())
+                <div class="pdc-report-pager">
+                    <span>Rāda {{ $report['sold']->firstItem() }}-{{ $report['sold']->lastItem() }} no {{ $report['sold']->total() }}</span>
+                    <div class="pdc-report-pager-buttons">
+                        <button
+                            type="button"
+                            class="pdc-report-page-btn"
+                            wire:click="setSoldPage({{ $report['sold']->currentPage() - 1 }})"
+                            @disabled($report['sold']->onFirstPage())
+                        >Iepriekšējā</button>
+                        <span>{{ $report['sold']->currentPage() }} / {{ $report['sold']->lastPage() }}</span>
+                        <button
+                            type="button"
+                            class="pdc-report-page-btn"
+                            wire:click="setSoldPage({{ $report['sold']->currentPage() + 1 }})"
+                            @disabled(! $report['sold']->hasMorePages())
+                        >Nākamā</button>
+                    </div>
+                </div>
+            @endif
         @endif
     </x-filament::section>
 
