@@ -210,6 +210,102 @@
             border-color: rgba(249, 115, 22, 0.4);
             color: #fdba74;
         }
+
+        /* Uz mobilā platuma rindas kļūst par kartītēm: kolonnu virsraksti
+           pārnesti uz katras šūnas data-label, lai tabulas nav jāritina
+           horizontāli. Mēnešu tabula paliek tabula - tai pietiek vietas. */
+        @media (max-width: 639px) {
+            .pdc-report-table--cards thead {
+                display: none;
+            }
+            .pdc-report-table--cards,
+            .pdc-report-table--cards tbody,
+            .pdc-report-table--cards tfoot,
+            .pdc-report-table--cards tr,
+            .pdc-report-table--cards td {
+                display: block;
+                width: 100%;
+            }
+            .pdc-report-table--cards tbody tr {
+                margin-bottom: 0.6rem;
+                padding: 0.7rem 0.8rem;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.65rem;
+                background: #ffffff;
+            }
+            .pdc-report-table--cards tbody tr:last-child {
+                margin-bottom: 0;
+            }
+            .pdc-report-table--cards tbody td {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 0.18rem 0;
+                border: 0;
+            }
+            .pdc-report-table--cards tbody td::before,
+            .pdc-report-table--cards tfoot td[data-label]::before {
+                content: attr(data-label);
+                flex: none;
+                font-size: 0.7rem;
+                font-weight: 600;
+                letter-spacing: 0.03em;
+                text-transform: uppercase;
+                color: #6b7280;
+            }
+            .pdc-report-table--cards tbody td.pdc-report-object {
+                display: block;
+                padding: 0 0 0.35rem;
+            }
+            .pdc-report-table--cards tbody td.pdc-report-object::before {
+                content: none;
+            }
+            .pdc-report-table--cards tfoot tr {
+                padding: 0.7rem 0.8rem;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.65rem;
+                background: #f9fafb;
+            }
+            .pdc-report-table--cards tfoot td {
+                display: flex;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 0.18rem 0;
+                border: 0;
+            }
+            .pdc-report-table--cards tfoot td.pdc-report-total-label {
+                display: block;
+                padding: 0 0 0.2rem;
+                font-size: 0.85rem;
+            }
+            .pdc-report-table--cards tfoot td:empty {
+                display: none;
+            }
+            html.dark .pdc-report-table--cards tbody tr {
+                border-color: #27303a;
+                background: #0b0f14;
+            }
+            html.dark .pdc-report-table--cards tbody td::before,
+            html.dark .pdc-report-table--cards tfoot td[data-label]::before {
+                color: #9ca3af;
+            }
+            html.dark .pdc-report-table--cards tfoot tr {
+                border-color: #27303a;
+                background: #0b0f14;
+            }
+
+            .pdc-report-table--monthly th,
+            .pdc-report-table--monthly td {
+                padding-right: 0.3rem;
+                padding-left: 0.3rem;
+                font-size: 0.8rem;
+            }
+            .pdc-report-table--monthly th {
+                font-size: 0.66rem;
+                letter-spacing: 0.02em;
+            }
+        }
     </style>
 
     <x-filament::section
@@ -260,7 +356,7 @@
             </div>
         @else
             <div class="pdc-report-table-wrap">
-                <table class="pdc-report-table">
+                <table class="pdc-report-table pdc-report-table--cards">
                     <thead>
                         <tr>
                             <th>Objekts</th>
@@ -273,7 +369,7 @@
                     <tbody>
                         @foreach ($report['active'] as $property)
                             <tr wire:key="active-{{ $property->id }}">
-                                <td>
+                                <td class="pdc-report-object">
                                     <a
                                         class="pdc-report-link"
                                         href="{{ \App\Filament\Admin\Resources\CrmPropertyResource::getUrl('view', ['record' => $property]) }}"
@@ -284,10 +380,10 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td>{{ $property->category ?: '-' }}</td>
-                                <td class="pdc-report-num">{{ $property->price_display }}</td>
-                                <td><x-filament::badge color="gray">{{ $property->status_label }}</x-filament::badge></td>
-                                <td>{{ $property->created_at?->format('d.m.Y') ?? '-' }}</td>
+                                <td data-label="Tips">{{ $property->category ?: '-' }}</td>
+                                <td class="pdc-report-num" data-label="Cena">{{ $property->price_display }}</td>
+                                <td data-label="Statuss"><x-filament::badge color="gray">{{ $property->status_label }}</x-filament::badge></td>
+                                <td data-label="Pievienots">{{ $property->created_at?->format('d.m.Y') ?? '-' }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -306,7 +402,7 @@
             </div>
         @else
             <div class="pdc-report-table-wrap">
-                <table class="pdc-report-table">
+                <table class="pdc-report-table pdc-report-table--cards">
                     <thead>
                         <tr>
                             <th>Objekts</th>
@@ -319,7 +415,7 @@
                     <tbody>
                         @foreach ($soldProperties as $property)
                             <tr wire:key="sold-{{ $property->id }}">
-                                <td>
+                                <td class="pdc-report-object">
                                     <a
                                         class="pdc-report-link"
                                         href="{{ \App\Filament\Admin\Resources\CrmPropertyResource::getUrl('view', ['record' => $property]) }}"
@@ -330,28 +426,28 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Darījuma datums">
                                     @if ($property->sold_at)
                                         {{ $property->sold_at->format('d.m.Y') }}
                                     @else
                                         <span class="pdc-report-missing">Nav ievadīts</span>
                                     @endif
                                 </td>
-                                <td class="pdc-report-num">
+                                <td class="pdc-report-num" data-label="Pārdošanas cena">
                                     @if ($property->final_price_eur === null)
                                         <span class="pdc-report-missing">Nav ievadīts</span>
                                     @else
                                         {{ $money((float) $property->final_price_eur) }}
                                     @endif
                                 </td>
-                                <td class="pdc-report-num">
+                                <td class="pdc-report-num" data-label="Komisija kopā">
                                     @if ($property->commission_eur === null)
                                         <span class="pdc-report-missing">Nav ievadīts</span>
                                     @else
                                         {{ $money((float) $property->commission_eur) }}
                                     @endif
                                 </td>
-                                <td class="pdc-report-num">
+                                <td class="pdc-report-num" data-label="Aģenta %">
                                     @if ($property->agent_percent === null)
                                         <span class="pdc-report-missing">Nav ievadīts</span>
                                     @else
@@ -363,9 +459,9 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="2">Kopā {{ $this->year }}</td>
-                            <td class="pdc-report-num">{{ $money($report['total_price']) }}</td>
-                            <td class="pdc-report-num">{{ $money($report['total_commission']) }}</td>
+                            <td colspan="2" class="pdc-report-total-label">Kopā {{ $this->year }}</td>
+                            <td class="pdc-report-num" data-label="Pārdošanas cena">{{ $money($report['total_price']) }}</td>
+                            <td class="pdc-report-num" data-label="Komisija kopā">{{ $money($report['total_commission']) }}</td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -376,7 +472,7 @@
 
     <x-filament::section heading="Komisija pa mēnešiem">
         <div class="pdc-report-table-wrap">
-            <table class="pdc-report-table">
+            <table class="pdc-report-table pdc-report-table--monthly">
                 <thead>
                     <tr>
                         <th>Mēnesis</th>
