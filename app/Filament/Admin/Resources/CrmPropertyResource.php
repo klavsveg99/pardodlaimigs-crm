@@ -11,6 +11,7 @@ use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Models\Client;
 use App\Models\CrmProperty;
 use App\Models\EmailLog;
+use App\Models\User;
 use App\Services\Ai\DescriptionGenerator;
 use App\Support\AgentField;
 use Filament\Actions;
@@ -179,7 +180,7 @@ class CrmPropertyResource extends Resource
                                 ->placeholder('Norādi komisiju'),
                         ]),
 
-                    Grid::make(['default' => 1, 'md' => 3])
+                    Grid::make(['default' => 1, 'md' => 2])
                         ->columnSpanFull()
                         ->visible(fn (Get $get): bool => $get('status') === 'sold')
                         ->schema([
@@ -197,7 +198,7 @@ class CrmPropertyResource extends Resource
                                 ])
                                 ->live(onBlur: false),
                             Forms\Components\TextInput::make('commission_eur')
-                                ->label('Komisijas summa (€)')
+                                ->label('Komisija kopā (€)')
                                 ->numeric()
                                 ->minValue(0)
                                 ->prefix('€')
@@ -207,6 +208,21 @@ class CrmPropertyResource extends Resource
                                     'required' => 'Komisijas summa ir obligāta, atzīmējot īpašumu kā pārdotu.',
                                 ])
                                 ->live(onBlur: false),
+                            Forms\Components\TextInput::make('agent_percent')
+                                ->label('Aģenta %')
+                                ->numeric()
+                                ->minValue(0)
+                                ->maxValue(100)
+                                ->suffix('%')
+                                ->placeholder('Ievadi procentu')
+                                ->default(fn (?CrmProperty $record): ?float => $record?->owner?->default_commission_percent)
+                                // Esošam pārdotam objektam bez ievadītā %
+                                // piedāvā aģenta profila noklusējumu.
+                                ->afterStateHydrated(function (Forms\Components\TextInput $component, ?CrmProperty $record): void {
+                                    if ($component->getState() === null && $record?->owner) {
+                                        $component->state($record->owner->default_commission_percent);
+                                    }
+                                }),
                             Forms\Components\Placeholder::make('commission_percent_display')
                                 ->label('Komisija %')
                                 ->content(function (Get $get): string {
@@ -258,7 +274,13 @@ class CrmPropertyResource extends Resource
                         ->preload()
                         ->optionsLimit(20)
                         ->visible(AgentField::visible())
-                        ->disabled(AgentField::disabled()),
+                        ->disabled(AgentField::disabled())
+                        // Aģenta maiņa piedāvā jaunā aģenta noklusējuma %.
+                        ->afterStateUpdated(function ($state, Set $set): void {
+                            if (filled($state)) {
+                                $set('agent_percent', User::find($state)?->default_commission_percent);
+                            }
+                        }),
 
                     // Jaunu īpašumu nevar izveidot bez pārdevēja. Rediģēšanas
                     // laikā pārdevēju pārvalda ar "Piesaistīt pārdevēju" /
@@ -811,7 +833,7 @@ class CrmPropertyResource extends Resource
                                     'required' => 'Gala cena ir obligāta, atzīmējot īpašumu kā pārdotu.',
                                 ]),
                             Forms\Components\TextInput::make('commission_eur')
-                                ->label('Komisijas summa (€)')
+                                ->label('Komisija kopā (€)')
                                 ->numeric()
                                 ->minValue(0)
                                 ->prefix('€')
@@ -821,6 +843,15 @@ class CrmPropertyResource extends Resource
                                 ->validationMessages([
                                     'required' => 'Komisijas summa ir obligāta, atzīmējot īpašumu kā pārdotu.',
                                 ]),
+                            Forms\Components\TextInput::make('agent_percent')
+                                ->label('Aģenta %')
+                                ->numeric()
+                                ->minValue(0)
+                                ->maxValue(100)
+                                ->suffix('%')
+                                ->placeholder('Ievadi procentu')
+                                ->visible(fn (Get $get): bool => $get('status') === 'sold')
+                                ->default(fn (CrmProperty $record): ?float => $record->agent_percent ?? $record->owner?->default_commission_percent),
                         ])
                         ->action(function (CrmProperty $record, array $data, $livewire): void {
                             $status = (string) $data['status'];
@@ -849,6 +880,7 @@ class CrmPropertyResource extends Resource
                             if ($status === 'sold') {
                                 $update['final_price_eur'] = $data['final_price_eur'];
                                 $update['commission_eur'] = $data['commission_eur'];
+                                $update['agent_percent'] = $data['agent_percent'] ?? $record->owner?->default_commission_percent;
                             }
 
                             $record->update($update);
@@ -1007,7 +1039,7 @@ class CrmPropertyResource extends Resource
                                     'required' => 'Gala cena ir obligāta, atzīmējot īpašumu kā pārdotu.',
                                 ]),
                             Forms\Components\TextInput::make('commission_eur')
-                                ->label('Komisijas summa (€)')
+                                ->label('Komisija kopā (€)')
                                 ->numeric()
                                 ->minValue(0)
                                 ->prefix('€')
@@ -1038,6 +1070,7 @@ class CrmPropertyResource extends Resource
                                 if ($status === 'sold') {
                                     $update['final_price_eur'] = $data['final_price_eur'];
                                     $update['commission_eur'] = $data['commission_eur'];
+                                    $update['agent_percent'] = $record->agent_percent ?? $record->owner?->default_commission_percent;
                                 }
 
                                 $record->update($update);

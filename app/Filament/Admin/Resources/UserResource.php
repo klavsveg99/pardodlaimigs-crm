@@ -62,6 +62,14 @@ class UserResource extends Resource
                     ->live()
                     ->columnSpanFull()
                     ->dehydrateStateUsing(fn ($state) => $state === 'agent' ? 'aģents' : $state),
+                Forms\Components\TextInput::make('default_commission_percent')
+                    ->label('Aģenta komisijas % (noklusējums)')
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(100)
+                    ->suffix('%')
+                    ->placeholder('Nav norādīts')
+                    ->columnSpanFull(),
             ])->columns(2),
 
             Section::make('Parole')->schema([
@@ -161,6 +169,8 @@ class UserResource extends Resource
             ])
             ->actions([
                 Actions\ActionGroup::make([
+                    Actions\ViewAction::make()->label('Skatīt')->color('gray')
+                        ->visible(fn (User $record): bool => ! $record->trashed()),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray')
                         ->visible(fn (User $record): bool => ! $record->trashed()),
                     Actions\DeleteAction::make()->label('Dzēst')->color('danger')
@@ -186,7 +196,7 @@ class UserResource extends Resource
                     $forceDeleteSelected,
                 ]),
             ])
-            ->recordUrl(fn (User $record): ?string => $record->trashed() ? null : static::getUrl('edit', ['record' => $record]))
+            ->recordUrl(fn (User $record): ?string => $record->trashed() ? null : static::getUrl('view', ['record' => $record]))
             ->paginated([25, 50, 100]);
     }
 
@@ -195,6 +205,7 @@ class UserResource extends Resource
         return [
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
+            'view' => Pages\ViewUser::route('/{record}'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }

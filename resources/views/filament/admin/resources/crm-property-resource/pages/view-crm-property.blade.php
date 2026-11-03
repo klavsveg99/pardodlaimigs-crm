@@ -58,7 +58,7 @@
                     <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->final_price_eur ? number_format((float) $record->final_price_eur, 2, ',', ' ') . ' €' : '-' }}</dd>
                 </div>
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Komisijas summa</dt>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Komisija kopā</dt>
                     <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->commission_eur ? number_format((float) $record->commission_eur, 2, ',', ' ') . ' €' : '-' }}</dd>
                 </div>
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
