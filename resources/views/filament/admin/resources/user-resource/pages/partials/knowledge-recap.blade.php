@@ -5,7 +5,7 @@
 
 <x-filament::section
     heading="Zināšanu bāze"
-    description="Piešķirtie kursi un to gaita"
+    description="Kursi un materiāli, kas redzami visiem vai piešķirti lietotājam"
 >
     <style>
         .pdc-kb-recap { display: grid; gap: 1.25rem; }
@@ -26,6 +26,9 @@
         .pdc-kb-recap-badge--overdue { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
         .pdc-kb-recap-empty { font-size: 0.82rem; color: #6b7280; margin: 0; }
         .pdc-kb-recap-wrap { overflow-x: auto; }
+        .pdc-kb-recap-table td a { color: var(--pdc-primary, #285854); text-decoration: none; }
+        .pdc-kb-recap-table td a:hover { text-decoration: underline; }
+        html.dark .pdc-kb-recap-table td a { color: #98bcb8; }
         @media (max-width: 639px) {
             .pdc-kb-recap-table thead { display: none; }
             .pdc-kb-recap-table,
@@ -55,7 +58,9 @@
     <div class="pdc-kb-recap">
         <div class="pdc-kb-recap-summary">
             <span>Piešķirti kursi: <strong>{{ count($knowledge['assigned']) }}</strong></span>
-            <span>Pabeigti: <strong>{{ $knowledge['completed'] }}</strong></span>
+            <span>Pabeigti kursi: <strong>{{ $knowledge['completed'] }}</strong></span>
+            <span>Materiāli: <strong>{{ count($knowledge['materials']) }}</strong></span>
+            <span>Pabeigti materiāli: <strong>{{ $knowledge['materials_completed'] }}</strong></span>
         </div>
 
         <div>
@@ -114,35 +119,58 @@
         </div>
 
         <div>
-            <h3 class="pdc-kb-recap-title">Visi kursi</h3>
+            <h3 class="pdc-kb-recap-title">Materiāli</h3>
 
-            @if ($knowledge['all'] === [])
-                <p class="pdc-kb-recap-empty">Kursu vēl nav izveidots.</p>
+            @if ($knowledge['materials'] === [])
+                <p class="pdc-kb-recap-empty">Nav redzamu vai piešķirtu materiālu.</p>
             @else
                 <div class="pdc-kb-recap-wrap">
                     <table class="pdc-kb-recap-table">
                         <thead>
                             <tr>
-                                <th>Kurss</th>
-                                <th>Progress</th>
-                                <th>Piešķirts</th>
+                                <th>Materiāls</th>
+                                <th>Pieejamība</th>
+                                <th>Termiņš</th>
+                                <th>Statuss</th>
+                                <th>Vērtējums</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($knowledge['all'] as $course)
-                                <tr wire:key="kb-recap-all-{{ $loop->index }}">
-                                    <td data-label="Kurss"><strong>{{ $course['name'] }}</strong></td>
-                                    <td data-label="Progress">
-                                        <div class="pdc-kb-recap-progress">
-                                            <div class="pdc-kb-recap-bar"><span style="width: {{ $course['stats']['percent'] }}%"></span></div>
-                                            <span class="pdc-kb-recap-count">{{ $course['stats']['completed'] }}/{{ $course['stats']['total'] }} · {{ $course['stats']['percent'] }}%</span>
-                                        </div>
+                            @foreach ($knowledge['materials'] as $material)
+                                @php
+                                    $completed = $material['completed_at'] !== null;
+                                    $overdue = ! $completed
+                                        && $material['due_at'] !== null
+                                        && $material['due_at']->isPast();
+                                    $status = $completed ? 'Pabeigts' : ($material['assigned'] ? 'Jāizpilda' : 'Pieejams');
+                                @endphp
+                                <tr wire:key="kb-recap-material-{{ $loop->index }}">
+                                    <td data-label="Materiāls">
+                                        <a href="{{ $material['url'] }}"><strong>{{ $material['name'] }}</strong></a>
                                     </td>
-                                    <td data-label="Piešķirts">
-                                        <span class="pdc-kb-recap-badge {{ $course['assigned'] ? 'pdc-kb-recap-badge--done' : '' }}">
-                                            {{ $course['assigned'] ? 'Jā' : 'Nē' }}
+                                    <td data-label="Pieejamība">
+                                        @if ($material['public'])
+                                            <span class="pdc-kb-recap-badge">Visiem</span>
+                                        @endif
+                                        @if ($material['assigned'])
+                                            <span class="pdc-kb-recap-badge">Piešķirts</span>
+                                        @endif
+                                    </td>
+                                    <td data-label="Termiņš">
+                                        @if ($material['due_at'])
+                                            <span class="pdc-kb-recap-badge {{ $overdue ? 'pdc-kb-recap-badge--overdue' : '' }}">
+                                                {{ $date($material['due_at']) }}
+                                            </span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td data-label="Statuss">
+                                        <span class="pdc-kb-recap-badge {{ $completed ? 'pdc-kb-recap-badge--done' : '' }}">
+                                            {{ $status }}
                                         </span>
                                     </td>
+                                    <td data-label="Vērtējums"><span class="pdc-kb-recap-stars">{{ $stars($material['rating']) }}</span></td>
                                 </tr>
                             @endforeach
                         </tbody>
