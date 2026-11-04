@@ -33,6 +33,7 @@ class AgentActivePropertiesTable extends TableWidget
     {
         return $table
             ->heading('Objekti pārdošanā')
+            ->extraAttributes(['class' => 'pdc-agent-report-table'])
             ->queryStringIdentifier('active')
             ->query(
                 CrmProperty::query()

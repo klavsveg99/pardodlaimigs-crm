@@ -164,19 +164,25 @@
             }
         }
 
-        /* Aktīvo objektu tabula dzīvo aģenta kartē: tā nedrīkst izskatīties
-           kā vēl viena karte kartē. */
-        .pdc-agent-card .fi-wi-table {
-            margin-top: 1.25rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e5e7eb;
-        }
-        .pdc-agent-card .fi-ta-ctn {
-            background: transparent !important;
-            box-shadow: none !important;
-        }
-        html.dark .pdc-agent-card .fi-wi-table {
-            border-color: #27303a;
+        /* Aģenta pārskata tabulās virsraksts un meklēšana/filtri ir vienā
+           rindā, nevis divās atsevišķās rindās. */
+        @media (min-width: 1100px) {
+            .pdc-agent-report-table .fi-ta-header-ctn {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 0 1.5rem;
+            }
+            .pdc-agent-report-table .fi-ta-header {
+                flex: 1 1 auto;
+                padding: 0.75rem 0;
+                border-bottom: 0;
+            }
+            .pdc-agent-report-table .fi-ta-header-toolbar {
+                flex: 0 0 auto;
+                padding: 0.5rem 0;
+                border-bottom: 0;
+            }
         }
 
         .pdc-report-warning {
@@ -272,7 +278,7 @@
         }
     </style>
 
-    <x-filament::section class="pdc-agent-card">
+    <x-filament::section>
         <div class="pdc-agent-profile">
             <img
                 class="pdc-agent-profile-avatar"
@@ -304,15 +310,15 @@
                 </div>
             </div>
         </div>
-
-        @if ($isAgent)
-            @livewire(
-                \App\Filament\Admin\Widgets\AgentActivePropertiesTable::class,
-                ['agentId' => $record->getKey()],
-                key('agent-active-'.$record->getKey())
-            )
-        @endif
     </x-filament::section>
+
+    @if ($isAgent)
+        @livewire(
+            \App\Filament\Admin\Widgets\AgentActivePropertiesTable::class,
+            ['agentId' => $record->getKey()],
+            key('agent-active-'.$record->getKey())
+        )
+    @endif
 
     @if ($isAgent)
     <x-filament::section heading="Kopsavilkums">

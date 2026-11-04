@@ -58,6 +58,7 @@ class AgentSoldPropertiesTable extends TableWidget
         return $table
             ->heading('Pārdotie objekti un saņemtā komisija')
             ->description($this->periodLabel ?: null)
+            ->extraAttributes(['class' => 'pdc-agent-report-table'])
             ->queryStringIdentifier('sold')
             ->query(
                 CrmProperty::query()
