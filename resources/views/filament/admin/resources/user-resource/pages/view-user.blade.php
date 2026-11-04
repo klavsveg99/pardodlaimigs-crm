@@ -31,8 +31,10 @@
 
         $hasActiveFilters = filled($activeSearch) || filled($activeCategory) || filled($activeStatus);
         $hasAppliedActiveFilters = filled($activeCategory) || filled($activeStatus);
+        $activeFilterCount = (filled($activeCategory) ? 1 : 0) + (filled($activeStatus) ? 1 : 0);
         $hasSoldFilters = filled($soldSearch) || filled($soldSource);
         $hasAppliedSoldFilters = filled($soldSource);
+        $soldFilterCount = filled($soldSource) ? 1 : 0;
         $soldProperties = $report['sold'];
     @endphp
 
@@ -84,26 +86,12 @@
             box-shadow: 0 0 0 2px rgba(40, 88, 84, 0.18);
         }
         .pdc-report-search {
-            flex: 1 1 auto;
+            flex: 0 1 13rem;
             min-width: 0;
-            max-width: 22rem;
-        }
-        .pdc-report-filter-btn {
-            position: relative;
-            flex: none;
         }
         .pdc-report-filter-wrap {
             position: relative;
             flex: none;
-        }
-        .pdc-report-filter-dot {
-            position: absolute;
-            top: 0.35rem;
-            right: 0.35rem;
-            width: 0.4rem;
-            height: 0.4rem;
-            border-radius: 9999px;
-            background: var(--pdc-primary, #285854);
         }
         .pdc-report-filter-panel {
             position: absolute;
@@ -174,9 +162,6 @@
             background: #111827;
             border-color: #374151;
             color: #f3f4f6;
-        }
-        html.dark .pdc-report-filter-dot {
-            background: #98bcb8;
         }
         html.dark .pdc-report-filter-panel {
             border-color: #27303a;
@@ -390,6 +375,7 @@
            horizontāli. Mēnešu tabula paliek tabula - tai pietiek vietas. */
         @media (max-width: 639px) {
             .pdc-report-search {
+                flex: 1 1 auto;
                 max-width: none;
             }
             .pdc-report-filter-panel {
@@ -528,28 +514,29 @@
 
     <x-filament::section heading="Objekti pārdošanā">
         <div class="pdc-report-table-bar" x-data="{ filtersOpen: false }">
-            <input
-                type="search"
-                class="pdc-report-control pdc-report-search"
-                placeholder="Meklēt objektu"
-                aria-label="Meklēt aktīvos objektus"
-                wire:model.live.debounce.400ms="activeSearch"
-            >
+            <div class="pdc-report-search">
+                <x-filament::input.wrapper prefix-icon="heroicon-m-magnifying-glass" inline-prefix>
+                    <x-filament::input
+                        type="search"
+                        inline-prefix
+                        placeholder="Meklēt"
+                        aria-label="Meklēt aktīvos objektus"
+                        wire:model.live.debounce.400ms="activeSearch"
+                    />
+                </x-filament::input.wrapper>
+            </div>
             <div class="pdc-report-filter-wrap" x-on:click.outside="filtersOpen = false">
-                <button
-                    type="button"
-                    class="fi-icon-btn fi-size-md pdc-report-filter-btn"
-                    title="Filtrēt"
+                <x-filament::icon-button
+                    icon="heroicon-m-funnel"
+                    color="gray"
+                    size="md"
+                    :badge="$activeFilterCount > 0 ? $activeFilterCount : null"
+                    badge-color="primary"
                     aria-label="Filtrēt"
-                    aria-haspopup="true"
+                    title="Filtrēt"
                     x-bind:aria-expanded="filtersOpen"
                     x-on:click="filtersOpen = ! filtersOpen"
-                >
-                    <x-filament::icon icon="heroicon-o-funnel" class="fi-icon fi-size-md" />
-                    @if ($hasAppliedActiveFilters)
-                        <span class="pdc-report-filter-dot" aria-hidden="true"></span>
-                    @endif
-                </button>
+                />
 
                 <div
                     class="pdc-report-filter-panel"
@@ -658,28 +645,29 @@
 
     <x-filament::section heading="Pārdotie objekti un saņemtā komisija">
         <div class="pdc-report-table-bar" x-data="{ filtersOpen: false }">
-            <input
-                type="search"
-                class="pdc-report-control pdc-report-search"
-                placeholder="Meklēt objektu"
-                aria-label="Meklēt pārdotos objektus"
-                wire:model.live.debounce.400ms="soldSearch"
-            >
+            <div class="pdc-report-search">
+                <x-filament::input.wrapper prefix-icon="heroicon-m-magnifying-glass" inline-prefix>
+                    <x-filament::input
+                        type="search"
+                        inline-prefix
+                        placeholder="Meklēt"
+                        aria-label="Meklēt pārdotos objektus"
+                        wire:model.live.debounce.400ms="soldSearch"
+                    />
+                </x-filament::input.wrapper>
+            </div>
             <div class="pdc-report-filter-wrap" x-on:click.outside="filtersOpen = false">
-                <button
-                    type="button"
-                    class="fi-icon-btn fi-size-md pdc-report-filter-btn"
-                    title="Filtrēt"
+                <x-filament::icon-button
+                    icon="heroicon-m-funnel"
+                    color="gray"
+                    size="md"
+                    :badge="$soldFilterCount > 0 ? $soldFilterCount : null"
+                    badge-color="primary"
                     aria-label="Filtrēt"
-                    aria-haspopup="true"
+                    title="Filtrēt"
                     x-bind:aria-expanded="filtersOpen"
                     x-on:click="filtersOpen = ! filtersOpen"
-                >
-                    <x-filament::icon icon="heroicon-o-funnel" class="fi-icon fi-size-md" />
-                    @if ($hasAppliedSoldFilters)
-                        <span class="pdc-report-filter-dot" aria-hidden="true"></span>
-                    @endif
-                </button>
+                />
 
                 <div
                     class="pdc-report-filter-panel"

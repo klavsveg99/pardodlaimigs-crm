@@ -17,6 +17,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class UserResource extends Resource
@@ -129,7 +130,6 @@ class UserResource extends Resource
 
         return $table
             ->extraAttributes(['class' => 'pdc-users-table'])
-            ->header(view('filament.admin.resources.user-resource.partials.role-filter'))
             ->columns([
                 Tables\Columns\ImageColumn::make('avatar_path')->label('Foto')->disk('public')->circular()->defaultImageUrl(asset('images/no-photo.svg')),
                 Tables\Columns\TextColumn::make('name')->label('Vārds')->searchable()->sortable(),
@@ -143,6 +143,20 @@ class UserResource extends Resource
                         'photo' => 'Fotogrāfs',
                         'admin' => 'Administrators',
                         default => $state ?: '-',
+                    }),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('role')
+                    ->label('Lietotāja tips')
+                    ->options(User::ROLE_LABELS)
+                    ->query(function (Builder $query, array $data): Builder {
+                        $role = $data['value'] ?? null;
+
+                        if ($role === 'aģents') {
+                            return $query->whereIn('role', ['aģents', 'agent']);
+                        }
+
+                        return $query->when(filled($role), fn (Builder $query): Builder => $query->where('role', $role));
                     }),
             ])
             ->actions([
