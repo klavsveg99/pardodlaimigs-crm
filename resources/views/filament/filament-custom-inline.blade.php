@@ -277,16 +277,14 @@ h1.fi-header-heading {
     z-index: 1 !important;
     position: relative;
 }
-/* Table header toolbar must form a stacking context high enough that its floating
-   dropdown panels (column manager, filters, sort) are never painted over by a
-   following widget's header or the fixed positioning overlay (z = 50). */
+/* Table header toolbar must stay BELOW the sticky topbar (z-30) so it scrolls
+   under the CRM header. It still sits above normal page content; floating
+   dropdown panels are fixed at z-50000 and stay above everything. */
 .fi-ta-header-toolbar {
-    z-index: 60 !important;
+    z-index: 25 !important;
     position: relative;
 }
-/* …but below the mobile sidebar (z-40): with z-60 the search bar and filter
-   buttons painted OVER the open mobile menu. Dropdown panels themselves are
-   fixed at z-50000, so they keep floating above everything. */
+/* On mobile the topbar is also sticky; auto keeps the toolbar under it. */
 @media (max-width: 1023px) {
     .fi-ta-header-toolbar {
         z-index: auto !important;
