@@ -89,11 +89,6 @@ class ViewUser extends ViewRecord
     {
         $agentId = (int) $this->record->getKey();
 
-        $activeTotal = CrmProperty::query()
-            ->where('owner_user_id', $agentId)
-            ->whereIn('status', ['published', 'reserved'])
-            ->count();
-
         $yearStart = Carbon::create($this->year, 1, 1)->startOfDay();
         $yearEnd = Carbon::create($this->year, 12, 31)->endOfDay();
 
@@ -145,7 +140,6 @@ class ViewUser extends ViewRecord
         $allSold = $soldYear->concat($undated);
 
         return [
-            'active_total' => $activeTotal,
             'sold_count' => $sold->count(),
             'total_commission' => $totalCommission,
             'year_sold_count' => $soldYear->count(),

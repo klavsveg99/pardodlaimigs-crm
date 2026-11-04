@@ -18,6 +18,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class UserResource extends Resource
@@ -41,6 +42,11 @@ class UserResource extends Resource
     public static function canAccess(): bool
     {
         return auth()->user()?->can('manage') ?? false;
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return $record instanceof User && $record->isAgent();
     }
 
     public static function form(Schema $schema): Schema
@@ -162,7 +168,7 @@ class UserResource extends Resource
             ->actions([
                 Actions\ActionGroup::make([
                     Actions\ViewAction::make()->label('Skatīt')->color('gray')
-                        ->visible(fn (User $record): bool => ! $record->trashed()),
+                        ->visible(fn (User $record): bool => $record->isAgent() && ! $record->trashed()),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray')
                         ->visible(fn (User $record): bool => ! $record->trashed()),
                     Actions\DeleteAction::make()->label('Dzēst')->color('danger')
@@ -188,7 +194,9 @@ class UserResource extends Resource
                     $forceDeleteSelected,
                 ]),
             ])
-            ->recordUrl(fn (User $record): ?string => $record->trashed() ? null : static::getUrl('view', ['record' => $record]))
+            ->recordUrl(fn (User $record): ?string => $record->trashed() || ! $record->isAgent()
+                ? null
+                : static::getUrl('view', ['record' => $record]))
             ->paginated([25, 50, 100]);
     }
 

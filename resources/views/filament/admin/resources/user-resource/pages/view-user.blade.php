@@ -17,10 +17,6 @@
             ? $monthNames[$this->month].' '.$this->year
             : $this->year.'. gads';
 
-        $summaryDescription = $this->month > 0
-            ? 'Objekti pārdošanā, pārdotie objekti un komisija · '.$monthNames[$this->month].' '.$this->year
-            : 'Objekti pārdošanā, pārdotie objekti un komisija '.$this->year.'. gadā';
-
         $money = fn (?float $value): string => $value === null
             ? 'Nav ievadīts'
             : number_format($value, 2, ',', ' ').' €';
@@ -156,13 +152,28 @@
 
         .pdc-agent-stats {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1rem;
         }
         @media (max-width: 767px) {
             .pdc-agent-stats {
                 grid-template-columns: 1fr;
             }
+        }
+
+        /* Aktīvo objektu tabula dzīvo aģenta kartē: tā nedrīkst izskatīties
+           kā vēl viena karte kartē. */
+        .pdc-agent-card .fi-wi-table {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        .pdc-agent-card .fi-ta-ctn {
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+        html.dark .pdc-agent-card .fi-wi-table {
+            border-color: #27303a;
         }
 
         .pdc-report-warning {
@@ -258,7 +269,7 @@
         }
     </style>
 
-    <x-filament::section>
+    <x-filament::section class="pdc-agent-card">
         <div class="pdc-agent-profile">
             <img
                 class="pdc-agent-profile-avatar"
@@ -290,12 +301,15 @@
                 </div>
             </div>
         </div>
+
+        @livewire(
+            \App\Filament\Admin\Widgets\AgentActivePropertiesTable::class,
+            ['agentId' => $record->getKey()],
+            key('agent-active-'.$record->getKey())
+        )
     </x-filament::section>
 
-    <x-filament::section
-        heading="Kopsavilkums"
-        description="{{ $summaryDescription }}"
-    >
+    <x-filament::section heading="Kopsavilkums">
         <x-slot name="afterHeader">
             <div class="pdc-agent-filters">
                 <label class="pdc-agent-year" for="pdc-agent-year">
@@ -322,14 +336,6 @@
             <div class="fi-wi-stats-overview-stat">
                 <div class="fi-wi-stats-overview-stat-content">
                     <div class="fi-wi-stats-overview-stat-label-ctn">
-                        <span class="fi-wi-stats-overview-stat-label">Objekti pārdošanā</span>
-                    </div>
-                    <div class="fi-wi-stats-overview-stat-value">{{ $report['active_total'] }}</div>
-                </div>
-            </div>
-            <div class="fi-wi-stats-overview-stat">
-                <div class="fi-wi-stats-overview-stat-content">
-                    <div class="fi-wi-stats-overview-stat-label-ctn">
                         <span class="fi-wi-stats-overview-stat-label">Pārdoti objekti · {{ $periodLabel }}</span>
                     </div>
                     <div class="fi-wi-stats-overview-stat-value">{{ $report['sold_count'] }}</div>
@@ -352,12 +358,6 @@
             </div>
         @endif
     </x-filament::section>
-
-    @livewire(
-        \App\Filament\Admin\Widgets\AgentActivePropertiesTable::class,
-        ['agentId' => $record->getKey()],
-        key('agent-active-'.$record->getKey())
-    )
 
     @livewire(
         \App\Filament\Admin\Widgets\AgentSoldPropertiesTable::class,

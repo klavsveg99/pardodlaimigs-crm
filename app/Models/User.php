@@ -78,6 +78,15 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
+     * Aģenta pārskats (pārdotie objekti, komisija) attiecas tikai uz aģentiem.
+     * Students, fotogrāfs un administrators to nesaņem.
+     */
+    public function isAgent(): bool
+    {
+        return in_array($this->role, [null, '', 'aģents', 'agent'], true);
+    }
+
+    /**
      * Lietotāji, kurus var izvēlēties aģentu izvēlnēs. Izslēdz "Fotogrāfs"
      * un "Students" lomas, jo tās nevar būt atbildīgie aģenti.
      */
