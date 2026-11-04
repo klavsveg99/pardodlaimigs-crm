@@ -38,7 +38,11 @@ class ViewUser extends ViewRecord
 
     public function getTitle(): string
     {
-        return $this->getRecord()?->isStudent() ? 'Skatīt studentu' : 'Skatīt aģentu';
+        return match (true) {
+            $this->getRecord()?->isStudent() => 'Skatīt studentu',
+            $this->getRecord()?->isAdmin() => 'Skatīt administratoru',
+            default => 'Skatīt aģentu',
+        };
     }
 
     public function updatedYear(): void

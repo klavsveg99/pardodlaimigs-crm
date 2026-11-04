@@ -1,6 +1,6 @@
 <x-filament-panels::page>
     @php
-        $isAgent = $record->isAgent();
+        $isAgent = $record->isAgent() || $record->isAdmin();
         $isStudent = $record->isStudent();
         $knowledge = ($isAgent || $isStudent) ? $this->getKnowledgeRecap() : null;
         $report = $isAgent ? $this->getReport() : null;

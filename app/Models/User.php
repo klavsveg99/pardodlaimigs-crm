@@ -78,12 +78,26 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
-     * Aģenta pārskats (pārdotie objekti, komisija) attiecas tikai uz aģentiem.
-     * Students, fotogrāfs un administrators to nesaņem.
+     * Aģenta pārskats (pārdotie objekti, komisija) attiecas uz aģentiem.
+     * Students un fotogrāfs to nesaņem.
      */
     public function isAgent(): bool
     {
         return in_array($this->role, [null, '', 'aģents', 'agent'], true);
+    }
+
+    public function isAdmin(): bool
+    {
+        return ($this->role ?? null) === 'admin';
+    }
+
+    /**
+     * Lietotāja skata lapa pieejama aģentiem, studentiem un administratoriem.
+     * Fotogrāfam tās nav.
+     */
+    public function hasUserViewPage(): bool
+    {
+        return $this->isAgent() || $this->isStudent() || $this->isAdmin();
     }
 
     /**

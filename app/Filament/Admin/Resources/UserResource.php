@@ -46,7 +46,7 @@ class UserResource extends Resource
 
     public static function canView(Model $record): bool
     {
-        return $record instanceof User && ($record->isAgent() || $record->isStudent());
+        return $record instanceof User && $record->hasUserViewPage();
     }
 
     public static function form(Schema $schema): Schema
@@ -168,7 +168,7 @@ class UserResource extends Resource
             ->actions([
                 Actions\ActionGroup::make([
                     Actions\ViewAction::make()->label('Skatīt')->color('gray')
-                        ->visible(fn (User $record): bool => ($record->isAgent() || $record->isStudent()) && ! $record->trashed()),
+                        ->visible(fn (User $record): bool => $record->hasUserViewPage() && ! $record->trashed()),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray')
                         ->visible(fn (User $record): bool => ! $record->trashed()),
                     Actions\DeleteAction::make()->label('Dzēst')->color('danger')
@@ -194,7 +194,7 @@ class UserResource extends Resource
                     $forceDeleteSelected,
                 ]),
             ])
-            ->recordUrl(fn (User $record): ?string => $record->trashed() || ! ($record->isAgent() || $record->isStudent())
+            ->recordUrl(fn (User $record): ?string => $record->trashed() || ! $record->hasUserViewPage()
                 ? null
                 : static::getUrl('view', ['record' => $record]))
             ->paginated([25, 50, 100]);
