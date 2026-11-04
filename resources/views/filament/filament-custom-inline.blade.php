@@ -1466,7 +1466,9 @@ html.dark .rounded-xl .text-emerald-900 {
 }
 
 .fi-section-content {
-    padding: 1rem 1.5rem 1.5rem !important;
+    /* Vienmēr vienāds padding pa vertikāli un pa horizontāli: Filament
+       noklusējums (1rem augšā, 1.5rem apakšā) izskatījās nevienmērīgi. */
+    padding: 1.5rem !important;
 }
 
 /* Home stats 4-col box inner padding must be 0 (20px side / 16px top removed) */
