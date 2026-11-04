@@ -7,11 +7,13 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\KnowledgeCategoryResource\Pages;
 use App\Models\KnowledgeCategory;
 use Filament\Actions;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
@@ -61,10 +63,24 @@ class KnowledgeCategoryResource extends Resource
         return auth()->user()?->can('manage') ?? false;
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->withCount([
+            'courseAssignments',
+            'courseAssignments as completed_course_assignments_count' => fn (Builder $query): Builder => $query->whereNotNull('completed_at'),
+        ]);
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
             TextInput::make('name')->label('Nosaukums')->required()->maxLength(255)->unique(ignoreRecord: true),
+            Textarea::make('description')
+                ->label('Apraksts')
+                ->rows(3)
+                ->maxLength(2000)
+                ->helperText('Rādās aģentam kursa kartē.')
+                ->columnSpanFull(),
         ]);
     }
 
@@ -73,6 +89,11 @@ class KnowledgeCategoryResource extends Resource
         return $table->extraAttributes(['class' => 'pdc-knowledge-categories-table'])->columns([
             Tables\Columns\TextColumn::make('name')->label('Kategorija')->searchable()->sortable()->weight('bold'),
             Tables\Columns\TextColumn::make('articles_count')->label('Materiāli')->counts('articles'),
+            Tables\Columns\TextColumn::make('course_assignments_count')->label('Piešķirts')->alignCenter(),
+            Tables\Columns\TextColumn::make('completed_course_assignments_count')
+                ->label('Pabeiguši')
+                ->getStateUsing(fn (KnowledgeCategory $record): string => ($record->completed_course_assignments_count ?? 0).'/'.($record->course_assignments_count ?? 0))
+                ->alignCenter(),
         ])->actions([
             Actions\EditAction::make()->label('Rediģēt')->color('gray'),
             Actions\DeleteAction::make()

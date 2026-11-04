@@ -10,11 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class KnowledgeCompletion extends Model
 {
     protected $fillable = [
-        'knowledge_article_id', 'user_id', 'completed_at',
+        'knowledge_article_id', 'user_id', 'completed_at', 'rating',
     ];
 
     protected $casts = [
         'completed_at' => 'datetime',
+        'rating' => 'integer',
     ];
 
     public function article(): BelongsTo

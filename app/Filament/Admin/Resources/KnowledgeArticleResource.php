@@ -90,7 +90,10 @@ class KnowledgeArticleResource extends Resource
         $user = auth()->user();
 
         if ($user?->can('manage')) {
-            return $query;
+            return $query->withCount([
+                'assignments',
+                'assignments as completed_assignments_count' => fn (Builder $assignment): Builder => $assignment->whereNotNull('completed_at'),
+            ]);
         }
 
         // Fotogrāfs redz tikai viņam piešķirtos materiālus. Aģents un
@@ -113,6 +116,10 @@ class KnowledgeArticleResource extends Resource
                 $query->where('is_public', true)
                     ->orWhereHas(
                         'assignments',
+                        fn (Builder $assignment): Builder => $assignment->where('assigned_user_id', $user?->id),
+                    )
+                    ->orWhereHas(
+                        'category.courseAssignments',
                         fn (Builder $assignment): Builder => $assignment->where('assigned_user_id', $user?->id),
                     );
             })
@@ -250,6 +257,11 @@ class KnowledgeArticleResource extends Resource
                 Tables\Columns\TextColumn::make('type')->label('Veids')->badge()->formatStateUsing(fn (string $state): string => KnowledgeArticle::TYPES[$state] ?? $state)->color('gray'),
                 Tables\Columns\IconColumn::make('is_public')->label('Visiem')->boolean()
                     ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
+                Tables\Columns\TextColumn::make('assignments_progress')
+                    ->label('Pabeiguši')
+                    ->visible(fn (): bool => auth()->user()?->can('manage') ?? false)
+                    ->getStateUsing(fn (KnowledgeArticle $record): string => ($record->completed_assignments_count ?? 0).'/'.($record->assignments_count ?? 0))
+                    ->alignCenter(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Statuss')
                     ->badge()
@@ -272,7 +284,6 @@ class KnowledgeArticleResource extends Resource
                         'Jāizpilda' => 'warning',
                         default => 'gray',
                     }),
-                Tables\Columns\TextColumn::make('category.name')->label('Kategorija')->placeholder('-')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('summary')->label('Apraksts')->searchable()->limit(90)->wrap()->toggleable(),
                 Tables\Columns\TextColumn::make('body')->label('Saturs')->searchable()->formatStateUsing(fn (?string $state): string => strip_tags((string) $state))->limit(100)->toggleable(isToggledHiddenByDefault: true),
             ])

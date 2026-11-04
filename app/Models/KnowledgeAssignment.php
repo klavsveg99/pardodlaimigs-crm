@@ -10,12 +10,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class KnowledgeAssignment extends Model
 {
     protected $fillable = [
-        'knowledge_article_id', 'assigned_user_id', 'assigned_by_user_id', 'due_at', 'completed_at',
+        'knowledge_article_id', 'assigned_user_id', 'assigned_by_user_id', 'due_at', 'completed_at', 'rating',
     ];
 
     protected $casts = [
         'due_at' => 'date',
         'completed_at' => 'datetime',
+        'rating' => 'integer',
     ];
 
     public function article(): BelongsTo

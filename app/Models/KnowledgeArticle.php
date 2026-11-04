@@ -60,6 +60,11 @@ class KnowledgeArticle extends Model
         return $this->morphMany(Attachment::class, 'attachable')->orderBy('sort_order');
     }
 
+    public function comments(): HasMany
+    {
+        return $this->hasMany(KnowledgeComment::class, 'knowledge_article_id');
+    }
+
     public function getVideoEmbedUrl(string $url): ?string
     {
         $host = strtolower((string) parse_url($url, PHP_URL_HOST));

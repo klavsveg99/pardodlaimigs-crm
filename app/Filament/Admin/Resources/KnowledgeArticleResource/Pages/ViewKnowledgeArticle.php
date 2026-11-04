@@ -8,9 +8,13 @@ use App\Filament\Admin\Resources\KnowledgeArticleResource;
 use App\Filament\Admin\Resources\KnowledgeArticleResource\Pages\Concerns\AssignsKnowledgeArticle;
 use App\Models\KnowledgeAssignment;
 use App\Models\KnowledgeCompletion;
+use App\Services\KnowledgeProgress;
 use Filament\Actions;
+use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Components\View;
+use Filament\Schemas\Schema;
 
 class ViewKnowledgeArticle extends ViewRecord
 {
@@ -21,6 +25,16 @@ class ViewKnowledgeArticle extends ViewRecord
     public function getTitle(): string
     {
         return 'Skatīt materiālu';
+    }
+
+    public function content(Schema $schema): Schema
+    {
+        return $schema->components([
+            $this->getInfolistContentComponent(),
+            $this->getRelationManagersContentComponent(),
+            View::make('filament.knowledge.article-comments')
+                ->viewData(['article' => $this->getRecord()]),
+        ]);
     }
 
     protected function getHeaderActions(): array
@@ -45,22 +59,52 @@ class ViewKnowledgeArticle extends ViewRecord
             ->icon('heroicon-o-check')
             ->color('success')
             ->visible(fn (): bool => ! (auth()->user()?->can('manage') ?? false) && ! $this->hasCompleted())
-            ->action(function (): void {
+            ->form([
+                Select::make('rating')
+                    ->label('Vērtējums')
+                    ->options([
+                        1 => '1 - Ļoti vāji',
+                        2 => '2 - Vāji',
+                        3 => '3 - Apmierinoši',
+                        4 => '4 - Labi',
+                        5 => '5 - Teicami',
+                    ])
+                    ->required(),
+            ])
+            ->modalHeading('Atzīmēt materiālu kā pabeigtu')
+            ->modalDescription('Novērtē materiālu, lai palīdzētu uzlabot zināšanu bāzi.')
+            ->modalSubmitActionLabel('Pabeigt')
+            ->action(function (array $data): void {
+                $user = auth()->user();
                 $assignment = $this->pendingAssignment();
 
                 if ($assignment) {
-                    $assignment->update(['completed_at' => now()]);
-                } elseif ($this->record->is_public) {
+                    $assignment->update([
+                        'completed_at' => now(),
+                        'rating' => (int) $data['rating'],
+                    ]);
+                } else {
+                    $courseAssigned = $this->record->category?->courseAssignments()
+                        ->where('assigned_user_id', $user->id)
+                        ->exists() ?? false;
+
+                    if (! $this->record->is_public && ! $courseAssigned) {
+                        return;
+                    }
+
                     KnowledgeCompletion::query()->updateOrCreate(
                         [
                             'knowledge_article_id' => $this->record->id,
-                            'user_id' => auth()->id(),
+                            'user_id' => $user->id,
                         ],
-                        ['completed_at' => now()],
+                        [
+                            'completed_at' => now(),
+                            'rating' => (int) $data['rating'],
+                        ],
                     );
-                } else {
-                    return;
                 }
+
+                app(KnowledgeProgress::class)->syncForArticle($user, $this->record);
 
                 Notification::make()->title('Materiāls atzīmēts kā pabeigts')->success()->send();
             });

@@ -1,7 +1,10 @@
 <x-filament-panels::page>
     @php
-        $report = $this->getReport();
-        $years = $this->getYearOptions();
+        $isAgent = $record->isAgent();
+        $isStudent = $record->isStudent();
+        $knowledge = ($isAgent || $isStudent) ? $this->getKnowledgeRecap() : null;
+        $report = $isAgent ? $this->getReport() : null;
+        $years = $isAgent ? $this->getYearOptions() : [];
         $monthNames = [];
         for ($month = 1; $month <= 12; $month++) {
             $monthNames[$month] = ucfirst(
@@ -22,18 +25,18 @@
             : number_format($value, 2, ',', ' ').' €';
 
         $missingParts = [];
-        if ($report['undated_count'] > 0) {
+        if ($report !== null && $report['undated_count'] > 0) {
             $missingParts[] = 'darījuma datums - '.$report['undated_count'];
         }
-        if ($report['missing_commission'] > 0) {
+        if ($report !== null && $report['missing_commission'] > 0) {
             $missingParts[] = 'komisija - '.$report['missing_commission'];
         }
 
         $warningText = $missingParts === [] ? '' : 'Nepilnīgi dati: '.implode(', ', $missingParts).'.';
-        if ($report['undated_count'] > 0) {
+        if ($report !== null && $report['undated_count'] > 0) {
             $warningText .= ' Objekti bez darījuma datuma kopsummās nav iekļauti.';
         }
-        if ($report['missing_commission'] > 0) {
+        if ($report !== null && $report['missing_commission'] > 0) {
             $warningText .= ' Komisija bez ievadītās summas kopsummā nav iekļauta.';
         }
     @endphp
@@ -302,13 +305,16 @@
             </div>
         </div>
 
-        @livewire(
-            \App\Filament\Admin\Widgets\AgentActivePropertiesTable::class,
-            ['agentId' => $record->getKey()],
-            key('agent-active-'.$record->getKey())
-        )
+        @if ($isAgent)
+            @livewire(
+                \App\Filament\Admin\Widgets\AgentActivePropertiesTable::class,
+                ['agentId' => $record->getKey()],
+                key('agent-active-'.$record->getKey())
+            )
+        @endif
     </x-filament::section>
 
+    @if ($isAgent)
     <x-filament::section heading="Kopsavilkums">
         <x-slot name="afterHeader">
             <div class="pdc-agent-filters">
@@ -409,4 +415,9 @@
             </table>
         </div>
     </x-filament::section>
+    @endif
+
+    @if ($knowledge !== null)
+        @include('filament.admin.resources.user-resource.pages.partials.knowledge-recap', ['knowledge' => $knowledge])
+    @endif
 </x-filament-panels::page>

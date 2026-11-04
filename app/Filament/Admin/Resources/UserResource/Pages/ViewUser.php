@@ -6,6 +6,9 @@ namespace App\Filament\Admin\Resources\UserResource\Pages;
 
 use App\Filament\Admin\Resources\UserResource;
 use App\Models\CrmProperty;
+use App\Models\KnowledgeCategory;
+use App\Models\KnowledgeCourseAssignment;
+use App\Services\KnowledgeProgress;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Carbon;
@@ -35,7 +38,7 @@ class ViewUser extends ViewRecord
 
     public function getTitle(): string
     {
-        return 'Skatīt aģentu';
+        return $this->getRecord()?->isStudent() ? 'Skatīt studentu' : 'Skatīt aģentu';
     }
 
     public function updatedYear(): void
@@ -147,6 +150,60 @@ class ViewUser extends ViewRecord
             'monthly' => $monthly,
             'missing_commission' => $allSold->whereNull('commission_eur')->count(),
             'undated_count' => $undated->count(),
+        ];
+    }
+
+    /**
+     * Zināšanu bāzes kopsavilkums lietotāja skatam: piešķirtie kursi un
+     * visu kursu gaita šim lietotājam.
+     *
+     * @return array{assigned: array<int, array<string, mixed>>, all: array<int, array<string, mixed>>, completed: int}
+     */
+    public function getKnowledgeRecap(): array
+    {
+        $user = $this->record;
+        $progress = app(KnowledgeProgress::class);
+
+        $assigned = KnowledgeCourseAssignment::query()
+            ->with('category')
+            ->where('assigned_user_id', $user->getKey())
+            ->get()
+            ->map(function (KnowledgeCourseAssignment $assignment) use ($progress, $user): array {
+                $stats = $assignment->category
+                    ? $progress->courseProgress($user, $assignment->category)
+                    : ['total' => 0, 'completed' => 0, 'percent' => 0];
+
+                return [
+                    'name' => $assignment->category?->name ?? 'Dzēsts kurss',
+                    'stats' => $stats,
+                    'due_at' => $assignment->due_at,
+                    'completed_at' => $assignment->completed_at,
+                    'rating' => $assignment->rating,
+                ];
+            })
+            ->sortBy('name')
+            ->values()
+            ->all();
+
+        $assignedCategoryIds = KnowledgeCourseAssignment::query()
+            ->where('assigned_user_id', $user->getKey())
+            ->pluck('knowledge_category_id')
+            ->all();
+
+        $all = KnowledgeCategory::query()
+            ->orderBy('name')
+            ->get()
+            ->map(fn (KnowledgeCategory $category): array => [
+                'name' => $category->name,
+                'stats' => $progress->courseProgress($user, $category),
+                'assigned' => in_array($category->id, $assignedCategoryIds, true),
+            ])
+            ->all();
+
+        return [
+            'assigned' => $assigned,
+            'all' => $all,
+            'completed' => count(array_filter($assigned, fn (array $course): bool => $course['completed_at'] !== null)),
         ];
     }
 
