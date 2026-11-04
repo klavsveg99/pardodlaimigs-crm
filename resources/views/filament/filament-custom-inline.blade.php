@@ -1048,13 +1048,20 @@ html.dark .rounded-xl .text-emerald-900 {
         padding-block: 0.25rem !important;
     }
 
-    /* Force left-aligned values on mobile for columns whose alignment only
-       makes sense in the horizontal table layout (time/value columns). */
-    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-created-at,
-    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value { text-align: left !important; }
-    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-created-at .fi-ta-text,
-    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value .fi-ta-text,
-    .fi-ta-table-stacked-on-mobile td.fi-ta-cell-leader-value .fi-ta-cell-content { text-align: left !important; justify-content: flex-start !important; }
+    /* Mobile stacked tables: every labelled value reads left-to-right; only
+       the row actions stay right-aligned. Filament applies align-end to both
+       the <td> and the inner .fi-ta-text, so both must be overridden. */
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:not(:has(> .fi-ta-actions)) {
+        text-align: left !important;
+    }
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:not(:has(> .fi-ta-actions)) .fi-ta-cell-content,
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:not(:has(> .fi-ta-actions)) .fi-ta-col,
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:not(:has(> .fi-ta-actions)) .fi-ta-text,
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:not(:has(> .fi-ta-actions)) .fi-ta-text-item,
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td:not(:has(> .fi-ta-actions)) .fi-ta-text-summary {
+        text-align: left !important;
+        justify-content: flex-start !important;
+    }
 
     /* Properties list: vertically center the thumbnail against its neighbor */
     .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb {
