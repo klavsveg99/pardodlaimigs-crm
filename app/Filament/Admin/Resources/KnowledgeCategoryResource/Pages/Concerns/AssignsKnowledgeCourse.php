@@ -12,7 +12,7 @@ use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 
 /**
- * Kursa (kategorijas) piešķiršana aģentiem ar izpildes termiņu.
+ * Kursa piešķiršana aģentiem ar izpildes termiņu.
  */
 trait AssignsKnowledgeCourse
 {

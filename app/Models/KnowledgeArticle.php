@@ -17,7 +17,7 @@ class KnowledgeArticle extends Model
 
     public const TYPES = [
         'material' => 'Materiāls',
-        'course' => 'Kurss',
+        'course' => 'Soli pa solim',
     ];
 
     protected $fillable = [

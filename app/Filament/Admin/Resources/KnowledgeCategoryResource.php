@@ -23,13 +23,13 @@ class KnowledgeCategoryResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?string $navigationLabel = 'Kategorijas';
+    protected static ?string $navigationLabel = 'Kursi';
 
     protected static string|UnitEnum|null $navigationGroup = 'Izglītība';
 
-    protected static ?string $modelLabel = 'Kategorija';
+    protected static ?string $modelLabel = 'Kurss';
 
-    protected static ?string $pluralModelLabel = 'Kategorijas';
+    protected static ?string $pluralModelLabel = 'Kursi';
 
     protected static ?int $navigationSort = 20;
 
@@ -87,7 +87,7 @@ class KnowledgeCategoryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->extraAttributes(['class' => 'pdc-knowledge-categories-table'])->columns([
-            Tables\Columns\TextColumn::make('name')->label('Kategorija')->searchable()->sortable()->weight('bold'),
+            Tables\Columns\TextColumn::make('name')->label('Kurss')->searchable()->sortable()->weight('bold'),
             Tables\Columns\TextColumn::make('articles_count')->label('Materiāli')->counts('articles'),
             Tables\Columns\TextColumn::make('course_assignments_count')->label('Piešķirts')->alignCenter(),
             Tables\Columns\TextColumn::make('completed_course_assignments_count')
@@ -99,8 +99,8 @@ class KnowledgeCategoryResource extends Resource
             Actions\DeleteAction::make()
                 ->label('Dzēst')
                 ->color('danger')
-                ->modalHeading('Dzēst kategoriju?')
-                ->modalDescription('Kategorija tiks dzēsta. Tās materiāli paliks zināšanu bāzē bez kategorijas.'),
+                ->modalHeading('Dzēst kursu?')
+                ->modalDescription('Kurss tiks dzēsts. Tā materiāli paliks zināšanu bāzē bez kursa.'),
         ])->defaultSort('name');
     }
 

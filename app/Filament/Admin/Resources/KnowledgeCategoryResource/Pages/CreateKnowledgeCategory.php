@@ -13,6 +13,6 @@ class CreateKnowledgeCategory extends CreateRecord
 
     public function getTitle(): string
     {
-        return 'Jauna kategorija';
+        return 'Jauns kurss';
     }
 }

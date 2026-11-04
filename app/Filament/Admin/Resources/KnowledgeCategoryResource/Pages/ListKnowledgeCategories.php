@@ -14,6 +14,6 @@ class ListKnowledgeCategories extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [Actions\CreateAction::make()->label('Jauna kategorija')->color('gray')];
+        return [Actions\CreateAction::make()->label('Jauns kurss')->color('gray')];
     }
 }

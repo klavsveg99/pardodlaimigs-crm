@@ -18,7 +18,7 @@ class EditKnowledgeCategory extends EditRecord
 
     public function getTitle(): string
     {
-        return 'Rediģēt kategoriju';
+        return 'Rediģēt kursu';
     }
 
     public function content(Schema $schema): Schema

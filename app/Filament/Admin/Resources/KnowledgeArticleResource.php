@@ -141,7 +141,7 @@ class KnowledgeArticleResource extends Resource
                 ->default('material')
                 ->live(),
             Forms\Components\Select::make('knowledge_category_id')
-                ->label('Kategorija')
+                ->label('Kurss')
                 ->options(fn (): array => KnowledgeCategory::query()->orderBy('name')->pluck('name', 'id')->all())
                 ->searchable()->preload()->nullable(),
             Forms\Components\Toggle::make('is_public')
@@ -288,7 +288,7 @@ class KnowledgeArticleResource extends Resource
                 Tables\Columns\TextColumn::make('body')->label('Saturs')->searchable()->formatStateUsing(fn (?string $state): string => strip_tags((string) $state))->limit(100)->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('knowledge_category_id')->label('Kategorija')
+                Tables\Filters\SelectFilter::make('knowledge_category_id')->label('Kurss')
                     ->options(fn (): array => KnowledgeCategory::query()->orderBy('name')->pluck('name', 'id')->all()),
                 Tables\Filters\SelectFilter::make('type')->label('Veids')->options(KnowledgeArticle::TYPES),
                 Tables\Filters\TrashedFilter::make()
