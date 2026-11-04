@@ -44,6 +44,7 @@ class AgentSoldPropertiesTable extends TableWidget
     {
         return $table
             ->heading('Pārdotie objekti un saņemtā komisija')
+            ->queryStringIdentifier('sold')
             ->query(
                 CrmProperty::query()
                     ->where('owner_user_id', $this->agentId ?? 0)

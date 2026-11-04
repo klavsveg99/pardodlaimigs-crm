@@ -33,6 +33,7 @@ class AgentActivePropertiesTable extends TableWidget
     {
         return $table
             ->heading('Objekti pārdošanā')
+            ->queryStringIdentifier('active')
             ->query(
                 CrmProperty::query()
                     ->where('owner_user_id', $this->agentId ?? 0)
