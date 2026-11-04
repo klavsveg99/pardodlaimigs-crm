@@ -31,6 +31,84 @@
     @endphp
 
     <style>
+        .pdc-agent-profile {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        .pdc-agent-profile-avatar {
+            flex: none;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 9999px;
+            object-fit: cover;
+            background: #f3f4f6;
+        }
+        .pdc-agent-profile-body {
+            min-width: 0;
+        }
+        .pdc-agent-profile-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: #111827;
+        }
+        .pdc-agent-profile-meta {
+            margin-top: 0.15rem;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+        .pdc-agent-profile-contacts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem 1rem;
+            margin-top: 0.55rem;
+            font-size: 0.85rem;
+            color: #374151;
+        }
+        .pdc-agent-profile-contacts a,
+        .pdc-agent-profile-contacts span {
+            display: inline-flex;
+            align-items: flex-start;
+            gap: 0.35rem;
+            min-width: 0;
+            color: inherit;
+            text-decoration: none;
+        }
+        .pdc-agent-profile-contacts a {
+            color: var(--pdc-primary, #285854);
+            overflow-wrap: anywhere;
+        }
+        .pdc-agent-profile-contacts a:hover {
+            text-decoration: underline;
+        }
+        .pdc-agent-profile-contacts i {
+            flex: none;
+            margin-top: 0.15rem;
+            color: #9ca3af;
+        }
+        html.dark .pdc-agent-profile-name {
+            color: #f3f4f6;
+        }
+        html.dark .pdc-agent-profile-meta {
+            color: #9ca3af;
+        }
+        html.dark .pdc-agent-profile-contacts {
+            color: #e5e7eb;
+        }
+        html.dark .pdc-agent-profile-contacts a {
+            color: #98bcb8;
+        }
+        @media (max-width: 639px) {
+            .pdc-agent-profile {
+                gap: 0.75rem;
+            }
+            .pdc-agent-profile-avatar {
+                width: 3.25rem;
+                height: 3.25rem;
+            }
+        }
+
         .pdc-agent-year {
             display: inline-flex;
             align-items: center;
@@ -160,6 +238,40 @@
             }
         }
     </style>
+
+    <x-filament::section>
+        <div class="pdc-agent-profile">
+            <img
+                class="pdc-agent-profile-avatar"
+                src="{{ $record->avatar_url ?: asset('images/no-photo.svg') }}"
+                alt=""
+            >
+            <div class="pdc-agent-profile-body">
+                <div class="pdc-agent-profile-name">{{ $record->name }}</div>
+                <div class="pdc-agent-profile-meta">
+                    {{ collect([$record->role_label, $record->position])->filter()->unique()->implode(' · ') }}
+                </div>
+                <div class="pdc-agent-profile-contacts">
+                    <a href="mailto:{{ $record->email }}">
+                        <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                        <span>{{ $record->email }}</span>
+                    </a>
+                    @if (filled($record->phone))
+                        <a href="tel:{{ preg_replace('/[^\d+]/', '', (string) $record->phone) }}">
+                            <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                            <span>{{ \App\Support\PhoneFormat::display($record->phone) }}</span>
+                        </a>
+                    @endif
+                    @if (filled($record->office_address))
+                        <span>
+                            <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                            <span>{{ $record->office_address }}</span>
+                        </span>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </x-filament::section>
 
     <x-filament::section
         heading="Kopsavilkums"

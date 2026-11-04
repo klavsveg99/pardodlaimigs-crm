@@ -33,18 +33,6 @@ class ViewUser extends ViewRecord
         return 'Skatīt aģentu';
     }
 
-    public function getHeading(): string
-    {
-        return (string) $this->record->name;
-    }
-
-    public function getSubheading(): ?string
-    {
-        return collect([$this->record->role_label, $this->record->email])
-            ->filter()
-            ->implode(' · ') ?: null;
-    }
-
     public function updatedYear(): void
     {
         $this->year = $this->resolveYear((int) $this->year);
