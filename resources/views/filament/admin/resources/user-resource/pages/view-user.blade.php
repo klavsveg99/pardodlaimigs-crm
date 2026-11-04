@@ -313,14 +313,6 @@
     </x-filament::section>
 
     @if ($isAgent)
-        @livewire(
-            \App\Filament\Admin\Widgets\AgentActivePropertiesTable::class,
-            ['agentId' => $record->getKey()],
-            key('agent-active-'.$record->getKey())
-        )
-    @endif
-
-    @if ($isAgent)
     <x-filament::section heading="Kopsavilkums">
         <x-slot name="afterHeader">
             <div class="pdc-agent-filters">
@@ -371,16 +363,22 @@
         @endif
     </x-filament::section>
 
-    @livewire(
-        \App\Filament\Admin\Widgets\AgentSoldPropertiesTable::class,
-        [
-            'agentId' => $record->getKey(),
-            'year' => $this->year,
-            'month' => $this->month,
-            'periodLabel' => $periodDescription,
-        ],
-        key('agent-sold-'.$record->getKey().'-'.$this->year.'-'.$this->month)
-    )
+        @livewire(
+            \App\Filament\Admin\Widgets\AgentSoldPropertiesTable::class,
+            [
+                'agentId' => $record->getKey(),
+                'year' => $this->year,
+                'month' => $this->month,
+                'periodLabel' => $periodDescription,
+            ],
+            key('agent-sold-'.$record->getKey().'-'.$this->year.'-'.$this->month)
+        )
+
+        @livewire(
+            \App\Filament\Admin\Widgets\AgentActivePropertiesTable::class,
+            ['agentId' => $record->getKey()],
+            key('agent-active-'.$record->getKey())
+        )
 
     <x-filament::section heading="Komisija pa mēnešiem">
         <x-slot name="afterHeader">
