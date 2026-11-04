@@ -138,6 +138,25 @@
     opacity: 1;
 }
 
+/* Properties table: give the photo a little breathing room from the row
+   checkbox, tuck the star toggle close to the photo, and stop the 3% star
+   column from squeezing the icon out of shape. */
+.fi-ta.pdc-properties-table .fi-ta-cell-featured-thumb .fi-ta-image {
+    margin-left: 6px;
+}
+.fi-ta.pdc-properties-table .fi-ta-cell-featured-thumb img {
+    width: 60px !important;
+    height: 40px !important;
+    object-fit: cover;
+}
+.fi-ta.pdc-properties-table .fi-ta-cell-is-featured .fi-ta-icon {
+    padding-inline: 2px 0 !important;
+}
+.fi-ta.pdc-properties-table .fi-ta-cell-is-featured .fi-icon {
+    width: 20px !important;
+    height: 20px !important;
+}
+
 /* Sidebar icons stay as-is - excluded from global icon rules. */
 .fi-sidebar .fi-icon {
     color: inherit !important;
