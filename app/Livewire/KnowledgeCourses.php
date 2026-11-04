@@ -18,6 +18,13 @@ use Livewire\Component;
  */
 class KnowledgeCourses extends Component
 {
+    public ?int $openCourseId = null;
+
+    public function toggleCourse(int $assignmentId): void
+    {
+        $this->openCourseId = $this->openCourseId === $assignmentId ? null : $assignmentId;
+    }
+
     public function render()
     {
         $user = auth()->user();

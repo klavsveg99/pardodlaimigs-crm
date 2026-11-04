@@ -15,16 +15,15 @@
             background: #ffffff;
             overflow: hidden;
         }
-        .pdc-kb-course[open] { border-color: #cbd5d4; }
-        .pdc-kb-course > summary {
+        .pdc-kb-course--open { border-color: #cbd5d4; }
+        .pdc-kb-course-summary {
             display: flex;
             align-items: center;
             gap: 1rem;
             padding: 0.8rem 0.9rem;
             cursor: pointer;
-            list-style: none;
         }
-        .pdc-kb-course > summary::-webkit-details-marker { display: none; }
+        .pdc-kb-course-summary:focus-visible { outline: 2px solid var(--pdc-primary, #285854); outline-offset: -2px; }
         .pdc-kb-course-main { flex: 1 1 auto; min-width: 0; display: grid; gap: 0.2rem; }
         .pdc-kb-course-name { font-size: 0.92rem; font-weight: 700; color: #111827; }
         .pdc-kb-course-desc { font-size: 0.78rem; color: #6b7280; overflow-wrap: anywhere; }
@@ -44,7 +43,7 @@
         .pdc-kb-course-badge--overdue { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
         .pdc-kb-course-progress { width: 9rem; max-width: 34vw; display: grid; gap: 0.25rem; }
         .pdc-kb-course-chevron { color: #9ca3af; transition: transform 0.15s ease; }
-        .pdc-kb-course[open] .pdc-kb-course-chevron { transform: rotate(180deg); }
+        .pdc-kb-course--open .pdc-kb-course-chevron { transform: rotate(180deg); }
         .pdc-kb-course-bar { height: 0.4rem; border-radius: 9999px; background: #e5e7eb; overflow: hidden; }
         .pdc-kb-course-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--pdc-primary, #285854); }
         .pdc-kb-course-progress-label { font-size: 0.68rem; color: #6b7280; text-align: right; }
@@ -61,7 +60,7 @@
         html.dark .pdc-kb-courses-title { color: #f3f4f6; }
         html.dark .pdc-kb-courses-sub { color: #9ca3af; }
         html.dark .pdc-kb-course { border-color: #27303a; background: #0f151b; }
-        html.dark .pdc-kb-course[open] { border-color: #3b4a56; }
+        html.dark .pdc-kb-course--open { border-color: #3b4a56; }
         html.dark .pdc-kb-course-name { color: #f3f4f6; }
         html.dark .pdc-kb-course-desc, html.dark .pdc-kb-course-meta, html.dark .pdc-kb-course-progress-label { color: #9ca3af; }
         html.dark .pdc-kb-course-badge { border-color: #374151; color: #d1d5db; }
@@ -76,7 +75,7 @@
         html.dark .pdc-kb-course-section-title { color: #e5e7eb; }
         html.dark .pdc-kb-courses-empty { color: #9ca3af; }
         @media (max-width: 639px) {
-            .pdc-kb-course > summary { align-items: flex-start; flex-wrap: wrap; }
+            .pdc-kb-course-summary { align-items: flex-start; flex-wrap: wrap; }
             .pdc-kb-course-progress { width: 100%; max-width: none; }
             .pdc-kb-course-progress-label { text-align: left; }
         }
@@ -92,8 +91,16 @@
     @else
         <div class="pdc-kb-course-list">
             @foreach ($courses as $course)
-                <details class="pdc-kb-course" wire:key="kb-course-{{ $course['assignment']->id }}">
-                    <summary>
+                <div class="pdc-kb-course {{ $openCourseId === $course['assignment']->id ? 'pdc-kb-course--open' : '' }}" wire:key="kb-course-{{ $course['assignment']->id }}">
+                    <div
+                        class="pdc-kb-course-summary"
+                        role="button"
+                        tabindex="0"
+                        aria-expanded="{{ $openCourseId === $course['assignment']->id ? 'true' : 'false' }}"
+                        wire:click="toggleCourse({{ $course['assignment']->id }})"
+                        wire:keydown.enter="toggleCourse({{ $course['assignment']->id }})"
+                        wire:keydown.space.prevent="toggleCourse({{ $course['assignment']->id }})"
+                    >
                         <div class="pdc-kb-course-main">
                             <span class="pdc-kb-course-name">{{ $course['category']->name }}</span>
                             @if (filled($course['category']->description))
@@ -119,8 +126,9 @@
                             <span class="pdc-kb-course-progress-label">{{ $course['progress']['percent'] }}%</span>
                         </div>
                         <i class="fa-solid fa-chevron-down pdc-kb-course-chevron" aria-hidden="true"></i>
-                    </summary>
+                    </div>
 
+                    @if ($openCourseId === $course['assignment']->id)
                     <div class="pdc-kb-course-body">
                         <div>
                             <h3 class="pdc-kb-course-section-title">Materiāli</h3>
@@ -153,7 +161,8 @@
                             )
                         </div>
                     </div>
-                </details>
+                    @endif
+                </div>
             @endforeach
         </div>
     @endif

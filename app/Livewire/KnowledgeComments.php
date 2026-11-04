@@ -10,8 +10,8 @@ use App\Models\KnowledgeCourseAssignment;
 use Livewire\Component;
 
 /**
- * Komentāri vienam mērķim: materiālam, konkrētam kursa solim vai kategorijai
- * (kursam). Vienu komponenti izmanto gan aģenti, gan administratori.
+ * Komentāri vienam mērķim: materiālam, konkrētam solim vai kursam.
+ * Komentārus un atbildes redz visi, kam ir pieeja attiecīgajam mērķim.
  */
 class KnowledgeComments extends Component
 {
@@ -22,6 +22,10 @@ class KnowledgeComments extends Component
     public ?int $stepIndex = null;
 
     public string $body = '';
+
+    public ?int $replyTo = null;
+
+    public string $replyBody = '';
 
     public function mount(int $articleId = 0, int $categoryId = 0, ?int $stepIndex = null): void
     {
@@ -50,6 +54,47 @@ class KnowledgeComments extends Component
         $this->dispatch('knowledge-comment-added');
     }
 
+    public function startReply(int $commentId): void
+    {
+        $this->authorizeTarget();
+
+        $this->replyTo = $commentId;
+        $this->replyBody = '';
+        $this->resetValidation('replyBody');
+    }
+
+    public function cancelReply(): void
+    {
+        $this->replyTo = null;
+        $this->replyBody = '';
+        $this->resetValidation('replyBody');
+    }
+
+    public function addReply(): void
+    {
+        $this->authorizeTarget();
+
+        $this->validate([
+            'replyBody' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $parent = KnowledgeComment::query()->whereKey($this->replyTo)->first();
+
+        abort_unless($parent && $this->sameTarget($parent), 403);
+
+        KnowledgeComment::create([
+            'user_id' => auth()->id(),
+            'parent_id' => $parent->id,
+            'knowledge_article_id' => $parent->knowledge_article_id,
+            'knowledge_category_id' => $parent->knowledge_category_id,
+            'step_index' => $parent->step_index,
+            'body' => trim($this->replyBody),
+        ]);
+
+        $this->cancelReply();
+        $this->dispatch('knowledge-comment-added');
+    }
+
     public function render()
     {
         $this->authorizeTarget();
@@ -64,9 +109,33 @@ class KnowledgeComments extends Component
             ->oldest()
             ->get();
 
+        $grouped = $comments->groupBy(fn (KnowledgeComment $comment): int => $comment->parent_id ?? 0);
+
+        $build = function (int $parentId) use (&$build, $grouped): array {
+            return $grouped->get($parentId, collect())
+                ->map(fn (KnowledgeComment $comment): array => [
+                    'comment' => $comment,
+                    'replies' => $build((int) $comment->id),
+                ])
+                ->all();
+        };
+
         return view('livewire.knowledge-comments', [
-            'comments' => $comments,
+            'threads' => $build(0),
         ]);
+    }
+
+    private function sameTarget(KnowledgeComment $comment): bool
+    {
+        if ($this->articleId > 0) {
+            return (int) $comment->knowledge_article_id === $this->articleId
+                && $comment->knowledge_category_id === null
+                && $comment->step_index === $this->stepIndex;
+        }
+
+        return (int) $comment->knowledge_category_id === $this->categoryId
+            && $comment->knowledge_article_id === null
+            && $comment->step_index === null;
     }
 
     private function authorizeTarget(): void
