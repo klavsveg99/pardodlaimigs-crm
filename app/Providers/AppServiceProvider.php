@@ -28,9 +28,9 @@ class AppServiceProvider extends ServiceProvider
 
         Table::configureUsing(fn (Table $table) => $table->stackedOnMobile());
 
-        // Filtri atveras tabulas iekšpusē (zem rīkjoslas), nevis kā peldošs
-        // panelis, kas mobilajā pārklāj paziņojumus un lapas galveni.
-        Table::configureUsing(fn (Table $table) => $table->filtersLayout(FiltersLayout::AboveContentCollapsible));
+        // Filtru poga paliek tabulas rīkjoslā blakus meklēšanai; filtru
+        // panelis atveras modālā, tāpēc tas nepārklāj paziņojumus vai galveni.
+        Table::configureUsing(fn (Table $table) => $table->filtersLayout(FiltersLayout::Modal));
 
         // Empty cells everywhere show "-" instead of blank space
         TextColumn::configureUsing(fn (TextColumn $column) => $column->placeholder('-'));
