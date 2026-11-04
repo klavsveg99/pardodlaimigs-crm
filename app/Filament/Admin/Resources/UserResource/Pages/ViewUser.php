@@ -8,14 +8,10 @@ use App\Filament\Admin\Resources\UserResource;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 
 class ViewUser extends ViewRecord
 {
-    private const PER_PAGE = 10;
-
     protected static string $resource = UserResource::class;
 
     protected string $view = 'filament.admin.resources.user-resource.pages.view-user';
@@ -24,26 +20,6 @@ class ViewUser extends ViewRecord
      * Aģenta darba pārskata gads. Pēc noklusējuma tekošais gads.
      */
     public int $year = 0;
-
-    public string $activeSearch = '';
-
-    public string $activeCategory = '';
-
-    public string $activeStatus = '';
-
-    public string $activeCategoryDraft = '';
-
-    public string $activeStatusDraft = '';
-
-    public int $activePage = 1;
-
-    public string $soldSearch = '';
-
-    public string $soldSource = '';
-
-    public string $soldSourceDraft = '';
-
-    public int $soldPage = 1;
 
     public function mount(int|string $record): void
     {
@@ -72,72 +48,6 @@ class ViewUser extends ViewRecord
     public function updatedYear(): void
     {
         $this->year = $this->resolveYear((int) $this->year);
-        $this->activePage = 1;
-        $this->soldPage = 1;
-    }
-
-    public function updatedActiveSearch(): void
-    {
-        $this->activePage = 1;
-    }
-
-    public function updatedActiveCategory(): void
-    {
-        $this->activePage = 1;
-    }
-
-    public function updatedActiveStatus(): void
-    {
-        $this->activePage = 1;
-    }
-
-    public function updatedSoldSearch(): void
-    {
-        $this->soldPage = 1;
-    }
-
-    public function updatedSoldSource(): void
-    {
-        $this->soldPage = 1;
-    }
-
-    public function applyActiveFilters(): void
-    {
-        $this->activeCategory = $this->activeCategoryDraft;
-        $this->activeStatus = $this->activeStatusDraft;
-        $this->activePage = 1;
-    }
-
-    public function applySoldFilters(): void
-    {
-        $this->soldSource = $this->soldSourceDraft;
-        $this->soldPage = 1;
-    }
-
-    public function clearActiveFilters(): void
-    {
-        $this->activeCategory = '';
-        $this->activeStatus = '';
-        $this->activeCategoryDraft = '';
-        $this->activeStatusDraft = '';
-        $this->activePage = 1;
-    }
-
-    public function clearSoldFilters(): void
-    {
-        $this->soldSource = '';
-        $this->soldSourceDraft = '';
-        $this->soldPage = 1;
-    }
-
-    public function setActivePage(int $page): void
-    {
-        $this->activePage = max(1, $page);
-    }
-
-    public function setSoldPage(int $page): void
-    {
-        $this->soldPage = max(1, $page);
     }
 
     protected function getHeaderActions(): array
@@ -172,7 +82,8 @@ class ViewUser extends ViewRecord
     }
 
     /**
-     * Viss aģenta profila pārskatam nepieciešamais vienā masīvā.
+     * Kopsavilkuma un mēnešu tabulas dati. Objektu sarakstus rāda atsevišķi
+     * Filament tabulu widgeti.
      *
      * @return array<string, mixed>
      */
@@ -180,17 +91,10 @@ class ViewUser extends ViewRecord
     {
         $agentId = (int) $this->record->getKey();
 
-        $activeAll = CrmProperty::query()
+        $activeTotal = CrmProperty::query()
             ->where('owner_user_id', $agentId)
             ->whereIn('status', ['published', 'reserved'])
-            ->orderByDesc('created_at')
-            ->get();
-
-        $activeFiltered = $activeAll
-            ->filter(fn (CrmProperty $property): bool => $this->matchesSearch($property, $this->activeSearch)
-                && ($this->activeCategory === '' || $property->category === $this->activeCategory)
-                && ($this->activeStatus === '' || $property->status === $this->activeStatus))
-            ->values();
+            ->count();
 
         $sold = CrmProperty::query()
             ->where('owner_user_id', $agentId)
@@ -218,12 +122,10 @@ class ViewUser extends ViewRecord
         }
 
         $totalCommission = 0.0;
-        $totalPrice = 0.0;
 
         foreach ($sold as $property) {
             $month = (int) $property->sold_at->format('n');
             $monthly[$month]['count']++;
-            $totalPrice += (float) ($property->final_price_eur ?? 0);
 
             if ($property->commission_eur === null) {
                 continue;
@@ -236,64 +138,14 @@ class ViewUser extends ViewRecord
 
         $allSold = $sold->concat($undated);
 
-        $soldFiltered = $allSold
-            ->filter(fn (CrmProperty $property): bool => $this->matchesSearch($property, $this->soldSearch)
-                && ($this->soldSource === '' || $property->lead_source === $this->soldSource))
-            ->values();
-
-        $soldDatedFiltered = $soldFiltered->filter(fn (CrmProperty $property): bool => $property->sold_at !== null);
-
         return [
-            'active' => $this->paginateCollection($activeFiltered, $this->activePage, 'activePage'),
-            'active_total' => $activeAll->count(),
-            'sold' => $this->paginateCollection($soldFiltered, $this->soldPage, 'soldPage'),
-            'monthly' => $monthly,
+            'active_total' => $activeTotal,
             'sold_count' => $sold->count(),
             'total_commission' => $totalCommission,
-            'total_price' => $totalPrice,
-            'table_total_commission' => $soldDatedFiltered
-                ->filter(fn (CrmProperty $property): bool => $property->commission_eur !== null)
-                ->sum(fn (CrmProperty $property): float => (float) $property->commission_eur),
-            'table_total_price' => $soldDatedFiltered
-                ->sum(fn (CrmProperty $property): float => (float) ($property->final_price_eur ?? 0)),
+            'monthly' => $monthly,
             'missing_commission' => $allSold->whereNull('commission_eur')->count(),
             'undated_count' => $undated->count(),
         ];
-    }
-
-    private function matchesSearch(CrmProperty $property, string $search): bool
-    {
-        $search = mb_strtolower(trim($search));
-
-        if ($search === '') {
-            return true;
-        }
-
-        $haystack = mb_strtolower(implode(' ', array_filter([
-            $property->title,
-            $property->city,
-            $property->address,
-        ])));
-
-        return str_contains($haystack, $search);
-    }
-
-    /**
-     * @param  Collection<int, CrmProperty>  $items
-     */
-    private function paginateCollection(Collection $items, int $page, string $pageName): LengthAwarePaginator
-    {
-        $total = $items->count();
-        $lastPage = max(1, (int) ceil($total / self::PER_PAGE));
-        $currentPage = min(max(1, $page), $lastPage);
-
-        return new LengthAwarePaginator(
-            $items->forPage($currentPage, self::PER_PAGE)->values(),
-            $total,
-            self::PER_PAGE,
-            $currentPage,
-            ['pageName' => $pageName],
-        );
     }
 
     private function resolveYear(int $year): int
