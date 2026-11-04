@@ -41,8 +41,7 @@ class KnowledgeCourses extends Component
                     ->with([
                         'assignments' => fn ($assignment) => $assignment->where('assigned_user_id', $user->id),
                         'completions' => fn ($completion) => $completion->where('user_id', $user->id),
-                    ])
-                    ->orderBy('title'),
+                    ]),
             ])
             ->where('assigned_user_id', $user->id)
             ->get()
