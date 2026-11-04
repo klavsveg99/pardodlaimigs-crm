@@ -5,7 +5,7 @@
 
 <x-filament::section
     heading="Zināšanu bāze"
-    description="Kursi un materiāli, kas redzami visiem vai piešķirti lietotājam"
+    description="Kursi un materiāli, kas obligāti vai piešķirti lietotājam"
 >
     <style>
         .pdc-kb-recap { display: grid; gap: 1.25rem; }
@@ -142,19 +142,21 @@
                                     $overdue = ! $completed
                                         && $material['due_at'] !== null
                                         && $material['due_at']->isPast();
-                                    $status = $completed ? 'Pabeigts' : ($material['assigned'] ? 'Jāizpilda' : 'Pieejams');
+                                    $status = $completed ? 'Pabeigts' : 'Jāizpilda';
                                 @endphp
                                 <tr wire:key="kb-recap-material-{{ $loop->index }}">
                                     <td data-label="Materiāls">
                                         <a href="{{ $material['url'] }}"><strong>{{ $material['name'] }}</strong></a>
                                     </td>
                                     <td data-label="Pieejamība">
-                                        @if ($material['public'])
-                                            <span class="pdc-kb-recap-badge">Visiem</span>
-                                        @endif
-                                        @if ($material['assigned'])
-                                            <span class="pdc-kb-recap-badge">Piešķirts</span>
-                                        @endif
+                                        <span style="display: inline-flex; flex-wrap: wrap; gap: 0.3rem;">
+                                            @if ($material['public'])
+                                                <span class="pdc-kb-recap-badge">Obligāts saturs</span>
+                                            @endif
+                                            @if ($material['assigned'])
+                                                <span class="pdc-kb-recap-badge">Piešķirts</span>
+                                            @endif
+                                        </span>
                                     </td>
                                     <td data-label="Termiņš">
                                         @if ($material['due_at'])

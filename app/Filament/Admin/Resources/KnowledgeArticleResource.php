@@ -95,8 +95,8 @@ class KnowledgeArticleResource extends Resource
         }
 
         // Fotogrāfs redz tikai viņam piešķirtos materiālus. Aģents un
-        // students papildus redz materiālus ar atzīmi "Pieejams visiem"
-        // (bez piešķiršanas un izpildes termiņa).
+        // students papildus redz obligāto saturu (is_public), kas viņiem
+        // automātiski jāizpilda.
         if ($user?->isPhoto()) {
             return $query
                 ->whereHas(
@@ -137,8 +137,8 @@ class KnowledgeArticleResource extends Resource
                 ->options(fn (): array => KnowledgeCategory::query()->orderBy('name')->pluck('name', 'id')->all())
                 ->searchable()->preload()->nullable(),
             Forms\Components\Toggle::make('is_public')
-                ->label('Pieejams visiem')
-                ->helperText('Redzams visiem aģentiem un studentiem arī bez piešķiršanas.')
+                ->label('Obligāts saturs')
+                ->helperText('Automātiski piešķirts visiem lietotājiem, līdz tas ir pabeigts.')
                 ->default(false),
             Forms\Components\Textarea::make('summary')->label('Īss apraksts')->rows(2)->columnSpanFull(),
             Forms\Components\RichEditor::make('body')->label('Saturs')->columnSpanFull(),
@@ -242,7 +242,7 @@ class KnowledgeArticleResource extends Resource
                     ->url(fn (KnowledgeArticle $record): ?string => $record->trashed()
                         ? null
                         : static::getUrl('view', ['record' => $record])),
-                Tables\Columns\IconColumn::make('is_public')->label('Visiem')->boolean()
+                Tables\Columns\IconColumn::make('is_public')->label('Obligāts saturs')->boolean()
                     ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
                 Tables\Columns\TextColumn::make('assignments_progress')
                     ->label('Pabeiguši')
@@ -262,9 +262,11 @@ class KnowledgeArticleResource extends Resource
                             return 'Jāizpilda';
                         }
 
-                        return $record->completions->isNotEmpty() || $record->assignments->isNotEmpty()
-                            ? 'Pabeigts'
-                            : 'Pieejams';
+                        $hasCompleted = $record->completions->contains(
+                            fn ($completion): bool => $completion->completed_at !== null,
+                        ) || $record->assignments->isNotEmpty();
+
+                        return $hasCompleted ? 'Pabeigts' : 'Jāizpilda';
                     })
                     ->color(fn (string $state): string => match ($state) {
                         'Pabeigts' => 'success',

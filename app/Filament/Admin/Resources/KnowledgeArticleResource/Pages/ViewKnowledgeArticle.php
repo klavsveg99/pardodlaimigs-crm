@@ -58,7 +58,7 @@ class ViewKnowledgeArticle extends ViewRecord
             ->label('Atzīmēt kā pabeigtu')
             ->icon('heroicon-o-check')
             ->color('success')
-            ->visible(fn (): bool => ! (auth()->user()?->can('manage') ?? false) && ! $this->hasCompleted())
+            ->visible(fn (): bool => (! (auth()->user()?->can('manage') ?? false) || $this->record->is_public) && ! $this->hasCompleted())
             ->form([
                 Select::make('rating')
                     ->label('Vērtējums')
@@ -131,7 +131,10 @@ class ViewKnowledgeArticle extends ViewRecord
             return false;
         }
 
-        return $this->record->completions()->where('user_id', auth()->id())->exists()
+        return $this->record->completions()
+            ->where('user_id', auth()->id())
+            ->whereNotNull('completed_at')
+            ->exists()
             || $this->record->assignments()
                 ->where('assigned_user_id', auth()->id())
                 ->whereNotNull('completed_at')

@@ -6,7 +6,9 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Filament\Admin\Resources\KnowledgeArticleResource;
 use App\Filament\Concerns\HasUndoableNotifications;
+use App\Models\KnowledgeArticle;
 use App\Models\KnowledgeAssignment;
+use App\Models\KnowledgeCompletion;
 use App\Models\Task;
 use App\Models\Viewing;
 use App\Services\Notices\NoticeCenter;
@@ -108,6 +110,39 @@ class TodayPriorities extends Widget
         $this->notifyUndoable('Materiāls pabeigts', 'knowledge-assignment-completed', ['id' => $assignment->id]);
     }
 
+    /** Atzīmēt obligāto saturu kā pabeigtu. */
+    public function completeMandatoryKnowledge(int $articleId): void
+    {
+        $user = auth()->user();
+
+        if (! $user || $user->isPhoto()) {
+            return;
+        }
+
+        $article = KnowledgeArticle::query()
+            ->whereKey($articleId)
+            ->where('is_public', true)
+            ->first();
+
+        if (! $article) {
+            return;
+        }
+
+        $completion = KnowledgeCompletion::query()->firstOrNew([
+            'knowledge_article_id' => $article->id,
+            'user_id' => $user->id,
+        ]);
+
+        if ($completion->exists && $completion->completed_at !== null) {
+            return;
+        }
+
+        $completion->completed_at = now();
+        $completion->save();
+
+        $this->notifyUndoable('Obligātais saturs pabeigts', 'mandatory-knowledge-completed', ['id' => $completion->id]);
+    }
+
     /**
      * Atsauc iepriekšējo ātro darbību. Ieraksts tiek meklēts no jauna ar to
      * pašu tvērumu, ar kādu tas tika atzīmēts, lai no notikuma datiem
@@ -129,6 +164,9 @@ class TodayPriorities extends Widget
             'knowledge-assignment-completed' => KnowledgeAssignment::query()
                 ->where('assigned_user_id', auth()->id())
                 ->find($id),
+            'mandatory-knowledge-completed' => KnowledgeCompletion::query()
+                ->where('user_id', auth()->id())
+                ->find($id),
             default => null,
         };
 
@@ -140,6 +178,8 @@ class TodayPriorities extends Widget
             $record->update(['completed_at' => null]);
         } elseif ($record instanceof Viewing) {
             $record->update(['status' => 'scheduled']);
+        } elseif ($record instanceof KnowledgeCompletion) {
+            $record->delete();
         } else {
             $record->update(['completed_at' => null]);
         }
@@ -292,10 +332,12 @@ class TodayPriorities extends Widget
     /** @return array<int, array<string, mixed>> */
     protected function knowledgeNotifications(): array
     {
+        $user = auth()->user();
+
         // Materiāli ir personiski: rāda tikai šim lietotājam piešķirtos,
         // arī administratoram.
-        return KnowledgeAssignment::query()
-            ->where('assigned_user_id', auth()->id())
+        $assignments = KnowledgeAssignment::query()
+            ->where('assigned_user_id', $user?->id)
             ->whereNull('completed_at')
             // Dzēsts (soft-deleted) materiāls vairs nav pieejams; tā
             // piešķīrums nedrīkst izraisīt kļūdu pārskatā.
@@ -321,6 +363,44 @@ class TodayPriorities extends Widget
                 ];
             })
             ->all();
+
+        if (! $user || $user->isPhoto()) {
+            return $assignments;
+        }
+
+        // Obligātais saturs ir automātiski piešķirts visiem (izņemot
+        // fotogrāfus), līdz lietotājs to pabeidz. Ja materiāls jau ir
+        // individuāli piešķirts, to rāda piešķīruma ieraksts, nevis divreiz.
+        $mandatory = KnowledgeArticle::query()
+            ->where('is_public', true)
+            ->whereDoesntHave(
+                'assignments',
+                fn ($query) => $query->where('assigned_user_id', $user->id),
+            )
+            ->whereDoesntHave(
+                'completions',
+                fn ($query) => $query
+                    ->where('user_id', $user->id)
+                    ->whereNotNull('completed_at'),
+            )
+            ->get()
+            ->map(fn (KnowledgeArticle $article): array => [
+                'key' => 'knowledge-mandatory-'.$article->id,
+                'knowledge_article_id' => $article->id,
+                'type' => 'Obligāts saturs',
+                'type_color' => 'gray',
+                'icon' => 'heroicon-o-academic-cap',
+                'urgent' => false,
+                'title' => $article->title,
+                'url' => KnowledgeArticleResource::getUrl('view', ['record' => $article]),
+                'fields' => [],
+                'status' => null,
+                'status_color' => 'gray',
+                'timestamp' => $article->updated_at ?? $article->created_at,
+            ])
+            ->all();
+
+        return array_merge($assignments, $mandatory);
     }
 
     /** Vai uzdevumu/apskašu sarakstu ierobežot tikai ar šo lietotāju. */
