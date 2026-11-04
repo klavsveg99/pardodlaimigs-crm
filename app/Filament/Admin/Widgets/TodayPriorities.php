@@ -298,6 +298,9 @@ class TodayPriorities extends Widget
         return KnowledgeAssignment::query()
             ->where('assigned_user_id', auth()->id())
             ->whereNull('completed_at')
+            // Dzēsts (soft-deleted) materiāls vairs nav pieejams; tā
+            // piešķīrums nedrīkst izraisīt kļūdu pārskatā.
+            ->whereHas('article')
             ->with(['article'])
             ->get()
             ->map(function (KnowledgeAssignment $assignment): array {

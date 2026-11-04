@@ -60,37 +60,7 @@
         .pdc-agent-stats {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.75rem;
-        }
-        .pdc-agent-stat {
-            padding: 0.9rem 1rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.75rem;
-            background: #f9fafb;
-        }
-        .pdc-agent-stat-label {
-            display: block;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: #6b7280;
-        }
-        .pdc-agent-stat-value {
-            display: block;
-            margin-top: 0.15rem;
-            font-size: 1.45rem;
-            font-weight: 700;
-            line-height: 1.2;
-            color: var(--pdc-primary, #285854);
-        }
-        html.dark .pdc-agent-stat {
-            border-color: #27303a;
-            background: #0b0f14;
-        }
-        html.dark .pdc-agent-stat-label {
-            color: #9ca3af;
-        }
-        html.dark .pdc-agent-stat-value {
-            color: #98bcb8;
+            gap: 1rem;
         }
         @media (max-width: 767px) {
             .pdc-agent-stats {
@@ -204,17 +174,29 @@
         </x-slot>
 
         <div class="pdc-agent-stats">
-            <div class="pdc-agent-stat">
-                <span class="pdc-agent-stat-label">Objekti pārdošanā</span>
-                <span class="pdc-agent-stat-value">{{ $report['active_total'] }}</span>
+            <div class="fi-wi-stats-overview-stat">
+                <div class="fi-wi-stats-overview-stat-content">
+                    <div class="fi-wi-stats-overview-stat-label-ctn">
+                        <span class="fi-wi-stats-overview-stat-label">Objekti pārdošanā</span>
+                    </div>
+                    <div class="fi-wi-stats-overview-stat-value">{{ $report['active_total'] }}</div>
+                </div>
             </div>
-            <div class="pdc-agent-stat">
-                <span class="pdc-agent-stat-label">Pārdoti objekti · {{ $this->year }}</span>
-                <span class="pdc-agent-stat-value">{{ $report['sold_count'] }}</span>
+            <div class="fi-wi-stats-overview-stat">
+                <div class="fi-wi-stats-overview-stat-content">
+                    <div class="fi-wi-stats-overview-stat-label-ctn">
+                        <span class="fi-wi-stats-overview-stat-label">Pārdoti objekti · {{ $this->year }}</span>
+                    </div>
+                    <div class="fi-wi-stats-overview-stat-value">{{ $report['sold_count'] }}</div>
+                </div>
             </div>
-            <div class="pdc-agent-stat">
-                <span class="pdc-agent-stat-label">Komisija · {{ $this->year }}</span>
-                <span class="pdc-agent-stat-value">{{ $money($report['total_commission']) }}</span>
+            <div class="fi-wi-stats-overview-stat">
+                <div class="fi-wi-stats-overview-stat-content">
+                    <div class="fi-wi-stats-overview-stat-label-ctn">
+                        <span class="fi-wi-stats-overview-stat-label">Komisija · {{ $this->year }}</span>
+                    </div>
+                    <div class="fi-wi-stats-overview-stat-value">{{ $money($report['total_commission']) }}</div>
+                </div>
             </div>
         </div>
 
