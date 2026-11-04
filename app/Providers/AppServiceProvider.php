@@ -32,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
         // panelis atveras modālā, tāpēc tas nepārklāj paziņojumus vai galveni.
         Table::configureUsing(fn (Table $table) => $table->filtersLayout(FiltersLayout::Modal));
 
+        // Kolonnu pārvaldnieks ("Kolonnas") nav vajadzīgs nevienā tabulā.
+        Table::configureUsing(fn (Table $table) => $table->columnManager(false));
+
         // Empty cells everywhere show "-" instead of blank space
         TextColumn::configureUsing(fn (TextColumn $column) => $column->placeholder('-'));
 
