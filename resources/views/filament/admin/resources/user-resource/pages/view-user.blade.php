@@ -33,7 +33,7 @@
     <style>
         .pdc-agent-profile {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 1rem;
         }
         .pdc-agent-profile-avatar {
@@ -101,6 +101,7 @@
         }
         @media (max-width: 639px) {
             .pdc-agent-profile {
+                align-items: flex-start;
                 gap: 0.75rem;
             }
             .pdc-agent-profile-avatar {
