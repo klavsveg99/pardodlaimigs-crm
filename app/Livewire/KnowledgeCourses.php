@@ -61,7 +61,6 @@ class KnowledgeCourses extends Component
 
                 return [
                     'title' => $article->title,
-                    'type' => $article->type,
                     'completed' => $completed,
                     'url' => KnowledgeArticleResource::getUrl('view', ['record' => $article]),
                 ];

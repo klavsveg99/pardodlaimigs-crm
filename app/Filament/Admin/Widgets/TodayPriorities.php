@@ -6,7 +6,6 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Filament\Admin\Resources\KnowledgeArticleResource;
 use App\Filament\Concerns\HasUndoableNotifications;
-use App\Models\KnowledgeArticle;
 use App\Models\KnowledgeAssignment;
 use App\Models\Task;
 use App\Models\Viewing;
@@ -307,7 +306,7 @@ class TodayPriorities extends Widget
                 return [
                     'key' => 'knowledge-'.$assignment->id,
                     'knowledge_assignment_id' => $assignment->id,
-                    'type' => KnowledgeArticle::TYPES[$assignment->article->type] ?? 'Materiāls',
+                    'type' => 'Materiāls',
                     'type_color' => 'gray',
                     'icon' => 'heroicon-o-academic-cap',
                     'urgent' => false,

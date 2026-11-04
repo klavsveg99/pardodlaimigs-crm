@@ -15,8 +15,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
@@ -134,12 +132,6 @@ class KnowledgeArticleResource extends Resource
     {
         return $schema->components([
             TextInput::make('title')->label('Nosaukums')->required()->maxLength(255)->columnSpanFull(),
-            Forms\Components\Select::make('type')
-                ->label('Veids')
-                ->options(KnowledgeArticle::TYPES)
-                ->required()
-                ->default('material')
-                ->live(),
             Forms\Components\Select::make('knowledge_category_id')
                 ->label('Kurss')
                 ->options(fn (): array => KnowledgeCategory::query()->orderBy('name')->pluck('name', 'id')->all())
@@ -170,7 +162,6 @@ class KnowledgeArticleResource extends Resource
                 ->addActionAlignment(Alignment::Start)
                 ->reorderableWithButtons()
                 ->collapsible()
-                ->visible(fn (Get $get): bool => $get('type') === 'course')
                 ->columnSpanFull(),
             AttachmentsGrid::make('attachments')
                 ->label('Pielikumi')
@@ -191,13 +182,10 @@ class KnowledgeArticleResource extends Resource
         return $schema->components([
             TextEntry::make('title')->hiddenLabel()->size('lg')->weight('bold')->columnSpanFull(),
             TextEntry::make('summary')->hiddenLabel()->placeholder('')->columnSpanFull(),
-            Grid::make(2)->schema([
-                TextEntry::make('type')->hiddenLabel()->badge()->color('gray')
-                    ->formatStateUsing(fn (string $state): string => KnowledgeArticle::TYPES[$state] ?? $state),
-                TextEntry::make('category.name')->hiddenLabel()->badge()->color('gray')
-                    ->placeholder('')
-                    ->visible(fn (?string $state): bool => filled($state)),
-            ])->columnSpanFull(),
+            TextEntry::make('category.name')->hiddenLabel()->badge()->color('gray')
+                ->placeholder('')
+                ->visible(fn (?string $state): bool => filled($state))
+                ->columnSpanFull(),
             View::make('filament.infolists.knowledge-video')
                 ->viewData([
                     'videoUrls' => $record?->video_urls ?? [],
@@ -220,7 +208,7 @@ class KnowledgeArticleResource extends Resource
                         ->visible(fn (?string $state): bool => filled($state)),
                     TextEntry::make('body')->hiddenLabel()->html()->prose()->columnSpanFull(),
                 ])
-                ->visible(fn ($state): bool => $record?->type === 'course' && is_array($state) && count($state) > 0)
+                ->visible(fn ($state): bool => is_array($state) && count($state) > 0)
                 ->columnSpanFull(),
             View::make('filament.infolists.knowledge-attachments')
                 ->viewData(fn (): array => [
@@ -254,7 +242,6 @@ class KnowledgeArticleResource extends Resource
                     ->url(fn (KnowledgeArticle $record): ?string => $record->trashed()
                         ? null
                         : static::getUrl('view', ['record' => $record])),
-                Tables\Columns\TextColumn::make('type')->label('Veids')->badge()->formatStateUsing(fn (string $state): string => KnowledgeArticle::TYPES[$state] ?? $state)->color('gray'),
                 Tables\Columns\IconColumn::make('is_public')->label('Visiem')->boolean()
                     ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
                 Tables\Columns\TextColumn::make('assignments_progress')
@@ -290,7 +277,6 @@ class KnowledgeArticleResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('knowledge_category_id')->label('Kurss')
                     ->options(fn (): array => KnowledgeCategory::query()->orderBy('name')->pluck('name', 'id')->all()),
-                Tables\Filters\SelectFilter::make('type')->label('Veids')->options(KnowledgeArticle::TYPES),
                 Tables\Filters\TrashedFilter::make()
                     ->label('Dzēstie')
                     ->placeholder('Aktīvie materiāli')

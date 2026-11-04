@@ -15,13 +15,8 @@ class KnowledgeArticle extends Model
 {
     use SoftDeletes;
 
-    public const TYPES = [
-        'material' => 'Materiāls',
-        'course' => 'Soli pa solim',
-    ];
-
     protected $fillable = [
-        'knowledge_category_id', 'title', 'type', 'is_public', 'summary', 'body', 'video_urls', 'steps',
+        'knowledge_category_id', 'title', 'is_public', 'summary', 'body', 'video_urls', 'steps',
     ];
 
     protected $casts = [
