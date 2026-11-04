@@ -9,6 +9,18 @@
             );
         }
 
+        $periodLabel = $this->month > 0
+            ? $monthNames[$this->month].' '.$this->year
+            : (string) $this->year;
+
+        $periodDescription = $this->month > 0
+            ? $monthNames[$this->month].' '.$this->year
+            : $this->year.'. gads';
+
+        $summaryDescription = $this->month > 0
+            ? 'Objekti pārdošanā, pārdotie objekti un komisija · '.$monthNames[$this->month].' '.$this->year
+            : 'Objekti pārdošanā, pārdotie objekti un komisija '.$this->year.'. gadā';
+
         $money = fn (?float $value): string => $value === null
             ? 'Nav ievadīts'
             : number_format($value, 2, ',', ' ').' €';
@@ -134,6 +146,12 @@
             background: #111827;
             border-color: #374151;
             color: #f3f4f6;
+        }
+        .pdc-agent-filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
         }
 
         .pdc-agent-stats {
@@ -276,17 +294,28 @@
 
     <x-filament::section
         heading="Kopsavilkums"
-        description="Objekti pārdošanā, pārdotie objekti un komisija {{ $this->year }}. gadā"
+        description="{{ $summaryDescription }}"
     >
         <x-slot name="afterHeader">
-            <label class="pdc-agent-year" for="pdc-agent-year">
-                <span>Gads</span>
-                <select id="pdc-agent-year" wire:model.live="year">
-                    @foreach ($years as $yearOption)
-                        <option value="{{ $yearOption }}">{{ $yearOption }}</option>
-                    @endforeach
-                </select>
-            </label>
+            <div class="pdc-agent-filters">
+                <label class="pdc-agent-year" for="pdc-agent-year">
+                    <span>Gads</span>
+                    <select id="pdc-agent-year" wire:model.live="year">
+                        @foreach ($years as $yearOption)
+                            <option value="{{ $yearOption }}">{{ $yearOption }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="pdc-agent-year" for="pdc-agent-month">
+                    <span>Mēnesis</span>
+                    <select id="pdc-agent-month" wire:model.live="month">
+                        <option value="0">Visi mēneši</option>
+                        @foreach ($monthNames as $monthNumber => $monthName)
+                            <option value="{{ $monthNumber }}">{{ $monthName }}</option>
+                        @endforeach
+                    </select>
+                </label>
+            </div>
         </x-slot>
 
         <div class="pdc-agent-stats">
@@ -301,7 +330,7 @@
             <div class="fi-wi-stats-overview-stat">
                 <div class="fi-wi-stats-overview-stat-content">
                     <div class="fi-wi-stats-overview-stat-label-ctn">
-                        <span class="fi-wi-stats-overview-stat-label">Pārdoti objekti · {{ $this->year }}</span>
+                        <span class="fi-wi-stats-overview-stat-label">Pārdoti objekti · {{ $periodLabel }}</span>
                     </div>
                     <div class="fi-wi-stats-overview-stat-value">{{ $report['sold_count'] }}</div>
                 </div>
@@ -309,7 +338,7 @@
             <div class="fi-wi-stats-overview-stat">
                 <div class="fi-wi-stats-overview-stat-content">
                     <div class="fi-wi-stats-overview-stat-label-ctn">
-                        <span class="fi-wi-stats-overview-stat-label">Komisija · {{ $this->year }}</span>
+                        <span class="fi-wi-stats-overview-stat-label">Komisija · {{ $periodLabel }}</span>
                     </div>
                     <div class="fi-wi-stats-overview-stat-value">{{ $money($report['total_commission']) }}</div>
                 </div>
@@ -332,11 +361,26 @@
 
     @livewire(
         \App\Filament\Admin\Widgets\AgentSoldPropertiesTable::class,
-        ['agentId' => $record->getKey(), 'year' => $this->year],
-        key('agent-sold-'.$record->getKey().'-'.$this->year)
+        [
+            'agentId' => $record->getKey(),
+            'year' => $this->year,
+            'month' => $this->month,
+            'periodLabel' => $periodDescription,
+        ],
+        key('agent-sold-'.$record->getKey().'-'.$this->year.'-'.$this->month)
     )
 
     <x-filament::section heading="Komisija pa mēnešiem">
+        <x-slot name="afterHeader">
+            <label class="pdc-agent-year" for="pdc-agent-year-monthly">
+                <span>Gads</span>
+                <select id="pdc-agent-year-monthly" wire:model.live="year">
+                    @foreach ($years as $yearOption)
+                        <option value="{{ $yearOption }}">{{ $yearOption }}</option>
+                    @endforeach
+                </select>
+            </label>
+        </x-slot>
         <div class="pdc-report-table-wrap">
             <table class="pdc-report-table pdc-report-table--monthly">
                 <thead>
@@ -358,8 +402,8 @@
                 <tfoot>
                     <tr>
                         <td>Kopā {{ $this->year }}</td>
-                        <td class="pdc-report-num">{{ $report['sold_count'] }}</td>
-                        <td class="pdc-report-num">{{ $money($report['total_commission']) }}</td>
+                        <td class="pdc-report-num">{{ $report['year_sold_count'] }}</td>
+                        <td class="pdc-report-num">{{ $money($report['year_total_commission']) }}</td>
                     </tr>
                 </tfoot>
             </table>

@@ -21,6 +21,11 @@ class ViewUser extends ViewRecord
      */
     public int $year = 0;
 
+    /**
+     * Izvēlētais mēnesis (0 = visi gada mēneši).
+     */
+    public int $month = 0;
+
     public function mount(int|string $record): void
     {
         parent::mount($record);
@@ -36,6 +41,11 @@ class ViewUser extends ViewRecord
     public function updatedYear(): void
     {
         $this->year = $this->resolveYear((int) $this->year);
+    }
+
+    public function updatedMonth(): void
+    {
+        $this->month = min(12, max(0, (int) $this->month));
     }
 
     protected function getHeaderActions(): array
@@ -84,16 +94,20 @@ class ViewUser extends ViewRecord
             ->whereIn('status', ['published', 'reserved'])
             ->count();
 
-        $sold = CrmProperty::query()
+        $yearStart = Carbon::create($this->year, 1, 1)->startOfDay();
+        $yearEnd = Carbon::create($this->year, 12, 31)->endOfDay();
+
+        $soldYear = CrmProperty::query()
             ->where('owner_user_id', $agentId)
             ->where('status', 'sold')
             ->whereNotNull('sold_at')
-            ->whereBetween('sold_at', [
-                Carbon::create($this->year, 1, 1)->startOfDay(),
-                Carbon::create($this->year, 12, 31)->endOfDay(),
-            ])
+            ->whereBetween('sold_at', [$yearStart, $yearEnd])
             ->orderByDesc('sold_at')
             ->get();
+
+        $sold = $this->month > 0
+            ? $soldYear->filter(fn (CrmProperty $property): bool => (int) $property->sold_at->format('n') === $this->month)->values()
+            : $soldYear;
 
         // Pārdotie objekti bez darījuma datuma: tos nevar ieskaitīt nevienā
         // mēnesī, bet tie jāparāda, lai trūkstošie dati nepazustu.
@@ -109,9 +123,9 @@ class ViewUser extends ViewRecord
             $monthly[$month] = ['count' => 0, 'commission' => 0.0];
         }
 
-        $totalCommission = 0.0;
+        $yearTotalCommission = 0.0;
 
-        foreach ($sold as $property) {
+        foreach ($soldYear as $property) {
             $month = (int) $property->sold_at->format('n');
             $monthly[$month]['count']++;
 
@@ -121,15 +135,21 @@ class ViewUser extends ViewRecord
 
             $commission = (float) $property->commission_eur;
             $monthly[$month]['commission'] += $commission;
-            $totalCommission += $commission;
+            $yearTotalCommission += $commission;
         }
 
-        $allSold = $sold->concat($undated);
+        $totalCommission = $sold
+            ->filter(fn (CrmProperty $property): bool => $property->commission_eur !== null)
+            ->sum(fn (CrmProperty $property): float => (float) $property->commission_eur);
+
+        $allSold = $soldYear->concat($undated);
 
         return [
             'active_total' => $activeTotal,
             'sold_count' => $sold->count(),
             'total_commission' => $totalCommission,
+            'year_sold_count' => $soldYear->count(),
+            'year_total_commission' => $yearTotalCommission,
             'monthly' => $monthly,
             'missing_commission' => $allSold->whereNull('commission_eur')->count(),
             'undated_count' => $undated->count(),

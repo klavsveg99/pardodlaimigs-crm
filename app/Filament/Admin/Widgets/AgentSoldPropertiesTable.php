@@ -26,6 +26,10 @@ class AgentSoldPropertiesTable extends TableWidget
 
     public int $year = 0;
 
+    public int $month = 0;
+
+    public string $periodLabel = '';
+
     /**
      * TableWidget piespiedž vienkāršu lapošanu; pārskatā gribam tādu pašu
      * lapošanu kā Īpašumu/Klientu tabulās (ar kopējo ierakstu skaitu).
@@ -38,22 +42,33 @@ class AgentSoldPropertiesTable extends TableWidget
     public function mount(): void
     {
         $this->year = $this->year ?: (int) now()->year;
+        $this->month = min(12, max(0, $this->month));
     }
 
     public function table(Table $table): Table
     {
+        $start = $this->month > 0
+            ? Carbon::create($this->year, $this->month, 1)->startOfMonth()
+            : Carbon::create($this->year, 1, 1)->startOfDay();
+
+        $end = $this->month > 0
+            ? $start->copy()->endOfMonth()
+            : Carbon::create($this->year, 12, 31)->endOfDay();
+
         return $table
             ->heading('Pārdotie objekti un saņemtā komisija')
+            ->description($this->periodLabel ?: null)
             ->queryStringIdentifier('sold')
             ->query(
                 CrmProperty::query()
                     ->where('owner_user_id', $this->agentId ?? 0)
                     ->where('status', 'sold')
-                    ->where(function (Builder $query): void {
-                        $query->whereBetween('sold_at', [
-                            Carbon::create($this->year, 1, 1)->startOfDay(),
-                            Carbon::create($this->year, 12, 31)->endOfDay(),
-                        ])->orWhereNull('sold_at');
+                    ->where(function (Builder $query) use ($start, $end): void {
+                        $query->whereBetween('sold_at', [$start, $end]);
+
+                        if ($this->month === 0) {
+                            $query->orWhereNull('sold_at');
+                        }
                     }),
             )
             ->columns([
