@@ -155,6 +155,9 @@
                 font-size: 0.66rem;
                 letter-spacing: 0.02em;
             }
+            .pdc-report-table--monthly .pdc-report-num {
+                text-align: left !important;
+            }
         }
     </style>
 
