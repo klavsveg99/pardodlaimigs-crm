@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -16,7 +16,7 @@ class KnowledgeArticle extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'knowledge_category_id', 'title', 'is_public', 'summary', 'body', 'video_urls', 'steps',
+        'title', 'is_public', 'summary', 'body', 'video_urls', 'steps',
     ];
 
     protected $casts = [
@@ -35,9 +35,17 @@ class KnowledgeArticle extends Model
         });
     }
 
-    public function category(): BelongsTo
+    public function categories(): BelongsToMany
     {
-        return $this->belongsTo(KnowledgeCategory::class, 'knowledge_category_id');
+        return $this->belongsToMany(
+            KnowledgeCategory::class,
+            'knowledge_article_knowledge_category',
+            'knowledge_article_id',
+            'knowledge_category_id',
+        )
+            ->withPivot('sort_order')
+            ->withTimestamps()
+            ->orderByPivot('sort_order');
     }
 
     public function assignments(): HasMany

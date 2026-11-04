@@ -5,15 +5,24 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class KnowledgeCategory extends Model
 {
     protected $fillable = ['name', 'description'];
 
-    public function articles(): HasMany
+    public function articles(): BelongsToMany
     {
-        return $this->hasMany(KnowledgeArticle::class, 'knowledge_category_id');
+        return $this->belongsToMany(
+            KnowledgeArticle::class,
+            'knowledge_article_knowledge_category',
+            'knowledge_category_id',
+            'knowledge_article_id',
+        )
+            ->withPivot('sort_order')
+            ->withTimestamps()
+            ->orderByPivot('sort_order');
     }
 
     public function courseAssignments(): HasMany

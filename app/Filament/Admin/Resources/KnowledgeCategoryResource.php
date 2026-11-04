@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\KnowledgeCategoryResource\Pages;
+use App\Models\KnowledgeArticle;
 use App\Models\KnowledgeCategory;
 use Filament\Actions;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -79,7 +82,22 @@ class KnowledgeCategoryResource extends Resource
                 ->label('Apraksts')
                 ->rows(3)
                 ->maxLength(2000)
-                ->helperText('Rādās aģentam kursa kartē.')
+                ->columnSpanFull(),
+            Repeater::make('materials')
+                ->label('Materiāli')
+                ->schema([
+                    Select::make('article_id')
+                        ->label('Materiāls')
+                        ->options(fn (): array => KnowledgeArticle::query()->orderBy('title')->pluck('title', 'id')->all())
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+                ])
+                ->default([])
+                ->addActionLabel('Pievienot materiālu')
+                ->reorderable()
+                ->reorderableWithButtons()
+                ->collapsible(false)
                 ->columnSpanFull(),
         ]);
     }
@@ -94,13 +112,26 @@ class KnowledgeCategoryResource extends Resource
                 ->label('Pabeiguši')
                 ->getStateUsing(fn (KnowledgeCategory $record): string => ($record->completed_course_assignments_count ?? 0).'/'.($record->course_assignments_count ?? 0))
                 ->alignCenter(),
+        ])->filters([
+            Tables\Filters\TernaryFilter::make('course_assignments')
+                ->label('Piešķirts')
+                ->trueLabel('Jā')
+                ->falseLabel('Nē')
+                ->placeholder('Visi')
+                ->queries(
+                    true: fn (Builder $query): Builder => $query->whereHas('courseAssignments'),
+                    false: fn (Builder $query): Builder => $query->whereDoesntHave('courseAssignments'),
+                    blank: fn (Builder $query): Builder => $query,
+                ),
         ])->actions([
-            Actions\EditAction::make()->label('Rediģēt')->color('gray'),
-            Actions\DeleteAction::make()
-                ->label('Dzēst')
-                ->color('danger')
-                ->modalHeading('Dzēst kursu?')
-                ->modalDescription('Kurss tiks dzēsts. Tā materiāli paliks zināšanu bāzē bez kursa.'),
+            Actions\ActionGroup::make([
+                Actions\EditAction::make()->label('Rediģēt')->color('gray'),
+                Actions\DeleteAction::make()
+                    ->label('Dzēst')
+                    ->color('danger')
+                    ->modalHeading('Dzēst kursu?')
+                    ->modalDescription('Kurss tiks dzēsts. Tā materiāli paliks zināšanu bāzē bez kursa.'),
+            ])->color('gray'),
         ])->defaultSort('name');
     }
 

@@ -8,7 +8,6 @@ use App\Filament\Admin\Resources\KnowledgeArticleResource\Pages;
 use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Models\KnowledgeArticle;
 use App\Models\KnowledgeAssignment;
-use App\Models\KnowledgeCategory;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
@@ -84,7 +83,12 @@ class KnowledgeArticleResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()->with('category');
+        $query = parent::getEloquentQuery()
+            ->with('categories')
+            ->withCount([
+                'attachments as knowledge_attachments_count' => fn (Builder $attachment): Builder => $attachment->where('collection', 'knowledge'),
+            ]);
+
         $user = auth()->user();
 
         if ($user?->can('manage')) {
@@ -117,7 +121,7 @@ class KnowledgeArticleResource extends Resource
                         fn (Builder $assignment): Builder => $assignment->where('assigned_user_id', $user?->id),
                     )
                     ->orWhereHas(
-                        'category.courseAssignments',
+                        'categories.courseAssignments',
                         fn (Builder $assignment): Builder => $assignment->where('assigned_user_id', $user?->id),
                     );
             })
@@ -132,13 +136,11 @@ class KnowledgeArticleResource extends Resource
     {
         return $schema->components([
             TextInput::make('title')->label('Nosaukums')->required()->maxLength(255)->columnSpanFull(),
-            Forms\Components\Select::make('knowledge_category_id')
-                ->label('Kurss')
-                ->options(fn (): array => KnowledgeCategory::query()->orderBy('name')->pluck('name', 'id')->all())
-                ->searchable()->preload()->nullable(),
             Forms\Components\Toggle::make('is_public')
                 ->label('Obligāts saturs')
                 ->helperText('Automātiski piešķirts visiem lietotājiem, līdz tas ir pabeigts.')
+                ->inline(false)
+                ->columnSpanFull()
                 ->default(false),
             Forms\Components\Textarea::make('summary')->label('Īss apraksts')->rows(2)->columnSpanFull(),
             Forms\Components\RichEditor::make('body')->label('Saturs')->columnSpanFull(),
@@ -182,7 +184,8 @@ class KnowledgeArticleResource extends Resource
         return $schema->components([
             TextEntry::make('title')->hiddenLabel()->size('lg')->weight('bold')->columnSpanFull(),
             TextEntry::make('summary')->hiddenLabel()->placeholder('')->columnSpanFull(),
-            TextEntry::make('category.name')->hiddenLabel()->badge()->color('gray')
+            TextEntry::make('categories_list')->hiddenLabel()->badge()->color('gray')
+                ->state(fn (KnowledgeArticle $record): ?string => $record->categories->pluck('name')->implode(' · ') ?: null)
                 ->placeholder('')
                 ->visible(fn (?string $state): bool => filled($state))
                 ->columnSpanFull(),
@@ -242,6 +245,7 @@ class KnowledgeArticleResource extends Resource
                     ->url(fn (KnowledgeArticle $record): ?string => $record->trashed()
                         ? null
                         : static::getUrl('view', ['record' => $record])),
+                Tables\Columns\ViewColumn::make('media')->label('')->view('filament.tables.columns.knowledge-media'),
                 Tables\Columns\IconColumn::make('is_public')->label('Obligāts saturs')->boolean()
                     ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
                 Tables\Columns\TextColumn::make('assignments_progress')
@@ -277,8 +281,10 @@ class KnowledgeArticleResource extends Resource
                 Tables\Columns\TextColumn::make('body')->label('Saturs')->searchable()->formatStateUsing(fn (?string $state): string => strip_tags((string) $state))->limit(100)->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('knowledge_category_id')->label('Kurss')
-                    ->options(fn (): array => KnowledgeCategory::query()->orderBy('name')->pluck('name', 'id')->all()),
+                Tables\Filters\SelectFilter::make('categories')->label('Kurss')
+                    ->relationship('categories', 'name')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\TrashedFilter::make()
                     ->label('Dzēstie')
                     ->placeholder('Aktīvie materiāli')

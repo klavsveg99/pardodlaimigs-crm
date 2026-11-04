@@ -22,7 +22,7 @@ class KnowledgeProgress
      */
     public function courseProgress(User $user, KnowledgeCategory $category): array
     {
-        $articleIds = $category->articles()->pluck('id');
+        $articleIds = $category->articles()->pluck('knowledge_articles.id');
 
         $total = $articleIds->count();
         if ($total === 0) {
@@ -76,8 +76,8 @@ class KnowledgeProgress
 
     public function syncForArticle(User $user, KnowledgeArticle $article): void
     {
-        if ($article->category) {
-            $this->syncCourseCompletion($user, $article->category);
+        foreach ($article->categories as $category) {
+            $this->syncCourseCompletion($user, $category);
         }
     }
 }

@@ -15,6 +15,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 
 class ViewKnowledgeArticle extends ViewRecord
 {
@@ -84,9 +85,12 @@ class ViewKnowledgeArticle extends ViewRecord
                         'rating' => (int) $data['rating'],
                     ]);
                 } else {
-                    $courseAssigned = $this->record->category?->courseAssignments()
-                        ->where('assigned_user_id', $user->id)
-                        ->exists() ?? false;
+                    $courseAssigned = $this->record->categories()
+                        ->whereHas(
+                            'courseAssignments',
+                            fn (Builder $query): Builder => $query->where('assigned_user_id', $user->id),
+                        )
+                        ->exists();
 
                     if (! $this->record->is_public && ! $courseAssigned) {
                         return;

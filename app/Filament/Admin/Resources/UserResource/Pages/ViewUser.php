@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources\UserResource\Pages;
 
-use App\Filament\Admin\Resources\KnowledgeArticleResource;
 use App\Filament\Admin\Resources\UserResource;
 use App\Models\CrmProperty;
-use App\Models\KnowledgeArticle;
-use App\Models\KnowledgeAssignment;
-use App\Models\KnowledgeCompletion;
-use App\Models\KnowledgeCourseAssignment;
-use App\Services\KnowledgeProgress;
+use App\Services\KnowledgeRecap;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Carbon;
@@ -161,86 +156,13 @@ class ViewUser extends ViewRecord
     }
 
     /**
-     * Zināšanu bāzes kopsavilkums lietotāja skatam: piešķirtie kursi un
-     * materiāli, kas redzami visiem vai piešķirti šim lietotājam.
+     * Zināšanu bāzes kopsavilkums lietotāja skatam.
      *
-     * @return array{
-     *     assigned: array<int, array<string, mixed>>,
-     *     materials: array<int, array<string, mixed>>,
-     *     completed: int,
-     *     materials_completed: int
-     * }
+     * @return array<string, mixed>
      */
     public function getKnowledgeRecap(): array
     {
-        $user = $this->record;
-        $progress = app(KnowledgeProgress::class);
-
-        $assigned = KnowledgeCourseAssignment::query()
-            ->with('category')
-            ->where('assigned_user_id', $user->getKey())
-            ->get()
-            ->map(function (KnowledgeCourseAssignment $assignment) use ($progress, $user): array {
-                $stats = $assignment->category
-                    ? $progress->courseProgress($user, $assignment->category)
-                    : ['total' => 0, 'completed' => 0, 'percent' => 0];
-
-                return [
-                    'name' => $assignment->category?->name ?? 'Dzēsts kurss',
-                    'stats' => $stats,
-                    'due_at' => $assignment->due_at,
-                    'completed_at' => $assignment->completed_at,
-                    'rating' => $assignment->rating,
-                ];
-            })
-            ->sortBy('name')
-            ->values()
-            ->all();
-
-        $assignmentsByArticle = KnowledgeAssignment::query()
-            ->where('assigned_user_id', $user->getKey())
-            ->orderByDesc('created_at')
-            ->get()
-            ->groupBy('knowledge_article_id');
-
-        $completionsByArticle = KnowledgeCompletion::query()
-            ->where('user_id', $user->getKey())
-            ->get()
-            ->keyBy('knowledge_article_id');
-
-        $articles = KnowledgeArticle::query()
-            ->where(function ($query) use ($assignmentsByArticle): void {
-                $query->where('is_public', true)
-                    ->orWhereIn('id', $assignmentsByArticle->keys());
-            })
-            ->orderBy('title')
-            ->get();
-
-        $materials = $articles->map(function (KnowledgeArticle $article) use ($assignmentsByArticle, $completionsByArticle): array {
-            $articleAssignments = $assignmentsByArticle->get($article->id);
-            $pendingAssignment = $articleAssignments?->firstWhere('completed_at', null);
-            $completedAssignment = $articleAssignments?->firstWhere('completed_at', '!==', null);
-            $completion = $completionsByArticle->get($article->id);
-
-            $completedAt = $completedAssignment?->completed_at ?? $completion?->completed_at;
-
-            return [
-                'name' => $article->title,
-                'url' => KnowledgeArticleResource::getUrl('view', ['record' => $article]),
-                'public' => (bool) $article->is_public,
-                'assigned' => $articleAssignments !== null,
-                'due_at' => $pendingAssignment?->due_at ?? $completedAssignment?->due_at,
-                'completed_at' => $completedAt,
-                'rating' => $completedAssignment?->rating ?? $completion?->rating,
-            ];
-        })->values()->all();
-
-        return [
-            'assigned' => $assigned,
-            'materials' => $materials,
-            'completed' => count(array_filter($assigned, fn (array $course): bool => $course['completed_at'] !== null)),
-            'materials_completed' => count(array_filter($materials, fn (array $material): bool => $material['completed_at'] !== null)),
-        ];
+        return app(KnowledgeRecap::class)->summary($this->record);
     }
 
     private function resolveYear(int $year): int

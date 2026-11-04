@@ -423,5 +423,17 @@
 
     @if ($knowledge !== null)
         @include('filament.admin.resources.user-resource.pages.partials.knowledge-recap', ['knowledge' => $knowledge])
+
+        @livewire(
+            \App\Filament\Admin\Widgets\AgentKnowledgeCoursesTable::class,
+            ['agentId' => $record->getKey()],
+            key('agent-knowledge-courses-'.$record->getKey())
+        )
+
+        @livewire(
+            \App\Filament\Admin\Widgets\AgentKnowledgeMaterialsTable::class,
+            ['agentId' => $record->getKey()],
+            key('agent-knowledge-materials-'.$record->getKey())
+        )
     @endif
 </x-filament-panels::page>
