@@ -9,6 +9,7 @@ use App\Models\Client;
 use App\Models\CrmProperty;
 use App\Models\Task;
 use App\Models\Viewing;
+use Carbon\Carbon;
 use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -36,6 +37,21 @@ class ActivityFeed extends BaseWidget
         'erase_request' => 'Dzēšanas pieprasījums',
         'wpform_sync' => 'WP formu sinhronizācija',
         'login' => 'Pieteicies',
+    ];
+
+    /**
+     * Lauki, kas paši par sevi nav uzņēmuma notikums: AI analīzes, failu
+     * saraksti, sinhronizācijas tehniskie lauki un laika zīmogi. Ja mainījies
+     * tikai kāds no šiem, ieraksts aktivitāšu plūsmā neparādās.
+     */
+    public const IGNORED_FIELDS = [
+        'updated_at', 'created_at', 'deleted_at',
+        'ai_notes', 'ai_result', 'legal_data', 'image_urls', 'attachments',
+        'attachment_original_names', 'featured_thumb', 'marketing_pdf', 'pdf',
+        'price_cents', 'price_status_changed_at', 'slug', 'calendar_token',
+        'remember_token', 'password', 'notified_at', 'sent_at', 'seen_at',
+        'read_at', 'dismissed_at', 'last_synced_at', 'synced_at', 'wp_id',
+        'wpform_id', 'raw_data', 'sort_order',
     ];
 
     public const ENTITY_LABELS = [
@@ -148,12 +164,26 @@ class ActivityFeed extends BaseWidget
 
     protected function getQuery(): Builder
     {
+        $placeholders = implode(',', array_fill(0, count(self::IGNORED_FIELDS), '?'));
+
         return AuditLog::query()
             ->with(['actor'])
             // WPForms background sync runs constantly - noise, not company activity.
             ->where('action', '!=', 'wpform_sync')
             // Darījumi no longer exist in the system - hide their legacy rows.
             ->where('entity', '!=', 'deal')
+            // Tikai lietotāju darbības - automātiskie importi/sinhronizācija
+            // (bez autora) nav uzņēmuma aktivitāte.
+            ->whereNotNull('actor_user_id')
+            // Atjauninājumi, kuros mainījies tikai tehnisks/AI lauks, nav
+            // nozīmīgs notikums un nedrīkst piegružot plūsmu.
+            ->whereRaw(
+                "NOT (action = 'update' AND NOT EXISTS (
+                    SELECT 1 FROM json_each(audit_log.after)
+                    WHERE json_each.key NOT IN ({$placeholders})
+                ))",
+                self::IGNORED_FIELDS,
+            )
             ->orderByDesc('created_at');
     }
 
@@ -307,7 +337,7 @@ class ActivityFeed extends BaseWidget
         $bits = [];
         if (! empty($data['scheduled_at'])) {
             try {
-                $date = \Carbon\Carbon::parse($data['scheduled_at']);
+                $date = Carbon::parse($data['scheduled_at']);
                 $bits[] = $date->format('H:i') === '00:00' ? $date->format('d.m.Y') : $date->format('d.m.Y H:i');
             } catch (\Throwable) {
             }
@@ -337,7 +367,7 @@ class ActivityFeed extends BaseWidget
         foreach (['due_at', 'scheduled_at'] as $field) {
             if (! empty($after[$field])) {
                 try {
-                    $date = \Carbon\Carbon::parse($after[$field]);
+                    $date = Carbon::parse($after[$field]);
                     $bits[] = (self::FIELD_LABELS[$field] ?? $field).': '.($date->format('H:i') === '00:00' ? $date->format('d.m.Y') : $date->format('d.m.Y H:i'));
                 } catch (\Throwable) {
                 }
@@ -379,11 +409,10 @@ class ActivityFeed extends BaseWidget
 
     protected function diffText(array $before, array $after, int $max): string
     {
-        $skip = ['updated_at', 'created_at', 'attachment_original_names', 'attachments'];
         $changes = [];
 
         foreach ($after as $key => $new) {
-            if (in_array($key, $skip, true)) {
+            if (in_array($key, self::IGNORED_FIELDS, true)) {
                 continue;
             }
             $old = $before[$key] ?? null;
@@ -397,7 +426,7 @@ class ActivityFeed extends BaseWidget
             }
         }
 
-        $total = $this->countChanges($before, $after, $skip);
+        $total = $this->countChanges($before, $after);
         $text = implode('; ', $changes);
         if ($total > count($changes)) {
             $text .= ($text !== '' ? '; ' : '').'un vēl '.($total - count($changes)).'…';
@@ -406,11 +435,11 @@ class ActivityFeed extends BaseWidget
         return $text !== '' ? 'Mainīts - '.$text : '';
     }
 
-    protected function countChanges(array $before, array $after, array $skip): int
+    protected function countChanges(array $before, array $after): int
     {
         $n = 0;
         foreach ($after as $key => $new) {
-            if (in_array($key, $skip, true)) {
+            if (in_array($key, self::IGNORED_FIELDS, true)) {
                 continue;
             }
             if (! $this->valuesEqual($before[$key] ?? null, $new)) {
@@ -480,7 +509,7 @@ class ActivityFeed extends BaseWidget
         // Datetime strings → short LV format
         if (preg_match('/^\d{4}-\d{2}-\d{2}/', $s)) {
             try {
-                return \Carbon\Carbon::parse($s)->format('d.m.Y H:i');
+                return Carbon::parse($s)->format('d.m.Y H:i');
             } catch (\Throwable) {
             }
         }
