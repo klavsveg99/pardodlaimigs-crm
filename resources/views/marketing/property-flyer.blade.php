@@ -6,7 +6,8 @@
 
     $addressLine = trim(implode(', ', array_filter([$property->address, $property->city])));
     $priceValue = (float) $property->price_eur > 0 ? number_format((float) $property->price_eur, 0, ',', ' ') : '';
-    $areaValue = $property->size_m2 ? (string) (int) $property->size_m2 : '';
+    $flyerArea = (int) ($property->size_m2 ?: $property->land_m2);
+    $areaValue = $flyerArea > 0 ? (string) $flyerArea : '';
     $pricePerSqmValue = $pricePerSqm ? number_format($pricePerSqm, 0, ',', ' ') : '';
 
     $filename = ($property->slug ?: 'ipasums').'-marketing.pdf';
@@ -21,7 +22,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $property->title }} · PDF mārketings</title>
+    <title>{{ $property->title }} · Ģenerēt PDF</title>
     <link rel="icon" type="image/jpeg" href="{{ asset('images/favicon-32x32.jpg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -230,7 +231,7 @@
 <body>
     <div class="topbar no-print">
         <img class="topbar-logo" src="{{ asset('images/favicon-180x180.jpg') }}" alt="Pārdod Laimīgs · CRM">
-        <span class="title">PDF mārketings</span>
+        <span class="title">Ģenerēt PDF</span>
         <button type="button" id="btn-download" class="btn btn-primary" onclick="pdcDownloadPdf()">
             <i class="fa-solid fa-download"></i><span>Lejupielādēt PDF</span>
         </button>

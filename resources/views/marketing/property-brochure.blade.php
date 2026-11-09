@@ -17,26 +17,65 @@
     $hero = $allImages->first();
     $gallery = $allImages->slice(1, 4)->values();
     $initials = mb_strtoupper(mb_substr((string) $agentName, 0, 1));
-    $coverFacts = [
-        ['value' => $areaValue ? $areaValue.' m²' : '-', 'label' => 'Telpu platība', 'key' => 'area'],
-        ['value' => $landDisplay ?: '-', 'label' => 'Zeme', 'key' => 'land'],
-        ['value' => $property->beds ? (string) $property->beds : '-', 'label' => 'Istabas', 'key' => 'rooms'],
-        ['value' => $pricePerSqmValue ?: '-', 'label' => 'Cena par m²', 'key' => 'pricePerSqm'],
-    ];
-    $propertyFacts = [
-        ['Platība', $areaValue ? $areaValue.' m²' : '-', 'area'],
-        ['Zemes platība', $landDisplay ?: '-', 'land'],
-        ['Istabas', $property->beds ?: '-', 'rooms'],
-        ['Vannasistabas', $property->baths ?: '-', null],
-        ['Kadastra Nr.', $property->kadastra_nr ?: '-', null],
-        ['Cena', $priceValue, 'price'],
-    ];
-    $locationFacts = [
-        ['Atrašanās vieta', $addressLine ?: '-', 'address'],
+    $hasArea = filled($areaValue);
+    $hasLand = filled($landDisplay);
+    $hasRooms = filled($property->beds);
+    $hasBaths = filled($property->baths);
+    $hasKadastra = filled($property->kadastra_nr);
+    $hasPricePerSqm = filled($pricePerSqmValue);
+    $statusLabel = \App\Models\CrmProperty::STATUSES[$property->status] ?? $property->status;
+
+    $coverFacts = collect();
+    if ($hasArea) {
+        $coverFacts->push(['value' => $areaValue.' m²', 'label' => 'Telpu platība', 'key' => 'area']);
+    }
+    if ($hasLand) {
+        $coverFacts->push(['value' => $landDisplay, 'label' => 'Zemes platība', 'key' => 'land']);
+    }
+    if ($hasRooms) {
+        $coverFacts->push(['value' => (string) $property->beds, 'label' => 'Istabas', 'key' => 'rooms']);
+    }
+    if ($hasPricePerSqm) {
+        $coverFacts->push(['value' => $pricePerSqmValue, 'label' => 'Cena par m²', 'key' => 'pricePerSqm']);
+    }
+    if ($hasKadastra && $coverFacts->count() < 4) {
+        $coverFacts->push(['value' => $property->kadastra_nr, 'label' => 'Kadastra Nr.', 'key' => null]);
+    }
+    if ($coverFacts->count() < 4) {
+        $coverFacts->push(['value' => $categoryLabel, 'label' => 'Kategorija', 'key' => null]);
+    }
+    if ($coverFacts->count() < 4) {
+        $coverFacts->push(['value' => $statusLabel, 'label' => 'Statuss', 'key' => null]);
+    }
+    $coverFacts = $coverFacts->take(4);
+
+    $propertyFacts = collect();
+    if ($hasArea) {
+        $propertyFacts->push(['Platība', $areaValue.' m²', 'area']);
+    }
+    if ($hasLand) {
+        $propertyFacts->push(['Zemes platība', $landDisplay, 'land']);
+    }
+    if ($hasRooms) {
+        $propertyFacts->push(['Istabas', (string) $property->beds, 'rooms']);
+    }
+    if ($hasBaths) {
+        $propertyFacts->push(['Vannasistabas', (string) $property->baths, null]);
+    }
+    if ($hasKadastra) {
+        $propertyFacts->push(['Kadastra Nr.', $property->kadastra_nr, null]);
+    }
+    if ($hasPricePerSqm) {
+        $propertyFacts->push(['Cena par m²', $pricePerSqmValue, 'pricePerSqm']);
+    }
+    $propertyFacts->push(['Cena', $priceValue, 'price']);
+
+    $locationFacts = collect([
+        ['Atrašanās vieta', $addressLine, 'address'],
         ['Kategorija', $categoryLabel, null],
-        ['Statuss', \App\Models\CrmProperty::STATUSES[$property->status] ?? $property->status, null],
-        ['Sludinājums kopš', $listingDate ?: '-', 'listingDate'],
-    ];
+        ['Statuss', $statusLabel, null],
+        ['Sludinājums kopš', $listingDate, 'listingDate'],
+    ])->filter(fn (array $fact) => filled($fact[1]))->values();
 @endphp
 <!DOCTYPE html>
 <html lang="lv">
@@ -44,7 +83,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $property->title }} · Garais PDF</title>
+    <title>{{ $property->title }} · Ģenerēt PDF</title>
     <link rel="icon" type="image/jpeg" href="{{ asset('images/favicon-32x32.jpg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -224,7 +263,7 @@
 <body>
     <div class="topbar no-print">
         <img class="topbar-logo" src="{{ asset('images/favicon-180x180.jpg') }}" alt="Pārdod Laimīgs · CRM">
-        <span class="title">Garais PDF</span>
+        <span class="title">Ģenerēt PDF</span>
         <button type="button" id="btn-download" class="btn btn-primary" onclick="pdcDownloadBrochure()">
             <i class="fa-solid fa-download"></i><span>Lejupielādēt PDF</span>
         </button>
@@ -372,7 +411,7 @@
                                 <div class="agent-initial" data-out="agentInitial">{{ $initials ?: 'P' }}</div>
                             </div>
                         </div>
-                        <div class="cover-facts">
+                        <div class="cover-facts" style="grid-template-columns: repeat({{ max(1, $coverFacts->count()) }}, 1fr)">
                             @foreach ($coverFacts as $fact)
                                 <div class="cover-fact"><strong data-out="{{ $fact['key'] }}">{{ $fact['value'] }}</strong><span>{{ $fact['label'] }}</span></div>
                             @endforeach

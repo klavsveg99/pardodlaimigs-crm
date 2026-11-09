@@ -83,6 +83,7 @@ class PropertyMarketingController extends Controller
         }
 
         $agent = $property->owner;
+        $priceArea = (int) ($property->size_m2 ?: $property->land_m2);
 
         return [
             'property' => $property,
@@ -98,8 +99,8 @@ class PropertyMarketingController extends Controller
             'listingDate' => ($property->sale_started_at ?? $property->updated_at)
                 ?->locale('lv')
                 ->translatedFormat('F Y'),
-            'pricePerSqm' => ($property->price_eur > 0 && $property->size_m2 > 0)
-                ? (int) round((float) $property->price_eur / (int) $property->size_m2)
+            'pricePerSqm' => ($property->price_eur > 0 && $priceArea > 0)
+                ? (int) round((float) $property->price_eur / $priceArea)
                 : null,
             'ctaUrl' => $property->public_url,
             'descriptionHtml' => $this->flyerDescriptionHtml($property),
