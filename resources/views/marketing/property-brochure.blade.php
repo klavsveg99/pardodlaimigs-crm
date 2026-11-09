@@ -69,7 +69,7 @@
             padding: .7rem 1rem; background: #fff; border-bottom: 1px solid #e2e8e6; box-shadow: 0 1px 4px #0000000a;
         }
         .topbar .title { font-family: 'Maven Pro', sans-serif; font-weight: 700; font-size: 1rem; }
-        .topbar-logo { height: 2rem; width: auto; }
+        .topbar-logo { height: 2rem; width: 2rem; }
         .spacer { flex: 1 1 auto; }
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; height: 2.35rem; padding: 0 .95rem; border: 1px solid #d1d9d7; border-radius: .5rem; background: #fff; color: #374151; font: 600 .86rem 'Source Sans Pro', sans-serif; text-decoration: none; cursor: pointer; white-space: nowrap; }
         .btn-primary { background: var(--green); border-color: var(--green-dark); color: #fff; }
@@ -223,7 +223,7 @@
 </head>
 <body>
     <div class="topbar no-print">
-        <img class="topbar-logo" src="{{ asset('site-assets/images/brand/logo.svg') }}" alt="Pārdod Laimīgs · CRM">
+        <img class="topbar-logo" src="{{ asset('images/favicon-180x180.jpg') }}" alt="Pārdod Laimīgs · CRM">
         <span class="title">Garais PDF</span>
         <button type="button" id="btn-download" class="btn btn-primary" onclick="pdcDownloadBrochure()">
             <i class="fa-solid fa-download"></i><span>Lejupielādēt PDF</span>

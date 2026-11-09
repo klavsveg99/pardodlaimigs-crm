@@ -44,7 +44,7 @@
             box-shadow: 0 1px 4px rgba(0,0,0,0.04);
         }
         .topbar .title { font-family: 'Maven Pro', sans-serif; font-weight: 700; font-size: 1rem; margin-right: 0.25rem; }
-        .topbar .topbar-logo { height: 2rem; width: auto; object-fit: contain; flex: none; }
+        .topbar .topbar-logo { height: 2rem; width: 2rem; object-fit: contain; flex: none; }
         .topbar .spacer { flex: 1 1 auto; }
 
         .btn {
@@ -155,7 +155,6 @@
         .flyer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; gap: 10px; }
         .brand { display: flex; align-items: center; gap: 8px; min-width: 0; background: var(--pdc-primary); border-radius: 6px; padding: 5px 10px; }
         .brand img { width: auto; height: 34px; object-fit: contain; object-position: left center; flex-shrink: 0; }
-        .brand span { margin-left: 0; font-size: 13px; font-weight: 600; color: #ffffff; white-space: nowrap; }
         .chip { background: var(--pdc-primary); color: #ffffff; padding: 6px 12px; font-size: 11px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
         .flyer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; flex: 1; min-height: 0; }
         .col-left { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
@@ -230,7 +229,7 @@
 </head>
 <body>
     <div class="topbar no-print">
-        <img class="topbar-logo" src="{{ asset('site-assets/images/brand/logo.svg') }}" alt="Pārdod Laimīgs · CRM">
+        <img class="topbar-logo" src="{{ asset('images/favicon-180x180.jpg') }}" alt="Pārdod Laimīgs · CRM">
         <span class="title">PDF mārketings</span>
         <button type="button" id="btn-download" class="btn btn-primary" onclick="pdcDownloadPdf()">
             <i class="fa-solid fa-download"></i><span>Lejupielādēt PDF</span>
@@ -360,7 +359,6 @@
                     <div class="flyer-header">
                         <div class="brand">
                             <img src="{{ asset('site-assets/images/brand/logo.svg') }}" alt="Pārdod Laimīgs">
-                            <span>PardodLaimigs.lv</span>
                         </div>
                         <span class="chip" data-out="listingId">{{ $listingId }}</span>
                     </div>
