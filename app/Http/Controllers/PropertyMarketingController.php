@@ -103,7 +103,6 @@ class PropertyMarketingController extends Controller
                 : null,
             'ctaUrl' => $property->public_url,
             'descriptionHtml' => $this->flyerDescriptionHtml($property),
-            'longDescriptionHtml' => $this->longDescriptionHtml($property),
             'hasPdfDescription' => $this->hasPdfDescription($property),
             'aiEnabled' => DescriptionGenerator::provider() !== null,
             'flyerMaxChars' => DescriptionGenerator::FLYER_MAX_CHARS,
@@ -222,26 +221,6 @@ class PropertyMarketingController extends Controller
         return $this->truncateFlyerHtml($this->sanitizeFlyerHtml(
             $this->plainTextToHtml($this->flyerDescription($property)),
         ));
-    }
-
-    /**
-     * Full description for the long brochure: the complete property text or
-     * AI description, without the one-page flyer's 600-character limit.
-     */
-    private function longDescriptionHtml(CrmProperty $property): string
-    {
-        $ai = is_array($property->ai_result) ? $property->ai_result : [];
-        $source = trim((string) ($ai['description'] ?? ''));
-
-        if ($source === '') {
-            $source = (string) $property->description;
-        }
-
-        if ($source !== '' && ! str_contains($source, '<')) {
-            $source = $this->plainTextToHtml($source);
-        }
-
-        return $this->sanitizeFlyerHtml($source);
     }
 
     /** Vienkāršs teksts (ar rindkopām) → ierobežots HTML. */
