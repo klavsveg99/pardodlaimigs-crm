@@ -91,7 +91,8 @@ class ViewCrmProperty extends ViewRecord
         ])
             ->label('Ģenerēt PDF')
             ->icon('heroicon-o-document-arrow-down')
-            ->color('gray');
+            ->color('gray')
+            ->button();
 
         $actions[] = LawyerDocumentAction::make();
 
