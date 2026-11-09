@@ -15,6 +15,7 @@
     $flyerImages = collect($images)->filter()->values();
     $mainImage = $flyerImages->first();
     $extraImages = $flyerImages->slice(1, 4)->values();
+    $qrDataUri = $qrDataUri ?? null;
 @endphp
 <!DOCTYPE html>
 <html lang="lv">
@@ -177,7 +178,10 @@
         .desc li { margin: 0 0 3px; word-break: break-word; }
         .desc strong, .desc b { font-weight: 700; }
         .desc em, .desc i { font-style: italic; }
-        .f-cta { background: var(--pdc-primary); color: #ffffff; border-radius: 6px; padding: 16px; font-size: 16px; font-weight: 600; text-transform: uppercase; text-align: center; letter-spacing: 0.5px; display: block; text-decoration: none; word-break: break-word; }
+        .cta-row { display: flex; align-items: center; gap: 12px; }
+        .f-cta { flex: 1 1 auto; background: var(--pdc-primary); color: #ffffff; border-radius: 6px; padding: 16px; font-size: 16px; font-weight: 600; text-transform: uppercase; text-align: center; letter-spacing: 0.5px; display: block; text-decoration: none; word-break: break-word; }
+        .f-qr { flex: none; width: 80px; height: 80px; }
+        .f-qr img { width: 100%; height: 100%; display: block; }
         .col-right { display: flex; flex-direction: column; min-width: 0; }
         .main-img { width: 100%; height: 240px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
         .main-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -379,7 +383,12 @@
 
                             <div class="desc" data-out="description">{!! $descriptionHtml !!}</div>
 
-                            <a class="f-cta" data-out="cta" href="{{ $ctaUrl }}" target="_blank" rel="noopener">Vairāk informācija</a>
+                            <div class="cta-row">
+                                <a class="f-cta" data-out="cta" href="{{ $ctaUrl }}" target="_blank" rel="noopener">Vairāk informācija</a>
+                                @if ($qrDataUri)
+                                    <div class="f-qr"><img src="{{ $qrDataUri }}" alt="QR kods"></div>
+                                @endif
+                            </div>
                         </div>
 
                         <div class="col-right">

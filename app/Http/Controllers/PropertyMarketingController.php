@@ -25,9 +25,11 @@ class PropertyMarketingController extends Controller
 {
     public function show(Request $request, string $propertySlug): View
     {
-        return view('marketing.property-flyer', $this->buildViewData(
-            $this->resolveProperty($request, $propertySlug),
-        ));
+        $property = $this->resolveProperty($request, $propertySlug);
+
+        return view('marketing.property-flyer', $this->buildViewData($property) + [
+            'qrDataUri' => $this->qrDataUri($property),
+        ]);
     }
 
     /**

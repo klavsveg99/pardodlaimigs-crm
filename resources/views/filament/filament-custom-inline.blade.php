@@ -1094,30 +1094,53 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta.pdc-tasks-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell { order: -2 !important; }
     .fi-ta.pdc-tasks-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-title { order: -1 !important; }
 
-    /* Īpašumi: mobilajā skatā pirmā rinda ir attēls pilnā platumā ar atlases
-       ķeksīti pie labās malas (vertikāli centrēts pret attēlu), otrā rinda ir
-       nosaukums pilnā platumā. Pārējās šūnas seko zem tām. */
+    /* Īpašumi: mobilajā skatā pirmā rinda ir attēls ar vadības elementiem
+       (zvaigzne, atlases ķeksītis, ātro darbību poga) pie labās malas, otrā
+       rinda ir nosaukums pilnā platumā. Pārējās šūnas seko zem tām. */
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr {
+        padding-block: 1rem !important;
+    }
     .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb {
         grid-column: 1 / -1 !important;
         grid-row: 1 !important;
         align-self: center !important;
         justify-content: flex-start !important;
     }
-    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell {
-        grid-column: 1 / -1 !important;
+    /* Attēls sākas turpat, kur pārējais saturs - bez 6px nobīdes, kas
+       desktopā atdala bildi no rindas ķeksīša. */
+    .fi-ta.pdc-properties-table .fi-ta-cell-featured-thumb .fi-ta-image {
+        margin-left: 0 !important;
+    }
+    /* Visi trīs vadības elementi stāv vienā rindā ar attēlu pie labās malas:
+       zvaigzne, atlases ķeksītis, ātrā darbība. Filament liek atlases šūnu
+       absolūti (top:0; inset-inline-end) un dod tai fiksētu platumu - mēs to
+       atgriežam plūsmā. */
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell,
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-is-featured,
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(> .fi-ta-actions) {
+        grid-column: 2 !important;
         grid-row: 1 !important;
-        /* Filament novieto atlases šūnu absolūti (top:0; inset-inline-end)
-           un dod tai fiksētu 0.25rem platumu. Mēs to atgriežam plūsmā, lai
-           ķeksītis stāvētu attēla rindā pie labās malas, vertikāli centrēts. */
-        inset: auto !important;
-        width: 100% !important;
+        justify-self: end !important;
         align-self: center !important;
+        width: auto !important;
+        margin-block: 0 !important;
+        padding: 0 !important;
+        position: relative !important;
+        z-index: 2 !important;
+    }
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(> .fi-ta-actions) {
+        margin-inline-end: 0 !important;
+        padding-inline: 1rem !important;
+    }
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell {
+        inset: auto !important;
         display: flex !important;
         align-items: center !important;
         justify-content: flex-end !important;
-        position: relative !important;
-        z-index: 2 !important;
-        padding-inline: 1rem !important;
+        margin-inline-end: 3.25rem !important;
+    }
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-is-featured {
+        margin-inline-end: 4.75rem !important;
     }
     .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-title {
         grid-column: 1 / -1 !important;
