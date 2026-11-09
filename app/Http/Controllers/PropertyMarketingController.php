@@ -105,6 +105,7 @@ class PropertyMarketingController extends Controller
             'ctaUrl' => $property->public_url,
             'descriptionHtml' => $this->flyerDescriptionHtml($property),
             'hasPdfDescription' => $this->hasPdfDescription($property),
+            'shouldAutoGenerate' => $this->shouldAutoGeneratePdfDescription($property),
             'aiEnabled' => DescriptionGenerator::provider() !== null,
             'flyerMaxChars' => DescriptionGenerator::FLYER_MAX_CHARS,
             'aiUrl' => route('properties.marketing.ai', [
@@ -203,40 +204,33 @@ class PropertyMarketingController extends Controller
     }
 
     /**
-     * PDF bukleta apraksts: AI ģenerētais `ai_result.pdf` (ierobežots HTML),
-     * citādi - Facebook/parastā apraksta teksts sadalīts rindkopās. Vienmēr
-     * attīrīts un apgriezts līdz PDF limita.
+     * The PDF description is generated automatically the first time a PDF
+     * page is opened, but only when it has never been created or explicitly
+     * saved. A cleared-but-saved description stays empty on purpose.
+     */
+    private function shouldAutoGeneratePdfDescription(CrmProperty $property): bool
+    {
+        if (DescriptionGenerator::provider() === null) {
+            return false;
+        }
+
+        $ai = is_array($property->ai_result) ? $property->ai_result : [];
+
+        return trim((string) ($ai['pdf'] ?? '')) === ''
+            && ($ai['pdf_set'] ?? false) !== true;
+    }
+
+    /**
+     * PDF bukleta apraksts: tikai skaidri ģenerētais/rediģētais
+     * `ai_result.pdf`. Nav fallbacka uz īpašuma vai Facebook tekstu - tukšs
+     * apraksts paliek tukšs, līdz to ģenerē vai ieraksta.
      */
     private function flyerDescriptionHtml(CrmProperty $property): string
     {
         $ai = is_array($property->ai_result) ? $property->ai_result : [];
         $source = trim((string) ($ai['pdf'] ?? ''));
-        // Kad apraksts reiz saglabāts (AI ģenerēts vai manuāli rediģēts),
-        // tukšs saturs nozīmē apzināti izdzēstu aprakstu - nevis fallbacku.
-        $isSet = ($ai['pdf_set'] ?? false) === true;
 
-        if ($isSet || $source !== '') {
-            return $this->truncateFlyerHtml($this->sanitizeFlyerHtml($source));
-        }
-
-        return $this->truncateFlyerHtml($this->sanitizeFlyerHtml(
-            $this->plainTextToHtml($this->flyerDescription($property)),
-        ));
-    }
-
-    /** Vienkāršs teksts (ar rindkopām) → ierobežots HTML. */
-    private function plainTextToHtml(string $text): string
-    {
-        $paragraphs = preg_split('/\n{2,}/', trim($text)) ?: [];
-
-        return implode('', array_map(function (string $paragraph): string {
-            $paragraph = trim($paragraph);
-            if ($paragraph === '') {
-                return '';
-            }
-
-            return '<p>'.nl2br(e($paragraph), false).'</p>';
-        }, $paragraphs));
+        return $this->truncateFlyerHtml($this->sanitizeFlyerHtml($source));
     }
 
     /**
@@ -311,37 +305,6 @@ class PropertyMarketingController extends Controller
         }
 
         return trim($out);
-    }
-
-    /**
-     * PDF mārketinga apraksts: galvenokārt no AI ģenerētā Facebook teksta
-     * (`ai_result.facebook`), bez emocijzīmēm; ja tā nav, izmanto parasto
-     * īpašuma aprakstu. HTML tiek pārvērsts vienkāršā tekstā ar rindkopām.
-     */
-    private function flyerDescription(CrmProperty $property): string
-    {
-        $ai = is_array($property->ai_result) ? $property->ai_result : [];
-        $source = trim((string) ($ai['facebook'] ?? ''));
-        if ($source === '') {
-            $source = (string) $property->description;
-        }
-
-        $text = preg_replace(['/<br\s*\/?>/i', '/<\/(p|div|li|h[1-6])>/i'], "\n", $source) ?? $source;
-        $text = html_entity_decode(strip_tags($text));
-        $text = $this->stripEmojis($text);
-        $text = preg_replace('/[ \t]+/', ' ', $text) ?? $text;
-        $text = preg_replace('/ ?\n ?/', "\n", $text) ?? $text;
-        $text = preg_replace('/\n{3,}/', "\n\n", $text) ?? $text;
-
-        return trim($text);
-    }
-
-    /** Noņem emocijzīmes, nemainot parasto tekstu (€, domuzīmes, pēdiņas paliek). */
-    private function stripEmojis(string $text): string
-    {
-        $pattern = '/[\x{1F000}-\x{1FAFF}\x{2600}-\x{27BF}\x{2B00}-\x{2BFF}\x{FE0F}\x{200D}]/u';
-
-        return preg_replace($pattern, '', $text) ?? $text;
     }
 
     /** Attēla URL, kas html2canvas var ielādēt bez CORS problēmām (same-origin). */

@@ -641,6 +641,10 @@
                 });
             }
 
+            if (btnAi && @json($shouldAutoGenerate ?? false)) {
+                btnAi.click();
+            }
+
             // Cilnes
             document.querySelectorAll('.tabs button').forEach(function (tab) {
                 tab.addEventListener('click', function () {
