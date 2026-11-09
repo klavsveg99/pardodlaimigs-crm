@@ -17,7 +17,6 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use UnitEnum;
 
 class PropertySearchResource extends Resource
 {
@@ -26,8 +25,6 @@ class PropertySearchResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-magnifying-glass';
 
     protected static ?string $navigationLabel = 'Meklētāji';
-
-    protected static string|UnitEnum|null $navigationGroup = 'CRM';
 
     protected static ?string $cluster = Mekletaji::class;
 

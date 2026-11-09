@@ -13,7 +13,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use UnitEnum;
 
 class ScrapedListingResource extends Resource
 {
@@ -22,8 +21,6 @@ class ScrapedListingResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-inbox-arrow-down';
 
     protected static ?string $navigationLabel = 'Atrastie objekti';
-
-    protected static string|UnitEnum|null $navigationGroup = 'CRM';
 
     protected static ?string $cluster = Mekletaji::class;
 
