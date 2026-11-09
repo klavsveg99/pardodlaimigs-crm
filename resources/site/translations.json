@@ -399,18 +399,21 @@
       "Dzīvoklis": "Apartment",
       "Māja": "House",
       "Zeme": "Land",
+      "Attīstības objekts": "Development property",
       "Komerciāls": "Commercial"
     },
     "ru": {
       "Dzīvoklis": "Квартира",
       "Māja": "Дом",
       "Zeme": "Земля",
+      "Attīstības objekts": "Объект развития",
       "Komerciāls": "Коммерческая недвижимость"
     },
     "de": {
       "Dzīvoklis": "Wohnung",
       "Māja": "Haus",
       "Zeme": "Grundstück",
+      "Attīstības objekts": "Entwicklungsobjekt",
       "Komerciāls": "Gewerbeimmobilie"
     }
   },

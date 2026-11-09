@@ -37,6 +37,12 @@ Schedule::command('pdc:backup-files')
     ->name('daily-files-backup')
     ->withoutOverlapping();
 
+// ss.lv / city24.lv saved searches (development-property inbox) daily at 04:30.
+Schedule::command('pdc:scrape-property-searches')
+    ->dailyAt('04:30')
+    ->name('scrape-property-searches')
+    ->withoutOverlapping();
+
 // Drošības tīkls klientu statusiem ("Laimīgs"/"Aktīvs") - pamatā statuss
 // mainās uzreiz, kad darījums tiek noslēgts vai atsaukts.
 Schedule::command('pdc:sync-client-statuses')

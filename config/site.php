@@ -76,6 +76,7 @@ return [
         'Lauksaimniecības zeme',
         'Lauku īpašums',
         'Zeme',
+        'Attīstības objekts',
         'Komercīpašums',
         'Māja',
         'Dzīvoklis',

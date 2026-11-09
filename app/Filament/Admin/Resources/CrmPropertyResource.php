@@ -902,14 +902,27 @@ class CrmPropertyResource extends Resource
                         ->color('gray')
                         ->url(fn (CrmProperty $record): string => (string) $record->public_url)
                         ->openUrlInNewTab(),
-                    Actions\Action::make('pdf_generator')
-                        ->label('PDF mārketings')
+                    Actions\ActionGroup::make([
+                        Actions\Action::make('pdf_short')
+                            ->label('Īsais PDF (1 lpp.)')
+                            ->icon('heroicon-o-document')
+                            ->color('gray')
+                            ->url(fn (CrmProperty $record): string => route('properties.marketing', [
+                                'propertySlug' => $record->slug ?? $record->getKey(),
+                            ]))
+                            ->openUrlInNewTab(),
+                        Actions\Action::make('pdf_long')
+                            ->label('Garais PDF (4 lpp.)')
+                            ->icon('heroicon-o-document-text')
+                            ->color('gray')
+                            ->url(fn (CrmProperty $record): string => route('properties.marketing.long', [
+                                'propertySlug' => $record->slug ?? $record->getKey(),
+                            ]))
+                            ->openUrlInNewTab(),
+                    ])
+                        ->label('Ģenerēt PDF')
                         ->icon('heroicon-o-document-arrow-down')
-                        ->color('gray')
-                        ->url(fn (CrmProperty $record): string => route('properties.marketing', [
-                            'propertySlug' => $record->slug ?? $record->getKey(),
-                        ]))
-                        ->openUrlInNewTab(),
+                        ->color('gray'),
                     LawyerDocumentAction::make(),
                     Actions\ViewAction::make()->label('Skatīt')->color('gray'),
                     Actions\EditAction::make()->label('Rediģēt')->color('gray'),

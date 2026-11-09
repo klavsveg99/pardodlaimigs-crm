@@ -71,14 +71,27 @@ class ViewCrmProperty extends ViewRecord
     {
         $actions = [];
 
-        $actions[] = Actions\Action::make('pdf_generator')
-            ->label('PDF mārketings')
+        $actions[] = Actions\ActionGroup::make([
+            Actions\Action::make('pdf_short')
+                ->label('Īsais PDF (1 lpp.)')
+                ->icon('heroicon-o-document')
+                ->color('gray')
+                ->url(fn (): string => route('properties.marketing', [
+                    'propertySlug' => $this->record->slug ?? $this->record->getKey(),
+                ]))
+                ->openUrlInNewTab(),
+            Actions\Action::make('pdf_long')
+                ->label('Garais PDF (4 lpp.)')
+                ->icon('heroicon-o-document-text')
+                ->color('gray')
+                ->url(fn (): string => route('properties.marketing.long', [
+                    'propertySlug' => $this->record->slug ?? $this->record->getKey(),
+                ]))
+                ->openUrlInNewTab(),
+        ])
+            ->label('Ģenerēt PDF')
             ->icon('heroicon-o-document-arrow-down')
-            ->color('gray')
-            ->url(fn (): string => route('properties.marketing', [
-                'propertySlug' => $this->record->slug ?? $this->record->getKey(),
-            ]))
-            ->openUrlInNewTab();
+            ->color('gray');
 
         $actions[] = LawyerDocumentAction::make();
 

@@ -341,6 +341,10 @@ Route::get('/properties/{propertySlug}/marketing',
     [PropertyMarketingController::class, 'show']
 )->middleware(['auth', 'web'])->name('properties.marketing');
 
+Route::get('/properties/{propertySlug}/marketing/long',
+    [PropertyMarketingController::class, 'showLong']
+)->middleware(['auth', 'web'])->name('properties.marketing.long');
+
 Route::post('/properties/{propertySlug}/marketing/ai',
     [PropertyMarketingController::class, 'generateAi']
 )->middleware(['auth', 'web'])->name('properties.marketing.ai');

@@ -25,6 +25,26 @@ class PropertyMarketingController extends Controller
 {
     public function show(Request $request, string $propertySlug): View
     {
+        return view('marketing.property-flyer', $this->buildViewData(
+            $this->resolveProperty($request, $propertySlug),
+        ));
+    }
+
+    /**
+     * Four-page brochure: cover, description and photos, property details
+     * and location, then contact and next steps.
+     */
+    public function showLong(Request $request, string $propertySlug): View
+    {
+        $property = $this->resolveProperty($request, $propertySlug);
+
+        return view('marketing.property-brochure', $this->buildViewData($property) + [
+            'qrDataUri' => $this->qrDataUri($property),
+        ]);
+    }
+
+    private function resolveProperty(Request $request, string $propertySlug): CrmProperty
+    {
         $property = CrmProperty::query()
             ->where('slug', $propertySlug)
             ->firstOrFail();
@@ -35,6 +55,14 @@ class PropertyMarketingController extends Controller
             403,
         );
 
+        return $property;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildViewData(CrmProperty $property): array
+    {
         // Tikai attēli - galerijā var būt arī cita veida faili.
         $gallery = $property->attachments
             ->where('collection', 'gallery')
@@ -56,7 +84,7 @@ class PropertyMarketingController extends Controller
 
         $agent = $property->owner;
 
-        return view('marketing.property-flyer', [
+        return [
             'property' => $property,
             'images' => $images,
             'mapUrl' => $this->staticMapDataUri($property),
@@ -75,6 +103,7 @@ class PropertyMarketingController extends Controller
                 : null,
             'ctaUrl' => $property->public_url,
             'descriptionHtml' => $this->flyerDescriptionHtml($property),
+            'longDescriptionHtml' => $this->longDescriptionHtml($property),
             'hasPdfDescription' => $this->hasPdfDescription($property),
             'aiEnabled' => DescriptionGenerator::provider() !== null,
             'flyerMaxChars' => DescriptionGenerator::FLYER_MAX_CHARS,
@@ -84,7 +113,7 @@ class PropertyMarketingController extends Controller
             'pdfSaveUrl' => route('properties.marketing.pdf-description', [
                 'propertySlug' => $property->slug ?? $property->getKey(),
             ]),
-        ]);
+        ];
     }
 
     /**
@@ -193,6 +222,26 @@ class PropertyMarketingController extends Controller
         return $this->truncateFlyerHtml($this->sanitizeFlyerHtml(
             $this->plainTextToHtml($this->flyerDescription($property)),
         ));
+    }
+
+    /**
+     * Full description for the long brochure: the complete property text or
+     * AI description, without the one-page flyer's 600-character limit.
+     */
+    private function longDescriptionHtml(CrmProperty $property): string
+    {
+        $ai = is_array($property->ai_result) ? $property->ai_result : [];
+        $source = trim((string) ($ai['description'] ?? ''));
+
+        if ($source === '') {
+            $source = (string) $property->description;
+        }
+
+        if ($source !== '' && ! str_contains($source, '<')) {
+            $source = $this->plainTextToHtml($source);
+        }
+
+        return $this->sanitizeFlyerHtml($source);
     }
 
     /** Vienkāršs teksts (ar rindkopām) → ierobežots HTML. */
@@ -336,6 +385,35 @@ class PropertyMarketingController extends Controller
     private function proxiedUrl(string $url): string
     {
         return route('filament.admin.property.image-proxy', ['url' => $url]);
+    }
+
+    /**
+     * QR code pointing at the public listing, embedded as a data URI so the
+     * brochure PDF always contains it. Hidden when the QR service is down.
+     */
+    private function qrDataUri(CrmProperty $property): ?string
+    {
+        $url = (string) $property->public_url;
+        if ($url === '') {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(6)->get('https://api.qrserver.com/v1/create-qr-code/', [
+                'size' => '220x220',
+                'data' => $url,
+                'format' => 'png',
+                'margin' => 0,
+            ]);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if (! $response->successful() || ! str_starts_with((string) $response->header('Content-Type'), 'image/')) {
+            return null;
+        }
+
+        return 'data:'.strtok((string) $response->header('Content-Type'), ';').';base64,'.base64_encode($response->body());
     }
 
     /**
