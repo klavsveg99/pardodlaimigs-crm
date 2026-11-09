@@ -76,7 +76,6 @@ return [
         'Lauksaimniecības zeme',
         'Lauku īpašums',
         'Zeme',
-        'Attīstības objekts',
         'Komercīpašums',
         'Māja',
         'Dzīvoklis',
@@ -84,5 +83,6 @@ return [
         'Pirts',
         'Komerciāls',
         'Garāža',
+        'Attīstības objekts',
     ],
 ];

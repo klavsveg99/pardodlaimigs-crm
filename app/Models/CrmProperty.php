@@ -30,10 +30,10 @@ class CrmProperty extends Model
         'Dzīvoklis' => 'Dzīvoklis',
         'Māja' => 'Māja',
         'Zeme' => 'Zeme',
-        'Attīstības objekts' => 'Attīstības objekts',
         'Komerciāls' => 'Komerciāls',
         'Mežs' => 'Mežs',
         'Lauksaimniecības zeme' => 'Lauksaimniecības zeme',
+        'Attīstības objekts' => 'Attīstības objekts',
     ];
 
     public const LEAD_SOURCES = [

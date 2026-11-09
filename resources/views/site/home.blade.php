@@ -61,7 +61,13 @@
                     <span>{{ $copy['searchType'] ?? '' }}</span>
                     <select name="category" id="search-category">
                         <option value="">{{ $copy['allTypes'] ?? '' }}</option>
-                        @foreach (collect($properties)->pluck('category')->filter()->unique()->sort() as $category)
+                        @php
+                            $categoryOptions = collect($properties)->pluck('category')->filter()->unique()->sort();
+                            if ($categoryOptions->contains('Attīstības objekts')) {
+                                $categoryOptions = $categoryOptions->reject(fn ($category) => $category === 'Attīstības objekts')->push('Attīstības objekts');
+                            }
+                        @endphp
+                        @foreach ($categoryOptions as $category)
                             <option value="{{ $category }}">{{ $copy['categoryLabels'][$category] ?? $category }}</option>
                         @endforeach
                     </select>
