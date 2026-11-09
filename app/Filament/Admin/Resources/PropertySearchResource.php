@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources;
 
+use App\Filament\Admin\Clusters\Mekletaji;
 use App\Filament\Admin\Resources\PropertySearchResource\Pages;
 use App\Jobs\RunPropertySearch;
 use App\Models\PropertySearch;
@@ -27,6 +28,8 @@ class PropertySearchResource extends Resource
     protected static ?string $navigationLabel = 'Meklētāji';
 
     protected static string|UnitEnum|null $navigationGroup = 'CRM';
+
+    protected static ?string $cluster = Mekletaji::class;
 
     protected static ?string $modelLabel = 'Meklētājs';
 
@@ -65,6 +68,7 @@ class PropertySearchResource extends Resource
     {
         return $schema->schema([
             Section::make('Meklēšanas kritēriji')
+                ->columnSpanFull()
                 ->columns(2)
                 ->schema([
                     Forms\Components\TextInput::make('name')
@@ -72,11 +76,11 @@ class PropertySearchResource extends Resource
                         ->required()
                         ->maxLength(120)
                         ->columnSpanFull(),
-                    Forms\Components\Select::make('portal')
+                    Forms\Components\CheckboxList::make('portals')
                         ->label('Portāls')
                         ->options(PropertySearch::PORTALS)
-                        ->required()
-                        ->native(false),
+                        ->columns(2)
+                        ->required(),
                     Forms\Components\Select::make('category')
                         ->label('Kategorija')
                         ->options(PropertySearch::CATEGORIES)
@@ -135,7 +139,7 @@ class PropertySearchResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
-                Tables\Columns\TextColumn::make('portal')
+                Tables\Columns\TextColumn::make('portals')
                     ->label('Portāls')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => PropertySearch::PORTALS[$state] ?? $state)
@@ -182,9 +186,23 @@ class PropertySearchResource extends Resource
                     ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('portal')
+                Tables\Filters\SelectFilter::make('portals')
                     ->label('Portāls')
-                    ->options(PropertySearch::PORTALS),
+                    ->options(PropertySearch::PORTALS)
+                    ->multiple()
+                    ->query(function (Builder $query, array $data): Builder {
+                        $values = array_filter((array) ($data['values'] ?? []));
+
+                        if ($values === []) {
+                            return $query;
+                        }
+
+                        return $query->where(function (Builder $query) use ($values): void {
+                            foreach ($values as $value) {
+                                $query->orWhereJsonContains('portals', $value);
+                            }
+                        });
+                    }),
                 Tables\Filters\SelectFilter::make('category')
                     ->label('Kategorija')
                     ->options(PropertySearch::CATEGORIES),

@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources;
 
+use App\Filament\Admin\Clusters\Mekletaji;
 use App\Filament\Admin\Resources\ScrapedListingResource\Pages;
-use App\Jobs\RunPropertySearch;
 use App\Models\PropertySearch;
 use App\Models\ScrapedListing;
 use Filament\Actions;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -26,11 +25,13 @@ class ScrapedListingResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'CRM';
 
+    protected static ?string $cluster = Mekletaji::class;
+
     protected static ?string $modelLabel = 'Atrastais objekts';
 
     protected static ?string $pluralModelLabel = 'Atrastie objekti';
 
-    protected static ?int $navigationSort = 45;
+    protected static ?int $navigationSort = 41;
 
     public static function canAccess(): bool
     {
@@ -45,18 +46,6 @@ class ScrapedListingResource extends Resource
                 ! auth()->user()?->can('manage'),
                 fn (Builder $query) => $query->where('user_id', auth()->id()),
             );
-    }
-
-    public static function getNavigationBadge(): ?string
-    {
-        $count = static::getEloquentQuery()->where('status', 'new')->count();
-
-        return $count > 0 ? (string) $count : null;
-    }
-
-    public static function getNavigationBadgeColor(): ?string
-    {
-        return 'gray';
     }
 
     public static function table(Table $table): Table

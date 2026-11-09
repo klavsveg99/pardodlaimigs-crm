@@ -61,6 +61,7 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook('panels::scripts.after', fn () => view('filament.modal-drag-guard'))
             ->renderHook('panels::sidebar.nav.end', fn () => view('filament.sidebar-version'))
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
+            ->discoverClusters(in: app_path('Filament/Admin/Clusters'), for: 'App\\Filament\\Admin\\Clusters')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
                 Dashboard::class,

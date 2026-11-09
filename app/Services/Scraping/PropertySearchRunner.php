@@ -25,77 +25,93 @@ class PropertySearchRunner
     {
         $search->update(['last_run_at' => now(), 'last_error' => null]);
 
-        try {
-            $items = match ($search->portal) {
-                'ss' => $this->ss->fetch($search),
-                'city24' => $this->city24->fetch($search),
-                default => [],
-            };
-        } catch (\Throwable $e) {
-            report($e);
-            $search->update(['last_error' => Str::limit($e->getMessage(), 900)]);
+        $portals = array_values(array_intersect(
+            (array) $search->portals,
+            array_keys(PropertySearch::PORTALS),
+        ));
 
+        if ($portals === []) {
             return 0;
         }
 
         $created = 0;
+        $errors = [];
 
-        foreach ($items as $item) {
-            if (! $this->matches($search, $item)) {
+        foreach ($portals as $portal) {
+            try {
+                $items = match ($portal) {
+                    'ss' => $this->ss->fetch($search),
+                    'city24' => $this->city24->fetch($search),
+                    default => [],
+                };
+            } catch (\Throwable $e) {
+                report($e);
+                $errors[] = Str::limit($e->getMessage(), 900);
+
                 continue;
             }
 
-            $externalId = (string) ($item['external_id'] ?? '');
-            $url = (string) ($item['url'] ?? '');
-            if ($externalId === '' || $url === '') {
-                continue;
+            foreach ($items as $item) {
+                if (! $this->matches($search, $item, $portal)) {
+                    continue;
+                }
+
+                $externalId = (string) ($item['external_id'] ?? '');
+                $url = (string) ($item['url'] ?? '');
+                if ($externalId === '' || $url === '') {
+                    continue;
+                }
+
+                $fingerprint = $this->fingerprint($item);
+
+                $listing = ScrapedListing::firstOrCreate(
+                    [
+                        'user_id' => $search->user_id,
+                        'portal' => $portal,
+                        'external_id' => $externalId,
+                    ],
+                    [
+                        'property_search_id' => $search->id,
+                        'url' => $url,
+                        'title' => $item['title'] ?? null,
+                        'price_eur' => $item['price_eur'] ?? null,
+                        'area_m2' => $item['area_m2'] ?? null,
+                        'land_m2' => $item['land_m2'] ?? null,
+                        'location' => $item['location'] ?? null,
+                        'address' => $item['address'] ?? null,
+                        'image_url' => $item['image_url'] ?? null,
+                        'listed_at' => $item['listed_at'] ?? null,
+                        'first_seen_at' => now(),
+                        'last_seen_at' => now(),
+                        'status' => 'new',
+                        'fingerprint' => $fingerprint,
+                        'duplicate_of_id' => $fingerprint !== null ? $this->findDuplicate($search, $fingerprint, $portal) : null,
+                    ],
+                );
+
+                if ($listing->wasRecentlyCreated) {
+                    $created++;
+                } else {
+                    $listing->update([
+                        'last_seen_at' => now(),
+                        'price_eur' => $item['price_eur'] ?? $listing->price_eur,
+                    ]);
+                }
+
+                if ($created >= $search->max_results) {
+                    break 2;
+                }
             }
+        }
 
-            $fingerprint = $this->fingerprint($item);
-
-            $listing = ScrapedListing::firstOrCreate(
-                [
-                    'user_id' => $search->user_id,
-                    'portal' => $search->portal,
-                    'external_id' => $externalId,
-                ],
-                [
-                    'property_search_id' => $search->id,
-                    'url' => $url,
-                    'title' => $item['title'] ?? null,
-                    'price_eur' => $item['price_eur'] ?? null,
-                    'area_m2' => $item['area_m2'] ?? null,
-                    'land_m2' => $item['land_m2'] ?? null,
-                    'location' => $item['location'] ?? null,
-                    'address' => $item['address'] ?? null,
-                    'image_url' => $item['image_url'] ?? null,
-                    'listed_at' => $item['listed_at'] ?? null,
-                    'first_seen_at' => now(),
-                    'last_seen_at' => now(),
-                    'status' => 'new',
-                    'fingerprint' => $fingerprint,
-                    'duplicate_of_id' => $fingerprint !== null ? $this->findDuplicate($search, $fingerprint) : null,
-                ],
-            );
-
-            if ($listing->wasRecentlyCreated) {
-                $created++;
-            } else {
-                $listing->update([
-                    'last_seen_at' => now(),
-                    'price_eur' => $item['price_eur'] ?? $listing->price_eur,
-                ]);
-            }
-
-            if ($created >= $search->max_results) {
-                break;
-            }
+        if ($errors !== []) {
+            $search->update(['last_error' => implode(' | ', $errors)]);
         }
 
         return $created;
     }
 
-    private function matches(PropertySearch $search, array $item): bool
+    private function matches(PropertySearch $search, array $item, string $portal): bool
     {
         $price = $item['price_eur'] ?? null;
         if ($price !== null) {
@@ -121,7 +137,7 @@ class PropertySearchRunner
         // region is already filtered by the page. city24.lv ignores the
         // address[text] parameter, so apply the location locally there.
         if (filled($search->location)) {
-            $needsLocalFilter = $search->portal === 'city24'
+            $needsLocalFilter = $portal === 'city24'
                 || $this->ss->regionSlug($search->location) === null;
 
             if ($needsLocalFilter && ! $this->contains($item, (string) $search->location)) {
@@ -169,11 +185,11 @@ class PropertySearchRunner
         return sha1($address.'|'.$area.'|'.$price);
     }
 
-    private function findDuplicate(PropertySearch $search, string $fingerprint): ?int
+    private function findDuplicate(PropertySearch $search, string $fingerprint, string $portal): ?int
     {
         return ScrapedListing::query()
             ->where('user_id', $search->user_id)
-            ->where('portal', '!=', $search->portal)
+            ->where('portal', '!=', $portal)
             ->where('fingerprint', $fingerprint)
             ->value('id');
     }

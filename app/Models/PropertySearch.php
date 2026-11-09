@@ -26,12 +26,13 @@ class PropertySearch extends Model
     public const AGENT_LIMIT = 3;
 
     protected $fillable = [
-        'user_id', 'name', 'portal', 'category', 'location',
+        'user_id', 'name', 'portals', 'category', 'location',
         'price_min', 'price_max', 'area_min', 'area_max', 'keywords',
         'max_results', 'is_active', 'last_run_at', 'last_error',
     ];
 
     protected $casts = [
+        'portals' => 'array',
         'price_min' => 'integer',
         'price_max' => 'integer',
         'area_min' => 'integer',

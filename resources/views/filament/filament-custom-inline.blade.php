@@ -576,6 +576,32 @@ a.fi-link:not(.fi-btn):not(.fi-color-primary) .fi-link-label {
 .fi-fo-field.fi-fo-field-has-inline-label .fi-radio-input {
     margin: 0 !important;
 }
+
+/* Checkboxes, radios and toggles sit vertically centered against their
+   label instead of top-aligned. Filament nudges checkboxes down 0.5rem and
+   pulls toggles out with -0.5rem block margins, which also made the control
+   overflow its label row by a few pixels - zero both. */
+.fi-fo-field .fi-fo-field-label-ctn,
+.fi-fo-field .fi-fo-field-label,
+.fi-fo-radio > .fi-fo-radio-label,
+.fi-fo-checkbox-list .fi-fo-checkbox-list-option {
+    align-items: center !important;
+}
+.fi-fo-radio > .fi-fo-radio-label {
+    align-self: center !important;
+}
+.fi-fo-field .fi-fo-field-label-ctn > .fi-checkbox-input,
+.fi-fo-field .fi-fo-field-label > .fi-checkbox-input,
+.fi-fo-field .fi-fo-field-label-ctn > .fi-radio-input,
+.fi-fo-field .fi-fo-field-label > .fi-radio-input,
+.fi-fo-radio > .fi-fo-radio-label > .fi-radio-input,
+.fi-fo-checkbox-list .fi-fo-checkbox-list-option .fi-checkbox-input {
+    margin-block: 0 !important;
+}
+.fi-fo-field .fi-fo-field-label-ctn > .fi-toggle,
+.fi-fo-field .fi-fo-field-label > .fi-toggle {
+    margin-block: 0 !important;
+}
 .opacity-60 { opacity: 0.6 !important; }
 .opacity-0 { opacity: 0 !important; }
 .group:hover .group-hover\:opacity-100 { opacity: 1 !important; }

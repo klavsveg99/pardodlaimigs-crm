@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Admin\Resources\ScrapedListingResource\Pages;
 
-use App\Filament\Admin\Resources\PropertySearchResource;
 use App\Filament\Admin\Resources\ScrapedListingResource;
 use App\Jobs\RunPropertySearch;
 use App\Models\PropertySearch;
@@ -24,11 +23,6 @@ class ListScrapedListings extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('searches')
-                ->label('Meklētāji')
-                ->icon('heroicon-o-magnifying-glass')
-                ->color('gray')
-                ->url(PropertySearchResource::getUrl()),
             Actions\Action::make('run_all')
                 ->label('Palaist visus')
                 ->icon('heroicon-o-play')
