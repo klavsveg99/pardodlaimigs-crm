@@ -277,7 +277,6 @@ class CrmPropertyResource extends Resource
                             ->pluck('name', 'id')
                             ->all())
                         ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name)
-                        ->helperText('Īpašumam jābūt piesaistītam pārdevējam. Ja klienta vēl nav, izveido to ar «+».')
                         ->suffixAction(
                             Actions\Action::make('create_seller_client')
                                 ->icon('heroicon-o-plus')
