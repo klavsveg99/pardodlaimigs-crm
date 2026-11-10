@@ -334,8 +334,13 @@ class TodayPriorities extends Widget
     {
         $user = auth()->user();
 
-        // Materiāli ir personiski: rāda tikai šim lietotājam piešķirtos,
-        // arī administratoram.
+        // Administratoram zināšanu bāze šajā sarakstā netiek rādīta: viņš to
+        // pārvalda, nevis mācās, un materiāli tikai aizņem vietu darba sarakstā.
+        if (! $user || $user->can('manage')) {
+            return [];
+        }
+
+        // Materiāli ir personiski: rāda tikai šim lietotājam piešķirtos.
         $assignments = KnowledgeAssignment::query()
             ->where('assigned_user_id', $user?->id)
             ->whereNull('completed_at')
