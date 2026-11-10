@@ -164,8 +164,8 @@
 
         /* ── Brochure ───────────────────────────────────────── */
         .preview-wrap { padding: 1.5rem; display: flex; justify-content: center; overflow-x: auto; }
-        .brochure { width: 210mm; flex: none; }
-        .page { position: relative; width: 210mm; height: 297mm; overflow: hidden; page-break-after: always; break-after: page; box-shadow: 0 10px 30px #0000001f; }
+        .brochure { width: 794px; flex: none; }
+        .page { position: relative; width: 794px; height: 1122px; overflow: hidden; page-break-after: always; break-after: page; box-shadow: 0 10px 30px #0000001f; }
         .page:last-child { page-break-after: auto; break-after: auto; }
         .page + .page { margin-top: 1.5rem; }
         .eyebrow { color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
@@ -890,7 +890,7 @@
                         image: { type: 'jpeg', quality: 0.95 },
                         html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0, windowWidth: 794 },
                         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                        pagebreak: { mode: ['css'] }
+                        pagebreak: { mode: [] }
                     }).from(document.getElementById('brochure')).save();
                     if (status) { status.textContent = 'PDF sagatavots.'; }
                 } catch (error) {
