@@ -101,10 +101,10 @@ class KnowledgeArticleResource extends Resource
                 // Obligātajam saturam skaita arī pašatzīmētos izpildījumus,
                 // nevis tikai skaidri piešķirtos materiālus.
                 ->with([
-                    'assignments' => fn (Builder $assignment): Builder => $assignment->select([
+                    'assignments' => fn ($assignment) => $assignment->select([
                         'id', 'knowledge_article_id', 'assigned_user_id', 'completed_at',
                     ]),
-                    'completions' => fn (Builder $completion): Builder => $completion->select([
+                    'completions' => fn ($completion) => $completion->select([
                         'id', 'knowledge_article_id', 'user_id', 'completed_at',
                     ]),
                 ]);
