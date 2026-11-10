@@ -602,6 +602,19 @@ a.fi-link:not(.fi-btn):not(.fi-color-primary) .fi-link-label {
 .fi-fo-field .fi-fo-field-label > .fi-toggle {
     margin-block: 0 !important;
 }
+
+/* A self-labeling checkbox/radio/toggle is only one control row tall. When it
+   shares a form grid row with a regular field (label + input) it must be
+   centered against that row instead of sitting at the top edge. Filament
+   wraps every component in .fi-sc-component, which fills the grid cell, so
+   center the field inside it. */
+.fi-sc-component:has(> .fi-fo-field .fi-fo-field-label > .fi-checkbox-input),
+.fi-sc-component:has(> .fi-fo-field .fi-fo-field-label > .fi-radio-input),
+.fi-sc-component:has(> .fi-fo-field .fi-fo-field-label > .fi-toggle) {
+    display: grid !important;
+    align-content: center !important;
+    height: 100% !important;
+}
 .opacity-60 { opacity: 0.6 !important; }
 .opacity-0 { opacity: 0 !important; }
 .group:hover .group-hover\:opacity-100 { opacity: 1 !important; }
