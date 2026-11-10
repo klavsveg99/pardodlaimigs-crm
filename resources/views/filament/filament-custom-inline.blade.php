@@ -1903,6 +1903,10 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     /* Tabs scroll horizontally instead of wrapping off-screen */
     .fi-tabs, [role="tablist"], .fi-resource-tabs { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: none !important; flex-wrap: nowrap !important; }
     .fi-tabs::-webkit-scrollbar, [role="tablist"]::-webkit-scrollbar { display: none !important; }
+    /* Cluster sub-navigation (Meklētāji) keeps its tab strip on phones like the
+       table tabs elsewhere, instead of Filament's sub-navigation dropdown */
+    .fi-page-sub-navigation-dropdown { display: none !important; }
+    .fi-page-sub-navigation-tabs { display: flex !important; }
     /* Filters (AboveContent) - stack 3 cols to 1 */
     .fi-filters, .fi-ta-filters, .fi-table-filters, .fi-ta-filters-form, .fi-filters-form { grid-template-columns: 1fr !important; }
     .fi-filters .grid, .fi-ta-filters .grid { grid-template-columns: 1fr !important; }

@@ -164,8 +164,8 @@
 
         /* ── Brochure ───────────────────────────────────────── */
         .preview-wrap { padding: 1.5rem; display: flex; justify-content: center; overflow-x: auto; }
-        .brochure { width: 794px; flex: none; }
-        .page { position: relative; width: 794px; height: 1122px; overflow: hidden; page-break-after: always; break-after: page; box-shadow: 0 10px 30px #0000001f; }
+        .brochure { width: 210mm; flex: none; }
+        .page { position: relative; width: 210mm; height: 297mm; overflow: hidden; page-break-after: always; break-after: page; box-shadow: 0 10px 30px #0000001f; }
         .page:last-child { page-break-after: auto; break-after: auto; }
         .page + .page { margin-top: 1.5rem; }
         .eyebrow { color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
@@ -201,10 +201,10 @@
         /* Description page */
         .why-page { background: var(--paper); padding: 54px 58px 85px; }
         .why-page .page-title { margin-bottom: 14px; }
-        .description { max-height: 235px; overflow: hidden; color: #33413e; font-size: 17px; line-height: 1.5; }
+        .description { max-height: 235px; overflow: hidden; overflow-wrap: anywhere; color: #33413e; font-size: 17px; line-height: 1.5; }
         .description p { margin: 0 0 10px; }
         .description ul, .description ol { margin: 12px 0 14px; padding: 0; list-style: none; }
-        .description li { position: relative; margin: 0 0 8px; padding-left: 30px; }
+        .description li { position: relative; min-width: 0; margin: 0 0 8px; padding-left: 30px; overflow-wrap: anywhere; }
         .description li::before { position: absolute; top: 2px; left: 0; display: grid; width: 19px; height: 19px; place-items: center; border-radius: 50%; background: var(--green); color: #fff; content: '✓'; font-size: 12px; }
         .photo-grid { display: grid; height: 482px; grid-template-columns: 1.35fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; margin-top: 22px; }
         .photo { min-width: 0; min-height: 0; border-radius: 7px; background: #e4e6e0 center/cover no-repeat; }
@@ -216,7 +216,8 @@
         .details-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 42px; }
         .details-page h3 { margin: 13px 0 8px; color: var(--green); font: 700 17px 'Maven Pro', sans-serif; }
         .details-list { margin: 0; padding: 0; list-style: none; }
-        .details-list li { display: grid; grid-template-columns: 39% 1fr; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13px; line-height: 1.35; }
+        .details-list li { display: grid; min-width: 0; grid-template-columns: minmax(0, 39%) minmax(0, 1fr); gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
+        .details-list li > * { min-width: 0; overflow-wrap: anywhere; }
         .details-list strong { color: #35413e; }
         .details-list span { color: #3f4b48; }
         .details-image { width: 100%; height: 205px; margin-top: 18px; border-radius: 8px; background: #e4e6e0 center/cover no-repeat; }
@@ -256,8 +257,10 @@
             html, body { background: #fff; }
             .layout { display: block; padding: 0; }
             .preview-wrap { display: block; padding: 0; overflow: visible; }
-            .page { box-shadow: none; }
+            .page, .page + .page { margin-top: 0; box-shadow: none; }
+            .page:last-child { page-break-after: auto; break-after: auto; }
         }
+        body.pdf-exporting .page + .page { margin-top: 0; }
     </style>
 </head>
 <body>
@@ -876,15 +879,17 @@
                 button.disabled = true;
                 label.textContent = 'Ģenerē...';
                 if (status) { status.textContent = ''; }
+                document.body.classList.add('pdf-exporting');
                 try {
                     await ensureHtml2Pdf();
+                    if (document.fonts?.ready) { await document.fonts.ready; }
                     await window.html2pdf().set({
                         margin: 0,
                         filename: @json($filename),
                         image: { type: 'jpeg', quality: 0.95 },
-                        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0 },
+                        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0, windowWidth: 794 },
                         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                        pagebreak: { mode: ['css', 'legacy'] }
+                        pagebreak: { mode: ['css'] }
                     }).from(document.getElementById('brochure')).save();
                     if (status) { status.textContent = 'PDF sagatavots.'; }
                 } catch (error) {
@@ -892,6 +897,7 @@
                     if (status) { status.textContent = 'Neizdevās ģenerēt PDF - atverama drukas forma.'; }
                     window.print();
                 } finally {
+                    document.body.classList.remove('pdf-exporting');
                     button.disabled = false;
                     label.textContent = original;
                 }
