@@ -208,6 +208,13 @@
 
         /* PDF capture klons - fiksēts A4. */
         .flyer-capture { width: 794px !important; height: 1122px !important; min-height: 1122px !important; overflow: hidden !important; padding: 45px !important; box-shadow: none !important; }
+        /* Eksporta laikā lapas "hroms" sakļaujas, lai fliers gulētu dokumenta
+           augšējā kreisajā stūrī (0,0). html2canvas griež uzņēmumu pēc elementa
+           pozīcijas - centrētais priekšskatījums PDF attēlu nobīdīja un labajā
+           malā atstāja tukšu joslu. */
+        body.pdf-capture .topbar, body.pdf-capture .editor { display: none !important; }
+        body.pdf-capture .layout { display: block; padding: 0 !important; }
+        body.pdf-capture .preview-wrap { display: block; padding: 0 !important; }
 
         @page { size: A4; margin: 0; }
         @media print {
@@ -837,13 +844,16 @@
                     height: stageEl ? stageEl.style.height : null,
                 };
                 flyer.classList.add('flyer-capture');
+                document.body.classList.add('pdf-capture');
                 if (scalerEl) { scalerEl.style.transform = 'none'; }
                 if (stageEl) { stageEl.style.width = '794px'; stageEl.style.height = '1122px'; }
+                window.scrollTo(0, 0);
                 void flyer.offsetHeight;
                 try {
                     return await run();
                 } finally {
                     flyer.classList.remove('flyer-capture');
+                    document.body.classList.remove('pdf-capture');
                     if (scalerEl) { scalerEl.style.transform = previous.transform; }
                     if (stageEl) { stageEl.style.width = previous.width; stageEl.style.height = previous.height; }
                     fitPreview();
@@ -866,7 +876,7 @@
                             margin: 0,
                             filename: @json($filename),
                             image: { type: 'jpeg', quality: 0.95 },
-                            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0 },
+                            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0, windowWidth: 794 },
                             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                             pagebreak: { mode: [] },
                         }).from(flyer).save();
