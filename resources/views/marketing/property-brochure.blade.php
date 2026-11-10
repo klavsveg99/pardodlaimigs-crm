@@ -885,23 +885,33 @@
                 if (!window.html2pdf) { throw new Error('html2pdf nav pieejams'); }
             }
 
-            // Renderē visu bukletu vienā canvas un pārbauda, ka tas nav tukšs.
-            async function renderBrochureCanvas(brochure) {
+            // Renderē VIENU lapu un nogriež html2canvas klona balto joslu
+            // (uzņēmums vienmēr ir nobīdīts par ~8px tā iekšējā renderētāja dēļ).
+            async function renderPageCanvas(page) {
                 const canvas = await window.html2pdf()
-                    .set({ html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0, windowWidth: 794 } })
-                    .from(brochure)
+                    .set({ html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false } })
+                    .from(page)
                     .toCanvas()
                     .get('canvas');
                 const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
-                let painted = 0;
-                for (let i = 0; i < data.length; i += 64) {
-                    if (data[i] !== 255 || data[i + 1] !== 255 || data[i + 2] !== 255) {
-                        painted++;
-                        if (painted > 100) { break; }
+                let minX = canvas.width, maxX = -1, painted = 0;
+                for (let y = 0; y < canvas.height; y += 4) {
+                    for (let x = 0; x < canvas.width; x += 4) {
+                        const i = (y * canvas.width + x) * 4;
+                        if (data[i] !== 255 || data[i + 1] !== 255 || data[i + 2] !== 255) {
+                            painted++;
+                            if (x < minX) { minX = x; }
+                            if (x > maxX) { maxX = x; }
+                        }
                     }
                 }
                 if (painted <= 100) { throw new Error('Lapas renderējums ir tukšs'); }
-                return canvas;
+                const width = maxX - minX + 1;
+                const out = document.createElement('canvas');
+                out.width = width;
+                out.height = canvas.height;
+                out.getContext('2d').drawImage(canvas, minX, 0, width, canvas.height, 0, 0, width, canvas.height);
+                return out;
             }
 
             window.pdcDownloadBrochure = async function () {
@@ -919,42 +929,31 @@
                     if (document.fonts?.ready) { await document.fonts.ready; }
                     const brochure = document.getElementById('brochure');
                     const pages = Array.from(brochure.querySelectorAll('.page'));
-                    const canvas = await renderBrochureCanvas(brochure);
 
-                    // 1. lapa: html2pdf uzzīmē to pilnā A4 formātā un atgriež
-                    // jsPDF dokumentu, kuram pārējās lapas pievienojam paši.
-                    const worker = window.html2pdf().set({
+                    // jsPDF instanci paņemam no jau ielādētā html2pdf komplekta:
+                    // izveidojam dokumentu ap 1x1 "sēklas" elementu un nodzēšam
+                    // tā automātiski izveidoto lapu.
+                    const seed = document.createElement('div');
+                    seed.style.cssText = 'width:10px;height:10px;position:absolute;left:0;top:0;';
+                    document.body.appendChild(seed);
+                    const doc = await window.html2pdf().set({
                         margin: 0,
                         image: { type: 'jpeg', quality: 0.95 },
-                        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0, windowWidth: 794 },
+                        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
                         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                         pagebreak: { mode: [] }
-                    }).from(pages[0]);
-                    const doc = await worker.toPdf().get('pdf');
+                    }).from(seed).toPdf().get('pdf');
+                    seed.remove();
+                    doc.deletePage(1);
 
-                    // Pārējās lapas: griežam vienoto canvas precīzi lapu augstumos.
-                    const sliceHeight = Math.floor(canvas.height / pages.length);
-                    for (let i = 1; i < pages.length; i++) {
-                        const top = i * sliceHeight;
-                        const height = i === pages.length - 1 ? canvas.height - top : sliceHeight;
-                        const slice = document.createElement('canvas');
-                        slice.width = canvas.width;
-                        slice.height = height;
-                        const ctx = slice.getContext('2d');
-                        ctx.drawImage(canvas, 0, top, canvas.width, height, 0, 0, canvas.width, height);
-                        const data = ctx.getImageData(0, 0, slice.width, slice.height).data;
-                        let painted = 0;
-                        for (let j = 0; j < data.length; j += 64) {
-                            if (data[j] !== 255 || data[j + 1] !== 255 || data[j + 2] !== 255) {
-                                painted++;
-                                if (painted > 100) { break; }
-                            }
-                        }
-                        if (painted <= 100) { throw new Error('Lapas renderējums ir tukšs'); }
+                    // Katra lapa: precīzs 794x1122 uzņēmums (pdf-exporting režīmā
+                    // lapa gulstas uz (0,0)), balto joslau nogriežam, un attēls
+                    // tiek izstiepts tieši uz A4 (210 x 297 mm) - nekad nav
+                    // tukšu joslu un nav atkarības no automātiskās dalīšanas.
+                    for (const page of pages) {
+                        const canvas = await renderPageCanvas(page);
                         doc.addPage();
-                        // Attēls tiek izstiepts tieši uz A4 (210 x 297 mm),
-                        // tāpēc nekad nepaliek tukša josla labajā malā.
-                        doc.addImage(slice.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297);
+                        doc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297);
                     }
                     doc.save(@json($filename));
                     if (status) { status.textContent = 'PDF sagatavots.'; }
