@@ -201,10 +201,11 @@
         /* Description page */
         .why-page { background: var(--paper); padding: 54px 58px 85px; }
         .why-page .page-title { margin-bottom: 14px; }
-        .description { max-height: 235px; overflow: hidden; overflow-wrap: anywhere; color: #33413e; font-size: 17px; line-height: 1.5; }
+        .description { max-height: 300px; overflow: hidden; overflow-wrap: anywhere; color: #33413e; font-size: 16px; line-height: 1.4; }
         .description p { margin: 0 0 10px; }
-        .description ul, .description ol { margin: 12px 0 14px; padding: 0; list-style: none; }
-        .description li { position: relative; min-width: 0; margin: 0 0 8px; padding-left: 30px; overflow-wrap: anywhere; }
+        .description ul, .description ol { max-width: 100%; margin: 10px 0 12px; padding: 0; list-style: none; }
+        .description li { position: relative; display: block; min-width: 0; max-width: 100%; margin: 0 0 5px; padding-left: 30px; overflow-wrap: anywhere; word-break: break-word; }
+        .description li > * { max-width: 100%; overflow-wrap: anywhere; word-break: break-word; }
         .description li::before { position: absolute; top: 2px; left: 0; display: grid; width: 19px; height: 19px; place-items: center; border-radius: 50%; background: var(--green); color: #fff; content: '✓'; font-size: 12px; }
         .photo-grid { display: grid; height: 482px; grid-template-columns: 1.35fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; margin-top: 22px; }
         .photo { min-width: 0; min-height: 0; border-radius: 7px; background: #e4e6e0 center/cover no-repeat; }
