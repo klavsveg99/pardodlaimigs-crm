@@ -84,11 +84,7 @@ class KnowledgeArticleResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()
-            ->with('categories')
-            ->withCount([
-                'attachments as knowledge_attachments_count' => fn (Builder $attachment): Builder => $attachment->where('collection', 'knowledge'),
-            ]);
+        $query = parent::getEloquentQuery()->with('categories');
 
         $user = auth()->user();
 
@@ -271,7 +267,6 @@ class KnowledgeArticleResource extends Resource
                     ->url(fn (KnowledgeArticle $record): ?string => $record->trashed()
                         ? null
                         : static::getUrl('view', ['record' => $record])),
-                Tables\Columns\ViewColumn::make('media')->label('')->view('filament.tables.columns.knowledge-media'),
                 Tables\Columns\IconColumn::make('is_public')->label('Obligāts saturs')->boolean()
                     ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
                 Tables\Columns\TextColumn::make('assignments_progress')
