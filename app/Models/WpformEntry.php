@@ -93,6 +93,25 @@ class WpformEntry extends Model
         return $this->belongsTo(Client::class);
     }
 
+    /**
+     * Fields as shown in the CRM. WordPress sends the urgent-sale checkbox
+     * with the raw field key and the checkbox caption, so map it to a real
+     * label and a Jā/Nē value for display.
+     *
+     * @return array<int, array{id: int, name: string, type: string, value: mixed}>
+     */
+    public function displayFields(): array
+    {
+        return array_map(static function (array $field): array {
+            if (($field['name'] ?? '') === 'field_4') {
+                $field['name'] = 'Vēlos pārdot steidzami';
+                $field['value'] = trim((string) ($field['value'] ?? '')) !== '' ? 'Jā' : 'Nē';
+            }
+
+            return $field;
+        }, $this->fields ?? []);
+    }
+
     public function fieldValue(string $name): ?string
     {
         foreach ($this->fields ?? [] as $field) {
