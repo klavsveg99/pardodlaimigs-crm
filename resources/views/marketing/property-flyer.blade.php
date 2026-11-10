@@ -180,7 +180,8 @@
         .desc em, .desc i { font-style: italic; }
         .cta-row { display: flex; align-items: center; gap: 12px; }
         .f-cta { flex: 1 1 auto; background: var(--pdc-primary); color: #ffffff; border-radius: 6px; padding: 16px; font-size: 16px; font-weight: 600; text-transform: uppercase; text-align: center; letter-spacing: 0.5px; display: block; text-decoration: none; word-break: break-word; }
-        .f-qr { flex: none; width: 80px; height: 80px; }
+        .header-id { display: flex; align-items: center; gap: 12px; }
+        .f-qr { flex: none; width: 54px; height: 54px; }
         .f-qr img { width: 100%; height: 100%; display: block; }
         .col-right { display: flex; flex-direction: column; min-width: 0; }
         .main-img { width: 100%; height: 240px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
@@ -372,7 +373,12 @@
                         <div class="brand">
                             <img src="{{ asset('site-assets/images/brand/logo.svg') }}" alt="Pārdod Laimīgs">
                         </div>
-                        <span class="chip" data-out="listingId">{{ $listingId }}</span>
+                        <div class="header-id">
+                            <span class="chip" data-out="listingId">{{ $listingId }}</span>
+                            @if ($qrDataUri)
+                                <div class="f-qr"><img src="{{ $qrDataUri }}" alt="QR kods"></div>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="flyer-grid">
@@ -392,9 +398,6 @@
 
                             <div class="cta-row">
                                 <a class="f-cta" data-out="cta" href="{{ $ctaUrl }}" target="_blank" rel="noopener">Vairāk informācija</a>
-                                @if ($qrDataUri)
-                                    <div class="f-qr"><img src="{{ $qrDataUri }}" alt="QR kods"></div>
-                                @endif
                             </div>
                         </div>
 
