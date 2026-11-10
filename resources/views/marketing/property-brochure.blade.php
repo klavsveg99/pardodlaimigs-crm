@@ -851,25 +851,63 @@
             }
 
             // ── PDF lejupielāde ─────────────────────────────────
-            function ensureHtml2Pdf() {
+            // Katra .page tiek renderēta atsevišķi un ielikta precīzi A4
+            // lapā ar jsPDF. html2pdf automātisko lappušu dalīšanu neizmantojam
+            // - tā raido tukšas vai nobīdītas lapas atkarībā no loga izmēra.
+            function loadScript(sources) {
                 return new Promise(function (resolve, reject) {
-                    if (window.html2pdf) { resolve(); return; }
-                    const sources = [
-                        'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
-                        'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
-                        'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js'
-                    ];
                     let index = 0;
                     function load() {
-                        if (index >= sources.length) { reject(new Error('html2pdf nav pieejams')); return; }
+                        if (index >= sources.length) { reject(new Error('Skripts nav pieejams')); return; }
                         const script = document.createElement('script');
                         script.src = sources[index++];
-                        script.onload = function () { window.html2pdf ? resolve() : load(); };
+                        script.onload = resolve;
                         script.onerror = load;
                         document.head.appendChild(script);
                     }
                     load();
                 });
+            }
+
+            async function ensureLibraries() {
+                const jobs = [];
+                if (!window.html2pdf) {
+                    jobs.push(loadScript([
+                        'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+                        'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
+                        'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js'
+                    ]));
+                }
+                if (!(window.jspdf && window.jspdf.jsPDF)) {
+                    jobs.push(loadScript([
+                        'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+                        'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js',
+                        'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'
+                    ]));
+                }
+                await Promise.all(jobs);
+                if (!window.html2pdf || !(window.jspdf && window.jspdf.jsPDF)) {
+                    throw new Error('PDF bibliotēkas nav pieejamas');
+                }
+            }
+
+            // Renderē vienu lapu un liecina, ka nav tukšs (visi pikseļi balti).
+            async function renderPageCanvas(page) {
+                const canvas = await window.html2pdf()
+                    .set({ html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0, windowWidth: 794 } })
+                    .from(page)
+                    .toCanvas()
+                    .get('canvas');
+                const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+                let painted = 0;
+                for (let i = 0; i < data.length; i += 64) {
+                    if (data[i] !== 255 || data[i + 1] !== 255 || data[i + 2] !== 255) {
+                        painted++;
+                        if (painted > 100) { break; }
+                    }
+                }
+                if (painted <= 100) { throw new Error('Lapas renderējums ir tukšs'); }
+                return canvas;
             }
 
             window.pdcDownloadBrochure = async function () {
@@ -882,16 +920,18 @@
                 if (status) { status.textContent = ''; }
                 document.body.classList.add('pdf-exporting');
                 try {
-                    await ensureHtml2Pdf();
+                    await ensureLibraries();
                     if (document.fonts?.ready) { await document.fonts.ready; }
-                    await window.html2pdf().set({
-                        margin: 0,
-                        filename: @json($filename),
-                        image: { type: 'jpeg', quality: 0.95 },
-                        html2canvas: { scale: 1, useCORS: true, backgroundColor: '#ffffff', logging: false, scrollX: 0, scrollY: 0, windowWidth: 794 },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                        pagebreak: { mode: [] }
-                    }).from(document.getElementById('brochure')).save();
+                    const pages = Array.from(document.querySelectorAll('#brochure .page'));
+                    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+                    for (let i = 0; i < pages.length; i++) {
+                        const canvas = await renderPageCanvas(pages[i]);
+                        if (i > 0) { doc.addPage(); }
+                        // Attēls tiek izstiepts tieši uz A4 (210 x 297 mm),
+                        // tāpēc nekad nepaliek bruna josla labajā malā.
+                        doc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297);
+                    }
+                    doc.save(@json($filename));
                     if (status) { status.textContent = 'PDF sagatavots.'; }
                 } catch (error) {
                     console.warn('PDF ģenerēšana neizdevās:', error);
