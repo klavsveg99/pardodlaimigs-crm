@@ -8,6 +8,7 @@ use App\Filament\Admin\Resources\KnowledgeArticleResource\Pages;
 use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Models\KnowledgeArticle;
 use App\Models\KnowledgeAssignment;
+use App\Models\User;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
@@ -92,10 +93,21 @@ class KnowledgeArticleResource extends Resource
         $user = auth()->user();
 
         if ($user?->can('manage')) {
-            return $query->withCount([
-                'assignments',
-                'assignments as completed_assignments_count' => fn (Builder $assignment): Builder => $assignment->whereNotNull('completed_at'),
-            ]);
+            return $query
+                ->withCount([
+                    'assignments',
+                    'assignments as completed_assignments_count' => fn (Builder $assignment): Builder => $assignment->whereNotNull('completed_at'),
+                ])
+                // Obligātajam saturam skaita arī pašatzīmētos izpildījumus,
+                // nevis tikai skaidri piešķirtos materiālus.
+                ->with([
+                    'assignments' => fn (Builder $assignment): Builder => $assignment->select([
+                        'id', 'knowledge_article_id', 'assigned_user_id', 'completed_at',
+                    ]),
+                    'completions' => fn (Builder $completion): Builder => $completion->select([
+                        'id', 'knowledge_article_id', 'user_id', 'completed_at',
+                    ]),
+                ]);
         }
 
         // Fotogrāfs redz tikai viņam piešķirtos materiālus. Aģents un
@@ -130,6 +142,20 @@ class KnowledgeArticleResource extends Resource
                 'assignments' => fn ($assignment) => $assignment->where('assigned_user_id', $user?->id),
                 'completions' => fn ($completion) => $completion->where('user_id', $user?->id),
             ]);
+    }
+
+    /**
+     * Lietotāju ID, kuriem obligātais saturs ir pieejams. Aprēķina vienu
+     * reizi vienā pieprasījumā, lai tabulas kolonna neveiktu vaicājumu
+     * katram materiālam atsevišķi.
+     *
+     * @return array<int, int>
+     */
+    protected static function knowledgeAudienceIds(): array
+    {
+        static $ids = null;
+
+        return $ids ??= User::query()->knowledgeAudience()->pluck('id')->all();
     }
 
     public static function form(Schema $schema): Schema
@@ -251,7 +277,26 @@ class KnowledgeArticleResource extends Resource
                 Tables\Columns\TextColumn::make('assignments_progress')
                     ->label('Pabeiguši')
                     ->visible(fn (): bool => auth()->user()?->can('manage') ?? false)
-                    ->getStateUsing(fn (KnowledgeArticle $record): string => ($record->completed_assignments_count ?? 0).'/'.($record->assignments_count ?? 0))
+                    ->getStateUsing(function (KnowledgeArticle $record): string {
+                        if (! $record->is_public) {
+                            return ($record->completed_assignments_count ?? 0).'/'.($record->assignments_count ?? 0);
+                        }
+
+                        // Obligātais saturs ir pieejams visiem aģentiem un
+                        // studentiem, tāpēc saucējs ir visa auditorija, nevis
+                        // tikai tie, kam materiāls piešķirts atsevišķi.
+                        $audience = static::knowledgeAudienceIds();
+
+                        $completed = $record->assignments
+                            ->whereNotNull('completed_at')
+                            ->pluck('assigned_user_id')
+                            ->merge($record->completions->whereNotNull('completed_at')->pluck('user_id'))
+                            ->intersect($audience)
+                            ->unique()
+                            ->count();
+
+                        return $completed.'/'.count($audience);
+                    })
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Statuss')

@@ -111,6 +111,17 @@ class User extends Authenticatable implements FilamentUser
         });
     }
 
+    /**
+     * Lietotāji, kuriem obligātais saturs ir automātiski pieejams: aģenti un
+     * studenti. Administratori to pārvalda, fotogrāfiem tas nav pieejams.
+     */
+    public function scopeKnowledgeAudience(Builder $query): Builder
+    {
+        return $query->where(function (Builder $query): void {
+            $query->whereNull('role')->orWhereNotIn('role', ['admin', 'photo']);
+        });
+    }
+
     public function getRoleLabelAttribute(): string
     {
         return match ($this->role) {
