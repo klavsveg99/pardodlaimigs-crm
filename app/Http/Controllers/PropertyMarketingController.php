@@ -27,7 +27,7 @@ class PropertyMarketingController extends Controller
     {
         $property = $this->resolveProperty($request, $propertySlug);
 
-        return view('marketing.property-flyer', $this->buildViewData($property) + [
+        return view('marketing.property-flyer', $this->buildViewData($property, '600x128') + [
             'qrDataUri' => $this->qrDataUri($property),
         ]);
     }
@@ -63,7 +63,7 @@ class PropertyMarketingController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function buildViewData(CrmProperty $property): array
+    private function buildViewData(CrmProperty $property, string $mapSize = '600x340'): array
     {
         // Tikai attēli - galerijā var būt arī cita veida faili.
         $gallery = $property->attachments
@@ -90,7 +90,7 @@ class PropertyMarketingController extends Controller
         return [
             'property' => $property,
             'images' => $images,
-            'mapUrl' => $this->staticMapDataUri($property),
+            'mapUrl' => $this->staticMapDataUri($property, $mapSize),
             'agent' => $agent,
             'agentName' => $agent?->name,
             'agentRole' => $agent?->position ?: 'Nekustamo īpašumu konsultants',
@@ -364,7 +364,7 @@ class PropertyMarketingController extends Controller
     /**
      * Google Static Maps attēls kā data URI - tā PDF vienmēr satur karti.
      */
-    private function staticMapDataUri(CrmProperty $property): ?string
+    private function staticMapDataUri(CrmProperty $property, string $size): ?string
     {
         $key = (string) config('services.google_maps.key');
         if ($key === '' || blank($property->lat) || blank($property->lng)) {
@@ -376,7 +376,7 @@ class PropertyMarketingController extends Controller
             .http_build_query([
                 'center' => $center,
                 'zoom' => 15,
-                'size' => '600x340',
+                'size' => $size,
                 'scale' => 2,
                 'maptype' => 'roadmap',
                 'markers' => 'color:0x285854|'.$center,

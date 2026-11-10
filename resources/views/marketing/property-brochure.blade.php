@@ -221,8 +221,7 @@
         .details-list li > * { min-width: 0; overflow-wrap: anywhere; }
         .details-list strong { color: #35413e; }
         .details-list span { color: #3f4b48; }
-        .details-image { width: 100%; height: 205px; margin-top: 18px; border-radius: 8px; background: #e4e6e0 center/cover no-repeat; }
-        .map { height: 282px; margin-top: 24px; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: #e8ebe5; }
+        .map { height: 384px; margin-top: 24px; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: #e8ebe5; }
         .map img { display: block; width: 100%; height: 100%; object-fit: cover; }
         .map-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: #9ca3af; font-size: 13px; }
 
@@ -468,7 +467,6 @@
                                     <li><strong>{{ $label }}</strong><span @if ($key) data-out="{{ $key }}" @endif>{{ $value }}</span></li>
                                 @endforeach
                             </ul>
-                            <div class="details-image" id="brochure-detail-image" @if ($gallery->get(3)) style="background-image:url('{{ $gallery->get(3) }}')" @else style="display:none" @endif></div>
                         </div>
                     </div>
                     <div class="map" id="brochure-map" @if (! $mapUrl) style="display:none" @endif>
@@ -741,7 +739,6 @@
             const thumbsEditor = document.getElementById('thumbs-editor');
             const coverHero = document.getElementById('brochure-cover-hero');
             const photoSlots = [1, 2, 3].map(function (i) { return document.getElementById('brochure-photo-' + i); });
-            const detailImage = document.getElementById('brochure-detail-image');
             const mapSlot = document.getElementById('brochure-map');
 
             function setBackground(el, url) {
@@ -774,7 +771,6 @@
 
                 setBackground(coverHero, state.main);
                 photoSlots.forEach(function (el, i) { setBackground(el, state.photos[i] || null); });
-                setBackground(detailImage, state.photos[3] || null);
 
                 if (mapSlot) {
                     if (!state.showMap) {
