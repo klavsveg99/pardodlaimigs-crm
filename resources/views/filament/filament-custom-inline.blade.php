@@ -780,6 +780,13 @@ input[type="checkbox"][checked] {
     border-bottom: 0 !important;
 }
 
+/* Without any saved description versions there is nothing to switch
+   between: hide the whole tab row and keep only the editor. The Versijas
+   tab is only rendered when description revisions exist. */
+.pdc-desc-tabs nav.fi-tabs:not(:has(button[data-tab-key="versijas::data::tab"])) {
+    display: none !important;
+}
+
 /* Teal palette → brand (legacy) */
 .fi-color-teal, .dark .fi-color-teal { --color-50: var(--pdc-primary) !important; --color-100: var(--pdc-primary) !important; --color-200: var(--pdc-primary) !important; --color-300: var(--pdc-primary) !important; --color-400: var(--pdc-primary) !important; --color-500: var(--pdc-primary) !important; --color-600: var(--pdc-primary-darker) !important; --color-700: var(--pdc-primary-darker) !important; --color-800: var(--pdc-primary-darker) !important; --color-900: var(--pdc-primary-darker) !important; --color-950: var(--pdc-primary-darker) !important; }
 /* Buttons: ALL semantic colors render as brand (only 2 button styles: primary solid / gray). Badges/count bubbles keep their real semantic colors */
