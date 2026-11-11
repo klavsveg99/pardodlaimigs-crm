@@ -39,6 +39,12 @@ class EditCrmProperty extends EditRecord
     protected bool $statusChangedToSold = false;
 
     /**
+     * Apraksta versija, kuru lietotājs gatavojas neatgriezeniski dzēst
+     * (izmanto apstiprinājuma modālis).
+     */
+    public ?int $deletingDescriptionRevisionId = null;
+
+    /**
      * Property attachments live in two collections: gallery images and
      * separate "Pielikumi" documents.
      */
@@ -139,7 +145,8 @@ class EditCrmProperty extends EditRecord
 
         // Versija tiek fiksēta tikai pie manuālas saglabāšanas, nevis pie
         // melnraksta autosave - citādi katra taustiņšienis radītu jaunu versiju.
-        if (! $wasAutosave && $record->wasChanged('description')) {
+        // Tukšu aprakstu arhīvā nefiksējam: tāda versija tikai aizņem vietu.
+        if (! $wasAutosave && $record->wasChanged('description') && ! $this->descriptionIsEmpty($record->description)) {
             $this->storeDescriptionRevision($record);
         }
 
@@ -196,6 +203,71 @@ class EditCrmProperty extends EditRecord
         $record->descriptionRevisions()
             ->whereNotIn('id', $keepIds)
             ->delete();
+    }
+
+    /**
+     * Vai apraksts pēc būtības ir tukšs (tikai tukšas HTML atzīmes, atstarpes
+     * vai neredzamās rakstzīmes). Attēlu/video saturošu aprakstu par tukšu
+     * neuzskatām.
+     */
+    private function descriptionIsEmpty(?string $description): bool
+    {
+        $description = (string) $description;
+
+        if (preg_match('/<(img|iframe|video|audio)\b/i', $description)) {
+            return false;
+        }
+
+        $text = html_entity_decode(strip_tags($description), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = str_replace(["\u{00A0}", "\u{200B}", "\u{FEFF}"], '', $text);
+
+        return trim($text) === '';
+    }
+
+    public function confirmDescriptionRevisionDeletion(int $revisionId): void
+    {
+        $revision = $this->getRecord()
+            ?->descriptionRevisions()
+            ->whereKey($revisionId)
+            ->first();
+
+        if (! $revision) {
+            Notification::make()->title('Apraksta versija nav atrasta')->danger()->send();
+
+            return;
+        }
+
+        $this->deletingDescriptionRevisionId = $revision->id;
+        $this->mountAction('deleteDescriptionRevision');
+    }
+
+    protected function deleteDescriptionRevisionAction(): Actions\Action
+    {
+        return Actions\Action::make('deleteDescriptionRevision')
+            ->label('Dzēst versiju')
+            ->color('danger')
+            ->icon('heroicon-o-trash')
+            ->modalHeading('Dzēst apraksta versiju neatgriezeniski?')
+            ->modalDescription('Šī apraksta versija tiks neatgriezeniski dzēsta un to vairs nevarēs atjaunot.')
+            ->modalSubmitActionLabel('Dzēst neatgriezeniski')
+            ->action(function (): void {
+                $revisionId = $this->deletingDescriptionRevisionId;
+                $this->deletingDescriptionRevisionId = null;
+
+                $revision = $revisionId
+                    ? $this->getRecord()?->descriptionRevisions()->whereKey($revisionId)->first()
+                    : null;
+
+                if (! $revision) {
+                    Notification::make()->title('Apraksta versija nav atrasta')->danger()->send();
+
+                    return;
+                }
+
+                $revision->delete();
+
+                Notification::make()->title('Apraksta versija dzēsta')->success()->send();
+            });
     }
 
     public function revertDescription(int $revisionId): void
