@@ -374,7 +374,6 @@ class CrmPropertyResource extends Resource
 
             Section::make('Apraksts')
                 ->columnSpanFull()
-                ->extraAttributes(['class' => 'pdc-desc-section'])
                 ->headerActions([
                     // Standarta Filament modāls ar CRM datu pārskatu un
                     // 4 papildu ievadēm - zaļa poga WYSIWYG bloka galvenē.

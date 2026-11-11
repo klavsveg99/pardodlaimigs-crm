@@ -772,10 +772,10 @@ input[type="checkbox"][checked] {
     padding: 0 !important;
 }
 
-/* Apraksts section: no inner padding, so the tabs and the editor/revisions
-   span the full section width instead of being inset by the section content
-   padding. */
-.pdc-desc-section > .fi-section > .fi-section-content-ctn > .fi-section-content {
+/* Apraksts tab bar: remove the nav's own 10px/12px inner padding so the
+   tabs sit at the section content edge. The editor container keeps its
+   normal padding. */
+.pdc-desc-tabs nav.fi-tabs {
     padding: 0 !important;
 }
 
