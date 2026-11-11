@@ -96,6 +96,7 @@ class CrmPropertyResource extends Resource
 
                 Section::make('Galerija')->columnSpanFull()->schema([
                     AttachmentsGrid::make('attachments')
+                        ->label('Fotogrāfijas un plānojumi')
                         ->hiddenLabel()
                         ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
                             .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
@@ -602,6 +603,7 @@ class CrmPropertyResource extends Resource
 
             Section::make('Galerija')->columnSpanFull()->schema([
                 AttachmentsGrid::make('attachments')
+                    ->label('Fotogrāfijas un plānojumi')
                     ->hiddenLabel()
                     ->reorderable()
                     ->deletable()
@@ -617,6 +619,7 @@ class CrmPropertyResource extends Resource
 
             Section::make('Pielikumi')->columnSpanFull()->schema([
                 AttachmentsGrid::make('attachments_documents')
+                    ->label('Dokumenti')
                     ->hiddenLabel()
                     ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
                         .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB · Pases kopijas, zemesgrāmatas, līgumi, pilnvaras u.c. · var nosūtīt arī ar e-pastu saistītajam klientam.')
