@@ -48,6 +48,7 @@ class ViewCrmProperty extends ViewRecord
         if (auth()->user()?->isPhoto()) {
             return $schema->components([
                 AttachmentsGrid::make('attachments_documents')
+                    ->hiddenLabel()
                     ->reorderable(false)
                     ->multiselect(false)
                     ->deletable(false)
@@ -58,6 +59,7 @@ class ViewCrmProperty extends ViewRecord
 
         return $schema->components([
             AttachmentsGrid::make('attachments_documents')
+                ->hiddenLabel()
                 ->reorderable(false)
                 ->multiselect(false)
                 ->deletable()
