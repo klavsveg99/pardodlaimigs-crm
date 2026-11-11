@@ -775,7 +775,7 @@ input[type="checkbox"][checked] {
 /* Apraksts section: no inner padding, so the tabs and the editor/revisions
    span the full section width instead of being inset by the section content
    padding. */
-.pdc-desc-section > .fi-section-content-ctn > .fi-section-content {
+.pdc-desc-section > .fi-section > .fi-section-content-ctn > .fi-section-content {
     padding: 0 !important;
 }
 
