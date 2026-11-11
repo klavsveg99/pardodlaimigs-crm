@@ -48,7 +48,7 @@ class KnowledgeComments extends Component
             'knowledge_category_id' => $this->categoryId ?: null,
             'step_index' => $this->articleId ? $this->stepIndex : null,
             'body' => trim($this->body),
-        ]);
+        ])->notifyAdmins();
 
         $this->body = '';
         $this->dispatch('knowledge-comment-added');
@@ -89,7 +89,7 @@ class KnowledgeComments extends Component
             'knowledge_category_id' => $parent->knowledge_category_id,
             'step_index' => $parent->step_index,
             'body' => trim($this->replyBody),
-        ]);
+        ])->notifyAdmins();
 
         $this->cancelReply();
         $this->dispatch('knowledge-comment-added');

@@ -8,10 +8,12 @@ use App\Filament\Admin\Resources\ClientResource;
 use App\Filament\Admin\Resources\CrmPropertyResource;
 use App\Models\Client;
 use App\Models\CrmProperty;
+use App\Models\KnowledgeComment;
 use App\Models\NotificationDismissal;
 use App\Models\User;
 use App\Support\PhoneFormat;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * Vienots aizveramo paziņojumu avots. Tos rāda gan "Šodien jāizdara"
@@ -24,6 +26,8 @@ use Illuminate\Support\Collection;
  *  - lead: klienti ar statusu "Līds" bez norādīta saziņas datuma
  *    (atbildīgajam aģentam), atgriežas katru dienu;
  *  - stale_property: aktīvi īpašumi, kuru cena/statuss nav mainīti 45 dienas.
+ *  - knowledge_comment: jauni komentāri zināšanu materiāliem un kursiem
+ *    (administratoriem). Pēc aizvēršanas atgriežas tikai ar jaunu komentāru.
  *
  * Klientu dzimšanas dienu apsveikumus tagad sūta automātiski (pdc:send-greetings),
  * tāpēc tie vairs nav manuāli aizverami paziņojumi.
@@ -53,6 +57,7 @@ class NoticeCenter
             $this->followUpNotices($user, $dismissals),
             $this->leadNotices($user, $dismissals),
             $this->stalePropertyNotices($user, $dismissals),
+            $this->knowledgeCommentNotices($user, $dismissals),
         ));
     }
 
@@ -189,6 +194,71 @@ class NoticeCenter
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * Jauni komentāri zem materiāliem un kursiem, tikai administratoriem.
+     * Viena kartīte uz mērķi (materiāls vai kurss); pēc aizvēršanas tā
+     * atgriežas, tiklīdz parādās jauns komentārs. Bez aizvēršanas rāda
+     * pēdējo 7 dienu komentārus, lai pēc ieviešanas neuzpeld visa vēsture.
+     *
+     * @param  Collection<string, NotificationDismissal>  $dismissals
+     * @return array<int, array<string, mixed>>
+     */
+    private function knowledgeCommentNotices(User $user, Collection $dismissals): array
+    {
+        if (! $user->can('manage')) {
+            return [];
+        }
+
+        return KnowledgeComment::query()
+            ->with(['user', 'article', 'category'])
+            ->where('created_at', '>=', now()->subDays(7))
+            ->where(function ($query): void {
+                $query->whereNotNull('knowledge_article_id')
+                    ->orWhereNotNull('knowledge_category_id');
+            })
+            ->orderByDesc('created_at')
+            ->get()
+            ->reject(function (KnowledgeComment $comment) use ($dismissals): bool {
+                $dismissedAt = $dismissals->get($this->knowledgeCommentKey($comment))?->dismissed_at;
+
+                return $dismissedAt !== null && $dismissedAt->gt($comment->created_at);
+            })
+            ->groupBy(fn (KnowledgeComment $comment): string => $comment->knowledge_article_id
+                ? 'article:'.$comment->knowledge_article_id
+                : 'category:'.$comment->knowledge_category_id)
+            ->map(function (Collection $comments): array {
+                /** @var KnowledgeComment $comment */
+                $comment = $comments->first();
+
+                return [
+                    'key' => $this->knowledgeCommentKey($comment),
+                    'type' => 'Komentārs',
+                    'type_color' => 'gray',
+                    'icon' => 'heroicon-o-chat-bubble-left-right',
+                    'urgent' => false,
+                    'title' => $comment->targetTitle(),
+                    'url' => $comment->targetUrl(),
+                    'fields' => array_values(array_filter([
+                        ['label' => 'Komentēja', 'value' => $comment->user?->name],
+                        $comment->step_index !== null
+                            ? ['label' => 'Solis', 'value' => $comment->stepTitle()]
+                            : null,
+                        ['label' => 'Komentārs', 'value' => Str::limit($comment->body, 80)],
+                    ])),
+                ];
+            })
+            ->values()
+            ->take(10)
+            ->all();
+    }
+
+    private function knowledgeCommentKey(KnowledgeComment $comment): string
+    {
+        return $comment->knowledge_article_id
+            ? 'knowledge_comment:article:'.$comment->knowledge_article_id
+            : 'knowledge_comment:category:'.$comment->knowledge_category_id;
     }
 
     /**
