@@ -772,6 +772,13 @@ input[type="checkbox"][checked] {
     padding: 0 !important;
 }
 
+/* Apraksts section: no inner padding, so the tabs and the editor/revisions
+   span the full section width instead of being inset by the section content
+   padding. */
+.pdc-desc-section > .fi-section-content-ctn > .fi-section-content {
+    padding: 0 !important;
+}
+
 /* Teal palette → brand (legacy) */
 .fi-color-teal, .dark .fi-color-teal { --color-50: var(--pdc-primary) !important; --color-100: var(--pdc-primary) !important; --color-200: var(--pdc-primary) !important; --color-300: var(--pdc-primary) !important; --color-400: var(--pdc-primary) !important; --color-500: var(--pdc-primary) !important; --color-600: var(--pdc-primary-darker) !important; --color-700: var(--pdc-primary-darker) !important; --color-800: var(--pdc-primary-darker) !important; --color-900: var(--pdc-primary-darker) !important; --color-950: var(--pdc-primary-darker) !important; }
 /* Buttons: ALL semantic colors render as brand (only 2 button styles: primary solid / gray). Badges/count bubbles keep their real semantic colors */

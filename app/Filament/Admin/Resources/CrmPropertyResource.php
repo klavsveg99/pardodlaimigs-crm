@@ -374,6 +374,7 @@ class CrmPropertyResource extends Resource
 
             Section::make('Apraksts')
                 ->columnSpanFull()
+                ->extraAttributes(['class' => 'pdc-desc-section'])
                 ->headerActions([
                     // Standarta Filament modāls ar CRM datu pārskatu un
                     // 4 papildu ievadēm - zaļa poga WYSIWYG bloka galvenē.
@@ -586,7 +587,7 @@ class CrmPropertyResource extends Resource
                             Tab::make('Versijas')
                                 ->icon('heroicon-o-clock')
                                 ->badge(fn (?CrmProperty $record): ?string => $record ? (string) $record->descriptionRevisions()->count() : null)
-                                ->visible(fn (?CrmProperty $record): bool => $record !== null)
+                                ->visible(fn (?CrmProperty $record): bool => $record?->descriptionRevisions()->exists() ?? false)
                                 ->schema([
                                     View::make('filament.forms.components.description-revisions')
                                         ->columnSpanFull(),
