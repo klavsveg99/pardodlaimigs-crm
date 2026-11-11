@@ -242,18 +242,25 @@ class KnowledgeArticleResource extends Resource
                 ->visible(fn (): bool => $record?->attachments()->where('collection', 'knowledge')->exists() ?? false)
                 ->columnSpanFull(),
             View::make('filament.infolists.knowledge-assignments')
-                ->viewData(fn (): array => [
-                    'assignments' => $record?->assignments()->with(['assignedTo', 'assignedBy'])->latest()->get() ?? collect(),
-                    'completions' => (auth()->user()?->can('manage') ?? false)
-                        ? ($record?->completions()->with('user')->latest('completed_at')->get() ?? collect())
-                        : collect(),
-                    'myCompletion' => $record?->completions()->where('user_id', auth()->id())->first(),
-                    'isAdmin' => auth()->user()?->can('manage') ?? false,
-                    'isPublic' => (bool) $record?->is_public,
-                ])
-                ->visible(fn (): bool => (auth()->user()?->can('manage') ?? false)
-                    || ($record?->is_public ?? false)
-                    || ($record?->assignments()->where('assigned_user_id', auth()->id())->exists() ?? false))
+                ->viewData(function () use ($record): array {
+                    $assignments = $record?->assignments()
+                        ->where('assigned_user_id', auth()->id())
+                        ->orderBy('created_at')
+                        ->get() ?? collect();
+
+                    return [
+                        'assignment' => $assignments->first(fn ($assignment): bool => $assignment->completed_at === null)
+                            ?? $assignments->first(),
+                        'myCompletion' => $record?->completions()->where('user_id', auth()->id())->first(),
+                        'isPublic' => (bool) $record?->is_public,
+                    ];
+                })
+                // Administrators jau redz visus lietotājus sadaļā
+                // "Kam materiāls pieejams", tāpēc viņiem šo atkārtoto
+                // piešķīrumu sarakstu nerāda.
+                ->visible(fn (): bool => ! (auth()->user()?->can('manage') ?? false)
+                    && (($record?->is_public ?? false)
+                        || ($record?->assignments()->where('assigned_user_id', auth()->id())->exists() ?? false)))
                 ->columnSpanFull(),
         ])->columns(1);
     }
