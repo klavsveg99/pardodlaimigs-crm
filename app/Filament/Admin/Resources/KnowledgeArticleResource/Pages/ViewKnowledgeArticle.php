@@ -8,6 +8,8 @@ use App\Filament\Admin\Resources\KnowledgeArticleResource;
 use App\Filament\Admin\Resources\KnowledgeArticleResource\Pages\Concerns\AssignsKnowledgeArticle;
 use App\Models\KnowledgeAssignment;
 use App\Models\KnowledgeCompletion;
+use App\Models\KnowledgeCourseAssignment;
+use App\Models\User;
 use App\Services\KnowledgeProgress;
 use Filament\Actions;
 use Filament\Forms\Components\Select;
@@ -35,7 +37,67 @@ class ViewKnowledgeArticle extends ViewRecord
             $this->getRelationManagersContentComponent(),
             View::make('filament.knowledge.article-comments')
                 ->viewData(['article' => $this->getRecord()]),
+            View::make('filament.knowledge.article-audience')
+                ->viewData(fn (): array => ['rows' => $this->audienceRows()])
+                ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
         ]);
+    }
+
+    /**
+     * Visi lietotāji, kuriem materiāls ir pieejams (obligātais saturs, tiešs
+     * piešķīrums vai kurss), ar izpildes statusu.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function audienceRows(): array
+    {
+        $categoryIds = $this->record->categories()->pluck('knowledge_categories.id');
+
+        $courseUserIds = $categoryIds->isEmpty()
+            ? collect()
+            : KnowledgeCourseAssignment::query()
+                ->whereIn('knowledge_category_id', $categoryIds)
+                ->pluck('assigned_user_id');
+
+        $assignmentsByUser = $this->record->assignments()
+            ->orderBy('created_at')
+            ->get()
+            ->groupBy('assigned_user_id');
+
+        $completionsByUser = $this->record->completions()->get()->keyBy('user_id');
+
+        return User::query()
+            ->knowledgeAudience()
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (User $user): bool => $this->record->is_public
+                || $courseUserIds->contains($user->id)
+                || $assignmentsByUser->has($user->id))
+            ->map(function (User $user) use ($courseUserIds, $assignmentsByUser, $completionsByUser): array {
+                $assignments = $assignmentsByUser->get($user->id, collect());
+                $pendingAssignment = $assignments->firstWhere('completed_at', null);
+                $completedAssignment = $assignments->firstWhere('completed_at', '!==', null);
+                $completion = $completionsByUser->get($user->id);
+
+                $completedAt = $completedAssignment?->completed_at ?? $completion?->completed_at;
+
+                return [
+                    'name' => $user->name,
+                    'role' => $user->role_label,
+                    'sources' => array_values(array_filter([
+                        $this->record->is_public ? 'Obligāts saturs' : null,
+                        $assignments->isNotEmpty() ? 'Piešķirts' : null,
+                        $courseUserIds->contains($user->id) ? 'Kurss' : null,
+                    ])),
+                    'due_at' => $pendingAssignment?->due_at ?? $completedAssignment?->due_at,
+                    'completed_at' => $completedAt,
+                    'rating' => $completedAssignment?->rating ?? $completion?->rating,
+                    'completed' => $completedAt !== null,
+                ];
+            })
+            ->sortBy(fn (array $row): string => ($row['completed'] ? '1' : '0').mb_strtolower($row['name']))
+            ->values()
+            ->all();
     }
 
     protected function getHeaderActions(): array
