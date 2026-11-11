@@ -773,10 +773,11 @@ input[type="checkbox"][checked] {
 }
 
 /* Apraksts tab bar: remove the nav's own horizontal/top inner padding so the
-   tabs sit at the section content edge, but keep the bottom padding as the
-   gap to the editor below. */
+   tabs sit at the section content edge, keep the bottom padding as the gap to
+   the editor, and drop the contained-tab bottom border. */
 .pdc-desc-tabs nav.fi-tabs {
     padding: 0 0 10px !important;
+    border-bottom: 0 !important;
 }
 
 /* Teal palette → brand (legacy) */
