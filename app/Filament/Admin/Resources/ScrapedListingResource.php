@@ -117,7 +117,7 @@ class ScrapedListingResource extends Resource
             ->actions([
                 Actions\ActionGroup::make([
                     Actions\Action::make('create_property')
-                        ->label('Izveidot īpašumu')
+                        ->label('Pievienot CRM īpašumu')
                         ->icon('heroicon-o-plus')
                         ->color('gray')
                         ->url(fn (ScrapedListing $record): string => CrmPropertyResource::getUrl('create', [
