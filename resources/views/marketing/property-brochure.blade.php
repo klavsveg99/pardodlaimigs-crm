@@ -244,7 +244,6 @@
         .step { padding-top: 12px; border-top: 2px solid var(--gold); }
         .step strong { display: block; margin-bottom: 5px; font: 700 16px 'Maven Pro', sans-serif; }
         .step span { color: #d4d9d3; font-size: 13px; line-height: 1.4; }
-        .disclaimer { position: absolute; right: 58px; bottom: 30px; left: 58px; color: #c4d0ca; text-align: center; font-size: 10px; line-height: 1.45; }
 
         @page { size: A4; margin: 0; }
         @media (max-width: 900px) {
@@ -502,7 +501,6 @@
                         <div class="step"><strong>2. Apskate</strong><span>Parādām īpašumu un atbildam uz jautājumiem.</span></div>
                         <div class="step"><strong>3. Darījums</strong><span>Palīdzam ar nākamajiem darījuma soļiem.</span></div>
                     </div>
-                    <div class="disclaimer">Piedāvājums sagatavots {{ now()->format('d.m.Y') }}. Informācija ir aptuvena un var mainīties; tā nav publisks piedāvājums. Pārdod Laimīgs · pardodlaimigs.lv · info@pardodlaimigs.lv</div>
                 </section>
             </div>
         </div>
