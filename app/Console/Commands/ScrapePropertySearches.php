@@ -30,6 +30,10 @@ class ScrapePropertySearches extends Command
         }
 
         foreach ($searches as $search) {
+            // Mark the attempt before queueing: the queue worker drains on the
+            // same cron ping, but if it lags the next tick must not dispatch
+            // the same search again.
+            $search->forceFill(['last_run_at' => now()])->save();
             RunPropertySearch::dispatch($search->id);
         }
 
