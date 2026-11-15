@@ -15,7 +15,6 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Livewire\Component;
 
 class ScrapedListingResource extends Resource
 {
@@ -162,18 +161,10 @@ class ScrapedListingResource extends Resource
                         ->label('Atvērt sludinājumus')
                         ->icon('heroicon-o-arrow-top-right-on-square')
                         ->color('gray')
-                        ->action(function (Collection $records, Component $livewire): void {
-                            $script = $records
-                                ->pluck('url')
-                                ->filter()
-                                ->map(fn (string $url): string => 'window.open('.json_encode($url, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE).', "_blank", "noopener");')
-                                ->implode("\n");
-
-                            if ($script !== '') {
-                                $livewire->js($script);
-                            }
-                        })
-                        ->deselectRecordsAfterCompletion(),
+                        ->modalHeading('Atvērt sludinājumus')
+                        ->modalContent(fn (Collection $records) => view('filament.scraped-listing-links', ['records' => $records]))
+                        ->modalSubmitAction(false)
+                        ->modalCancelActionLabel('Aizvērt'),
                     Actions\BulkAction::make('seen_selected')
                         ->label('Atzīmēt apskatītus')
                         ->icon('heroicon-o-check')
