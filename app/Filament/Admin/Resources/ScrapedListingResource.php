@@ -54,6 +54,8 @@ class ScrapedListingResource extends Resource
     {
         return $table
             ->extraAttributes(['class' => 'pdc-found-table pdc-crm-table'])
+            ->recordUrl(fn (ScrapedListing $record): string => $record->url)
+            ->openRecordUrlInNewTab()
             ->columns([
                 Tables\Columns\ImageColumn::make('image_url')
                     ->label('')
