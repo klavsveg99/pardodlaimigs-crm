@@ -58,7 +58,7 @@ class ScrapedListingResource extends Resource
                     ->height(40)
                     ->width(60)
                     ->defaultImageUrl(asset('images/no-photo.svg'))
-                    ->extraImgAttributes(['style' => 'border-radius: 4px;']),
+                    ->extraImgAttributes(['style' => 'border-radius: 4px; width: 60px; height: 40px; object-fit: cover;']),
                 Tables\Columns\TextColumn::make('title')
                     ->label('Nosaukums')
                     ->searchable()
