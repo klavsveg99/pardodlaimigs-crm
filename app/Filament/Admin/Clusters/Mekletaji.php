@@ -32,6 +32,7 @@ class Mekletaji extends Cluster
     {
         $count = ScrapedListing::query()
             ->where('status', 'new')
+            ->whereNull('duplicate_of_id')
             ->when(
                 ! auth()->user()?->can('manage'),
                 fn ($query) => $query->where('user_id', auth()->id()),

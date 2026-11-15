@@ -39,6 +39,9 @@ class ScrapedListingResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
+            // A cross-portal duplicate is stored only to keep the dedupe
+            // trail; the inbox shows each property once.
+            ->whereNull('duplicate_of_id')
             ->when(
                 ! auth()->user()?->can('manage'),
                 fn (Builder $query) => $query->where('user_id', auth()->id()),
@@ -78,21 +81,10 @@ class ScrapedListingResource extends Resource
                     ->formatStateUsing(fn ($state): string => $state !== null ? $state.' m²' : '-')
                     ->sortable()
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
-                Tables\Columns\TextColumn::make('land_m2')
-                    ->label('Zeme')
-                    ->formatStateUsing(fn ($state): string => $state !== null ? $state.' m²' : '-')
-                    ->toggleable()
-                    ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('location')
                     ->label('Vieta')
                     ->limit(30)
                     ->placeholder('-'),
-                Tables\Columns\TextColumn::make('listed_at')
-                    ->label('Publicēts')
-                    ->date('d.m.Y')
-                    ->placeholder('-')
-                    ->sortable()
-                    ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('first_seen_at')
                     ->label('Atrasts')
                     ->dateTime('d.m.Y H:i')
@@ -103,15 +95,6 @@ class ScrapedListingResource extends Resource
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => ScrapedListing::STATUSES[$state] ?? $state)
                     ->color('gray'),
-                Tables\Columns\IconColumn::make('duplicate_of_id')
-                    ->label('Dublikāts')
-                    ->state(fn (ScrapedListing $record): bool => filled($record->duplicate_of_id))
-                    ->boolean()
-                    ->trueIcon('heroicon-o-document-duplicate')
-                    ->trueColor('warning')
-                    ->falseIcon('heroicon-o-minus')
-                    ->falseColor('gray')
-                    ->tooltip('Iespējams dublikāts citā portālā'),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Aģents')
                     ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
@@ -130,6 +113,13 @@ class ScrapedListingResource extends Resource
             ])
             ->actions([
                 Actions\ActionGroup::make([
+                    Actions\Action::make('create_property')
+                        ->label('Izveidot īpašumu')
+                        ->icon('heroicon-o-plus')
+                        ->color('gray')
+                        ->url(fn (ScrapedListing $record): string => CrmPropertyResource::getUrl('create', [
+                            'scraped_listing' => $record->id,
+                        ])),
                     Actions\Action::make('open')
                         ->label('Atvērt sludinājumu')
                         ->icon('heroicon-o-arrow-top-right-on-square')
