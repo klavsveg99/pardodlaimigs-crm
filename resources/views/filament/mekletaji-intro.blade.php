@@ -101,6 +101,8 @@
                 margin-top: 1.1rem;
             }
 
+            body.pdc-intro-lock { overflow: hidden !important; }
+
             .dark .pdc-intro-window { border-color: #374151; background: #111827; color: #f3f4f6; }
             .dark .pdc-intro-kicker { color: #8fc4be; }
             .dark .pdc-intro-close { border-color: #374151; background: #1f2937; color: #d1d5db; }
@@ -109,18 +111,27 @@
 
         <div
             class="pdc-intro"
-            x-data="{ open: true }"
+            x-data="{
+                open: true,
+                close() {
+                    pdcMekletajiIntroSeen();
+                    this.open = false;
+                    document.body.classList.remove('pdc-intro-lock');
+                },
+            }"
+            x-init="document.body.classList.add('pdc-intro-lock')"
             x-show="open"
             x-cloak
-            x-on:keydown.escape.window="pdcMekletajiIntroSeen(); open = false"
+            x-on:keydown.escape.window="close()"
         >
-            <div class="pdc-intro-overlay" x-on:click="pdcMekletajiIntroSeen(); open = false"></div>
+            <div class="pdc-intro-overlay" x-on:click="close()"></div>
 
             <div
                 class="pdc-intro-window"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="pdc-intro-title"
+                x-trap.noreturn="open"
                 x-init="$nextTick(() => $el.querySelector('.pdc-intro-close')?.focus())"
             >
                 <div class="pdc-intro-head">
@@ -134,7 +145,7 @@
                         class="pdc-intro-close"
                         aria-label="Aizvērt"
                         title="Aizvērt"
-                        x-on:click="pdcMekletajiIntroSeen(); open = false"
+                        x-on:click="close()"
                     >
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -151,7 +162,7 @@
                 </div>
 
                 <div class="pdc-intro-foot">
-                    <x-filament::button color="gray" x-on:click="pdcMekletajiIntroSeen(); open = false">
+                    <x-filament::button color="gray" x-on:click="close()">
                         Aizvērt
                     </x-filament::button>
 
