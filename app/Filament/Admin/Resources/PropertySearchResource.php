@@ -143,8 +143,8 @@ class PropertySearchResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->weight('bold')
-                    ->limit(26)
-                    ->tooltip(fn (PropertySearch $record): ?string => mb_strlen((string) $record->name) > 26 ? $record->name : null)
+                    ->limit(24)
+                    ->tooltip(fn (PropertySearch $record): ?string => mb_strlen((string) $record->name) > 24 ? $record->name : null)
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('portals')
                     ->label('Portāls')
@@ -155,8 +155,8 @@ class PropertySearchResource extends Resource
                 Tables\Columns\TextColumn::make('category')
                     ->label('Kategorija / vieta')
                     ->state(fn (PropertySearch $record): string => self::criteria($record))
-                    ->limit(26)
-                    ->tooltip(fn (PropertySearch $record): ?string => mb_strlen(self::criteria($record)) > 26 ? self::criteria($record) : null)
+                    ->limit(24)
+                    ->tooltip(fn (PropertySearch $record): ?string => mb_strlen(self::criteria($record)) > 24 ? self::criteria($record) : null)
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('price_range')
                     ->label('Cena')
@@ -187,7 +187,8 @@ class PropertySearchResource extends Resource
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Aģents')
-                    ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
+                    ->visible(fn (): bool => auth()->user()?->can('manage') ?? false)
+                    ->extraCellAttributes(['class' => 'pdc-nowrap']),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('portals')
