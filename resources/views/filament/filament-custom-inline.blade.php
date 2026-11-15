@@ -1358,6 +1358,47 @@ html.dark .rounded-xl .text-emerald-900 {
     }
 }
 
+/* Shared desktop chrome for the CRM list tables (properties and found
+   listings): tighter cell padding, compact action buttons and edge-to-edge
+   thumbnails. Column sets stay per table. */
+@media (min-width: 640px) {
+    /* Filament insets cell text by 0.75rem per side while these headers use
+       0.375rem, which left every title 6px to the left. Cells take the header
+       inset instead. */
+    .fi-ta.pdc-crm-table .fi-ta-table .fi-ta-text {
+        padding-inline: 0.375rem !important;
+    }
+
+    /* A thumbnail needs its 60px, not another 24px of cell padding. */
+    .fi-ta.pdc-crm-table .fi-ta-table .fi-ta-image {
+        padding-inline: 0 !important;
+    }
+
+    .fi-ta.pdc-crm-table .fi-ta-table th.fi-ta-header-cell {
+        padding-inline: 0.375rem !important;
+    }
+
+    .fi-ta.pdc-crm-table .fi-ta-table .fi-ta-header-cell-sort-btn {
+        gap: 0.25rem !important;
+    }
+
+    .fi-ta.pdc-crm-table .fi-ta-table td:has(> .fi-ta-actions) {
+        width: auto !important;
+        min-width: 0 !important;
+        padding-inline: 0.25rem !important;
+    }
+
+    .fi-ta.pdc-crm-table .fi-ta-table td > .fi-ta-actions {
+        gap: 0.25rem !important;
+    }
+
+    /* Filament's icon buttons carry a -8px margin that assumes the default
+       1rem action-cell padding; these tables use a tighter action column. */
+    .fi-ta.pdc-crm-table .fi-ta-table .fi-ac-icon-btn-group {
+        margin: 0 !important;
+    }
+}
+
 /* Desktop properties table: twelve columns share one row, so use a fixed
    layout and give the title a quarter of the width. Auto layout let the
    compact columns keep their max-content width and squeezed the title down to
@@ -1366,19 +1407,6 @@ html.dark .rounded-xl .text-emerald-900 {
 @media (min-width: 640px) {
     .fi-ta.pdc-properties-table .fi-ta-table {
         table-layout: fixed !important;
-    }
-
-    /* Column titles must start at the same x as the values they label.
-       Filament insets cell text by 0.75rem per side while these headers use
-       0.375rem, which left every title 6px to the left. Cells take the header
-       inset instead; the fixed layout keeps the table inside the panel. */
-    .fi-ta.pdc-properties-table .fi-ta-table .fi-ta-text {
-        padding-inline: 0.375rem !important;
-    }
-
-    /* The thumbnail needs its 60px, not another 24px of cell padding. */
-    .fi-ta.pdc-properties-table .fi-ta-table .fi-ta-image {
-        padding-inline: 0 !important;
     }
 
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-selection-cell { width: 4% !important; }
@@ -1396,12 +1424,10 @@ html.dark .rounded-xl .text-emerald-900 {
 
     .fi-ta.pdc-properties-table .fi-ta-table th.fi-ta-header-cell {
         white-space: normal !important;
-        padding-inline: 0.375rem !important;
     }
 
     .fi-ta.pdc-properties-table .fi-ta-table .fi-ta-header-cell-sort-btn {
         white-space: normal !important;
-        gap: 0.25rem !important;
     }
 
     /* 11-digit cadastre numbers must not break in the middle. */
@@ -1409,22 +1435,6 @@ html.dark .rounded-xl .text-emerald-900 {
         white-space: nowrap !important;
         word-break: normal !important;
         overflow-wrap: normal !important;
-    }
-
-    .fi-ta.pdc-properties-table .fi-ta-table td:has(> .fi-ta-actions) {
-        width: auto !important;
-        min-width: 0 !important;
-        padding-inline: 0.25rem !important;
-    }
-
-    .fi-ta.pdc-properties-table .fi-ta-table td > .fi-ta-actions {
-        gap: 0.25rem !important;
-    }
-
-    /* Filament's icon buttons carry a -8px margin that assumes the default
-       1rem action-cell padding; this table uses a tighter action column. */
-    .fi-ta.pdc-properties-table .fi-ta-table .fi-ac-icon-btn-group {
-        margin: 0 !important;
     }
 }
 

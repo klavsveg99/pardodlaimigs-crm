@@ -51,16 +51,18 @@ class ScrapedListingResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->extraAttributes(['class' => 'pdc-crm-table'])
             ->columns([
                 Tables\Columns\ImageColumn::make('image_url')
                     ->label('')
-                    ->height(48)
-                    ->width(64)
-                    ->defaultImageUrl(asset('images/no-photo.svg')),
+                    ->height(40)
+                    ->width(60)
+                    ->defaultImageUrl(asset('images/no-photo.svg'))
+                    ->extraImgAttributes(['style' => 'border-radius: 4px;']),
                 Tables\Columns\TextColumn::make('title')
                     ->label('Nosaukums')
                     ->searchable()
-                    ->wrap()
+                    ->weight('bold')
                     ->limit(80)
                     ->url(fn (ScrapedListing $record): string => $record->url)
                     ->openUrlInNewTab(),

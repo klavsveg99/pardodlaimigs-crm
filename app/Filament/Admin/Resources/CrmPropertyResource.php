@@ -695,7 +695,7 @@ class CrmPropertyResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->extraAttributes(['class' => 'pdc-properties-table'])
+            ->extraAttributes(['class' => 'pdc-properties-table pdc-crm-table'])
             ->reorderable('sort_order')
             // The row order is the public listing order on /new/, so only
             // administrators may drag properties around; agents can still
