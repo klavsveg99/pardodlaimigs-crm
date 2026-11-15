@@ -136,58 +136,55 @@ class PropertySearchResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->extraAttributes(['class' => 'pdc-searches-table'])
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nosaukums')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->limit(26)
+                    ->tooltip(fn (PropertySearch $record): ?string => mb_strlen((string) $record->name) > 26 ? $record->name : null)
+                    ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('portals')
                     ->label('Portāls')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => PropertySearch::PORTALS[$state] ?? $state)
-                    ->color('gray'),
+                    ->color('gray')
+                    ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('category')
-                    ->label('Kategorija')
-                    ->formatStateUsing(fn (string $state): string => PropertySearch::CATEGORIES[$state] ?? $state),
-                Tables\Columns\TextColumn::make('location')
-                    ->label('Vieta')
-                    ->placeholder('-'),
+                    ->label('Kategorija / vieta')
+                    ->state(fn (PropertySearch $record): string => self::criteria($record))
+                    ->limit(26)
+                    ->tooltip(fn (PropertySearch $record): ?string => mb_strlen(self::criteria($record)) > 26 ? self::criteria($record) : null)
+                    ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('price_range')
                     ->label('Cena')
                     ->state(fn (PropertySearch $record): ?string => self::range($record->price_min, $record->price_max, '€'))
-                    ->placeholder('-'),
+                    ->placeholder('-')
+                    ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('area_range')
                     ->label('Platība')
                     ->state(fn (PropertySearch $record): ?string => self::range($record->area_min, $record->area_max, 'm²'))
-                    ->placeholder('-'),
-                Tables\Columns\TextColumn::make('listings_count')
-                    ->label('Atrasti')
-                    ->sortable()
+                    ->placeholder('-')
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
-                Tables\Columns\TextColumn::make('new_listings_count')
-                    ->label('Jauni')
-                    ->sortable()
+                Tables\Columns\TextColumn::make('listings_count')
+                    ->label('Atrasti / jauni')
+                    ->state(fn (PropertySearch $record): string => $record->listings_count.' / '.$record->new_listings_count)
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('last_run_at')
                     ->label('Pēdējā palaišana')
                     ->dateTime('d.m.Y H:i')
                     ->placeholder('Nav palaists')
                     ->sortable()
+                    ->icon(fn (PropertySearch $record): ?string => filled($record->last_error) ? 'heroicon-o-exclamation-triangle' : null)
+                    ->iconColor('danger')
+                    ->tooltip(fn (PropertySearch $record): ?string => filled($record->last_error) ? $record->last_error : null)
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('frequency')
                     ->label('Biežums')
                     ->formatStateUsing(fn (string $state): string => PropertySearch::FREQUENCIES[$state] ?? $state)
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
-                Tables\Columns\IconColumn::make('last_error')
-                    ->label('Statuss')
-                    ->state(fn (PropertySearch $record): bool => filled($record->last_error))
-                    ->boolean()
-                    ->trueIcon('heroicon-o-exclamation-triangle')
-                    ->trueColor('danger')
-                    ->falseIcon('heroicon-o-check-circle')
-                    ->falseColor('gray')
-                    ->tooltip(fn (PropertySearch $record): ?string => $record->last_error),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Aģents')
                     ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
@@ -249,18 +246,25 @@ class PropertySearchResource extends Resource
         ];
     }
 
+    private static function criteria(PropertySearch $record): string
+    {
+        $category = PropertySearch::CATEGORIES[$record->category] ?? $record->category;
+
+        return filled($record->location) ? $category.' · '.$record->location : $category;
+    }
+
     private static function range(?int $min, ?int $max, string $unit): ?string
     {
         if ($min === null && $max === null) {
             return null;
         }
 
-        $format = fn (int $value): string => number_format($value, 0, ',', ' ').' '.$unit;
+        $format = fn (int $value): string => number_format($value, 0, ',', ' ');
 
         if ($min !== null && $max !== null) {
-            return $format($min).' - '.$format($max);
+            return $format($min).' - '.$format($max).' '.$unit;
         }
 
-        return $min !== null ? 'no '.$format($min) : 'līdz '.$format($max);
+        return $min !== null ? 'no '.$format($min).' '.$unit : 'līdz '.$format($max).' '.$unit;
     }
 }

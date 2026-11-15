@@ -1301,6 +1301,40 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta-table td.pdc-nowrap .fi-ta-text { white-space: normal !important; }
 }
 
+/* Searchers list: merged columns keep every value on a single line inside
+   the 7xl content column. Auto layout (not the tablet fixed layout) so a
+   value is never squeezed into two rows; long names are truncated at the
+   column definition with the full text in the tooltip. */
+@media (min-width: 640px) {
+    .fi-ta.pdc-searches-table .fi-ta-table {
+        table-layout: auto !important;
+    }
+
+    .fi-ta.pdc-searches-table .fi-ta-table td.pdc-nowrap,
+    .fi-ta.pdc-searches-table .fi-ta-table td.pdc-nowrap .fi-ta-text {
+        white-space: nowrap !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+    }
+}
+
+/* Stacked phone cards keep wrapping: each value sits in a half-width cell. */
+@media (max-width: 639px) {
+    .fi-ta.pdc-searches-table .fi-ta-table td.pdc-nowrap,
+    .fi-ta.pdc-searches-table .fi-ta-table td.pdc-nowrap .fi-ta-text {
+        white-space: normal !important;
+    }
+}
+
+/* Narrower desktops drop the agent column first: the list is already scoped
+   to the signed-in agent for everyone except administrators. */
+@media (min-width: 640px) and (max-width: 1600px) {
+    .fi-ta.pdc-searches-table th.fi-ta-header-cell-user\.name,
+    .fi-ta.pdc-searches-table td.fi-ta-cell-user\.name {
+        display: none !important;
+    }
+}
+
 /* Desktop properties table: twelve columns share one row, so use a fixed
    layout and give the title a quarter of the width. Auto layout let the
    compact columns keep their max-content width and squeezed the title down to
