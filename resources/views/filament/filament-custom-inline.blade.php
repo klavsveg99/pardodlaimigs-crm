@@ -1335,6 +1335,29 @@ html.dark .rounded-xl .text-emerald-900 {
     }
 }
 
+/* Then the schedule details step out, so the table keeps fitting instead of
+   scrolling; the frequency and area remain editable on the record page. */
+@media (min-width: 640px) and (max-width: 1300px) {
+    .fi-ta.pdc-searches-table th.fi-ta-header-cell-frequency,
+    .fi-ta.pdc-searches-table td.fi-ta-cell-frequency {
+        display: none !important;
+    }
+}
+
+@media (min-width: 640px) and (max-width: 1180px) {
+    .fi-ta.pdc-searches-table th.fi-ta-header-cell-area-range,
+    .fi-ta.pdc-searches-table td.fi-ta-cell-area-range {
+        display: none !important;
+    }
+}
+
+@media (min-width: 640px) and (max-width: 1100px) {
+    .fi-ta.pdc-searches-table th.fi-ta-header-cell-portals,
+    .fi-ta.pdc-searches-table td.fi-ta-cell-portals {
+        display: none !important;
+    }
+}
+
 /* Desktop properties table: twelve columns share one row, so use a fixed
    layout and give the title a quarter of the width. Auto layout let the
    compact columns keep their max-content width and squeezed the title down to
