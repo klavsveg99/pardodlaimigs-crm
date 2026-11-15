@@ -1194,9 +1194,10 @@ html.dark .rounded-xl .text-emerald-900 {
         margin-inline-end: 3.25rem !important;
     }
     /* Zvaigznes šūna ir bloks: ikona tajā stāvēja pie apakšas un noslīdēja
-       4px zem atlases ķeksīša centra. Flex centrē abus. */
+       4px zem atlases ķeksīša centra. Flex centrē abus. Atkāpe no labās
+       malas atstāj 16px lielu spraugu starp zvaigzni un ķeksīti. */
     .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-is-featured {
-        margin-inline-end: 4.75rem !important;
+        margin-inline-end: 5.25rem !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
