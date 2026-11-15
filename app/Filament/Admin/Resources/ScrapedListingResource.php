@@ -51,7 +51,7 @@ class ScrapedListingResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->extraAttributes(['class' => 'pdc-crm-table'])
+            ->extraAttributes(['class' => 'pdc-found-table pdc-crm-table'])
             ->columns([
                 Tables\Columns\ImageColumn::make('image_url')
                     ->label('')
@@ -64,6 +64,7 @@ class ScrapedListingResource extends Resource
                     ->searchable()
                     ->weight('bold')
                     ->limit(80)
+                    ->tooltip(fn (ScrapedListing $record): string => (string) $record->title)
                     ->url(fn (ScrapedListing $record): string => $record->url)
                     ->openUrlInNewTab(),
                 Tables\Columns\TextColumn::make('portal')

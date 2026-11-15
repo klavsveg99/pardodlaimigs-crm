@@ -1399,6 +1399,42 @@ html.dark .rounded-xl .text-emerald-900 {
     }
 }
 
+/* Found listings: same column rhythm as the properties list, but the ad
+   title is a full sentence rather than a property name, so it stays on one
+   line and ends in an ellipsis (the full text is in the row tooltip). The
+   wider thumbnail column leaves breathing room before the name. */
+@media (min-width: 640px) {
+    .fi-ta.pdc-found-table .fi-ta-table {
+        table-layout: fixed !important;
+    }
+
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-selection-cell { width: 4% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-image-url { width: 72px !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-title { width: 20% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-portal { width: 7.5% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-price-eur { width: 9.5% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-area-m2 { width: 7.5% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-location { width: 9.5% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-first-seen-at { width: 11.5% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-status { width: 7.5% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-user\.name { width: 9% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-actions-header-cell { width: 4.5% !important; }
+
+    .fi-ta.pdc-found-table .fi-ta-table td.fi-ta-cell-title .fi-ta-col {
+        display: block !important;
+        min-width: 0 !important;
+    }
+
+    .fi-ta.pdc-found-table .fi-ta-table td.fi-ta-cell-title .fi-ta-text {
+        display: block !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        padding-inline-start: 0.5rem !important;
+    }
+}
+
 /* Desktop properties table: twelve columns share one row, so use a fixed
    layout and give the title a quarter of the width. Auto layout let the
    compact columns keep their max-content width and squeezed the title down to
