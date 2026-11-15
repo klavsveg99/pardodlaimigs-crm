@@ -1,1 +1,1 @@
-<span class="pdc-version" title="Pārdod Laimīgs CRM versija 1.9">v1.9</span>
+<span class="pdc-version" title="Pārdod Laimīgs CRM versija 2.0">v2.0</span>
