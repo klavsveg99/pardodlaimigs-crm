@@ -156,10 +156,9 @@
                 <div class="pdc-intro-body">
                     <p>Jauna sadaļa, kas meklē ss.lv un city24.lv portālos un savāc atrastos sludinājumus vienā vietā.</p>
                     <ul class="pdc-intro-list">
-                        <li>Automātiskā pārbaude: manuāli, ik pēc 6 stundām, reizi dienā vai nedēļā.</li>
+                        <li>Regulāras pārbaudes: ik pēc 6 stundām, katru dienu vai reizi nedēļā.</li>
                         <li>Atrastos objektus vari atvērt sludinājumā, atzīmēt apskatītus vai atzīmēt vairākus uzreiz.</li>
                         <li>No atrastā objekta vari pievienot CRM īpašumu ar jau aizpildītu nosaukumu, cenu, platību un atrašanās vietu.</li>
-                        <li>Jaunu sludinājumu skaits redzams sānjoslas izvēlnē.</li>
                     </ul>
                 </div>
 
