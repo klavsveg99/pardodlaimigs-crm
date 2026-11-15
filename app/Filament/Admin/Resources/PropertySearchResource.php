@@ -172,9 +172,12 @@ class PropertySearchResource extends Resource
                 Tables\Columns\TextColumn::make('last_run_at')
                     ->label('Pēdējā palaišana')
                     ->dateTime('d.m.Y H:i')
-                    ->description(fn (PropertySearch $record): ?string => PropertySearch::FREQUENCIES[$record->frequency] ?? null)
                     ->placeholder('Nav palaists')
                     ->sortable()
+                    ->extraCellAttributes(['class' => 'pdc-nowrap']),
+                Tables\Columns\TextColumn::make('frequency')
+                    ->label('Biežums')
+                    ->formatStateUsing(fn (string $state): string => PropertySearch::FREQUENCIES[$state] ?? $state)
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\IconColumn::make('last_error')
                     ->label('Statuss')
