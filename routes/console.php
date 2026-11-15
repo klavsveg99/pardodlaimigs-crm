@@ -37,9 +37,11 @@ Schedule::command('pdc:backup-files')
     ->name('daily-files-backup')
     ->withoutOverlapping();
 
-// ss.lv / city24.lv saved searches (development-property inbox) daily at 04:30.
+// ss.lv / city24.lv saved searches (development-property inbox). Each search
+// picks its own frequency, so the command runs on every scheduler ping and
+// only queues the ones whose interval has elapsed.
 Schedule::command('pdc:scrape-property-searches')
-    ->dailyAt('04:30')
+    ->everyMinute()
     ->name('scrape-property-searches')
     ->withoutOverlapping();
 

@@ -12,17 +12,22 @@ class ScrapePropertySearches extends Command
 {
     protected $signature = 'pdc:scrape-property-searches {--search= : Run one saved search by id}';
 
-    protected $description = 'Queue the active ss.lv and city24.lv saved searches.';
+    protected $description = 'Queue the active ss.lv and city24.lv saved searches that are due.';
 
     public function handle(): int
     {
         $query = PropertySearch::query()->where('is_active', true);
 
         if ($id = $this->option('search')) {
-            $query->whereKey((int) $id);
+            // Explicit id runs now and ignores the automatic frequency.
+            $searches = $query->whereKey((int) $id)->get();
+        } else {
+            $searches = $query
+                ->where('frequency', '!=', 'manual')
+                ->get()
+                ->filter(fn (PropertySearch $search): bool => $search->isDue())
+                ->values();
         }
-
-        $searches = $query->get();
 
         foreach ($searches as $search) {
             RunPropertySearch::dispatch($search->id);

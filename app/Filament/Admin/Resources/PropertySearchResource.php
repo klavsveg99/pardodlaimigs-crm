@@ -116,6 +116,12 @@ class PropertySearchResource extends Resource
                     Forms\Components\Toggle::make('is_active')
                         ->label('Aktīvs')
                         ->default(true),
+                    Forms\Components\Select::make('frequency')
+                        ->label('Automātiskā pārbaude')
+                        ->options(PropertySearch::FREQUENCIES)
+                        ->default('daily')
+                        ->required()
+                        ->native(false),
                     Forms\Components\Select::make('user_id')
                         ->label('Aģents')
                         ->relationship('user', 'name')
@@ -166,6 +172,7 @@ class PropertySearchResource extends Resource
                 Tables\Columns\TextColumn::make('last_run_at')
                     ->label('Pēdējā palaišana')
                     ->dateTime('d.m.Y H:i')
+                    ->description(fn (PropertySearch $record): ?string => PropertySearch::FREQUENCIES[$record->frequency] ?? null)
                     ->placeholder('Nav palaists')
                     ->sortable()
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
