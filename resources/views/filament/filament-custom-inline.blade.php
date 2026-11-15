@@ -1193,8 +1193,13 @@ html.dark .rounded-xl .text-emerald-900 {
         justify-content: flex-end !important;
         margin-inline-end: 3.25rem !important;
     }
+    /* Zvaigznes šūna ir bloks: ikona tajā stāvēja pie apakšas un noslīdēja
+       4px zem atlases ķeksīša centra. Flex centrē abus. */
     .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-is-featured {
         margin-inline-end: 4.75rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
     .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-title {
         grid-column: 1 / -1 !important;
