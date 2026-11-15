@@ -54,7 +54,6 @@ class PropertySearchResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->withCount(['listings', 'newListings as new_listings_count'])
             ->when(
                 ! auth()->user()?->can('manage'),
                 fn (Builder $query) => $query->where('user_id', auth()->id()),
@@ -143,8 +142,8 @@ class PropertySearchResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->weight('bold')
-                    ->limit(24)
-                    ->tooltip(fn (PropertySearch $record): ?string => mb_strlen((string) $record->name) > 24 ? $record->name : null)
+                    ->limit(22)
+                    ->tooltip(fn (PropertySearch $record): ?string => mb_strlen((string) $record->name) > 22 ? $record->name : null)
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('portals')
                     ->label('Portāls')
@@ -155,8 +154,8 @@ class PropertySearchResource extends Resource
                 Tables\Columns\TextColumn::make('category')
                     ->label('Kategorija / vieta')
                     ->state(fn (PropertySearch $record): string => self::criteria($record))
-                    ->limit(24)
-                    ->tooltip(fn (PropertySearch $record): ?string => mb_strlen(self::criteria($record)) > 24 ? self::criteria($record) : null)
+                    ->limit(22)
+                    ->tooltip(fn (PropertySearch $record): ?string => mb_strlen(self::criteria($record)) > 22 ? self::criteria($record) : null)
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('price_range')
                     ->label('Cena')
@@ -167,10 +166,6 @@ class PropertySearchResource extends Resource
                     ->label('Platība')
                     ->state(fn (PropertySearch $record): ?string => self::range($record->area_min, $record->area_max, 'm²'))
                     ->placeholder('-')
-                    ->extraCellAttributes(['class' => 'pdc-nowrap']),
-                Tables\Columns\TextColumn::make('listings_count')
-                    ->label('Atrasti / jauni')
-                    ->state(fn (PropertySearch $record): string => $record->listings_count.' / '.$record->new_listings_count)
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('last_run_at')
                     ->label('Pēdējā palaišana')
