@@ -9,10 +9,13 @@ use App\Filament\Admin\Resources\ScrapedListingResource\Pages;
 use App\Models\PropertySearch;
 use App\Models\ScrapedListing;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
+use Livewire\Component;
 
 class ScrapedListingResource extends Resource
 {
@@ -137,26 +140,74 @@ class ScrapedListingResource extends Resource
                         ->action(fn (ScrapedListing $record) => $record->update(['status' => 'seen'])),
                     Actions\Action::make('dismiss')
                         ->label('Atteikties')
-                        ->icon('heroicon-o-x-mark')
-                        ->color('gray')
-                        ->visible(fn (ScrapedListing $record): bool => $record->status !== 'dismissed')
-                        ->action(fn (ScrapedListing $record) => $record->update(['status' => 'dismissed'])),
-                    Actions\Action::make('restore')
-                        ->label('Atjaunot')
-                        ->icon('heroicon-o-arrow-path')
-                        ->color('gray')
-                        ->visible(fn (ScrapedListing $record): bool => $record->status === 'dismissed')
-                        ->action(fn (ScrapedListing $record) => $record->update(['status' => 'new'])),
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Vai tiešām dzēst šo atrasto objektu?')
+                        ->modalDescription('Ieraksts tiks neatgriezeniski izdzēsts un to vairs nevarēs atjaunot.')
+                        ->modalSubmitActionLabel('Dzēst neatgriezeniski')
+                        ->action(function (ScrapedListing $record): void {
+                            $record->delete();
+
+                            Notification::make()
+                                ->title('Atrastais objekts izdzēsts')
+                                ->success()
+                                ->send();
+                        }),
                 ])->color('gray'),
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([
-                    Actions\BulkAction::make('dismiss_selected')
-                        ->label('Atteikties no izvēlētajiem')
-                        ->icon('heroicon-o-x-mark')
+                    Actions\BulkAction::make('open_selected')
+                        ->label('Atvērt sludinājumus')
+                        ->icon('heroicon-o-arrow-top-right-on-square')
                         ->color('gray')
+                        ->action(function (Collection $records, Component $livewire): void {
+                            $script = $records
+                                ->pluck('url')
+                                ->filter()
+                                ->map(fn (string $url): string => 'window.open('.json_encode($url, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE).', "_blank", "noopener");')
+                                ->implode("\n");
+
+                            if ($script !== '') {
+                                $livewire->js($script);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                    Actions\BulkAction::make('seen_selected')
+                        ->label('Atzīmēt apskatītus')
+                        ->icon('heroicon-o-check')
+                        ->color('gray')
+                        ->action(function (Collection $records): void {
+                            $records->each->update(['status' => 'seen']);
+
+                            Notification::make()
+                                ->title($records->count().' atrastie objekti atzīmēti kā apskatīti')
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                    Actions\BulkAction::make('dismiss_selected')
+                        ->label('Atteikties')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
                         ->requiresConfirmation()
-                        ->action(fn ($records) => $records->each->update(['status' => 'dismissed']))
+                        ->modalHeading('Vai tiešām dzēst izvēlētos atrastos objektus?')
+                        ->modalDescription('Ieraksti tiks neatgriezeniski izdzēsti un tos vairs nevarēs atjaunot.')
+                        ->modalSubmitActionLabel('Dzēst neatgriezeniski')
+                        ->action(function (Collection $records): void {
+                            $deleted = 0;
+
+                            foreach ($records as $record) {
+                                $record->delete();
+                                $deleted++;
+                            }
+
+                            Notification::make()
+                                ->title($deleted.' atrastie objekti izdzēsti')
+                                ->success()
+                                ->send();
+                        })
                         ->deselectRecordsAfterCompletion(),
                 ]),
             ])
