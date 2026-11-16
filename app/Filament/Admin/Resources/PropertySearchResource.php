@@ -106,12 +106,6 @@ class PropertySearchResource extends Resource
                         ->label('Platība līdz (m²)')
                         ->numeric()
                         ->minValue(0),
-                    Forms\Components\TextInput::make('max_results')
-                        ->label('Maks. jauni rezultāti vienā reizē')
-                        ->numeric()
-                        ->minValue(10)
-                        ->maxValue(200)
-                        ->default(50),
                     Forms\Components\Toggle::make('is_active')
                         ->label('Aktīvs')
                         ->default(true),

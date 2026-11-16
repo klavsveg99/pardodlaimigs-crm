@@ -29,14 +29,16 @@ class City24ListingParser
     ];
 
     /**
+     * @param  array<string, true>  $knownIds  Ads already stored for this agent and portal.
      * @return array<int, array<string, mixed>>
      */
-    public function fetch(PropertySearch $search): array
+    public function fetch(PropertySearch $search, array $knownIds = []): array
     {
         $unit = self::UNITS[$search->category] ?? 'Land';
+        $seen = $knownIds;
         $items = [];
 
-        for ($page = 1; $page <= 2; $page++) {
+        for ($page = 1; ; $page++) {
             $params = [
                 'address' => ['cc' => 2],
                 'tsType' => 'sale',
@@ -65,13 +67,25 @@ class City24ListingParser
                 break;
             }
 
+            $fresh = 0;
             foreach ($data as $row) {
-                if (is_array($row)) {
-                    $items[] = $this->map($row, $search->category);
+                if (! is_array($row)) {
+                    continue;
+                }
+
+                $item = $this->map($row, $search->category);
+                $items[] = $item;
+
+                $id = (string) ($item['external_id'] ?? '');
+                if ($id !== '' && ! isset($seen[$id])) {
+                    $seen[$id] = true;
+                    $fresh++;
                 }
             }
 
-            if (count($data) < 50) {
+            // Pages are newest first: once a page has nothing new, older pages
+            // cannot bring new ads either. A short page is the last page.
+            if ($fresh === 0 || count($data) < 50) {
                 break;
             }
 

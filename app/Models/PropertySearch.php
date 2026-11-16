@@ -42,7 +42,7 @@ class PropertySearch extends Model
     protected $fillable = [
         'user_id', 'name', 'portals', 'category', 'location',
         'price_min', 'price_max', 'area_min', 'area_max', 'keywords',
-        'max_results', 'is_active', 'frequency', 'last_run_at', 'last_error',
+        'is_active', 'frequency', 'last_run_at', 'last_error',
     ];
 
     protected $casts = [
@@ -51,7 +51,6 @@ class PropertySearch extends Model
         'price_max' => 'integer',
         'area_min' => 'integer',
         'area_max' => 'integer',
-        'max_results' => 'integer',
         'is_active' => 'boolean',
         'last_run_at' => 'datetime',
     ];

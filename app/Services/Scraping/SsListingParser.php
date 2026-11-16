@@ -11,8 +11,9 @@ use Illuminate\Support\Str;
 /**
  * Reads ss.lv category listing pages and turns the table rows into plain
  * arrays. ss.lv has no public search API, so this uses the same HTML the
- * browser gets. Only the first two pages are read per run; older ads are
- * already stored and deduplicated by listing id.
+ * browser gets. Pages are read newest first until a page brings no ads that
+ * are still unknown; older ads are already stored and deduplicated by
+ * listing id, so routine runs stop after the first page or two.
  */
 class SsListingParser
 {
@@ -57,9 +58,10 @@ class SsListingParser
     ];
 
     /**
+     * @param  array<string, true>  $knownIds  Ads already stored for this agent and portal.
      * @return array<int, array<string, mixed>>
      */
-    public function fetch(PropertySearch $search): array
+    public function fetch(PropertySearch $search, array $knownIds = []): array
     {
         $path = self::CATEGORY_PATHS[$search->category] ?? 'plots-and-lands';
         $base = 'https://www.ss.lv/lv/real-estate/'.$path.'/';
@@ -68,8 +70,9 @@ class SsListingParser
             $base .= $region.'/';
         }
 
+        $seen = $knownIds;
         $items = [];
-        for ($page = 1; $page <= 2; $page++) {
+        for ($page = 1; ; $page++) {
             $url = $page === 1 ? $base : $base.'page'.$page.'.html';
             $html = $this->get($url);
             if ($html === null) {
@@ -79,8 +82,18 @@ class SsListingParser
             $pageItems = $this->parse($html, $search->category);
             $items = array_merge($items, $pageItems);
 
-            // A short page means there is nothing after it.
-            if (count($pageItems) < 20) {
+            $fresh = 0;
+            foreach ($pageItems as $item) {
+                $id = (string) ($item['external_id'] ?? '');
+                if ($id !== '' && ! isset($seen[$id])) {
+                    $seen[$id] = true;
+                    $fresh++;
+                }
+            }
+
+            // Pages are newest first: once a page has nothing new, older pages
+            // cannot bring new ads either. A short page is the last page.
+            if ($fresh === 0 || count($pageItems) < 20) {
                 break;
             }
 

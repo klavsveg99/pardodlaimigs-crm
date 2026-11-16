@@ -38,10 +38,20 @@ class PropertySearchRunner
         $errors = [];
 
         foreach ($portals as $portal) {
+            // The parsers read portal pages until they reach ads already stored
+            // for this agent, so a first run collects every match and later
+            // runs stop at the newest page.
+            $knownIds = ScrapedListing::query()
+                ->where('user_id', $search->user_id)
+                ->where('portal', $portal)
+                ->pluck('external_id')
+                ->mapWithKeys(fn ($id): array => [(string) $id => true])
+                ->all();
+
             try {
                 $items = match ($portal) {
-                    'ss' => $this->ss->fetch($search),
-                    'city24' => $this->city24->fetch($search),
+                    'ss' => $this->ss->fetch($search, $knownIds),
+                    'city24' => $this->city24->fetch($search, $knownIds),
                     default => [],
                 };
             } catch (\Throwable $e) {
@@ -96,10 +106,6 @@ class PropertySearchRunner
                         'last_seen_at' => now(),
                         'price_eur' => $item['price_eur'] ?? $listing->price_eur,
                     ]);
-                }
-
-                if ($created >= $search->max_results) {
-                    break 2;
                 }
             }
         }
