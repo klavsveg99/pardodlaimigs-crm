@@ -17,7 +17,14 @@
             scheduled = false;
 
             if (! isMobile()) {
-                document.querySelectorAll('.pdc-email-break').forEach((br) => br.remove());
+                document.querySelectorAll('.pdc-email-break').forEach((br) => {
+                    const parent = br.parentNode;
+                    br.remove();
+                    // Atgriežoties platā skatā, teksts atkal jāsavieno vienā
+                    // mezglā, citādi nākamajā šaurajā skatā @ vairs nav
+                    // atrodams kopā ar adreses sākumu.
+                    parent?.normalize();
+                });
 
                 return;
             }
