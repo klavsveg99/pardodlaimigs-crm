@@ -8,6 +8,8 @@ use App\Filament\Admin\Clusters\Mekletaji;
 use App\Filament\Admin\Resources\PropertySearchResource\Pages;
 use App\Jobs\RunPropertySearch;
 use App\Models\PropertySearch;
+use App\Services\Scraping\City24ListingParser;
+use App\Services\Scraping\SsListingParser;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
@@ -216,6 +218,20 @@ class PropertySearchResource extends Resource
             ])
             ->actions([
                 Actions\ActionGroup::make([
+                    Actions\Action::make('view_source_ss')
+                        ->label('Skatīt rezultātu avotu: ss.lv')
+                        ->icon('heroicon-o-arrow-top-right-on-square')
+                        ->color('gray')
+                        ->visible(fn (PropertySearch $record): bool => in_array('ss', (array) $record->portals, true))
+                        ->url(fn (PropertySearch $record): string => app(SsListingParser::class)->searchUrl($record))
+                        ->openUrlInNewTab(),
+                    Actions\Action::make('view_source_city24')
+                        ->label('Skatīt rezultātu avotu: city24.lv')
+                        ->icon('heroicon-o-arrow-top-right-on-square')
+                        ->color('gray')
+                        ->visible(fn (PropertySearch $record): bool => in_array('city24', (array) $record->portals, true))
+                        ->url(fn (PropertySearch $record): string => app(City24ListingParser::class)->searchUrl($record))
+                        ->openUrlInNewTab(),
                     Actions\Action::make('run')
                         ->label('Palaist tagad')
                         ->icon('heroicon-o-play')

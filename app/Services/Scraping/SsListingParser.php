@@ -57,6 +57,16 @@ class SsListingParser
         'ventspils' => 'ventspils-and-reg',
     ];
 
+    /** Portal listing page for this saved search's category and region. */
+    public function searchUrl(PropertySearch $search): string
+    {
+        $path = self::CATEGORY_PATHS[$search->category] ?? 'plots-and-lands';
+        $url = 'https://www.ss.lv/lv/real-estate/'.$path.'/';
+        $region = $this->regionSlug($search->location);
+
+        return $region !== null ? $url.$region.'/' : $url;
+    }
+
     /**
      * @param  array<string, true>  $knownIds  Ads already stored for this agent and portal.
      * @param  (callable(int): void)|null  $onPage  Called after each listing page is parsed.
@@ -64,12 +74,7 @@ class SsListingParser
      */
     public function fetch(PropertySearch $search, array $knownIds = [], ?callable $onPage = null): array
     {
-        $path = self::CATEGORY_PATHS[$search->category] ?? 'plots-and-lands';
-        $base = 'https://www.ss.lv/lv/real-estate/'.$path.'/';
-        $region = $this->regionSlug($search->location);
-        if ($region !== null) {
-            $base .= $region.'/';
-        }
+        $base = $this->searchUrl($search);
 
         $seen = $knownIds;
         $items = [];

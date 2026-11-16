@@ -31,6 +31,14 @@ class City24ListingParser
         'commercial' => 'commercials-for-sale',
     ];
 
+    /** Portal search page for this saved search's category. */
+    public function searchUrl(PropertySearch $search): string
+    {
+        $slug = self::SLUGS[$search->category] ?? 'land-lots-for-sale';
+
+        return 'https://www.city24.lv/real-estate-search/'.$slug;
+    }
+
     /**
      * @param  array<string, true>  $knownIds  Ads already stored for this agent and portal.
      * @param  (callable(int): void)|null  $onPage  Called after each listing page is parsed.
