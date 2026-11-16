@@ -1134,44 +1134,49 @@ html.dark .rounded-xl .text-emerald-900 {
         justify-content: flex-start !important;
     }
 
-    /* Properties list: vertically center the thumbnail against its neighbor */
-    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb {
+    /* Tukšas attēlu šūnas (bez bildes) mobilajā nerāda vispār. */
+    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb:not(:has(img)) { display: none !important; }
+
+    /* Standarta mobilā ieraksta rinda visās tabulās: pirmajā rindā ir
+       ieraksta attēls (attēlu tabulās) vai nosaukums (pārējās), bet labajā
+       malā - izcelšanas zvaigzne, atlases ķeksītis un ātro darbību poga.
+       Ja ir attēls, nosaukums pāriet otrajā rindā; pārējās šūnas seko zemāk
+       divās kolonnās. Dashboard widget tabulas (Top aģenti, gada komisijas,
+       kategoriju līderi) paliek savā grid izkārtojumā. */
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-image img) {
+        grid-column: 1 / -1 !important;
+        grid-row: 1 !important;
         align-self: center !important;
         display: flex !important;
         align-items: center !important;
         justify-content: flex-start !important;
     }
-    .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb:not(:has(img)) { display: none !important; }
-
-    /* Uzdevumi: mobilajā skatā vispirms nosaukums, tad statuss.
-       Selection šūna paliek pašā sākumā. */
-    .fi-ta.pdc-tasks-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell { order: -2 !important; }
-    .fi-ta.pdc-tasks-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-title { order: -1 !important; }
-
-    /* Īpašumi: mobilajā skatā pirmā rinda ir attēls ar vadības elementiem
-       (zvaigzne, atlases ķeksītis, ātro darbību poga) pie labās malas, otrā
-       rinda ir nosaukums pilnā platumā. Pārējās šūnas seko zem tām. */
-    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr {
-        padding-block: 1rem !important;
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(.fi-ta-image img) .fi-ta-cell-label {
+        display: none !important;
     }
-    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-featured-thumb {
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr > td:is(.fi-ta-cell-title, .fi-ta-cell-name, .fi-ta-cell-subject, [class~="fi-ta-cell-property.title"]) {
         grid-column: 1 / -1 !important;
         grid-row: 1 !important;
-        align-self: center !important;
-        justify-content: flex-start !important;
     }
-    /* Attēls sākas turpat, kur pārējais saturs - bez 6px nobīdes, kas
-       desktopā atdala bildi no rindas ķeksīša. */
-    .fi-ta.pdc-properties-table .fi-ta-cell-featured-thumb .fi-ta-image {
-        margin-left: 0 !important;
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr:has(> td .fi-ta-image img) > td:is(.fi-ta-cell-title, .fi-ta-cell-name, .fi-ta-cell-subject, [class~="fi-ta-cell-property.title"]) {
+        grid-row: 2 !important;
     }
-    /* Visi trīs vadības elementi stāv vienā rindā ar attēlu pie labās malas:
-       zvaigzne, atlases ķeksītis, ātrā darbība. Filament liek atlases šūnu
-       absolūti (top:0; inset-inline-end) un dod tai fiksētu platumu - mēs to
-       atgriežam plūsmā. */
-    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell,
-    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-is-featured,
-    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(> .fi-ta-actions) {
+    /* Bez attēla nosaukumam jāatstāj vieta labās puses vadības elementiem. */
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr:not(:has(> td .fi-ta-image img)):has(> td > .fi-ta-actions) > td:is(.fi-ta-cell-title, .fi-ta-cell-name, .fi-ta-cell-subject, [class~="fi-ta-cell-property.title"]) {
+        padding-inline-end: 3.75rem !important;
+    }
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr:not(:has(> td .fi-ta-image img)):has(> td.fi-ta-selection-cell) > td:is(.fi-ta-cell-title, .fi-ta-cell-name, .fi-ta-cell-subject, [class~="fi-ta-cell-property.title"]) {
+        padding-inline-end: 4.75rem !important;
+    }
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr:not(:has(> td .fi-ta-image img)):has(> td.pdc-featured-toggle) > td:is(.fi-ta-cell-title, .fi-ta-cell-name, .fi-ta-cell-subject, [class~="fi-ta-cell-property.title"]) {
+        padding-inline-end: 7rem !important;
+    }
+    /* Visi trīs vadības elementi ir vienā rindā ar attēlu/nosaukumu pie
+       labās malas. Filament liek atlases šūnu absolūti (top:0;
+       inset-inline-end) un dod tai fiksētu platumu - atgriežam to plūsmā. */
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(> .fi-ta-actions),
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell,
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr > td.pdc-featured-toggle {
         grid-column: 2 !important;
         grid-row: 1 !important;
         justify-self: end !important;
@@ -1182,29 +1187,40 @@ html.dark .rounded-xl .text-emerald-900 {
         position: relative !important;
         z-index: 2 !important;
     }
-    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(> .fi-ta-actions) {
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr > td:has(> .fi-ta-actions) {
         margin-inline-end: 0 !important;
         padding-inline: 1rem !important;
     }
-    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell {
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-selection-cell {
         inset: auto !important;
         display: flex !important;
         align-items: center !important;
         justify-content: flex-end !important;
         margin-inline-end: 3.25rem !important;
     }
-    /* Zvaigznes šūna ir bloks: ikona tajā stāvēja pie apakšas un noslīdēja
-       4px zem atlases ķeksīša centra. Flex centrē abus. Atkāpe no labās
-       malas atstāj 16px lielu spraugu starp zvaigzni un ķeksīti. */
-    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-is-featured {
-        margin-inline-end: 5.25rem !important;
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr:not(:has(> td > .fi-ta-actions)) > td.fi-ta-selection-cell {
+        margin-inline-end: 1rem !important;
+    }
+    /* Zvaigznes šūna ir bloks: flex centrē ikonu pret atlases ķeksīti un
+       atstāj 16px spraugu starp abiem. */
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr > td.pdc-featured-toggle {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        margin-inline-end: 5.25rem !important;
     }
-    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr > td.fi-ta-cell-title {
-        grid-column: 1 / -1 !important;
-        grid-row: 2 !important;
+    .fi-ta:not(.pdc-top-agents):not(.pdc-yearly-commission):not(.pdc-category-leaders) .fi-ta-table-stacked-on-mobile > tbody > tr:not(:has(> td.fi-ta-selection-cell)) > td.pdc-featured-toggle {
+        margin-inline-end: 3.25rem !important;
+    }
+
+    /* Īpašumu rindai nedaudz lielāks vertikālais atstarps un bilde sākas
+       turpat, kur pārējais saturs - bez 6px nobīdes, kas desktopā atdala
+       bildi no rindas ķeksīša. */
+    .fi-ta.pdc-properties-table .fi-ta-table-stacked-on-mobile > tbody > tr {
+        padding-block: 1rem !important;
+    }
+    .fi-ta.pdc-properties-table .fi-ta-cell-featured-thumb .fi-ta-image {
+        margin-left: 0 !important;
     }
 
     /* Status dropdown (SelectColumn, contact form submissions) gets its own full-width row */
