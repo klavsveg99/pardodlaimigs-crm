@@ -146,8 +146,14 @@ class PropertySearchResource extends Resource
                     ->color('gray')
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('category')
-                    ->label('Kategorija / vieta')
-                    ->state(fn (PropertySearch $record): string => self::criteria($record))
+                    ->label('Kategorija')
+                    ->formatStateUsing(fn (string $state): string => PropertySearch::CATEGORIES[$state] ?? $state)
+                    ->sortable()
+                    ->extraCellAttributes(['class' => 'pdc-nowrap']),
+                Tables\Columns\TextColumn::make('location')
+                    ->label('Vieta')
+                    ->placeholder('-')
+                    ->sortable()
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
                 Tables\Columns\TextColumn::make('price_range')
                     ->label('Cena')
@@ -232,13 +238,6 @@ class PropertySearchResource extends Resource
             'create' => Pages\CreatePropertySearch::route('/create'),
             'edit' => Pages\EditPropertySearch::route('/{record}/edit'),
         ];
-    }
-
-    private static function criteria(PropertySearch $record): string
-    {
-        $category = PropertySearch::CATEGORIES[$record->category] ?? $record->category;
-
-        return filled($record->location) ? $category.' - '.$record->location : $category;
     }
 
     private static function range(?int $min, ?int $max, string $unit): ?string
