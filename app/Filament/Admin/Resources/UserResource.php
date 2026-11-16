@@ -15,6 +15,7 @@ use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -86,41 +87,38 @@ class UserResource extends Resource
                     ->maxLength(255),
             ])->columns(2),
 
-            Section::make('Aģenta publiskais profils')->columnSpanFull()->schema([
-                AvatarEditor::make('avatar_path')
-                    ->label('Foto')
-                    ->columnSpanFull(),
-                PhoneInput::make('phone')->label('Tālrunis')->maxLength(20)->rule(new Phone),
-                Forms\Components\TextInput::make('position')->label('Amats')->maxLength(255)->placeholder('Aģents'),
-                Forms\Components\Textarea::make('description')->label('Apraksts')->rows(4)->maxLength(2000)->helperText('Rādās aģenta lapā un īpašuma kontaktblokā')->columnSpanFull(),
-                Forms\Components\TextInput::make('facebook_url')->label('Facebook URL')->url()->maxLength(500)->columnSpan(1),
-                Forms\Components\TextInput::make('instagram_url')->label('Instagram URL')->url()->maxLength(500)->columnSpan(1),
-                Forms\Components\TextInput::make('linkedin_url')->label('LinkedIn URL')->url()->maxLength(500)->columnSpan(1),
-                Forms\Components\TextInput::make('website_url')->label('Mājaslapa')->url()->maxLength(500)->columnSpan(1),
-                Forms\Components\TextInput::make('office_address')->label('Biroja adrese')->maxLength(500)->placeholder('Rīga, Brīvības iela 1')->columnSpanFull(),
-                Forms\Components\RichEditor::make('email_signature')
-                    ->label('E-pasta paraksts')
-                    ->helperText('Tiek automātiski pievienots visiem e-pastiem, ko šis lietotājs nosūta no CRM.')
-                    ->extraAttributes(['class' => 'pdc-signature-editor'])
-                    ->hintAction(
-                        Actions\Action::make('restoreEmailSignature')
-                            ->label('Atjaunot noklusējumu')
-                            ->icon('heroicon-o-arrow-path')
-                            ->button()
-                            ->color('gray')
-                            ->visible(fn (?User $record): bool => $record !== null)
-                            ->action(function (Set $set, ?User $record): void {
-                                if ($record !== null) {
-                                    $set('email_signature', $record->buildEmailSignature());
-                                }
-                            }),
-                    )
-                    ->toolbarButtons(['bold', 'italic', 'underline', 'link', 'bulletList', 'orderedList', 'attachFiles'])
-                    ->fileAttachmentsDisk('public')
-                    ->fileAttachmentsDirectory('email-signatures')
-                    ->fileAttachmentsVisibility('public')
-                    ->columnSpanFull(),
-            ])->columns(2),
+            Section::make('Aģenta publiskais profils')
+                ->columnSpanFull()
+                ->headerActions([
+                    Actions\Action::make('restoreEmailSignature')
+                        ->label('Atjaunot noklusējumu')
+                        ->icon('heroicon-o-arrow-path')
+                        ->button()
+                        ->color('gray')
+                        ->visible(fn (?User $record): bool => $record !== null)
+                        ->action(function (Set $set, ?User $record): void {
+                            if ($record !== null) {
+                                $set('email_signature', $record->buildEmailSignature());
+                            }
+                        }),
+                ])
+                ->schema([
+                    AvatarEditor::make('avatar_path')
+                        ->label('Foto')
+                        ->columnSpanFull(),
+                    PhoneInput::make('phone')->label('Tālrunis')->maxLength(20)->rule(new Phone),
+                    Forms\Components\TextInput::make('position')->label('Amats')->maxLength(255)->placeholder('Aģents'),
+                    Forms\Components\Textarea::make('description')->label('Apraksts')->rows(4)->maxLength(2000)->helperText('Rādās aģenta lapā un īpašuma kontaktblokā')->columnSpanFull(),
+                    Forms\Components\TextInput::make('facebook_url')->label('Facebook URL')->url()->maxLength(500)->columnSpan(1),
+                    Forms\Components\TextInput::make('instagram_url')->label('Instagram URL')->url()->maxLength(500)->columnSpan(1),
+                    Forms\Components\TextInput::make('linkedin_url')->label('LinkedIn URL')->url()->maxLength(500)->columnSpan(1),
+                    Forms\Components\TextInput::make('website_url')->label('Mājaslapa')->url()->maxLength(500)->columnSpan(1),
+                    Forms\Components\TextInput::make('office_address')->label('Biroja adrese')->maxLength(500)->placeholder('Rīga, Brīvības iela 1')->columnSpanFull(),
+                    Forms\Components\Hidden::make('email_signature'),
+                    View::make('filament.forms.components.email-signature-preview')
+                        ->columnSpanFull()
+                        ->visible(fn (string $operation): bool => $operation === 'edit'),
+                ])->columns(2),
         ]);
     }
 

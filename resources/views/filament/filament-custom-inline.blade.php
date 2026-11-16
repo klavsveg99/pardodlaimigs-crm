@@ -2509,25 +2509,42 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     padding-bottom: 1.25rem !important;
 }
 
-/* E-mail signature editor: the generated signature is an invisible layout
-   table, so the RichEditor must not paint its default table grid. */
-.pdc-signature-editor table,
-.pdc-signature-editor table thead,
-.pdc-signature-editor table tbody,
-.pdc-signature-editor table tr,
-.pdc-signature-editor table td,
-.pdc-signature-editor table th {
-    border: 0 !important;
-    background: transparent !important;
+/* E-mail signature preview: rendered as a white e-mail surface, never as an
+   editable table. */
+.pdc-signature-preview {
+    background: #ffffff;
+    color: #111827;
+    border-radius: 0.6rem;
+    padding: 1rem;
+    overflow-x: auto;
 }
-.pdc-signature-editor table td,
-.pdc-signature-editor table th {
-    padding: 0.2rem 0.7rem 0.2rem 0 !important;
+.pdc-signature-preview table {
+    border: 0;
+    border-collapse: collapse;
 }
-.pdc-signature-editor table img {
-    width: 64px !important;
-    height: 64px !important;
-    border-radius: 50% !important;
-    object-fit: cover !important;
+.pdc-signature-preview table td,
+.pdc-signature-preview table th {
+    border: 0;
+}
+.pdc-signature-preview img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.pdc-signature-preview a {
+    text-decoration: none;
+}
+.pdc-signature-preview-empty {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+.pdc-signature-preview-note {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+html.dark .pdc-signature-preview-note {
+    color: #9ca3af;
 }
 </style>

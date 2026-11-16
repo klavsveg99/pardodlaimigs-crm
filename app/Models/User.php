@@ -44,6 +44,14 @@ class User extends Authenticatable implements FilamentUser
             }
         });
 
+        // Keep the stored signature in sync with the profile data it is built
+        // from. Manual signature edits are not possible in the form.
+        static::saving(function (self $user): void {
+            if (! $user->exists || $user->isDirty(['name', 'email', 'phone', 'avatar_path'])) {
+                $user->email_signature = $user->buildEmailSignature();
+            }
+        });
+
         // crm_properties.owner_user_id has no ON DELETE rule, so detach owned
         // properties before the row is removed; the avatar file goes too.
         static::forceDeleting(function (self $user): void {
