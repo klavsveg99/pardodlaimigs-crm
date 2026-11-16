@@ -1477,7 +1477,7 @@ html.dark .pdc-search-progress-failed { color: #fca5a5; }
 
 /* Then the schedule details step out, so the table keeps fitting instead of
    scrolling; the frequency and area remain editable on the record page. */
-@media (min-width: 640px) and (max-width: 1300px) {
+@media (min-width: 640px) and (max-width: 1600px) {
     .fi-ta.pdc-searches-table th.fi-ta-header-cell-frequency,
     .fi-ta.pdc-searches-table td.fi-ta-cell-frequency {
         display: none !important;
