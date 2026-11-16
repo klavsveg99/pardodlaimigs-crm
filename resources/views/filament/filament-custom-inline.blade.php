@@ -963,6 +963,15 @@ input[type="checkbox"][checked] {
     border-color: #27303a !important;
 }
 
+/* Filament gives the non-sticky modal footer bottom padding only. On phones
+   the buttons then start exactly at the footer's top edge and look pasted to
+   the content above, especially in dark mode. Add a real top inset. */
+@media (max-width: 767px) {
+    .fi-modal:not(.fi-modal-has-sticky-footer) > .fi-modal-window-ctn > .fi-modal-window > .fi-modal-footer {
+        padding-top: 1rem !important;
+    }
+}
+
 /* NOTE: no manual modal positioning overrides - Filament centers and sizes
    modal windows natively; forcing top/left/transform on inner containers
    pushes content off-screen (heading/select rendered above the viewport). */
