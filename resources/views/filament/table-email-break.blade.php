@@ -16,6 +16,8 @@
             scheduled = false;
 
             if (! mobile.matches) {
+                document.querySelectorAll('.pdc-email-break').forEach((br) => br.remove());
+
                 return;
             }
 
@@ -51,12 +53,14 @@
             window.requestAnimationFrame(splitEmails);
         };
 
-        const clear = () => {
-            document.querySelectorAll('.pdc-email-break').forEach((br) => br.remove());
-            schedule();
+        // Resize/orientation ir jāpārbauda ar nelielu aizturi: media query
+        // stāvoklis var tikt atjaunots pēc resize notikuma.
+        const reschedule = () => {
+            window.setTimeout(schedule, 60);
         };
 
-        mobile.addEventListener('change', clear);
+        mobile.addEventListener('change', reschedule);
+        window.addEventListener('resize', reschedule, { passive: true });
         document.addEventListener('livewire:navigated', schedule);
         new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
 
