@@ -1473,16 +1473,17 @@ html.dark .rounded-xl .text-emerald-900 {
     }
 
     .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-selection-cell { width: 4% !important; }
-    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-image-url { width: 6.5% !important; }
-    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-title { width: 20% !important; }
-    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-portal { width: 8% !important; }
-    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-price-eur { width: 10% !important; }
-    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-area-m2 { width: 8% !important; }
-    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-location { width: 10% !important; }
-    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-first-seen-at { width: 12% !important; }
-    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-status { width: 7.5% !important; }
-    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-user\.name { width: 9.5% !important; }
-    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-actions-header-cell { width: 4.5% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-image-url { width: 6% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-title { width: 18% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-portal { width: 6.5% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-price-eur { width: 8.5% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-area-m2 { width: 7% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-location { width: 8.5% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-first-seen-at { width: 10.5% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-offer-sent-at { width: 9% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-status { width: 7% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-header-cell-user\.name { width: 8.5% !important; }
+    .fi-ta.pdc-found-table .fi-ta-table th.fi-ta-actions-header-cell { width: 6.5% !important; }
 
     .fi-ta.pdc-found-table .fi-ta-table td.fi-ta-cell-title .fi-ta-col {
         display: block !important;

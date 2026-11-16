@@ -132,6 +132,7 @@ class ScrapedListingResource extends Resource
             ->actions([
                 // Visible row quick action, next to the "Darbības" group.
                 Actions\Action::make('send_offer')
+                    ->iconButton()
                     ->label(fn (ScrapedListing $record): string => $record->offer_sent_at ? 'Piedāvājums nosūtīts' : 'Nosūtīt piedāvājumu')
                     ->tooltip(fn (ScrapedListing $record): string => $record->offer_sent_at
                         ? 'Nosūtīts '.$record->offer_sent_at->format('d.m.Y H:i').' - nospied, lai nosūtītu vēlreiz'
