@@ -1720,6 +1720,14 @@ html.dark .pdc-search-progress-failed { color: #fca5a5; }
     padding-inline: 0.75rem;
 }
 
+/* Stacked phone cards put labels and values at the cell edge; the desktop
+   inset would indent the Progress value relative to its own label. */
+@media (max-width: 639px) {
+    .fi-ta-table .fi-ta-cell-progress > .fi-ta-cell-content {
+        padding-inline: 0 !important;
+    }
+}
+
 @media (min-width: 640px) and (max-width: 1400px) {
     .fi-ta-table .fi-ta-cell-progress > .fi-ta-cell-content {
         padding-inline: 0.25rem !important;
