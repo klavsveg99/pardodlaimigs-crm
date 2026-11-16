@@ -1370,7 +1370,7 @@ html.dark .rounded-xl .text-emerald-900 {
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
-    min-width: 10rem;
+    min-width: 7rem;
 }
 .pdc-search-progress-head {
     display: flex;
@@ -1378,8 +1378,9 @@ html.dark .rounded-xl .text-emerald-900 {
     gap: 0.4rem;
     font-size: 0.78rem;
     font-weight: 700;
+    line-height: 1.2;
     color: #111827;
-    white-space: nowrap;
+    white-space: normal;
 }
 .pdc-search-progress-head i { color: var(--pdc-primary); }
 .pdc-search-progress-message {
