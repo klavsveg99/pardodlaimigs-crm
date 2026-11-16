@@ -59,6 +59,7 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook('panels::styles.after', fn () => view('filament.filament-custom-inline'))
             ->renderHook('panels::scripts.after', fn () => view('filament.badge-poll'))
             ->renderHook('panels::scripts.after', fn () => view('filament.table-tooltip'))
+            ->renderHook('panels::scripts.after', fn () => view('filament.table-email-break'))
             ->renderHook('panels::scripts.after', fn () => view('filament.modal-drag-guard'))
             ->renderHook('panels::sidebar.logo.after', fn () => view('filament.mobile-sidebar'))
             ->renderHook('panels::sidebar.nav.end', fn () => view('filament.sidebar-version'))
