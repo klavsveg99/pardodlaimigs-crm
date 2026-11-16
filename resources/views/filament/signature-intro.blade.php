@@ -119,13 +119,14 @@
 
         <div
             class="pdc-sig-intro"
+            data-seen-url="{{ route('signature.intro-seen') }}"
             x-data="{
                 open: true,
                 markSeen() {
                     if (window.pdcSignatureIntroSeenSent) return;
                     window.pdcSignatureIntroSeenSent = true;
 
-                    fetch(@json(route('signature.intro-seen')), {
+                    fetch(this.$el.dataset.seenUrl, {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '',
