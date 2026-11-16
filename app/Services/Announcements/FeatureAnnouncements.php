@@ -81,20 +81,8 @@ class FeatureAnnouncements
     private function definitions(): array
     {
         return [
-            'mekletaji' => [
-                'kicker' => 'Kas jauns - CRM 2.0',
-                'title' => 'Meklētāji',
-                'body' => 'Jauna sadaļa, kas meklē ss.lv un city24.lv portālos un savāc atrastos sludinājumus vienā vietā.',
-                'bullets' => [
-                    'Regulāras pārbaudes: ik pēc 6 stundām, katru dienu vai reizi nedēļā.',
-                    'Atrastos objektus vari atvērt sludinājumā, atzīmēt apskatītus vai atzīmēt vairākus uzreiz.',
-                    'No atrastā objekta vari pievienot CRM īpašumu ar jau aizpildītu nosaukumu, cenu, platību un atrašanās vietu.',
-                ],
-                'link_label' => 'Apskatīt Meklētājus',
-                'link_url' => fn (User $user): string => PropertySearchResource::getUrl('index'),
-                'audience' => fn (User $user): bool => ! $user->isPhoto() && ! $user->isStudent(),
-            ],
-
+            // Newer announcements first: the signature notice should reach
+            // everyone before the older Meklētāji introduction.
             'signature' => [
                 'kicker' => 'Kas jauns',
                 'title' => 'Jauns e-pasta paraksts',
@@ -108,6 +96,20 @@ class FeatureAnnouncements
                     ? UserResource::getUrl('edit', ['record' => $user])
                     : ((! $user->isPhoto() && ! $user->isStudent()) ? MyProfile::getUrl() : null),
                 'audience' => fn (User $user): bool => true,
+            ],
+
+            'mekletaji' => [
+                'kicker' => 'Kas jauns - CRM 2.0',
+                'title' => 'Meklētāji',
+                'body' => 'Jauna sadaļa, kas meklē ss.lv un city24.lv portālos un savāc atrastos sludinājumus vienā vietā.',
+                'bullets' => [
+                    'Regulāras pārbaudes: ik pēc 6 stundām, katru dienu vai reizi nedēļā.',
+                    'Atrastos objektus vari atvērt sludinājumā, atzīmēt apskatītus vai atzīmēt vairākus uzreiz.',
+                    'No atrastā objekta vari pievienot CRM īpašumu ar jau aizpildītu nosaukumu, cenu, platību un atrašanās vietu.',
+                ],
+                'link_label' => 'Apskatīt Meklētājus',
+                'link_url' => fn (User $user): string => PropertySearchResource::getUrl('index'),
+                'audience' => fn (User $user): bool => ! $user->isPhoto() && ! $user->isStudent(),
             ],
         ];
     }
