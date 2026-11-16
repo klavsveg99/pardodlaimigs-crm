@@ -105,6 +105,7 @@ class UserResource extends Resource
                         Actions\Action::make('restoreEmailSignature')
                             ->label('Atjaunot noklusējumu')
                             ->icon('heroicon-o-arrow-path')
+                            ->button()
                             ->color('gray')
                             ->visible(fn (?User $record): bool => $record !== null)
                             ->action(function (Set $set, ?User $record): void {

@@ -168,7 +168,7 @@ class EmailSender
 
         $signatureHtml = '';
         if (filled($signature)) {
-            $signatureHtml = '<div style="margin-top:18px;padding-top:14px;border-top:1px solid #e2e8e6;'
+            $signatureHtml = '<div style="margin-top:18px;'
                 .'font-size:14px;line-height:1.6;color:#374151;">'
                 .self::sanitize((string) $signature)
                 .'</div>';

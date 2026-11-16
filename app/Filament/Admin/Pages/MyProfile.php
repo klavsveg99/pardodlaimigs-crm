@@ -136,6 +136,7 @@ class MyProfile extends Page
                             Action::make('restoreEmailSignature')
                                 ->label('Atjaunot noklusējumu')
                                 ->icon('heroicon-o-arrow-path')
+                                ->button()
                                 ->color('gray')
                                 ->action(function (Set $set): void {
                                     $user = auth()->user();

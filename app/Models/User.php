@@ -183,32 +183,41 @@ class User extends Authenticatable implements FilamentUser
         $phone = filled($this->phone) ? PhoneFormat::display((string) $this->phone) : null;
         $phoneHref = filled($this->phone) ? preg_replace('/[^\d+]/', '', (string) $this->phone) : null;
 
+        $rows = [
+            '<td style="padding:0;font-size:15px;font-weight:700;line-height:1.3;color:#111827;">'
+                .e((string) $this->name)
+                .'</td>',
+            '<td style="padding:2px 0 0;font-weight:600;color:#285854;">Nekustamo īpašumu aģents</td>',
+            '<td style="padding:8px 0 0;">'
+                .'<a href="mailto:'.e((string) $this->email).'" style="color:#374151;text-decoration:none;">'.e((string) $this->email).'</a>'
+                .'</td>',
+        ];
+
+        if ($phone !== null) {
+            $rows[] = '<td style="padding:2px 0 0;">'
+                .'<a href="tel:'.e((string) $phoneHref).'" style="color:#374151;text-decoration:none;">'.e($phone).'</a>'
+                .'</td>';
+        }
+
         $html = '<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
-            .'style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:13px;'
+            .'style="border:0;border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:13px;'
             .'line-height:1.5;color:#374151;">'
             .'<tr>';
 
         if ($avatarUrl !== null) {
-            $html .= '<td style="vertical-align:top;padding:0 14px 0 0;">'
+            $html .= '<td rowspan="'.count($rows).'" style="vertical-align:top;padding:0 14px 0 0;border:0;">'
                 .'<img src="'.e($avatarUrl).'" alt="'.e((string) $this->name).'" width="64" height="64" '
-                .'style="display:block;width:64px;height:64px;border-radius:50%;object-fit:cover;border:0;">'
+                .'style="display:block;width:64px;height:64px;border:0;border-radius:50%;object-fit:cover;">'
                 .'</td>';
         }
 
-        $html .= '<td style="vertical-align:top;">'
-            .'<div style="font-size:15px;font-weight:700;color:#111827;line-height:1.3;">'.e((string) $this->name).'</div>'
-            .'<div style="margin-top:2px;font-weight:600;color:#285854;">Nekustamo īpašumu aģents</div>'
-            .'<div style="margin-top:7px;">'
-            .'<a href="mailto:'.e((string) $this->email).'" style="color:#374151;text-decoration:none;">'.e((string) $this->email).'</a>'
-            .'</div>';
+        $html .= $rows[0].'</tr>';
 
-        if ($phone !== null) {
-            $html .= '<div style="margin-top:2px;">'
-                .'<a href="tel:'.e((string) $phoneHref).'" style="color:#374151;text-decoration:none;">'.e($phone).'</a>'
-                .'</div>';
+        foreach (array_slice($rows, 1) as $row) {
+            $html .= '<tr>'.$row.'</tr>';
         }
 
-        return $html.'</td></tr></table>';
+        return $html.'</table>';
     }
 
     /**
