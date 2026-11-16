@@ -9,13 +9,14 @@
 
         window.pdcTableEmailBreak = true;
 
-        const mobile = window.matchMedia('(max-width: 639px)');
         let scheduled = false;
+
+        const isMobile = () => window.matchMedia('(max-width: 639px)').matches;
 
         const splitEmails = () => {
             scheduled = false;
 
-            if (! mobile.matches) {
+            if (! isMobile()) {
                 document.querySelectorAll('.pdc-email-break').forEach((br) => br.remove());
 
                 return;
@@ -59,7 +60,6 @@
             window.setTimeout(schedule, 60);
         };
 
-        mobile.addEventListener('change', reschedule);
         window.addEventListener('resize', reschedule, { passive: true });
         document.addEventListener('livewire:navigated', schedule);
         new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
