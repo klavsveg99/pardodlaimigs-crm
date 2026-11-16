@@ -147,13 +147,15 @@ class ActivityFeed extends BaseWidget
                     }),
             ])
             ->actions([
-                Actions\Action::make('atvert')
-                    ->label('Atvērt')
-                    ->icon('heroicon-o-arrow-top-right-on-square')
-                    ->color('gray')
-                    ->visible(fn ($record) => $this->recordUrl($record) !== null)
-                    ->url(fn ($record) => $this->recordUrl($record))
-                    ->openUrlInNewTab(),
+                Actions\ActionGroup::make([
+                    Actions\Action::make('atvert')
+                        ->label('Atvērt')
+                        ->icon('heroicon-o-arrow-top-right-on-square')
+                        ->color('gray')
+                        ->visible(fn ($record) => $this->recordUrl($record) !== null)
+                        ->url(fn ($record) => $this->recordUrl($record))
+                        ->openUrlInNewTab(),
+                ])->color('gray'),
             ])
             ->paginated([10, 25])
             ->defaultPaginationPageOption(10)

@@ -130,33 +130,28 @@ class ScrapedListingResource extends Resource
                     ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
             ])
             ->actions([
-                // Visible row quick action, next to the "Darbības" group.
-                Actions\Action::make('send_offer')
-                    ->iconButton()
-                    ->label(fn (ScrapedListing $record): string => $record->offer_sent_at ? 'Piedāvājums nosūtīts' : 'Nosūtīt piedāvājumu')
-                    ->tooltip(fn (ScrapedListing $record): string => $record->offer_sent_at
-                        ? 'Nosūtīts '.$record->offer_sent_at->format('d.m.Y H:i').' - nospied, lai nosūtītu vēlreiz'
-                        : 'Nosūtīt piedāvājumu')
-                    ->icon(fn (ScrapedListing $record): string => $record->offer_sent_at ? 'heroicon-o-check-circle' : 'heroicon-o-paper-airplane')
-                    ->color(fn (ScrapedListing $record): string => $record->offer_sent_at ? 'success' : 'gray')
-                    ->visible(fn (): bool => ! (auth()->user()?->isPhoto() ?? false)
-                        && ! (auth()->user()?->isStudent() ?? false))
-                    ->action(function (ScrapedListing $record, $livewire): void {
-                        $livewire->dispatch(
-                            'pdc-open-offer-email',
-                            title: 'Nosūtīt piedāvājumu',
-                            url: route('scraped-listings.offers.send'),
-                            items: [[
-                                'id' => $record->id,
-                                'label' => $record->title ?: ('Atrastais objekts #'.$record->id),
-                                'email' => (string) ($record->contact_email ?? ''),
-                                'readonly' => false,
-                            ]],
-                            subject: EmailSetting::offerSubject(),
-                            body: EmailSetting::offerBody(),
-                        );
-                    }),
                 Actions\ActionGroup::make([
+                    Actions\Action::make('send_offer')
+                        ->label(fn (ScrapedListing $record): string => $record->offer_sent_at ? 'Piedāvājums nosūtīts' : 'Nosūtīt piedāvājumu')
+                        ->icon(fn (ScrapedListing $record): string => $record->offer_sent_at ? 'heroicon-o-check-circle' : 'heroicon-o-paper-airplane')
+                        ->color(fn (ScrapedListing $record): string => $record->offer_sent_at ? 'success' : 'gray')
+                        ->visible(fn (): bool => ! (auth()->user()?->isPhoto() ?? false)
+                            && ! (auth()->user()?->isStudent() ?? false))
+                        ->action(function (ScrapedListing $record, $livewire): void {
+                            $livewire->dispatch(
+                                'pdc-open-offer-email',
+                                title: 'Nosūtīt piedāvājumu',
+                                url: route('scraped-listings.offers.send'),
+                                items: [[
+                                    'id' => $record->id,
+                                    'label' => $record->title ?: ('Atrastais objekts #'.$record->id),
+                                    'email' => (string) ($record->contact_email ?? ''),
+                                    'readonly' => false,
+                                ]],
+                                subject: EmailSetting::offerSubject(),
+                                body: EmailSetting::offerBody(),
+                            );
+                        }),
                     Actions\Action::make('create_property')
                         ->label('Pievienot CRM īpašumu')
                         ->icon('heroicon-o-plus')
