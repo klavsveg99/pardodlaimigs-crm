@@ -114,18 +114,7 @@
             x-data="{
                 open: true,
                 markSeen() {
-                    if (window.pdcFeatureAnnouncementSeenSent) return;
-                    window.pdcFeatureAnnouncementSeenSent = true;
-
-                    fetch(this.$el.dataset.seenUrl, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '',
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json',
-                        },
-                        keepalive: true,
-                    }).catch(() => {});
+                    window.pdcFeatureAnnouncementSeen && window.pdcFeatureAnnouncementSeen();
                 },
                 close() {
                     this.markSeen();
@@ -192,5 +181,31 @@
                 </div>
             </div>
         </div>
+
+        <script>
+            window.pdcFeatureAnnouncementSeen = function () {
+                if (window.pdcFeatureAnnouncementSeenSent) {
+                    return;
+                }
+
+                window.pdcFeatureAnnouncementSeenSent = true;
+
+                const url = document.querySelector('.pdc-feature-popup')?.dataset.seenUrl;
+
+                if (!url) {
+                    return;
+                }
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    keepalive: true,
+                }).catch(() => {});
+            };
+        </script>
     @endif
 @endauth
