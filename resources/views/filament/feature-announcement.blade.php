@@ -1,24 +1,14 @@
 @auth
     @php
-        $signatureUser = auth()->user();
-
-        $showSignatureIntro = $signatureUser !== null
-            && $signatureUser->signature_intro_seen_at === null;
-
-        $signatureUrl = null;
-
-        if ($showSignatureIntro) {
-            if ($signatureUser->isAdmin()) {
-                $signatureUrl = \App\Filament\Admin\Resources\UserResource::getUrl('edit', ['record' => $signatureUser]);
-            } elseif (! $signatureUser->isPhoto() && ! $signatureUser->isStudent()) {
-                $signatureUrl = \App\Filament\Admin\Pages\MyProfile::getUrl();
-            }
-        }
+        $featureAnnouncement = app(\App\Services\Announcements\FeatureAnnouncements::class)
+            ->nextFor(auth()->user());
     @endphp
 
-    @if ($showSignatureIntro)
+    @if ($featureAnnouncement)
         <style>
-            .pdc-sig-intro {
+            [x-cloak] { display: none !important; }
+
+            .pdc-feature-popup {
                 position: fixed;
                 inset: 0;
                 z-index: 56;
@@ -28,14 +18,14 @@
                 padding: 1rem;
             }
 
-            .pdc-sig-intro-overlay {
+            .pdc-feature-popup-overlay {
                 position: fixed;
                 inset: 0;
                 z-index: 40;
                 background: rgb(0 0 0 / 0.6);
             }
 
-            .pdc-sig-intro-window {
+            .pdc-feature-popup-window {
                 position: relative;
                 z-index: 50;
                 width: min(30rem, 100%);
@@ -49,13 +39,13 @@
                 box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.35);
             }
 
-            .pdc-sig-intro-head {
+            .pdc-feature-popup-head {
                 display: flex;
                 align-items: flex-start;
                 gap: 0.75rem;
             }
 
-            .pdc-sig-intro-kicker {
+            .pdc-feature-popup-kicker {
                 font-size: 0.7rem;
                 font-weight: 700;
                 letter-spacing: 0.08em;
@@ -63,14 +53,14 @@
                 color: var(--pdc-primary);
             }
 
-            .pdc-sig-intro-title {
+            .pdc-feature-popup-title {
                 margin: 0.15rem 0 0;
                 font-size: 1.25rem;
                 font-weight: 700;
                 line-height: 1.3;
             }
 
-            .pdc-sig-intro-close {
+            .pdc-feature-popup-close {
                 display: inline-flex;
                 flex: none;
                 align-items: center;
@@ -85,16 +75,16 @@
                 cursor: pointer;
             }
 
-            .pdc-sig-intro-close svg { width: 0.875rem; height: 0.875rem; }
+            .pdc-feature-popup-close svg { width: 0.875rem; height: 0.875rem; }
 
-            .pdc-sig-intro-body {
+            .pdc-feature-popup-body {
                 margin-top: 0.75rem;
                 font-size: 0.875rem;
                 line-height: 1.55;
                 color: #374151;
             }
 
-            .pdc-sig-intro-list {
+            .pdc-feature-popup-list {
                 display: grid;
                 gap: 0.35rem;
                 margin-top: 0.7rem;
@@ -102,29 +92,30 @@
                 list-style: disc;
             }
 
-            .pdc-sig-intro-foot {
+            .pdc-feature-popup-foot {
                 display: flex;
-                justify-content: flex-end;
+                flex-wrap: wrap;
+                justify-content: flex-start;
                 gap: 0.5rem;
                 margin-top: 1.1rem;
             }
 
-            body.pdc-sig-intro-lock { overflow: hidden !important; }
+            body.pdc-feature-popup-lock { overflow: hidden !important; }
 
-            .dark .pdc-sig-intro-window { border-color: #374151; background: #111827; color: #f3f4f6; }
-            .dark .pdc-sig-intro-kicker { color: #8fc4be; }
-            .dark .pdc-sig-intro-close { border-color: #374151; background: #1f2937; color: #d1d5db; }
-            .dark .pdc-sig-intro-body { color: #d1d5db; }
+            .dark .pdc-feature-popup-window { border-color: #374151; background: #111827; color: #f3f4f6; }
+            .dark .pdc-feature-popup-kicker { color: #8fc4be; }
+            .dark .pdc-feature-popup-close { border-color: #374151; background: #1f2937; color: #d1d5db; }
+            .dark .pdc-feature-popup-body { color: #d1d5db; }
         </style>
 
         <div
-            class="pdc-sig-intro"
-            data-seen-url="{{ route('signature.intro-seen') }}"
+            class="pdc-feature-popup"
+            data-seen-url="{{ route('feature-announcements.seen', ['feature' => $featureAnnouncement['key']]) }}"
             x-data="{
                 open: true,
                 markSeen() {
-                    if (window.pdcSignatureIntroSeenSent) return;
-                    window.pdcSignatureIntroSeenSent = true;
+                    if (window.pdcFeatureAnnouncementSeenSent) return;
+                    window.pdcFeatureAnnouncementSeenSent = true;
 
                     fetch(this.$el.dataset.seenUrl, {
                         method: 'POST',
@@ -139,52 +130,59 @@
                 close() {
                     this.markSeen();
                     this.open = false;
-                    document.body.classList.remove('pdc-sig-intro-lock');
+                    document.body.classList.remove('pdc-feature-popup-lock');
                 },
             }"
-            x-init="document.body.classList.add('pdc-sig-intro-lock')"
+            x-init="document.body.classList.add('pdc-feature-popup-lock')"
             x-show="open"
             x-cloak
             x-on:keydown.escape.window="close()"
         >
-            <div class="pdc-sig-intro-overlay" x-on:click="close()"></div>
+            <div class="pdc-feature-popup-overlay" x-on:click="close()"></div>
 
             <div
-                class="pdc-sig-intro-window"
+                class="pdc-feature-popup-window"
                 role="dialog"
                 aria-modal="true"
-                aria-labelledby="pdc-sig-intro-title"
+                aria-labelledby="pdc-feature-popup-title"
                 x-trap.noreturn="open"
-                x-init="$nextTick(() => $el.querySelector('.pdc-sig-intro-close')?.focus())"
+                x-init="$nextTick(() => $el.querySelector('.pdc-feature-popup-close')?.focus())"
             >
-                <div class="pdc-sig-intro-head">
+                <div class="pdc-feature-popup-head">
                     <div>
-                        <div class="pdc-sig-intro-kicker">Kas jauns</div>
-                        <h2 class="pdc-sig-intro-title" id="pdc-sig-intro-title">Jauns e-pasta paraksts</h2>
+                        <div class="pdc-feature-popup-kicker">{{ $featureAnnouncement['kicker'] }}</div>
+                        <h2 class="pdc-feature-popup-title" id="pdc-feature-popup-title">{{ $featureAnnouncement['title'] }}</h2>
                     </div>
 
-                    <button type="button" class="pdc-sig-intro-close" aria-label="Aizvērt" title="Aizvērt" x-on:click="close()">
+                    <button
+                        type="button"
+                        class="pdc-feature-popup-close"
+                        aria-label="Aizvērt"
+                        title="Aizvērt"
+                        x-on:click="close()"
+                    >
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                     </button>
                 </div>
 
-                <div class="pdc-sig-intro-body">
-                    <p>Visiem lietotājiem ir izveidots vienots e-pasta paraksts.</p>
-                    <ul class="pdc-sig-intro-list">
-                        <li>Tas automātiski parādās katra no CRM nosūtītā e-pasta beigās, zem ziņas un virs CRM kājenes.</li>
-                        <li>Parakstā ir jūsu foto, vārds, amats, e-pasts un tālrunis, ja tas norādīts.</li>
-                    </ul>
-                    @if ($signatureUrl)
-                        <p style="margin-top: 0.7rem;">Ja nepieciešams, parakstu vari mainīt savā profilā.</p>
+                <div class="pdc-feature-popup-body">
+                    <p>{{ $featureAnnouncement['body'] }}</p>
+
+                    @if ($featureAnnouncement['bullets'] !== [])
+                        <ul class="pdc-feature-popup-list">
+                            @foreach ($featureAnnouncement['bullets'] as $bullet)
+                                <li>{{ $bullet }}</li>
+                            @endforeach
+                        </ul>
                     @endif
                 </div>
 
-                <div class="pdc-sig-intro-foot">
-                    @if ($signatureUrl)
-                        <x-filament::button tag="a" :href="$signatureUrl" x-on:click="markSeen()">
-                            Rediģēt parakstu
+                <div class="pdc-feature-popup-foot">
+                    @if ($featureAnnouncement['link_url'])
+                        <x-filament::button tag="a" :href="$featureAnnouncement['link_url']" x-on:click="markSeen()">
+                            {{ $featureAnnouncement['link_label'] }}
                         </x-filament::button>
                     @endif
 

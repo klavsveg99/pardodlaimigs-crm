@@ -14,6 +14,7 @@ use App\Models\CrmProperty;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\WpformEntry;
+use App\Services\Announcements\FeatureAnnouncements;
 use App\Services\Calendar\IcsExport;
 use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
@@ -24,31 +25,16 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
-// One-time CRM 2.0 introduction popup: remember that this user dismissed it.
-Route::post('/mekletaji/intro-seen', function () {
+// One-time "new feature" popups: remember that this user dismissed one.
+Route::post('/feature-announcements/{feature}/seen', function (string $feature) {
     $user = request()->user();
 
     abort_unless($user !== null, 401);
 
-    if ($user->mekletaji_intro_seen_at === null) {
-        $user->forceFill(['mekletaji_intro_seen_at' => now()])->save();
-    }
+    app(FeatureAnnouncements::class)->markSeen($user, $feature);
 
     return response()->noContent();
-})->middleware('auth')->name('mekletaji.intro-seen');
-
-// One-time notice about the generated e-mail signature.
-Route::post('/signature-intro-seen', function () {
-    $user = request()->user();
-
-    abort_unless($user !== null, 401);
-
-    if ($user->signature_intro_seen_at === null) {
-        $user->forceFill(['signature_intro_seen_at' => now()])->save();
-    }
-
-    return response()->noContent();
-})->middleware('auth')->name('signature.intro-seen');
+})->middleware('auth')->where('feature', '[a-z0-9-]+')->name('feature-announcements.seen');
 
 // Trigger the Laravel scheduler over HTTP (no system cron on shared hosting).
 // Called by the WordPress mu-plugin on every 5-minute sync tick.
