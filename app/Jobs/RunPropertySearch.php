@@ -45,4 +45,11 @@ class RunPropertySearch implements ShouldQueue
             throw $e;
         }
     }
+
+    public function failed(?\Throwable $e): void
+    {
+        PropertySearch::find($this->searchId)?->markProgressFailed(
+            $e?->getMessage() ?: 'Meklēšana tika pārtraukta.',
+        );
+    }
 }
