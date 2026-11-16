@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Http;
  */
 class City24ListingParser
 {
+    /** The API accepts large pages, so one request covers many listings. */
+    private const PER_PAGE = 500;
+
     private const UNITS = [
         'land' => 'Land',
         'houses' => 'House',
@@ -45,7 +48,7 @@ class City24ListingParser
                 'tsType' => 'sale',
                 'unitType' => $unit,
                 'adReach' => 1,
-                'itemsPerPage' => 50,
+                'itemsPerPage' => self::PER_PAGE,
                 'page' => $page,
             ];
 
@@ -90,7 +93,7 @@ class City24ListingParser
 
             // Pages are newest first: once a page has nothing new, older pages
             // cannot bring new ads either. A short page is the last page.
-            if ($fresh === 0 || count($data) < 50) {
+            if ($fresh === 0 || count($data) < self::PER_PAGE) {
                 break;
             }
 

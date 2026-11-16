@@ -18,12 +18,14 @@
     </div>
 @elseif ($status === \App\Models\PropertySearch::PROGRESS_COMPLETED)
     <div class="pdc-search-progress-done">
-        <span><strong>Pabeigts</strong> {{ $search->progress_finished_at?->format('d.m.Y H:i') }}</span>
+        <span><strong>Pabeigts</strong></span>
+        <span>{{ $search->progress_finished_at?->format('d.m.Y H:i') }}</span>
         <span>{{ $search->progress_found }} jauni objekti</span>
     </div>
 @elseif ($status === \App\Models\PropertySearch::PROGRESS_FAILED)
     <div class="pdc-search-progress-failed" title="{{ $search->progress_message }}">
-        <span><strong>Neizdevās</strong> {{ $search->progress_finished_at?->format('d.m.Y H:i') }}</span>
+        <span><strong>Neizdevās</strong></span>
+        <span>{{ $search->progress_finished_at?->format('d.m.Y H:i') }}</span>
         <span>{{ \Illuminate\Support\Str::limit((string) $search->progress_message, 70) }}</span>
     </div>
 @else

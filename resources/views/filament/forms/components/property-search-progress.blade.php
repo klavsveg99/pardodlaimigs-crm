@@ -25,8 +25,8 @@
                 <span>
                     <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
                     <strong>Pabeigts</strong>
-                    {{ $search->progress_finished_at?->format('d.m.Y H:i') }}
                 </span>
+                <span>{{ $search->progress_finished_at?->format('d.m.Y H:i') }}</span>
                 <span>{{ $search->progress_message }}</span>
             </div>
         @elseif ($search->progress_status === \App\Models\PropertySearch::PROGRESS_FAILED)
@@ -34,8 +34,8 @@
                 <span>
                     <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
                     <strong>Neizdevās</strong>
-                    {{ $search->progress_finished_at?->format('d.m.Y H:i') }}
                 </span>
+                <span>{{ $search->progress_finished_at?->format('d.m.Y H:i') }}</span>
                 <span>{{ $search->progress_message }}</span>
             </div>
         @else

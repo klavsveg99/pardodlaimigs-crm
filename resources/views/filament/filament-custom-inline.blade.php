@@ -1458,9 +1458,11 @@ html.dark .pdc-search-progress-failed { color: #fca5a5; }
     }
 }
 
-/* Tablet widths tighten header padding to 0.375rem; keep the search table's
-   values and the custom Progress cell on that same inset. */
-@media (min-width: 640px) and (max-width: 1400px) {
+/* The search table is auto-width and tight, so use the same compact inline
+   inset for headers, text values and the custom Progress cell. This keeps
+   every column aligned without widening the table. */
+@media (min-width: 640px) {
+    .fi-ta.pdc-searches-table .fi-ta-table th.fi-ta-header-cell,
     .fi-ta.pdc-searches-table .fi-ta-table .fi-ta-text,
     .fi-ta.pdc-searches-table .fi-ta-table .fi-ta-cell-progress > .fi-ta-cell-content {
         padding-inline: 0.375rem !important;
