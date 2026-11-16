@@ -101,6 +101,7 @@ class UserResource extends Resource
                 Forms\Components\RichEditor::make('email_signature')
                     ->label('E-pasta paraksts')
                     ->helperText('Tiek automātiski pievienots visiem e-pastiem, ko šis lietotājs nosūta no CRM.')
+                    ->extraAttributes(['class' => 'pdc-signature-editor'])
                     ->hintAction(
                         Actions\Action::make('restoreEmailSignature')
                             ->label('Atjaunot noklusējumu')

@@ -132,6 +132,7 @@ class MyProfile extends Page
                     RichEditor::make('email_signature')
                         ->label('E-pasta paraksts')
                         ->helperText('Tiek automātiski pievienots visiem e-pastiem, ko nosūtāt no CRM.')
+                        ->extraAttributes(['class' => 'pdc-signature-editor'])
                         ->hintAction(
                             Action::make('restoreEmailSignature')
                                 ->label('Atjaunot noklusējumu')

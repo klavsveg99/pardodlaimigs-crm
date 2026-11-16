@@ -2508,4 +2508,17 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
 .fi-section.fi-collapsed .fi-section-header {
     padding-bottom: 1.25rem !important;
 }
+
+/* E-mail signature editor: the generated signature is an invisible layout
+   table, so the RichEditor must not paint its default table grid. */
+.pdc-signature-editor table,
+.pdc-signature-editor table td,
+.pdc-signature-editor table th {
+    border: 0 !important;
+    background: transparent !important;
+}
+.pdc-signature-editor table td,
+.pdc-signature-editor table th {
+    padding: 0.2rem 0.7rem 0.2rem 0 !important;
+}
 </style>

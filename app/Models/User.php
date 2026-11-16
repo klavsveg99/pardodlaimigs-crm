@@ -184,17 +184,17 @@ class User extends Authenticatable implements FilamentUser
         $phoneHref = filled($this->phone) ? preg_replace('/[^\d+]/', '', (string) $this->phone) : null;
 
         $rows = [
-            '<td style="padding:0;font-size:15px;font-weight:700;line-height:1.3;color:#111827;">'
+            '<td style="border:0;padding:0;font-size:15px;font-weight:700;line-height:1.3;color:#111827;">'
                 .e((string) $this->name)
                 .'</td>',
-            '<td style="padding:2px 0 0;font-weight:600;color:#285854;">Nekustamo īpašumu aģents</td>',
-            '<td style="padding:8px 0 0;">'
+            '<td style="border:0;padding:2px 0 0;font-weight:600;color:#285854;">Nekustamo īpašumu aģents</td>',
+            '<td style="border:0;padding:8px 0 0;">'
                 .'<a href="mailto:'.e((string) $this->email).'" style="color:#374151;text-decoration:none;">'.e((string) $this->email).'</a>'
                 .'</td>',
         ];
 
         if ($phone !== null) {
-            $rows[] = '<td style="padding:2px 0 0;">'
+            $rows[] = '<td style="border:0;padding:2px 0 0;">'
                 .'<a href="tel:'.e((string) $phoneHref).'" style="color:#374151;text-decoration:none;">'.e($phone).'</a>'
                 .'</td>';
         }
