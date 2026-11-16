@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Concerns\HasSlug;
+use App\Support\PhoneFormat;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -160,6 +161,54 @@ class User extends Authenticatable implements FilamentUser
         }
 
         return $disk->url($this->avatar_path);
+    }
+
+    /**
+     * Standard e-mail signature: photo in the first column, then name, role,
+     * e-mail and phone. Built as inline HTML because e-mail clients do not
+     * load the CRM stylesheet.
+     */
+    public function buildEmailSignature(): string
+    {
+        $avatarUrl = null;
+
+        if (filled($this->avatar_path) && Storage::disk('public')->exists($this->avatar_path)) {
+            $base = app()->environment('production')
+                ? 'https://'.config('wp-bridge.host')
+                : rtrim((string) config('app.url'), '/');
+
+            $avatarUrl = $base.'/storage/'.ltrim((string) $this->avatar_path, '/');
+        }
+
+        $phone = filled($this->phone) ? PhoneFormat::display((string) $this->phone) : null;
+        $phoneHref = filled($this->phone) ? preg_replace('/[^\d+]/', '', (string) $this->phone) : null;
+
+        $html = '<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
+            .'style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:13px;'
+            .'line-height:1.5;color:#374151;">'
+            .'<tr>';
+
+        if ($avatarUrl !== null) {
+            $html .= '<td style="vertical-align:top;padding:0 14px 0 0;">'
+                .'<img src="'.e($avatarUrl).'" alt="'.e((string) $this->name).'" width="64" height="64" '
+                .'style="display:block;width:64px;height:64px;border-radius:50%;object-fit:cover;border:0;">'
+                .'</td>';
+        }
+
+        $html .= '<td style="vertical-align:top;">'
+            .'<div style="font-size:15px;font-weight:700;color:#111827;line-height:1.3;">'.e((string) $this->name).'</div>'
+            .'<div style="margin-top:2px;font-weight:600;color:#285854;">Nekustamo īpašumu aģents</div>'
+            .'<div style="margin-top:7px;">'
+            .'<a href="mailto:'.e((string) $this->email).'" style="color:#374151;text-decoration:none;">'.e((string) $this->email).'</a>'
+            .'</div>';
+
+        if ($phone !== null) {
+            $html .= '<div style="margin-top:2px;">'
+                .'<a href="tel:'.e((string) $phoneHref).'" style="color:#374151;text-decoration:none;">'.e($phone).'</a>'
+                .'</div>';
+        }
+
+        return $html.'</td></tr></table>';
     }
 
     /**

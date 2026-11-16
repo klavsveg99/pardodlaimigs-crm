@@ -138,12 +138,18 @@ class EmailSender
         }
     }
 
-    /** Lietotāja saglabātais e-pasta paraksts (ja tāds ir). */
+    /** Lietotāja e-pasta paraksts; tukšam profilam uzbūvē standarta parakstu. */
     public static function defaultSignature(): ?string
     {
-        $signature = auth()->user()?->email_signature;
+        $user = auth()->user();
 
-        return filled($signature) ? (string) $signature : null;
+        if ($user === null) {
+            return null;
+        }
+
+        $signature = $user->email_signature;
+
+        return filled($signature) ? (string) $signature : $user->buildEmailSignature();
     }
 
     /**
