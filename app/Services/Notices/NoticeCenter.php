@@ -87,7 +87,8 @@ class NoticeCenter
             ->where('status', 'lead')
             ->whereNotNull('follow_up_at')
             ->whereDate('follow_up_at', '<=', now()->toDateString())
-            ->when(! $user->can('manage'), fn ($query) => $query->where('owner_user_id', $user->id))
+            // Tikai klienta atbildīgajam aģentam - arī administratoriem.
+            ->where('owner_user_id', $user->id)
             ->with('owner')
             ->orderBy('follow_up_at')
             ->get()
@@ -128,7 +129,8 @@ class NoticeCenter
     {
         return Client::query()
             ->where('status', 'lead')
-            ->when(! $user->can('manage'), fn ($query) => $query->where('owner_user_id', $user->id))
+            // Tikai klienta atbildīgajam aģentam - arī administratoriem.
+            ->where('owner_user_id', $user->id)
             // Nerādām pavisam jaunu, neaiztiktu līdu tajā pašā dienā, kad tas
             // izveidots - dodam dienu, pirms tas sāk parādīties paziņojumos.
             ->where(function ($query): void {
