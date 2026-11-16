@@ -51,6 +51,7 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook('panels::body.start', fn () => view('filament.brand-fonts'))
             ->renderHook('panels::body.end', fn () => view('filament.notice-popup'))
             ->renderHook('panels::body.end', fn () => view('filament.mekletaji-intro'))
+            ->renderHook('panels::body.end', fn () => view('filament.signature-intro'))
             ->renderHook('panels::body.end', fn () => view('filament.partials.sold-celebration'))
             ->renderHook('panels::body.end', fn () => view('filament.partials.calendar-quick-add'))
             ->renderHook('panels::body.end', fn () => view('filament.partials.offer-email-popup'))

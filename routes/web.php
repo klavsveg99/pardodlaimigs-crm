@@ -37,6 +37,19 @@ Route::post('/mekletaji/intro-seen', function () {
     return response()->noContent();
 })->middleware('auth')->name('mekletaji.intro-seen');
 
+// One-time notice about the generated e-mail signature.
+Route::post('/signature-intro-seen', function () {
+    $user = request()->user();
+
+    abort_unless($user !== null, 401);
+
+    if ($user->signature_intro_seen_at === null) {
+        $user->forceFill(['signature_intro_seen_at' => now()])->save();
+    }
+
+    return response()->noContent();
+})->middleware('auth')->name('signature.intro-seen');
+
 // Trigger the Laravel scheduler over HTTP (no system cron on shared hosting).
 // Called by the WordPress mu-plugin on every 5-minute sync tick.
 Route::get('/cron-schedule', function () {

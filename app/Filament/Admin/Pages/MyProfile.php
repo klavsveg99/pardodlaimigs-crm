@@ -18,6 +18,7 @@ use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
 
@@ -130,7 +131,20 @@ class MyProfile extends Page
                     TextInput::make('office_address')->label('Biroja adrese')->maxLength(500)->placeholder('Rīga, Brīvības iela 1')->columnSpanFull(),
                     RichEditor::make('email_signature')
                         ->label('E-pasta paraksts')
-                        ->helperText('Tiek automātiski pievienots visiem e-pastiem, ko nosūtāt no CRM. Var pievienot arī attēlu.')
+                        ->helperText('Tiek automātiski pievienots visiem e-pastiem, ko nosūtāt no CRM.')
+                        ->hintAction(
+                            Action::make('restoreEmailSignature')
+                                ->label('Atjaunot noklusējumu')
+                                ->icon('heroicon-o-arrow-path')
+                                ->color('gray')
+                                ->action(function (Set $set): void {
+                                    $user = auth()->user();
+
+                                    if ($user instanceof User) {
+                                        $set('email_signature', $user->buildEmailSignature());
+                                    }
+                                }),
+                        )
                         ->toolbarButtons(['bold', 'italic', 'underline', 'link', 'bulletList', 'orderedList', 'attachFiles'])
                         ->fileAttachmentsDisk('public')
                         ->fileAttachmentsDirectory('email-signatures')

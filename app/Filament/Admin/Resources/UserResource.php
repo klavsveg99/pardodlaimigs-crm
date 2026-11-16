@@ -14,6 +14,7 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -99,7 +100,19 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('office_address')->label('Biroja adrese')->maxLength(500)->placeholder('Rīga, Brīvības iela 1')->columnSpanFull(),
                 Forms\Components\RichEditor::make('email_signature')
                     ->label('E-pasta paraksts')
-                    ->helperText('Tiek automātiski pievienots visiem e-pastiem, ko šis lietotājs nosūta no CRM. Var pievienot arī attēlu.')
+                    ->helperText('Tiek automātiski pievienots visiem e-pastiem, ko šis lietotājs nosūta no CRM.')
+                    ->hintAction(
+                        Actions\Action::make('restoreEmailSignature')
+                            ->label('Atjaunot noklusējumu')
+                            ->icon('heroicon-o-arrow-path')
+                            ->color('gray')
+                            ->visible(fn (?User $record): bool => $record !== null)
+                            ->action(function (Set $set, ?User $record): void {
+                                if ($record !== null) {
+                                    $set('email_signature', $record->buildEmailSignature());
+                                }
+                            }),
+                    )
                     ->toolbarButtons(['bold', 'italic', 'underline', 'link', 'bulletList', 'orderedList', 'attachFiles'])
                     ->fileAttachmentsDisk('public')
                     ->fileAttachmentsDirectory('email-signatures')
