@@ -1458,6 +1458,15 @@ html.dark .pdc-search-progress-failed { color: #fca5a5; }
     }
 }
 
+/* Tablet widths tighten header padding to 0.375rem; keep the search table's
+   values and the custom Progress cell on that same inset. */
+@media (min-width: 640px) and (max-width: 1400px) {
+    .fi-ta.pdc-searches-table .fi-ta-table .fi-ta-text,
+    .fi-ta.pdc-searches-table .fi-ta-table .fi-ta-cell-progress > .fi-ta-cell-content {
+        padding-inline: 0.375rem !important;
+    }
+}
+
 /* Stacked phone cards keep wrapping: each value sits in a half-width cell. */
 @media (max-width: 639px) {
     .fi-ta.pdc-searches-table .fi-ta-table td.pdc-nowrap,
@@ -1691,6 +1700,19 @@ html.dark .pdc-search-progress-failed { color: #fca5a5; }
 .fi-ta-table .fi-ta-text {
     overflow: visible !important;
     text-overflow: clip !important;
+}
+
+/* Custom ViewColumn cells (Progress) do not render .fi-ta-text, so they have
+   no horizontal inset and their content sits left of the header. Match the
+   inset Filament gives text columns at each breakpoint. */
+.fi-ta-table .fi-ta-cell-progress > .fi-ta-cell-content {
+    padding-inline: 0.75rem;
+}
+
+@media (min-width: 640px) and (max-width: 1400px) {
+    .fi-ta-table .fi-ta-cell-progress > .fi-ta-cell-content {
+        padding-inline: 0.25rem !important;
+    }
 }
 
 .fi-ta-actions {
