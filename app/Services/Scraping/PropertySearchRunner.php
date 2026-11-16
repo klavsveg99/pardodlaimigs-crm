@@ -25,21 +25,29 @@ class PropertySearchRunner
 
     public function run(PropertySearch $search): int
     {
-        $search->update(['last_run_at' => now(), 'last_error' => null]);
-
         $portals = array_values(array_intersect(
             (array) $search->portals,
             array_keys(PropertySearch::PORTALS),
         ));
 
+        $search->update(['last_run_at' => now(), 'last_error' => null]);
+
         if ($portals === []) {
+            $search->markProgressFailed('Nav izvēlēts neviens portāls.');
+
             return 0;
         }
+
+        $total = count($portals);
+        $search->markProgressRunning($total);
 
         $created = 0;
         $errors = [];
 
-        foreach ($portals as $portal) {
+        foreach ($portals as $index => $portal) {
+            $portalLabel = PropertySearch::PORTALS[$portal] ?? $portal;
+            $search->updateProgress($index, $total, 'Meklē '.$portalLabel.'...', $created);
+
             // The parsers read portal pages until they reach ads already stored
             // for this agent, so a first run collects every match and later
             // runs stop at the newest page.
@@ -51,14 +59,24 @@ class PropertySearchRunner
                 ->all();
 
             try {
+                $onPage = function (int $page) use ($search, $index, $total, $portalLabel, $created): void {
+                    $search->updateProgress(
+                        $index,
+                        $total,
+                        'Meklē '.$portalLabel.', '.$page.'. lpp...',
+                        $created,
+                    );
+                };
+
                 $items = match ($portal) {
-                    'ss' => $this->ss->fetch($search, $knownIds),
-                    'city24' => $this->city24->fetch($search, $knownIds),
+                    'ss' => $this->ss->fetch($search, $knownIds, $onPage),
+                    'city24' => $this->city24->fetch($search, $knownIds, $onPage),
                     default => [],
                 };
             } catch (\Throwable $e) {
                 report($e);
                 $errors[] = Str::limit($e->getMessage(), 900);
+                $search->updateProgress($index + 1, $total, 'Kļūda portālā '.$portalLabel.'.', $created);
 
                 continue;
             }
@@ -112,10 +130,21 @@ class PropertySearchRunner
                     ]);
                 }
             }
+
+            $search->updateProgress($index + 1, $total, 'Pārbaudīts '.$portalLabel.'.', $created);
         }
 
         if ($errors !== []) {
             $search->update(['last_error' => implode(' | ', $errors)]);
+            $search->markProgressCompleted(
+                $created,
+                'Pabeigts ar kļūdām. Atrasti '.$created.' jauni objekti.',
+            );
+        } else {
+            $search->markProgressCompleted(
+                $created,
+                'Pabeigts. Atrasti '.$created.' jauni objekti.',
+            );
         }
 
         return $created;

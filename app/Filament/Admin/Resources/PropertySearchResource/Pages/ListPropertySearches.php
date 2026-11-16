@@ -36,8 +36,13 @@ class ListPropertySearches extends ListRecords
                         );
 
                     $count = 0;
-                    foreach ($query->pluck('id') as $id) {
-                        RunPropertySearch::dispatch((int) $id);
+                    foreach ($query->get() as $search) {
+                        $search->markProgressQueued(count(array_intersect(
+                            (array) $search->portals,
+                            array_keys(PropertySearch::PORTALS),
+                        )));
+
+                        RunPropertySearch::dispatch($search->id);
                         $count++;
                     }
 

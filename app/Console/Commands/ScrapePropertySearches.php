@@ -34,6 +34,11 @@ class ScrapePropertySearches extends Command
             // same cron ping, but if it lags the next tick must not dispatch
             // the same search again.
             $search->forceFill(['last_run_at' => now()])->save();
+            $search->markProgressQueued(count(array_intersect(
+                (array) $search->portals,
+                array_keys(PropertySearch::PORTALS),
+            )));
+
             RunPropertySearch::dispatch($search->id);
         }
 

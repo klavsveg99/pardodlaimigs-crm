@@ -1365,7 +1365,82 @@ html.dark .rounded-xl .text-emerald-900 {
     .fi-ta-table td.pdc-nowrap .fi-ta-text { white-space: normal !important; }
 }
 
-/* Searchers list: merged columns keep every value on a single line inside
+/* Search run progress, shown in the Meklētāji table and on the edit page. */
+.pdc-search-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 10rem;
+}
+.pdc-search-progress-head {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #111827;
+    white-space: nowrap;
+}
+.pdc-search-progress-head i { color: var(--pdc-primary); }
+.pdc-search-progress-message {
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: #6b7280;
+    word-break: break-word;
+}
+.pdc-search-progress-track {
+    position: relative;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: #e5e7eb;
+}
+.pdc-search-progress-bar {
+    position: absolute;
+    inset-block: 0;
+    width: 40%;
+    border-radius: 9999px;
+    background: var(--pdc-primary);
+    animation: pdc-search-progress-slide 1.3s ease-in-out infinite;
+}
+@keyframes pdc-search-progress-slide {
+    0% { left: -40%; }
+    100% { left: 100%; }
+}
+.pdc-search-progress-done,
+.pdc-search-progress-failed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.75rem;
+    line-height: 1.35;
+}
+.pdc-search-progress-done { color: #0f7d60; }
+.pdc-search-progress-failed { color: #b91c1c; }
+.pdc-search-progress-done strong,
+.pdc-search-progress-failed strong { font-weight: 700; }
+.pdc-search-progress-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.9rem;
+    font-size: 0.72rem;
+    color: #6b7280;
+}
+.pdc-search-progress-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+.pdc-search-progress-panel .pdc-search-progress-track { height: 6px; }
+.pdc-search-progress-panel .pdc-search-progress-head { font-size: 0.875rem; }
+html.dark .pdc-search-progress-head { color: #f3f4f6; }
+html.dark .pdc-search-progress-message,
+html.dark .pdc-search-progress-meta { color: #9ca3af; }
+html.dark .pdc-search-progress-track { background: #374151; }
+html.dark .pdc-search-progress-done { color: #6ee7b7; }
+html.dark .pdc-search-progress-failed { color: #fca5a5; }
+
+/* Searchers list: each value keeps its own column on a single line inside
    the 7xl content column. Auto layout (not the tablet fixed layout) so a
    value is never squeezed into two rows; long names are truncated at the
    column definition with the full text in the tooltip. */

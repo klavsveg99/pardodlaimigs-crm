@@ -30,9 +30,10 @@ class City24ListingParser
 
     /**
      * @param  array<string, true>  $knownIds  Ads already stored for this agent and portal.
+     * @param  (callable(int): void)|null  $onPage  Called after each listing page is parsed.
      * @return array<int, array<string, mixed>>
      */
-    public function fetch(PropertySearch $search, array $knownIds = []): array
+    public function fetch(PropertySearch $search, array $knownIds = [], ?callable $onPage = null): array
     {
         $unit = self::UNITS[$search->category] ?? 'Land';
         $seen = $knownIds;
@@ -65,6 +66,10 @@ class City24ListingParser
             $data = $response->json();
             if (! is_array($data) || $data === []) {
                 break;
+            }
+
+            if ($onPage !== null) {
+                $onPage($page);
             }
 
             $fresh = 0;

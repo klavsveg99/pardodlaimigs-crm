@@ -59,9 +59,10 @@ class SsListingParser
 
     /**
      * @param  array<string, true>  $knownIds  Ads already stored for this agent and portal.
+     * @param  (callable(int): void)|null  $onPage  Called after each listing page is parsed.
      * @return array<int, array<string, mixed>>
      */
-    public function fetch(PropertySearch $search, array $knownIds = []): array
+    public function fetch(PropertySearch $search, array $knownIds = [], ?callable $onPage = null): array
     {
         $path = self::CATEGORY_PATHS[$search->category] ?? 'plots-and-lands';
         $base = 'https://www.ss.lv/lv/real-estate/'.$path.'/';
@@ -81,6 +82,10 @@ class SsListingParser
 
             $pageItems = $this->parse($html, $search->category);
             $items = array_merge($items, $pageItems);
+
+            if ($onPage !== null) {
+                $onPage($page);
+            }
 
             $fresh = 0;
             foreach ($pageItems as $item) {

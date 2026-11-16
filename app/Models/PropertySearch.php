@@ -39,10 +39,24 @@ class PropertySearch extends Model
     /** Maximum saved searches an agent may create. Admins are unlimited. */
     public const AGENT_LIMIT = 3;
 
+    /** Queue/run progress shown in the Meklētāji table and edit page. */
+    public const PROGRESS_IDLE = 'idle';
+
+    public const PROGRESS_QUEUED = 'queued';
+
+    public const PROGRESS_RUNNING = 'running';
+
+    public const PROGRESS_COMPLETED = 'completed';
+
+    public const PROGRESS_FAILED = 'failed';
+
     protected $fillable = [
         'user_id', 'name', 'portals', 'category', 'location',
         'price_min', 'price_max', 'area_min', 'area_max', 'keywords',
         'is_active', 'frequency', 'last_run_at', 'last_error',
+        'progress_status', 'progress_current', 'progress_total',
+        'progress_found', 'progress_message',
+        'progress_started_at', 'progress_finished_at',
     ];
 
     protected $casts = [
@@ -53,7 +67,77 @@ class PropertySearch extends Model
         'area_max' => 'integer',
         'is_active' => 'boolean',
         'last_run_at' => 'datetime',
+        'progress_current' => 'integer',
+        'progress_total' => 'integer',
+        'progress_found' => 'integer',
+        'progress_started_at' => 'datetime',
+        'progress_finished_at' => 'datetime',
     ];
+
+    public function isProgressActive(): bool
+    {
+        return in_array($this->progress_status, [
+            self::PROGRESS_QUEUED,
+            self::PROGRESS_RUNNING,
+        ], true);
+    }
+
+    public function markProgressQueued(int $total): void
+    {
+        $this->forceFill([
+            'progress_status' => self::PROGRESS_QUEUED,
+            'progress_current' => 0,
+            'progress_total' => max(0, $total),
+            'progress_found' => 0,
+            'progress_message' => 'Gaida rindā...',
+            'progress_started_at' => null,
+            'progress_finished_at' => null,
+        ])->save();
+    }
+
+    public function markProgressRunning(int $total): void
+    {
+        $this->forceFill([
+            'progress_status' => self::PROGRESS_RUNNING,
+            'progress_current' => 0,
+            'progress_total' => max(0, $total),
+            'progress_found' => 0,
+            'progress_message' => 'Sāk meklēšanu...',
+            'progress_started_at' => now(),
+            'progress_finished_at' => null,
+        ])->save();
+    }
+
+    public function updateProgress(int $current, int $total, string $message, int $found): void
+    {
+        $this->forceFill([
+            'progress_status' => self::PROGRESS_RUNNING,
+            'progress_current' => max(0, $current),
+            'progress_total' => max(0, $total),
+            'progress_found' => max(0, $found),
+            'progress_message' => mb_substr($message, 0, 255),
+        ])->save();
+    }
+
+    public function markProgressCompleted(int $found, ?string $message = null): void
+    {
+        $this->forceFill([
+            'progress_status' => self::PROGRESS_COMPLETED,
+            'progress_current' => $this->progress_total,
+            'progress_found' => max(0, $found),
+            'progress_message' => $message ?: 'Pabeigts. Atrasti '.max(0, $found).' jauni objekti.',
+            'progress_finished_at' => now(),
+        ])->save();
+    }
+
+    public function markProgressFailed(string $message): void
+    {
+        $this->forceFill([
+            'progress_status' => self::PROGRESS_FAILED,
+            'progress_message' => mb_substr($message, 0, 255),
+            'progress_finished_at' => now(),
+        ])->save();
+    }
 
     /** Minutes between automatic runs, null when the search only runs manually. */
     public function intervalMinutes(): ?int

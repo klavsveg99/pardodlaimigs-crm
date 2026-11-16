@@ -26,10 +26,23 @@ class RunPropertySearch implements ShouldQueue
     {
         $search = PropertySearch::find($this->searchId);
 
-        if ($search === null || ! $search->is_active) {
+        if ($search === null) {
             return;
         }
 
-        $runner->run($search);
+        if (! $search->is_active) {
+            $search->markProgressFailed('Meklētājs nav aktīvs.');
+
+            return;
+        }
+
+        try {
+            $runner->run($search);
+        } catch (\Throwable $e) {
+            $search->markProgressFailed($e->getMessage());
+            report($e);
+
+            throw $e;
+        }
     }
 }

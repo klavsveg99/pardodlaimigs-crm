@@ -13,6 +13,7 @@ use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -63,6 +64,11 @@ class PropertySearchResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
+            View::make('filament.forms.components.property-search-progress')
+                ->columnSpanFull()
+                ->visible(fn (string $operation): bool => $operation === 'edit')
+                ->poll(fn (?PropertySearch $record = null): ?string => $record?->isProgressActive() ? '3s' : null),
+
             Section::make('Meklēšanas kritēriji')
                 ->columnSpanFull()
                 ->columns(2)
@@ -174,6 +180,9 @@ class PropertySearchResource extends Resource
                     ->iconColor('danger')
                     ->tooltip(fn (PropertySearch $record): ?string => filled($record->last_error) ? $record->last_error : null)
                     ->extraCellAttributes(['class' => 'pdc-nowrap']),
+                Tables\Columns\ViewColumn::make('progress')
+                    ->label('Progress')
+                    ->view('filament.tables.columns.property-search-progress'),
                 Tables\Columns\TextColumn::make('frequency')
                     ->label('Biežums')
                     ->formatStateUsing(fn (string $state): string => PropertySearch::FREQUENCIES[$state] ?? $state)
@@ -212,6 +221,11 @@ class PropertySearchResource extends Resource
                         ->icon('heroicon-o-play')
                         ->color('gray')
                         ->action(function (PropertySearch $record): void {
+                            $record->markProgressQueued(count(array_intersect(
+                                (array) $record->portals,
+                                array_keys(PropertySearch::PORTALS),
+                            )));
+
                             RunPropertySearch::dispatch($record->id);
                             Notification::make()
                                 ->title('Meklēšana palaista')
@@ -228,6 +242,19 @@ class PropertySearchResource extends Resource
                     Actions\DeleteBulkAction::make()->label('Dzēst izvēlētos'),
                 ]),
             ])
+            // Only keep polling while something is actually queued/running.
+            ->poll(function (): ?string {
+                $query = PropertySearch::query()->whereIn('progress_status', [
+                    PropertySearch::PROGRESS_QUEUED,
+                    PropertySearch::PROGRESS_RUNNING,
+                ]);
+
+                if (! auth()->user()?->can('manage')) {
+                    $query->where('user_id', auth()->id());
+                }
+
+                return $query->exists() ? '3s' : null;
+            })
             ->defaultSort('name');
     }
 
