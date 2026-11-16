@@ -165,7 +165,7 @@
                             <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Klients</span>
                             <select x-model.number="clientId" x-on:change="clientChanged()" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.875rem; width: 100%; background: #fff; color: #111827;">
                                 <template x-for="c in clients" :key="c.id">
-                                    <option :value="c.id" x-text="c.name + (c.email ? ' · ' + c.email : '')"></option>
+                                    <option :value="c.id" x-text="c.name + (c.email ? ' - ' + c.email : '')"></option>
                                 </template>
                             </select>
                         </label>
@@ -205,7 +205,7 @@
                         </div>
                         <div x-ref="editor" contenteditable="true"
                             style="min-height: 7rem; padding: 0.7rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0 0 0.5rem 0.5rem; font-size: 0.85rem; line-height: 1.55; overflow-y: auto; max-height: 16rem; background: #fff; color: #1f2937; outline: none;"></div>
-                        <div style="margin-top: 0.3rem; font-size: 0.7rem; color: #9ca3af; line-height: 1.4;">Nosūtītāja e-pasts: info@pardodlaimigs.lv · pielikumu limits 18 MB</div>
+                        <div style="margin-top: 0.3rem; font-size: 0.7rem; color: #9ca3af; line-height: 1.4;">Nosūtītāja e-pasts: info@pardodlaimigs.lv - pielikumu limits 18 MB</div>
                     </div>
 
                     <div x-show="error" x-cloak style="background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 0.5rem 0.7rem; border-radius: 0.45rem; font-size: 0.8rem;" x-text="error"></div>

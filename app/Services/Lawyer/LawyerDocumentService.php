@@ -448,7 +448,7 @@ class LawyerDocumentService
             }
 
             if ($cells !== []) {
-                $lines[] = implode(' · ', $cells);
+                $lines[] = implode(' - ', $cells);
             }
         }
 

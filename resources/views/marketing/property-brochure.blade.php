@@ -83,7 +83,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $property->title }} · Ģenerēt PDF</title>
+    <title>{{ $property->title }} - Ģenerēt PDF</title>
     <link rel="icon" type="image/jpeg" href="{{ asset('images/favicon-32x32.jpg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -273,7 +273,7 @@
 </head>
 <body>
     <div class="topbar no-print">
-        <img class="topbar-logo" src="{{ asset('images/favicon-180x180.jpg') }}" alt="Pārdod Laimīgs · CRM">
+        <img class="topbar-logo" src="{{ asset('images/favicon-180x180.jpg') }}" alt="Pārdod Laimīgs - CRM">
         <span class="title">Ģenerēt PDF</span>
         <button type="button" id="btn-download" class="btn btn-primary" onclick="pdcDownloadBrochure()">
             <i class="fa-solid fa-download"></i><span>Lejupielādēt PDF</span>
@@ -409,7 +409,7 @@
                         <span class="status-tag">{{ \App\Models\CrmProperty::STATUSES[$property->status] ?? $property->status }}</span>
                     </div>
                     <div class="cover-content">
-                        <div class="cover-kicker">{{ mb_strtoupper($categoryLabel) }}{{ $addressLine ? ' · '.mb_strtoupper($addressLine) : '' }}</div>
+                        <div class="cover-kicker">{{ mb_strtoupper($categoryLabel) }}{{ $addressLine ? ' - '.mb_strtoupper($addressLine) : '' }}</div>
                         <h1 data-out="title">{{ $property->title }}</h1>
                         <p class="cover-address" data-out="address">{{ $addressLine }}</p>
                         <div class="cover-price-row">
@@ -442,7 +442,7 @@
                     @if ($ctaUrl)<div class="listing-link">Visas bildes skatāmas sludinājumā: {{ parse_url($ctaUrl, PHP_URL_HOST).parse_url($ctaUrl, PHP_URL_PATH) }}</div>@endif
                     <div class="page-footer">
                         <img src="{{ asset('site-assets/images/brand/logo.svg') }}" alt="Pārdod Laimīgs">
-                        <span class="footer-title">{{ $property->title }} · <span data-out="price">{{ $priceValue }}</span></span>
+                        <span class="footer-title">{{ $property->title }} - <span data-out="price">{{ $priceValue }}</span></span>
                         <span class="page-number">2 / 4</span>
                     </div>
                 </section>
@@ -473,7 +473,7 @@
                     </div>
                     <div class="page-footer">
                         <img src="{{ asset('site-assets/images/brand/logo.svg') }}" alt="Pārdod Laimīgs">
-                        <span class="footer-title">{{ $property->title }} · <span data-out="price">{{ $priceValue }}</span></span>
+                        <span class="footer-title">{{ $property->title }} - <span data-out="price">{{ $priceValue }}</span></span>
                         <span class="page-number">3 / 4</span>
                     </div>
                 </section>
@@ -488,7 +488,7 @@
                         <div class="agent-fallback" id="brochure-agent-fallback" data-out="agentInitial" style="{{ $agentAvatar ? 'display:none;' : '' }}">{{ $initials ?: 'P' }}</div>
                         <div>
                             <p class="agent-name" data-out="agentName">{{ $agentName ?: 'Pārdod Laimīgs' }}</p>
-                            <p class="agent-role"><span data-out="agentRole">{{ $agentRole }}</span> · Pārdod Laimīgs</p>
+                            <p class="agent-role"><span data-out="agentRole">{{ $agentRole }}</span> - Pārdod Laimīgs</p>
                             @if ($agentPhone)<p class="agent-contact" data-out="agentPhone">{{ $agentPhone }}</p>@endif
                             @if ($agentEmail)<p class="agent-contact" data-out="agentEmail">{{ $agentEmail }}</p>@endif
                         </div>

@@ -185,7 +185,7 @@ class ClientResource extends Resource
                     AttachmentsGrid::make('attachments')
                         ->label('Pielikumi')
                         ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
-                            .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
+                            .' - maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
                         ->reorderable(false)
                         ->multiselect(false)
                         ->deletable()

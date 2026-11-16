@@ -252,7 +252,7 @@ class CrmProperty extends Model
             $parts[] = $this->kadastra_nr;
         }
 
-        return implode(' · ', $parts);
+        return implode(' - ', $parts);
     }
 
     public function getPublicUrlAttribute(): string

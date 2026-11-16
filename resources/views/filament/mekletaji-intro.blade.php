@@ -136,7 +136,7 @@
             >
                 <div class="pdc-intro-head">
                     <div>
-                        <div class="pdc-intro-kicker">Kas jauns · CRM 2.0</div>
+                        <div class="pdc-intro-kicker">Kas jauns - CRM 2.0</div>
                         <h2 class="pdc-intro-title" id="pdc-intro-title">Meklētāji</h2>
                     </div>
 

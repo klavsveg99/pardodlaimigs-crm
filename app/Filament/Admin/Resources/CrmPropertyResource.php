@@ -99,7 +99,7 @@ class CrmPropertyResource extends Resource
                         ->label('Fotogrāfijas un plānojumi')
                         ->hiddenLabel()
                         ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
-                            .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
+                            .' - maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
                         ->reorderable()
                         ->deletable()
                         ->multiselect()
@@ -504,7 +504,7 @@ class CrmPropertyResource extends Resource
                             if ($commission > 0) {
                                 $feat[] = 'komisija: '.number_format($commission, 0, ',', ' ').' €';
                             }
-                            $featText = $feat ? implode(' · ', $feat) : '';
+                            $featText = $feat ? implode(' - ', $feat) : '';
 
                             if ($status === 'sold') {
                                 $prefix = 'Pārdots';
@@ -622,7 +622,7 @@ class CrmPropertyResource extends Resource
                     ->label('Dokumenti')
                     ->hiddenLabel()
                     ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
-                        .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB · Pases kopijas, zemesgrāmatas, līgumi, pilnvaras u.c. · var nosūtīt arī ar e-pastu saistītajam klientam.')
+                        .' - maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB - Pases kopijas, zemesgrāmatas, līgumi, pilnvaras u.c. - var nosūtīt arī ar e-pastu saistītajam klientam.')
                     ->reorderable(false)
                     ->multiselect(false)
                     ->deletable()

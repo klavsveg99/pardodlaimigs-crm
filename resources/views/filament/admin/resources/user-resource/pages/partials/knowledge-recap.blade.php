@@ -12,11 +12,11 @@
     <div class="pdc-kb-recap-summary">
         <div>
             Piešķirti kursi: <strong>{{ count($knowledge['assigned']) }}</strong>
-            · Pabeigti kursi: <strong>{{ $knowledge['completed'] }}</strong>
+            - Pabeigti kursi: <strong>{{ $knowledge['completed'] }}</strong>
         </div>
         <div>
             Materiāli: <strong>{{ count($knowledge['materials']) }}</strong>
-            · Pabeigti materiāli: <strong>{{ $knowledge['materials_completed'] }}</strong>
+            - Pabeigti materiāli: <strong>{{ $knowledge['materials_completed'] }}</strong>
         </div>
     </div>
 </x-filament::section>

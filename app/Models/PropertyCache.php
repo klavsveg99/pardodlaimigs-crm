@@ -58,6 +58,6 @@ class PropertyCache extends Model
 
     public function getSelectionLabelAttribute(): string
     {
-        return $this->title.($this->kadastra_nr ? " · {$this->kadastra_nr}" : '')." · #{$this->id}";
+        return $this->title.($this->kadastra_nr ? " - {$this->kadastra_nr}" : '')." - #{$this->id}";
     }
 }

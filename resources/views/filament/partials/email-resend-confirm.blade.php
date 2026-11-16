@@ -50,7 +50,7 @@ if (! window.pdcResendConfirm) {
             row('Saņēmējs', email.to);
             row('Temats', email.subject);
             if (email.sentAt || email.attachments) {
-                const meta = [email.sentAt ? 'Nosūtīts: ' + email.sentAt : '', email.attachments ? 'Pielikumi: ' + email.attachments : ''].filter(Boolean).join(' · ');
+                const meta = [email.sentAt ? 'Nosūtīts: ' + email.sentAt : '', email.attachments ? 'Pielikumi: ' + email.attachments : ''].filter(Boolean).join(' - ');
                 row('Pēdējais e-pasts', meta);
             }
             if (email.content) {

@@ -289,7 +289,7 @@
                             <div class="pdc-client-avatar">{{ strtoupper(mb_substr($client->name, 0, 1)) }}</div>
                             <div class="pdc-client-info">
                                 <p class="pdc-client-name">{{ $client->name }}</p>
-                                <p class="pdc-client-contact">{{ implode(' · ', array_filter([\App\Support\PhoneFormat::display($client->phone ?? null), $client->email])) ?: '-' }}</p>
+                                <p class="pdc-client-contact">{{ implode(' - ', array_filter([\App\Support\PhoneFormat::display($client->phone ?? null), $client->email])) ?: '-' }}</p>
                                 <x-filament::badge color="gray" class="pdc-client-badge">
                                     {{ $client->pivot->relation_label ?: ucfirst($client->pivot->relation) }}
                                 </x-filament::badge>
@@ -320,7 +320,7 @@
                                 data-last-email="{{ json_encode($lastEmailData) }}"
                                 x-on:click="window.dispatchEvent(new CustomEvent('pdc-open-client-email', { detail: { id: Number($el.dataset.clientId), name: $el.dataset.clientName, email: $el.dataset.clientEmail, url: $el.dataset.sendUrl, resend: true, lastEmail: JSON.parse($el.dataset.lastEmail || 'null') } }))"
                                 class="pdc-client-sent pdc-client-sent--clickable"
-                                title="Nosūtīts {{ $sentAt->format('d.m.Y') }} · nospied, lai nosūtītu vēlreiz"
+                                title="Nosūtīts {{ $sentAt->format('d.m.Y') }} - nospied, lai nosūtītu vēlreiz"
                             >
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5"/></svg>
                                 <span>Nosūtīts</span>

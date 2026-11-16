@@ -176,7 +176,7 @@ class EmailSender
                 .'<p style="font-size:12px;color:#6b7280;margin:0;">'
                 .'<img src="'.$logo.'" alt="Pārdod Laimīgs" width="18" height="18" '
                 .'style="vertical-align:middle;margin-right:6px;border-radius:4px;border:0;">'
-                .'Pārdod Laimīgs · <a href="https://pardodlaimigs.lv" style="color:#285854;">pardodlaimigs.lv</a>'
+                .'Pārdod Laimīgs - <a href="https://pardodlaimigs.lv" style="color:#285854;">pardodlaimigs.lv</a>'
                 .'</p>'
                 .'<p style="font-size:12px;color:#6b7280;margin:6px 0 0;">'
                 .'<a href="'.$reviewUrl.'" style="color:#285854;">Atstājiet atsauksmi Google</a>'

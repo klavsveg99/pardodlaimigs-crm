@@ -5,7 +5,7 @@
 
 <x-filament::section
     heading="Kam materiāls pieejams"
-    :description="'Kopā: '.count($rows).' · Pabeiguši: '.$completedCount"
+    :description="'Kopā: '.count($rows).' - Pabeiguši: '.$completedCount"
 >
     @if ($rows === [])
         <p class="pdc-kb-audience-empty">Materiāls vēl nav pieejams nevienam lietotājam.</p>
@@ -33,9 +33,9 @@
                         <span class="pdc-kb-audience-meta">
                             {{ $row['role'] }}
                             @if ($row['completed_at'])
-                                · Pabeigts {{ $date($row['completed_at']) }}
+                                - Pabeigts {{ $date($row['completed_at']) }}
                             @elseif ($row['due_at'])
-                                · Termiņš {{ $date($row['due_at']) }}
+                                - Termiņš {{ $date($row['due_at']) }}
                             @endif
                         </span>
                     </div>

@@ -23,7 +23,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $property->title }} · Ģenerēt PDF</title>
+    <title>{{ $property->title }} - Ģenerēt PDF</title>
     <link rel="icon" type="image/jpeg" href="{{ asset('images/favicon-32x32.jpg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -242,7 +242,7 @@
 </head>
 <body>
     <div class="topbar no-print">
-        <img class="topbar-logo" src="{{ asset('images/favicon-180x180.jpg') }}" alt="Pārdod Laimīgs · CRM">
+        <img class="topbar-logo" src="{{ asset('images/favicon-180x180.jpg') }}" alt="Pārdod Laimīgs - CRM">
         <span class="title">Ģenerēt PDF</span>
         <button type="button" id="btn-download" class="btn btn-primary" onclick="pdcDownloadPdf()">
             <i class="fa-solid fa-download"></i><span>Lejupielādēt PDF</span>

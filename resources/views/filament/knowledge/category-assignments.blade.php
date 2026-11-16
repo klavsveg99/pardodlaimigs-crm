@@ -51,12 +51,12 @@
                                 Bez termiņa
                             @endif
                             @if ($assignment->assignedBy)
-                                · Piešķīra {{ $assignment->assignedBy->name }}
+                                - Piešķīra {{ $assignment->assignedBy->name }}
                             @endif
                         </span>
                     </div>
                     <div class="pdc-kb-category-side">
-                        <span class="pdc-kb-category-progress">{{ $stats['completed'] }}/{{ $stats['total'] }} · {{ $stats['percent'] }}%</span>
+                        <span class="pdc-kb-category-progress">{{ $stats['completed'] }}/{{ $stats['total'] }} - {{ $stats['percent'] }}%</span>
                         @if ($assignment->rating)
                             <span class="pdc-kb-category-stars">{{ str_repeat('★', $assignment->rating).str_repeat('☆', 5 - $assignment->rating) }}</span>
                         @endif

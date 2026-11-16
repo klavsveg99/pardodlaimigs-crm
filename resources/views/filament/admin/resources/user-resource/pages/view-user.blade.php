@@ -288,7 +288,7 @@
             <div class="pdc-agent-profile-body">
                 <div class="pdc-agent-profile-name">{{ $record->name }}</div>
                 <div class="pdc-agent-profile-meta">
-                    {{ collect([$record->role_label, $record->position])->filter()->unique()->implode(' · ') }}
+                    {{ collect([$record->role_label, $record->position])->filter()->unique()->implode(' - ') }}
                 </div>
                 <div class="pdc-agent-profile-contacts">
                     <a href="mailto:{{ $record->email }}">
@@ -340,7 +340,7 @@
             <div class="fi-wi-stats-overview-stat">
                 <div class="fi-wi-stats-overview-stat-content">
                     <div class="fi-wi-stats-overview-stat-label-ctn">
-                        <span class="fi-wi-stats-overview-stat-label">Pārdoti objekti · {{ $periodLabel }}</span>
+                        <span class="fi-wi-stats-overview-stat-label">Pārdoti objekti - {{ $periodLabel }}</span>
                     </div>
                     <div class="fi-wi-stats-overview-stat-value">{{ $report['sold_count'] }}</div>
                 </div>
@@ -348,7 +348,7 @@
             <div class="fi-wi-stats-overview-stat">
                 <div class="fi-wi-stats-overview-stat-content">
                     <div class="fi-wi-stats-overview-stat-label-ctn">
-                        <span class="fi-wi-stats-overview-stat-label">Komisija · {{ $periodLabel }}</span>
+                        <span class="fi-wi-stats-overview-stat-label">Komisija - {{ $periodLabel }}</span>
                     </div>
                     <div class="fi-wi-stats-overview-stat-value">{{ $money($report['total_commission']) }}</div>
                 </div>

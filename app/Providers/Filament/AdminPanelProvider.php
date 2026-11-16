@@ -36,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             // still the public site everything keeps working as before.
             ->domain((app()->environment('production') && config('site.enabled')) ? config('wp-bridge.host') : null)
             ->path('/')
-            ->brandName('Pārdod Laimīgs · CRM')
+            ->brandName('Pārdod Laimīgs - CRM')
             ->brandLogo(asset('images/favicon-180x180.jpg'))
             ->brandLogoHeight('2rem')
             ->favicon(asset('images/favicon-32x32.jpg'))

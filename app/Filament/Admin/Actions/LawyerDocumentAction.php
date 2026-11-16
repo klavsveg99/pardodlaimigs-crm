@@ -8,6 +8,7 @@ use App\Filament\Forms\Components\PersonasKodsInput;
 use App\Filament\Forms\Components\PhoneInput;
 use App\Models\Client;
 use App\Models\CrmProperty;
+use App\Models\EmailLog;
 use App\Rules\Phone;
 use App\Services\ImageOptimizer;
 use App\Services\Lawyer\LawyerDocumentService;
@@ -111,7 +112,7 @@ final class LawyerDocumentAction
         }
 
         $lastSent = $property->lawyerRequests()->first()?->sent_at;
-        $lastEmail = \App\Models\EmailLog::lastLawyer($property->id)?->preview();
+        $lastEmail = EmailLog::lastLawyer($property->id)?->preview();
 
         return [
             View::make('filament.admin.partials.lawyer-sent-notice')
@@ -476,7 +477,7 @@ final class LawyerDocumentAction
 
             $files = $files->concat($client->attachments->map(fn ($a): array => [
                 'id' => (int) $a->id,
-                'name' => (string) $a->original_name.' · '.$role,
+                'name' => (string) $a->original_name.' - '.$role,
                 'size' => (int) $a->size,
             ]));
         }

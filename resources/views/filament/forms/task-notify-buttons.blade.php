@@ -37,7 +37,7 @@
             <div class="pdc-task-notify-label">Aģents</div>
             <div class="pdc-task-notify-who">
                 @if($agentName)
-                    {{ $agentName }}@if($agentEmail) · {{ $agentEmail }}@endif
+                    {{ $agentName }}@if($agentEmail) - {{ $agentEmail }}@endif
                 @else
                     Nav piešķirts
                 @endif
@@ -46,7 +46,7 @@
                 <button type="button"
                     class="pdc-task-notify-sent"
                     style="cursor: pointer;"
-                    title="Nosūtīts · nospied, lai nosūtītu vēlreiz"
+                    title="Nosūtīts - nospied, lai nosūtītu vēlreiz"
                     onclick="pdcTaskNotify(this)"
                     data-pdc-notify-url="{{ $sendUrlAgent }}"
                     data-pdc-notify-token="{{ $csrf }}"
@@ -71,7 +71,7 @@
             <div class="pdc-task-notify-label">Izpildītājs</div>
             <div class="pdc-task-notify-who">
                 @if($izpilditajsName)
-                    {{ $izpilditajsName }}@if($izpilditajsEmail) · {{ $izpilditajsEmail }}@endif
+                    {{ $izpilditajsName }}@if($izpilditajsEmail) - {{ $izpilditajsEmail }}@endif
                 @else
                     Nav piesaistīts
                 @endif
@@ -80,7 +80,7 @@
                 <button type="button"
                     class="pdc-task-notify-sent"
                     style="cursor: pointer;"
-                    title="Nosūtīts · nospied, lai nosūtītu vēlreiz"
+                    title="Nosūtīts - nospied, lai nosūtītu vēlreiz"
                     onclick="pdcTaskNotify(this)"
                     data-pdc-notify-url="{{ $sendUrlIzpilditajs }}"
                     data-pdc-notify-token="{{ $csrf }}"
@@ -175,7 +175,7 @@
             b.type = 'button';
             b.className = 'pdc-task-notify-sent';
             b.style.cursor = 'pointer';
-            b.title = 'Nosūtīts · nospied, lai nosūtītu vēlreiz';
+            b.title = 'Nosūtīts - nospied, lai nosūtītu vēlreiz';
             b.setAttribute('data-pdc-notify-url', url || '');
             b.setAttribute('data-pdc-notify-token', token || '');
             if (lastEmail) {

@@ -7,6 +7,6 @@
         <span style="display: block; height: 100%; border-radius: inherit; background: var(--pdc-primary, #285854); width: {{ $stats['percent'] }}%;"></span>
     </div>
     <span style="font-size: 0.72rem; color: #6b7280; white-space: nowrap;">
-        {{ $stats['completed'] }}/{{ $stats['total'] }} · {{ $stats['percent'] }}%
+        {{ $stats['completed'] }}/{{ $stats['total'] }} - {{ $stats['percent'] }}%
     </span>
 </div>

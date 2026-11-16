@@ -190,7 +190,7 @@ class KnowledgeArticleResource extends Resource
             AttachmentsGrid::make('attachments')
                 ->label('Pielikumi')
                 ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
-                    .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
+                    .' - maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
                 ->reorderable(false)
                 ->multiselect(false)
                 ->listMode()
@@ -207,7 +207,7 @@ class KnowledgeArticleResource extends Resource
             TextEntry::make('title')->hiddenLabel()->size('lg')->weight('bold')->columnSpanFull(),
             TextEntry::make('summary')->hiddenLabel()->placeholder('')->columnSpanFull(),
             TextEntry::make('categories_list')->hiddenLabel()->badge()->color('gray')
-                ->state(fn (KnowledgeArticle $record): ?string => $record->categories->pluck('name')->implode(' · ') ?: null)
+                ->state(fn (KnowledgeArticle $record): ?string => $record->categories->pluck('name')->implode(' - ') ?: null)
                 ->placeholder('')
                 ->visible(fn (?string $state): bool => filled($state))
                 ->columnSpanFull(),

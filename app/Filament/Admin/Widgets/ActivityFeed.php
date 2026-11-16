@@ -191,7 +191,7 @@ class ActivityFeed extends BaseWidget
     {
         $entity = self::ENTITY_LABELS[$log->entity] ?? $log->entity;
 
-        return $entity.' · '.$this->actionLabel($log);
+        return $entity.' - '.$this->actionLabel($log);
     }
 
     /**
@@ -299,7 +299,7 @@ class ActivityFeed extends BaseWidget
             }
         }
 
-        $text = implode(' · ', array_filter($parts));
+        $text = implode(' - ', array_filter($parts));
 
         if ($short && mb_strlen($text) > 140) {
             return mb_substr($text, 0, 137).'…';
@@ -404,7 +404,7 @@ class ActivityFeed extends BaseWidget
             $bits[] = 'Statuss: '.$status;
         }
 
-        return implode(' · ', $bits);
+        return implode(' - ', $bits);
     }
 
     protected function diffText(array $before, array $after, int $max): string

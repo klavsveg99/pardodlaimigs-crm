@@ -109,7 +109,7 @@
                             <span class="pdc-kb-course-meta">
                                 <span>{{ $course['progress']['completed'] }}/{{ $course['progress']['total'] }} materiāli</span>
                                 @if ($course['is_overdue'])
-                                    <span class="pdc-kb-course-badge pdc-kb-course-badge--overdue">Termiņš nokavēts · {{ $date($course['due_at']) }}</span>
+                                    <span class="pdc-kb-course-badge pdc-kb-course-badge--overdue">Termiņš nokavēts - {{ $date($course['due_at']) }}</span>
                                 @elseif ($course['due_at'])
                                     <span class="pdc-kb-course-badge">Termiņš {{ $date($course['due_at']) }}</span>
                                 @endif

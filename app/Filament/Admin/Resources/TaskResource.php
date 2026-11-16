@@ -8,6 +8,7 @@ use App\Filament\Admin\Resources\TaskResource\Pages;
 use App\Filament\Forms\Components\AttachmentsGrid;
 use App\Models\Client;
 use App\Models\CrmProperty;
+use App\Models\EmailLog;
 use App\Models\Izpilditajs;
 use App\Models\Task;
 use App\Support\AgentField;
@@ -126,7 +127,7 @@ class TaskResource extends Resource
             AttachmentsGrid::make('attachments')
                 ->label('Pielikumi')
                 ->helperText('Atļautie failu tipi: '.implode(', ', config('attachments.accepted_mimes'))
-                    .' · maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
+                    .' - maksimālais izmērs: '.(int) (config('attachments.max_size_kb') / 1024).' MB')
                 ->reorderable(false)
                 ->multiselect(false)
                 ->deletable()
@@ -157,10 +158,10 @@ class TaskResource extends Resource
                             'izpilditajsNotifiedAt' => $schema->getRecord()?->izpilditajs_notified_at,
                             // Pēdējais nosūtītais e-pasts katram saņēmējam.
                             'lastEmailAgent' => $schema->getRecord()
-                                ? \App\Models\EmailLog::lastTaskNotice($schema->getRecord()->getKey(), 'agent')?->preview()
+                                ? EmailLog::lastTaskNotice($schema->getRecord()->getKey(), 'agent')?->preview()
                                 : null,
                             'lastEmailIzpilditajs' => $schema->getRecord()
-                                ? \App\Models\EmailLog::lastTaskNotice($schema->getRecord()->getKey(), 'izpilditajs')?->preview()
+                                ? EmailLog::lastTaskNotice($schema->getRecord()->getKey(), 'izpilditajs')?->preview()
                                 : null,
                         ])
                         ->columnSpanFull(),

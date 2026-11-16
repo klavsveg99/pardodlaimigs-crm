@@ -113,7 +113,7 @@
                         <span>{{ $attachment->created_at->format('d.m.Y') }}</span>
                     @endif
                     @if ($attachment->created_at && $fileSize($attachment->size))
-                        <span>·</span>
+                        <span>-</span>
                     @endif
                     @if ($fileSize($attachment->size))
                         <span>{{ $fileSize($attachment->size) }}</span>

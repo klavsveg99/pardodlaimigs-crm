@@ -1231,7 +1231,7 @@
                     <span style="background: var(--pdc-primary); color: white; font-size: 0.72rem; font-weight: 600; padding: 0.22rem 0.5rem; border-radius: 0.35rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; max-width: 100%; box-shadow: 0 1px 4px rgba(0,0,0,0.25);" x-text="file.name"></span>
                 </div>
 
-                <button type="button" x-show="file.sentAt" x-on:click.stop="resendFile(file)" x-bind:title="(file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts') + ' · nospied, lai nosūtītu vēlreiz'"
+                <button type="button" x-show="file.sentAt" x-on:click.stop="resendFile(file)" x-bind:title="(file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts') + ' - nospied, lai nosūtītu vēlreiz'"
                     style="position: absolute; bottom: 0.5rem; left: 0.5rem; z-index: 11; height: 1.6rem; width: 1.6rem; padding: 0; border-radius: 9999px; background: var(--pdc-primary, #285854); color: white; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.35); box-shadow: 0 1px 4px rgba(0,0,0,0.3); cursor: pointer;"
                     x-cloak>
                     <svg x-show="file.sentAt" style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
@@ -1279,10 +1279,10 @@
                     <div class="pdc-attach-name" style="font-size: 0.875rem; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="file.name"></div>
                     <div class="pdc-attach-meta" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.15rem; font-size: 0.75rem; color: #6b7280;">
                         <span x-show="file.created" x-text="file.created"></span>
-                        <span x-show="file.created && sizeLabel(file.size)">·</span>
+                        <span x-show="file.created && sizeLabel(file.size)">-</span>
                         <span x-show="sizeLabel(file.size)" x-text="sizeLabel(file.size)"></span>
                         @if($isRowMode && $canSend)
-                        <button type="button" x-on:click.stop="resendFile(file)" x-bind:style="{ display: file.sentAt ? 'inline-flex' : 'none' }" x-bind:title="(file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts') + ' · nospied, lai nosūtītu vēlreiz'" class="fi-badge fi-color-success fi-color" style="display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer;" x-cloak>
+                        <button type="button" x-on:click.stop="resendFile(file)" x-bind:style="{ display: file.sentAt ? 'inline-flex' : 'none' }" x-bind:title="(file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts') + ' - nospied, lai nosūtītu vēlreiz'" class="fi-badge fi-color-success fi-color" style="display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer;" x-cloak>
                             <svg style="width: 0.8rem; height: 0.8rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                             <span x-text="file.sentToClient ? 'Nosūtīts klientam' : 'Nosūtīts'">Nosūtīts klientam</span>
                         </button>

@@ -84,7 +84,7 @@ class ViewWpformEntry extends ViewRecord
 
                     Notification::make()
                         ->title('Klients izveidots un piesaistīts')
-                        ->body("Klients #{$client->id} · {$client->name}")
+                        ->body("Klients #{$client->id} - {$client->name}")
                         ->success()
                         ->send();
                 }),

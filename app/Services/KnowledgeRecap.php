@@ -110,7 +110,7 @@ class KnowledgeRecap
                         $article->is_public ? 'Obligāts saturs' : null,
                         $articleAssignments !== null ? 'Piešķirts' : null,
                         $inCourse ? 'Kurss' : null,
-                    ])->filter()->implode(' · '),
+                    ])->filter()->implode(' - '),
                     'due_at' => $dueAt,
                     'completed_at' => $completedAt,
                     'completed' => $completedAt !== null,

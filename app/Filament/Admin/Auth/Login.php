@@ -15,7 +15,7 @@ class Login extends BaseLogin
 
     public function getHeading(): string|Htmlable|null
     {
-        return 'Pārdod Laimīgs · CRM';
+        return 'Pārdod Laimīgs - CRM';
     }
 
     protected function getAuthenticateFormAction(): Action

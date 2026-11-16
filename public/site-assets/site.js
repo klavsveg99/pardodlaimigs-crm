@@ -131,7 +131,7 @@
             slides.forEach((slide, position_) => slide.classList.toggle('is-active', position_ === index));
             const data = positions[index] || {};
             if (title) title.textContent = data.title || '';
-            if (location) location.textContent = [data.city, data.price].filter(Boolean).join(' · ');
+            if (location) location.textContent = [data.city, data.price].filter(Boolean).join(' - ');
             if (position) position.textContent = String(index + 1).padStart(2, '0');
             if (link) {
                 link.dataset.heroSlug = data.slug || '';
