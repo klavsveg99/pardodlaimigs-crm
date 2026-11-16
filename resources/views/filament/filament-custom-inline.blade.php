@@ -224,6 +224,48 @@ h1.fi-header-heading {
     color: #ffffff !important;
 }
 
+/* Mobilās izvēlnes aizvēršanas poga sānjoslas galvenē. */
+.pdc-sidebar-close-btn {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-inline-end: -0.5rem;
+    border-radius: 0.5rem;
+    color: #6b7280;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.pdc-sidebar-close-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #111827;
+}
+
+.pdc-sidebar-close-btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.dark .pdc-sidebar-close-btn {
+    color: #9ca3af;
+}
+
+.dark .pdc-sidebar-close-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+/* Horizontālu vilkšanu pa mobilās izvēlnes virsmu uztver aizvēršanas
+   žests; vertikālā ritināšana paliek pārlūkam. */
+@media (max-width: 1023px) {
+    .fi-sidebar {
+        touch-action: pan-y;
+    }
+}
+
 /* Floating menus and select popovers must clear tables, buttons and cards. */
 [x-float],
 .fi-dropdown-panel,
@@ -2056,6 +2098,13 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     .fi-ta-header-toolbar > div { min-width: 0 !important; }
     .fi-ta-search-field, .fi-ta-search-input-ctn { flex: 1 1 auto !important; min-width: 0 !important; width: auto !important; }
     .fi-ta-search-input { width: 100% !important; }
+    /* Filtrēšanas pogas skaitļa burbulis: tuvāk ikonai un nedaudz zemāk,
+       lai tas viegli pārklātu pašu filtru. */
+    .fi-ta-header-toolbar .fi-icon-btn-badge-ctn {
+        top: 10px !important;
+        left: 30px !important;
+        right: auto !important;
+    }
     /* Pagination wraps */
     .fi-pagination, .fi-ta-pagination { flex-wrap: wrap !important; gap: 0.5rem !important; }
     /* Sections: reduce padding, ensure full width */
