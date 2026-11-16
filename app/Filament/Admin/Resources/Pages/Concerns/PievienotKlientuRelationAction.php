@@ -6,6 +6,7 @@ namespace App\Filament\Admin\Resources\Pages\Concerns;
 
 use App\Filament\Admin\Resources\ClientResource;
 use App\Models\Client;
+use App\Models\ClientCrmProperty;
 use App\Models\CrmProperty;
 use Filament\Actions;
 use Filament\Forms;
@@ -15,19 +16,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Single AttachAction for the property's Piesaistītie klienti
- * relation manager / view page.  Simple interface: pick an EXISTING
- * client and choose the relation (Pārdevējs / Pircējs).  Pircējs is
- * only selectable when the property status is Pārdots (sold) - the
- * hint tooltip on the field explains this.
+ * Attach action for the property's associated clients table.
+ *
+ * Business rules: one seller, one buyer, unlimited "interesenti". A relation
+ * that is already filled is hidden from the picker instead of blocking the
+ * whole action, so another interested client can always be added.
  */
 trait PievienotKlientuRelationAction
 {
-    /**
-     * Returns a Filament `Action` (not `AttachAction`) that can be
-     * mounted from a page-level blade via `wire:click="mountAction(...)"`
-     * or used as a relation manager header action.
-     */
     protected function getPievienotKlientuAction(): Actions\Action
     {
         return Actions\Action::make('piesaisit_klientu')
@@ -35,15 +31,7 @@ trait PievienotKlientuRelationAction
             ->color('gray')
             ->icon('heroicon-o-user-plus')
             ->modalHeading('Pievienot klientu')
-            // Rāda tikai, kamēr trūkst attiecīgās lomas: pirms pārdošanas -
-            // pārdevēja; pārdotam - pircēja.
-            ->visible(function (): bool {
-                try {
-                    return $this->getPievienotKlientuProperty()->canAttachClient();
-                } catch (\Throwable) {
-                    return false;
-                }
-            })
+            ->visible(fn (): bool => ! (auth()->user()?->isPhoto() ?? false))
             ->modalSubmitActionLabel('Pievienot')
             ->extraModalFooterActions([
                 Actions\Action::make('izveidot_jaunu_klientu')
@@ -55,20 +43,18 @@ trait PievienotKlientuRelationAction
             ])
             ->form(function (): array {
                 $property = $this->getPievienotKlientuProperty();
-                $isSold = ($property?->status ?? null) === 'sold';
+                $relations = $this->availableClientRelations($property);
 
                 $radio = Forms\Components\Radio::make('relation')
                     ->label('Tips')
-                    ->options($isSold
-                        ? ['seller' => 'Pārdevējs', 'buyer' => 'Pircējs']
-                        : ['seller' => 'Pārdevējs'])
+                    ->options($relations)
                     ->required()
-                    ->default('seller')
+                    ->default(array_key_first($relations))
                     ->inline()
                     ->live();
 
-                if (! $isSold) {
-                    $radio->helperText('Pircējs pieejams tikai «Pārdots» statusa īpašumiem.');
+                if (! $property->hasSeller()) {
+                    $radio->helperText('Pircēju var pievienot tikai pārdotam īpašumam. Interesentu skaits nav ierobežots.');
                 }
 
                 return [
@@ -79,19 +65,27 @@ trait PievienotKlientuRelationAction
                         ->searchable()
                         ->required()
                         ->options(function (Get $get) use ($property): array {
-                            return $this->getPievienotKlientuOptions($property, $get('relation') ?? 'seller', null);
+                            return $this->getPievienotKlientuOptions($property, $get('relation') ?? 'interested', null);
                         })
                         ->getSearchResultsUsing(function (string $search, Get $get) use ($property): array {
-                            return $this->getPievienotKlientuOptions($property, $get('relation') ?? 'seller', $search);
+                            return $this->getPievienotKlientuOptions($property, $get('relation') ?? 'interested', $search);
                         })
                         ->getOptionLabelUsing(fn ($value): ?string => Client::find($value)?->name)
+                        ->columnSpanFull(),
+
+                    Forms\Components\Textarea::make('notes_md')
+                        ->label('Piezīme')
+                        ->helperText('Redzama tikai šī īpašuma saistīto klientu tabulā.')
+                        ->rows(3)
+                        ->maxLength(2000)
                         ->columnSpanFull(),
                 ];
             })
             ->action(function (array $data): void {
                 $property = $this->getPievienotKlientuProperty();
-                $relation = $data['relation'] ?? 'seller';
+                $relation = (string) ($data['relation'] ?? 'interested');
                 $clientId = $data['client_id'] ?? null;
+                $notes = filled($data['notes_md'] ?? null) ? (string) $data['notes_md'] : null;
 
                 if (empty($clientId)) {
                     throw ValidationException::withMessages([
@@ -99,9 +93,15 @@ trait PievienotKlientuRelationAction
                     ]);
                 }
 
-                if ($relation === 'buyer' && $property->status !== 'sold') {
+                if (! array_key_exists($relation, $this->availableClientRelations($property))) {
                     throw ValidationException::withMessages([
-                        'relation' => 'Pircēju drīkst piesaistīt tikai pārdotam īpašumam.',
+                        'relation' => match ($relation) {
+                            'seller' => 'Šim īpašumam jau ir piesaistīts pārdevējs.',
+                            'buyer' => $property->status === 'sold'
+                                ? 'Šim īpašumam jau ir piesaistīts pircējs.'
+                                : 'Pircēju drīkst piesaistīt tikai pārdotam īpašumam.',
+                            default => 'Šo saistību šim īpašumam nevar pievienot.',
+                        },
                     ]);
                 }
 
@@ -111,21 +111,45 @@ trait PievienotKlientuRelationAction
                     ->where('relation', $relation)
                     ->exists();
                 if ($already) {
-                    $verb = $relation === 'buyer' ? 'Pircējs' : 'Pārdevējs';
                     throw ValidationException::withMessages([
-                        'client_id' => $verb.' jau ir piesaistīts šim īpašumam.',
+                        'client_id' => (ClientCrmProperty::RELATIONS[$relation] ?? 'Klients').' jau ir piesaistīts šim īpašumam.',
                     ]);
                 }
 
-                $property->clients()->attach($clientId, ['relation' => $relation]);
+                $property->clients()->attach($clientId, [
+                    'relation' => $relation,
+                    'notes_md' => $notes,
+                ]);
 
                 $client = Client::find($clientId);
-                $verb = $relation === 'buyer' ? 'Pircējs' : 'Pārdevējs';
                 Notification::make()
-                    ->title($verb.' piesaistīts: '.$client?->name)
+                    ->title((ClientCrmProperty::RELATIONS[$relation] ?? 'Klients').' piesaistīts: '.$client?->name)
                     ->success()
                     ->send();
             });
+    }
+
+    /**
+     * Relations that can still be added: seller/buyer only while free, and
+     * buyer only on a sold property. Interested is always available.
+     *
+     * @return array<string, string>
+     */
+    protected function availableClientRelations(CrmProperty $property): array
+    {
+        $relations = [];
+
+        if (! $property->hasSeller()) {
+            $relations['seller'] = ClientCrmProperty::RELATIONS['seller'];
+        }
+
+        if ($property->status === 'sold' && ! $property->hasBuyer()) {
+            $relations['buyer'] = ClientCrmProperty::RELATIONS['buyer'];
+        }
+
+        $relations['interested'] = ClientCrmProperty::RELATIONS['interested'];
+
+        return $relations;
     }
 
     /**

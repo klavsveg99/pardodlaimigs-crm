@@ -2057,6 +2057,12 @@ html.dark .pdc-client-card:hover { background: #111827 !important; }
 html.dark .pdc-client-name { color: #f3f4f6 !important; }
 html.dark .pdc-client-contact { color: #9ca3af !important; }
 
+/* Page content needs breathing room above the screen edge on desktop.
+   Mobile keeps the larger 6rem rule in the media query below. */
+@media (min-width: 768px) {
+    .fi-main { padding-bottom: 80px !important; }
+}
+
 /* ── Mobile fixes ─────────────────────────────────────────────── */
 @media (max-width: 767px) {
     .fi-input-wrp, .fi-fo-text-input, .fi-select, .fi-textarea { width: 100% !important; }

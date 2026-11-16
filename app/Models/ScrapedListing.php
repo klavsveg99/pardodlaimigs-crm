@@ -18,8 +18,8 @@ class ScrapedListing extends Model
     protected $fillable = [
         'property_search_id', 'user_id', 'portal', 'external_id', 'url',
         'title', 'price_eur', 'area_m2', 'land_m2', 'location', 'address',
-        'image_url', 'listed_at', 'first_seen_at', 'last_seen_at', 'status',
-        'duplicate_of_id', 'fingerprint',
+        'contact_email', 'offer_sent_at', 'image_url', 'listed_at', 'first_seen_at',
+        'last_seen_at', 'status', 'duplicate_of_id', 'fingerprint',
     ];
 
     protected $casts = [
@@ -29,6 +29,7 @@ class ScrapedListing extends Model
         'listed_at' => 'datetime',
         'first_seen_at' => 'datetime',
         'last_seen_at' => 'datetime',
+        'offer_sent_at' => 'datetime',
     ];
 
     public function search(): BelongsTo

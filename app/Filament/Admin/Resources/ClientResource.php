@@ -121,17 +121,10 @@ class ClientResource extends Resource
                         // rindu, lai nepaliktu tukša otrā kolonna. Juridiskai
                         // personai tas pārojas ar bankas kontu.
                         ->columnSpan(fn (Get $get): int|string => $get('person_type') === 'juridiska' ? 1 : 'full')
-                        ->options([
-                            'Tīmekļa vietne' => 'Tīmekļa vietne',
-                            'Sociālie tīkli' => 'Sociālie tīkli',
-                            'Facebook' => 'Facebook',
-                            'Instagram' => 'Instagram',
-                            'Google' => 'Google',
-                            'Ieteikums' => 'Ieteikums',
-                            'Sludinājums' => 'Sludinājums (ss.lv u.c.)',
-                            'Atgriešanās' => 'Atgriešanās (esošs klients)',
-                            'Cits' => 'Cits',
-                        ])
+                        // Iekļauj arī ierakstā jau saglabāto vērtību, ja tā
+                        // vairs nav sarakstā - citādi vecs "Avots" bloķē
+                        // saglabāšanu ar neredzamu kļūdu.
+                        ->options(fn (?Client $record = null): array => Client::sourceOptions($record?->source))
                         ->placeholder('Izvēlieties avotu'),
                     Forms\Components\TextInput::make('source_other')
                         ->label('Avots - precizējums')

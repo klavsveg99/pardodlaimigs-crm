@@ -119,7 +119,7 @@ class SsListingParser
      */
     private function parse(string $html, string $category): array
     {
-        $dom = new \DOMDocument();
+        $dom = new \DOMDocument;
         $previous = libxml_use_internal_errors(true);
         $dom->loadHTML('<?xml encoding="UTF-8">'.$html, LIBXML_NOERROR | LIBXML_NOWARNING);
         libxml_clear_errors();
@@ -180,6 +180,9 @@ class SsListingParser
                 'land_m2' => $land,
                 'location' => $address,
                 'address' => $address,
+                // ss.lv does not expose the advertiser's e-mail in the
+                // listing HTML, so an offer needs the address entered by hand.
+                'contact_email' => null,
                 'image_url' => $image,
                 'listed_at' => null,
             ];

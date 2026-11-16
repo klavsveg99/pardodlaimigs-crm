@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Filament\Admin\Pages;
 
 use App\Filament\Admin\Widgets\GreetingHistoryTable;
+use App\Filament\Admin\Widgets\OfferHistoryTable;
 use App\Models\EmailSetting;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -24,8 +27,8 @@ use UnitEnum;
 
 /**
  * "Iestatījumi" - tikai administratoram. Rediģē automātisko apsveikumu
- * e-pastu tekstus (dzimšanas diena, vārdadiena, svētki). Uzdevuma
- * paziņojums paliek iekodēts Task modelī.
+ * e-pastu tekstus (dzimšanas diena, vārdadiena, svētki) un piedāvājumu
+ * e-pasta noklusējumu. Uzdevuma paziņojums paliek iekodēts Task modelī.
  */
 class EmailSettings extends Page
 {
@@ -61,7 +64,25 @@ class EmailSettings extends Page
 
     public function mount(): void
     {
-        $this->form->fill(EmailSetting::current()->data ?? []);
+        // Merge defaults so settings saved before a new section existed still
+        // open with a usable subject/body instead of empty fields. Only
+        // top-level keys are merged - an intentionally emptied holidays list
+        // must stay empty instead of being replaced by the config defaults.
+        $defaults = EmailSetting::defaults();
+        $data = EmailSetting::current()->data ?? [];
+
+        if (! is_array($data)) {
+            $data = [];
+        }
+
+        foreach (['greetings', 'offers', 'properties'] as $key) {
+            $data[$key] = array_replace(
+                $defaults[$key],
+                is_array($data[$key] ?? null) ? $data[$key] : [],
+            );
+        }
+
+        $this->form->fill($data);
     }
 
     public function defaultForm(Schema $schema): Schema
@@ -144,6 +165,33 @@ class EmailSettings extends Page
                             ]),
 
                         Livewire::make(GreetingHistoryTable::class)
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Piedāvājumu nosūtīšana')
+                    ->collapsible()
+                    ->collapsed()
+                    ->schema([
+                        Toggle::make('offers.auto_send')
+                            ->label('Automātiski sūtīt piedāvājumus atrastajiem objektiem')
+                            ->helperText('Kad ieslēgts, Meklētāji automātiski nosūta piedāvājumu katram jaunatrastajam objektam, kuram portāls norāda kontaktpersonas e-pastu (city24.lv). Objektiem bez e-pasta piedāvājums jānosūta manuāli.'),
+
+                        TextInput::make('offers.subject')
+                            ->label('Temats')
+                            ->required()
+                            ->maxLength(255)
+                            ->helperText('Šis ir noklusējuma saturs visiem aģentiem - rakstiet neitrāli, bez personīgām atsauksmēm.'),
+
+                        RichEditor::make('offers.body')
+                            ->label('Teksts')
+                            ->helperText('E-pasta kājenē jau automātiski tiek iekļauta mājaslapa pardodlaimigs.lv. Tālruņa un e-pasta kontakti kājenē netiek pievienoti - ja tie nepieciešami, iekļaujiet tos tekstā.')
+                            ->columnSpanFull(),
+
+                        Placeholder::make('offers.footer_note')
+                            ->hiddenLabel()
+                            ->content('Piedāvājuma e-pasts tiek sūtīts ar to pašu CRM e-pasta sagatavi. Manuāli nosūtot, tiek pievienots aģenta paraksts; automātiskajiem piedāvājumiem personīgais paraksts netiek pievienots. Aģenti saturu pirms nosūtīšanas var brīvi labot.'),
+
+                        Livewire::make(OfferHistoryTable::class)
                             ->columnSpanFull(),
                     ]),
 

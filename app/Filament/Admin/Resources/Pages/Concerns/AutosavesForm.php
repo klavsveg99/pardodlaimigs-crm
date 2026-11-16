@@ -81,8 +81,13 @@ trait AutosavesForm
             // Record the first validation message so the indicator can show it.
             $this->autosaveState = 'error';
             $messages = collect($e->errors())->flatten()->filter()->values();
-            $this->autosaveError = $messages->first() ?: 'Pagaidu saglabāšana neizdevās - pabeidziet obligātos laukus.';
-            Log::info('Autosave skipped (validation)', ['msg' => $this->autosaveError]);
+            $this->autosaveError = $messages->first()
+                ?: ('Pagaidu saglabāšana neizdevās - '.($e->getMessage() ?: 'validācijas kļūda bez paziņojuma.'));
+            Log::info('Autosave skipped (validation)', [
+                'msg' => $this->autosaveError,
+                'errors' => $e->errors(),
+                'record' => ($record = $this->getRecord()) ? get_class($record).'#'.$record->getKey() : null,
+            ]);
         } catch (\Throwable $e) {
             $this->autosaveState = 'error';
             // Kļūdas iemesls tiek parādīts arī aģentam - vispārīgs "neizdevās"

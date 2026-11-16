@@ -141,6 +141,8 @@ class City24ListingParser
             $land = $area;
         }
 
+        $contactEmail = $this->contactEmail($row);
+
         $listedAt = null;
         if (! empty($row['date_published'])) {
             try {
@@ -159,8 +161,42 @@ class City24ListingParser
             'land_m2' => $land,
             'location' => $location,
             'address' => $addressLine,
+            'contact_email' => $contactEmail,
             'image_url' => is_string($image) ? $image : null,
             'listed_at' => $listedAt,
         ];
+    }
+
+    /**
+     * city24 exposes the broker's e-mail in the search result, which is what
+     * automatic offers are sent to. Prefer the ad's own contact, then the
+     * office contact.
+     *
+     * @param  array<string, mixed>  $row
+     */
+    private function contactEmail(array $row): ?string
+    {
+        $candidates = [];
+
+        foreach ((array) ($row['broker']['business_card']['additional_contacts'] ?? []) as $contact) {
+            if (is_array($contact) && strtoupper((string) ($contact['dtype'] ?? '')) === 'EMAIL') {
+                $candidates[] = $contact['value'] ?? null;
+            }
+        }
+
+        foreach ((array) ($row['broker']['office'] ?? []) as $office) {
+            foreach ((array) ($office['business_card']['email_addresses'] ?? []) as $email) {
+                $candidates[] = $email;
+            }
+        }
+
+        foreach ($candidates as $candidate) {
+            $candidate = trim((string) $candidate);
+            if ($candidate !== '' && filter_var($candidate, FILTER_VALIDATE_EMAIL)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 }

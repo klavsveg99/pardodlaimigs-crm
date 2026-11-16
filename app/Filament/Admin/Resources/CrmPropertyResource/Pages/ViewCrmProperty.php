@@ -6,7 +6,6 @@ namespace App\Filament\Admin\Resources\CrmPropertyResource\Pages;
 
 use App\Filament\Admin\Actions\LawyerDocumentAction;
 use App\Filament\Admin\Resources\CrmPropertyResource;
-use App\Filament\Admin\Resources\Pages\Concerns\PievienotKlientuRelationAction;
 use App\Filament\Forms\Components\AttachmentsGrid;
 use Filament\Actions;
 use Filament\Notifications\Notification;
@@ -16,8 +15,6 @@ use Livewire\Attributes\On;
 
 class ViewCrmProperty extends ViewRecord
 {
-    use PievienotKlientuRelationAction;
-
     protected static string $resource = CrmPropertyResource::class;
 
     protected string $view = 'filament.admin.resources.crm-property-resource.pages.view-crm-property';
@@ -30,6 +27,12 @@ class ViewCrmProperty extends ViewRecord
     public function clientEmailSent(): void
     {
         // Atkārtots renderējums.
+    }
+
+    #[On('pdc-offer-sent')]
+    public function offerSent(): void
+    {
+        // Atkārtots renderējums - parāda piedāvājuma datumu.
     }
 
     public function getTitle(): string

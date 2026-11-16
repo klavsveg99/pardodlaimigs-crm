@@ -251,17 +251,33 @@
         {{ $this->form }}
     </x-filament::section>
 
+    @php
+        // Offer recipients on the view page: only clients marked "Interesents".
+        $interestedForOffer = $record->clients->where('pivot.relation', 'interested')->values();
+        $offerItems = $interestedForOffer->map(fn ($client): array => [
+            'id' => $client->id,
+            'label' => $client->name,
+            'email' => (string) ($client->email ?? ''),
+            'readonly' => false,
+        ])->all();
+    @endphp
+
     <x-filament::section heading="Saistītie klienti">
-        @if (! auth()->user()?->isPhoto() && $record->canAttachClient())
+        @if (! auth()->user()?->isPhoto() && $interestedForOffer->isNotEmpty())
             <x-slot:afterHeader>
-                <div wire:click="mountAction('piesaisit_klientu')"
-                     class="fi-btn fi-size-sm fi-color fi-color-gray fi-outlined"
-                     style="cursor: pointer;">
+                <button
+                    type="button"
+                    data-offer-url="{{ route('properties.offers.send', ['propertySlug' => $record->slug ?? $record->getKey()]) }}"
+                    data-offer-items="{{ json_encode($offerItems) }}"
+                    x-on:click="window.dispatchEvent(new CustomEvent('pdc-open-offer-email', { detail: { title: 'Nosūtīt piedāvājumu interesentiem', url: $el.dataset.offerUrl, items: JSON.parse($el.dataset.offerItems) } }))"
+                    class="fi-btn fi-size-sm fi-color fi-color-primary"
+                    style="cursor: pointer; display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 0.35rem; white-space: nowrap;"
+                >
                     <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
                     </svg>
-                    <span>Pievienot klientu</span>
-                </div>
+                    <span>Nosūtīt piedāvājumu</span>
+                </button>
             </x-slot:afterHeader>
         @endif
         @if ($record->clients->isNotEmpty())
@@ -281,11 +297,18 @@
                         </a>
                         @php
                             $sentAt = $record->clientEmailSentAt($client->id);
+                            $offerSentAt = \App\Models\EmailLog::lastPropertyOffer($record->id, $client->id)?->created_at;
                             $canSend = $client->email && ! auth()->user()?->isPhoto() && $record->status === 'sold';
                             $lastEmailData = $sentAt
                                 ? \App\Models\EmailLog::lastClientThanks($record->id, $client->id)?->preview()
                                 : null;
                         @endphp
+                        @if ($offerSentAt)
+                            <span class="pdc-client-sent" title="Piedāvājums nosūtīts {{ $offerSentAt->format('d.m.Y H:i') }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                                <span>{{ $offerSentAt->format('d.m.Y') }}</span>
+                            </span>
+                        @endif
                         @if ($sentAt && $canSend)
                             {{-- Jau nosūtīts, bet klikšķis atver to pašu modāli, lai var nosūtīt vēlreiz. --}}
                             <button

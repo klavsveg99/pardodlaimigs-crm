@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CalendarQuickAddController;
 use App\Http\Controllers\ClientAttachmentEmailController;
+use App\Http\Controllers\OfferEmailController;
 use App\Http\Controllers\PropertyAttachmentEmailController;
 use App\Http\Controllers\PropertyGalleryDownloadController;
 use App\Http\Controllers\PropertyMarketingController;
@@ -348,6 +349,15 @@ Route::get('/properties/{propertySlug}/gallery/download',
 Route::post('/properties/{propertySlug}/clients/{client}/send-email',
     [PropertyAttachmentEmailController::class, 'sendToClient']
 )->middleware(['auth', 'web'])->name('properties.clients.send-email');
+
+// ── Offers: property interesenti and found Meklētāji listings ──
+Route::post('/properties/{propertySlug}/offers/send',
+    [OfferEmailController::class, 'sendProperty']
+)->middleware(['auth', 'web'])->name('properties.offers.send');
+
+Route::post('/scraped-listings/offers/send',
+    [OfferEmailController::class, 'sendScraped']
+)->middleware(['auth', 'web'])->name('scraped-listings.offers.send');
 
 // ── "PDF mārketings": A4 lapa ar automātiski aizpildītiem īpašuma datiem ──
 Route::get('/properties/{propertySlug}/marketing',

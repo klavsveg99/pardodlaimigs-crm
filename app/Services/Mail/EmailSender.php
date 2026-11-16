@@ -6,6 +6,7 @@ namespace App\Services\Mail;
 
 use App\Models\Attachment;
 use App\Models\EmailLog;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -103,7 +104,7 @@ class EmailSender
      * as an id list only; the body is capped so the table cannot grow with
      * unusually large messages. Logging never blocks sending.
      *
-     * @param  \Illuminate\Support\Collection<int, Attachment>  $files
+     * @param  Collection<int, Attachment>  $files
      */
     private static function log(string $to, string $subject, string $body, string $name, $files, array $context): void
     {
@@ -122,6 +123,7 @@ class EmailSender
                 'context' => $context['context'] ?? null,
                 'client_id' => $context['client_id'] ?? null,
                 'property_id' => $context['property_id'] ?? null,
+                'scraped_listing_id' => $context['scraped_listing_id'] ?? null,
                 'task_id' => $context['task_id'] ?? null,
                 'viewing_id' => $context['viewing_id'] ?? null,
                 'recipient_role' => $context['recipient_role'] ?? null,

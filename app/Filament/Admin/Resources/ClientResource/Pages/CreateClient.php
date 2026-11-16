@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\ClientResource\Pages;
 
 use App\Filament\Admin\Resources\ClientResource;
 use App\Filament\Admin\Resources\Pages\Concerns\SyncsAttachments;
+use App\Models\Client;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateClient extends CreateRecord
@@ -19,9 +20,10 @@ class CreateClient extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        if (($data['source'] ?? null) === 'Cits' && filled($data['source_other'] ?? null)) {
-            $data['source'] = 'Cits: ' . $data['source_other'];
-        }
+        $data['source'] = Client::normalizeSourceValue(
+            $data['source'] ?? null,
+            $data['source_other'] ?? null,
+        );
 
         unset($data['source_other']);
 

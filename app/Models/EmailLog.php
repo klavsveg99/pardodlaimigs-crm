@@ -19,7 +19,7 @@ class EmailLog extends Model
 
     protected $fillable = [
         'user_id', 'from_name', 'to_email', 'subject', 'body',
-        'context', 'client_id', 'property_id', 'task_id', 'viewing_id',
+        'context', 'client_id', 'property_id', 'scraped_listing_id', 'task_id', 'viewing_id',
         'recipient_role', 'attachment_ids', 'attachment_count', 'created_at',
     ];
 
@@ -34,10 +34,52 @@ class EmailLog extends Model
         return $this->belongsTo(Client::class, 'client_id');
     }
 
+    /** Saistītais īpašums (ja e-pasts sūtīts par īpašumu). */
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(CrmProperty::class, 'property_id');
+    }
+
+    /** Saistītais atrastais objekts (ja e-pasts sūtīts par Meklētāju objektu). */
+    public function scrapedListing(): BelongsTo
+    {
+        return $this->belongsTo(ScrapedListing::class, 'scraped_listing_id');
+    }
+
     /** Tikai automātisko apsveikumu e-pasti. */
     public function scopeGreetings(Builder $query): Builder
     {
         return $query->where('context', 'like', 'greeting%');
+    }
+
+    /** Visi nosūtītie piedāvājumi (atrastajiem objektiem un īpašumu interesentiem). */
+    public function scopeOffers(Builder $query): Builder
+    {
+        return $query->whereIn('context', ['scraped_offer', 'property_offer']);
+    }
+
+    public static function offerTypeLabel(?string $context): string
+    {
+        return $context === 'scraped_offer' ? 'Atrastais objekts' : 'Īpašuma interesents';
+    }
+
+    public static function lastScrapedOffer(int $listingId): ?self
+    {
+        return static::query()
+            ->where('context', 'scraped_offer')
+            ->where('scraped_listing_id', $listingId)
+            ->latest('id')
+            ->first();
+    }
+
+    public static function lastPropertyOffer(int $propertyId, int $clientId): ?self
+    {
+        return static::query()
+            ->where('context', 'property_offer')
+            ->where('property_id', $propertyId)
+            ->where('client_id', $clientId)
+            ->latest('id')
+            ->first();
     }
 
     /** Cilvēkam lasāms apsveikuma veids no context. */

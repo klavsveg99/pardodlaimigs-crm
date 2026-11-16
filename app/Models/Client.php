@@ -7,9 +7,8 @@ namespace App\Models;
 use App\Models\Concerns\HasSlug;
 use App\Services\AuditLogger;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use App\Support\PhoneFormat;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -43,6 +42,107 @@ class Client extends Model
         'lead' => 'Līds',
         'laimigs' => 'Laimīgs',
     ];
+
+    /** "Avots (kā uzzināja)" vērtības - vienā vietā formai un validācijai. */
+    public const SOURCES = [
+        'Tīmekļa vietne' => 'Tīmekļa vietne',
+        'Sociālie tīkli' => 'Sociālie tīkli',
+        'Facebook' => 'Facebook',
+        'Instagram' => 'Instagram',
+        'Google' => 'Google',
+        'Ieteikums' => 'Ieteikums',
+        'Sludinājums' => 'Sludinājums (ss.lv u.c.)',
+        'Atgriešanās' => 'Atgriešanās (esošs klients)',
+        'Cits' => 'Cits',
+    ];
+
+    /** Vecās avotu vērtības, kas vēl var būt saglabātas datos. */
+    private const LEGACY_SOURCES = [
+        'WP forma' => 'Tīmekļa vietne',
+        'wp forma' => 'Tīmekļa vietne',
+        'Mājaslapa' => 'Tīmekļa vietne',
+        'mājaslapa' => 'Tīmekļa vietne',
+    ];
+
+    /**
+     * Options for the "Avots" Select. The record's stored value is always
+     * included, so an old/deprecated value can never make the edit form
+     * unsavable before it is normalized.
+     *
+     * @return array<string, string>
+     */
+    public static function sourceOptions(?string $current = null): array
+    {
+        $options = self::SOURCES;
+
+        if (filled($current)) {
+            $current = (string) $current;
+
+            if (! array_key_exists($current, $options) && ! str_starts_with($current, 'Cits:')) {
+                $options[$current] = $current;
+            }
+        }
+
+        return $options;
+    }
+
+    /**
+     * Split a stored value into the form's select value and "Cits" detail.
+     *
+     * @return array{0: ?string, 1: ?string}
+     */
+    public static function sourceForForm(?string $source): array
+    {
+        $source = is_string($source) ? trim($source) : null;
+
+        if (blank($source)) {
+            return [null, null];
+        }
+
+        if (str_starts_with($source, 'Cits:')) {
+            return ['Cits', trim(mb_substr($source, 5))];
+        }
+
+        if (array_key_exists($source, self::SOURCES)) {
+            return [$source, null];
+        }
+
+        $mapped = self::LEGACY_SOURCES[$source] ?? null;
+
+        if ($mapped !== null) {
+            return [$mapped, null];
+        }
+
+        // Unknown legacy value: keep the text under "Cits" rather than
+        // discarding it or blocking the save.
+        return ['Cits', $source];
+    }
+
+    /** Value stored in the source column from the two form fields. */
+    public static function normalizeSourceValue(mixed $source, mixed $other): ?string
+    {
+        $source = is_string($source) ? trim($source) : null;
+
+        if (blank($source)) {
+            return null;
+        }
+
+        if ($source === 'Cits') {
+            $other = is_string($other) ? trim($other) : '';
+
+            return $other !== '' ? 'Cits: '.$other : 'Cits';
+        }
+
+        if (str_starts_with($source, 'Cits:')) {
+            return $source;
+        }
+
+        if (array_key_exists($source, self::SOURCES)) {
+            return $source;
+        }
+
+        return 'Cits: '.$source;
+    }
 
     public function scopeLeads(Builder $query): Builder
     {

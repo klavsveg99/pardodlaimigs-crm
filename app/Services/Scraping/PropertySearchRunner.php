@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Scraping;
 
+use App\Models\EmailSetting;
 use App\Models\PropertySearch;
 use App\Models\ScrapedListing;
+use App\Services\Mail\EmailSender;
 use Illuminate\Support\Str;
 
 /**
@@ -89,6 +91,7 @@ class PropertySearchRunner
                         'land_m2' => $item['land_m2'] ?? null,
                         'location' => $item['location'] ?? null,
                         'address' => $item['address'] ?? null,
+                        'contact_email' => $item['contact_email'] ?? null,
                         'image_url' => $item['image_url'] ?? null,
                         'listed_at' => $item['listed_at'] ?? null,
                         'first_seen_at' => now(),
@@ -101,6 +104,7 @@ class PropertySearchRunner
 
                 if ($listing->wasRecentlyCreated) {
                     $created++;
+                    $this->sendAutomaticOffer($listing, $search);
                 } else {
                     $listing->update([
                         'last_seen_at' => now(),
@@ -152,7 +156,15 @@ class PropertySearchRunner
         }
 
         if (filled($search->keywords)) {
-            $words = array_filter(array_map('trim', preg_split('/[,;]+/u', (string) $search->keywords)));
+            // Keywords are alternatives, not a phrase: "sadalāms renovācija"
+            // must match an ad containing either word. Split on commas,
+            // semicolons and whitespace so no single word combination is
+            // required.
+            $words = array_filter(array_map(
+                'trim',
+                preg_split('/[\s,;]+/u', (string) $search->keywords) ?: [],
+            ));
+
             if ($words !== []) {
                 $haystack = $this->normalize(($item['title'] ?? '').' '.($item['address'] ?? '').' '.($item['location'] ?? ''));
                 $hit = false;
@@ -169,6 +181,38 @@ class PropertySearchRunner
         }
 
         return true;
+    }
+
+    /**
+     * Newly found listings get the administrator's offer e-mail automatically
+     * when the setting is on and the portal exposed a contact address. A
+     * failure here must never stop scraping, so it is reported and skipped.
+     */
+    private function sendAutomaticOffer(ScrapedListing $listing, PropertySearch $search): void
+    {
+        if (! EmailSetting::offersAutoSend() || blank($listing->contact_email)) {
+            return;
+        }
+
+        $settings = EmailSetting::offerConfiguration();
+
+        try {
+            app(EmailSender::class)->send(
+                (string) $listing->contact_email,
+                $settings['subject'],
+                $settings['body'],
+                fromName: $search->user?->name,
+                signature: '',
+                context: [
+                    'context' => 'scraped_offer',
+                    'scraped_listing_id' => $listing->id,
+                ],
+            );
+
+            $listing->forceFill(['offer_sent_at' => now()])->save();
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     private function contains(array $item, string $needle): bool

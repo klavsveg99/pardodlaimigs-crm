@@ -7,6 +7,7 @@ namespace App\Filament\Admin\Resources\ClientResource\Pages;
 use App\Filament\Admin\Resources\ClientResource;
 use App\Filament\Admin\Resources\Pages\Concerns\AutosavesForm;
 use App\Filament\Admin\Resources\Pages\Concerns\SyncsAttachments;
+use App\Models\Client;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -40,8 +41,14 @@ class EditClient extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        if (! empty($data['source']) && is_string($data['source']) && str_starts_with($data['source'], 'Cits: ')) {
-            $data['source_other'] = mb_substr($data['source'], 6);
+        [$source, $other] = Client::sourceForForm(
+            is_string($data['source'] ?? null) ? $data['source'] : null,
+        );
+
+        $data['source'] = $source;
+
+        if (filled($other)) {
+            $data['source_other'] = $other;
         }
 
         return $data;
@@ -49,9 +56,10 @@ class EditClient extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        if (($data['source'] ?? null) === 'Cits' && filled($data['source_other'] ?? null)) {
-            $data['source'] = 'Cits: ' . $data['source_other'];
-        }
+        $data['source'] = Client::normalizeSourceValue(
+            $data['source'] ?? null,
+            $data['source_other'] ?? null,
+        );
 
         unset($data['source_other']);
 
