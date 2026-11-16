@@ -2535,6 +2535,18 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
 .pdc-signature-preview a {
     text-decoration: none;
 }
+/* The dark panel theme forces paragraph/link colours in form sections.
+   Restore the signature's own palette inside the white preview card. */
+.pdc-signature-preview p:nth-of-type(1) {
+    color: #111827 !important;
+}
+.pdc-signature-preview p:nth-of-type(2) {
+    color: #285854 !important;
+}
+.pdc-signature-preview p:nth-of-type(n+3),
+.pdc-signature-preview p:nth-of-type(n+3) a {
+    color: #374151 !important;
+}
 .pdc-signature-preview-empty {
     font-size: 0.875rem;
     color: #6b7280;

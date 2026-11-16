@@ -119,20 +119,6 @@ class MyProfile extends Page
                 ])->columns(2),
 
                 Section::make('Aģenta publiskais profils')
-                    ->headerActions([
-                        Action::make('restoreEmailSignature')
-                            ->label('Atjaunot noklusējumu')
-                            ->icon('heroicon-o-arrow-path')
-                            ->button()
-                            ->color('gray')
-                            ->action(function (Set $set): void {
-                                $user = auth()->user();
-
-                                if ($user instanceof User) {
-                                    $set('email_signature', $user->buildEmailSignature());
-                                }
-                            }),
-                    ])
                     ->schema([
                         AvatarEditor::make('avatar_path')
                             ->label('Foto')
@@ -145,6 +131,20 @@ class MyProfile extends Page
                         TextInput::make('linkedin_url')->label('LinkedIn URL')->url()->maxLength(500)->columnSpan(1),
                         TextInput::make('website_url')->label('Mājaslapa')->url()->maxLength(500)->columnSpan(1),
                         TextInput::make('office_address')->label('Biroja adrese')->maxLength(500)->placeholder('Rīga, Brīvības iela 1')->columnSpanFull(),
+                        Actions::make([
+                            Action::make('restoreEmailSignature')
+                                ->label('Atjaunot noklusējumu')
+                                ->icon('heroicon-o-arrow-path')
+                                ->button()
+                                ->color('gray')
+                                ->action(function (Set $set): void {
+                                    $user = auth()->user();
+
+                                    if ($user instanceof User) {
+                                        $set('email_signature', $user->buildEmailSignature());
+                                    }
+                                }),
+                        ])->columnSpanFull(),
                         Hidden::make('email_signature'),
                         View::make('filament.forms.components.email-signature-preview')
                             ->columnSpanFull(),
