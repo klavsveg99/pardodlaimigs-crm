@@ -183,41 +183,39 @@ class User extends Authenticatable implements FilamentUser
         $phone = filled($this->phone) ? PhoneFormat::display((string) $this->phone) : null;
         $phoneHref = filled($this->phone) ? preg_replace('/[^\d+]/', '', (string) $this->phone) : null;
 
-        $rows = [
-            '<td style="border:0;padding:0;font-size:15px;font-weight:700;line-height:1.3;color:#111827;">'
+        $lines = [
+            '<p style="margin:0;font-size:15px;font-weight:700;line-height:1.3;color:#111827;">'
                 .e((string) $this->name)
-                .'</td>',
-            '<td style="border:0;padding:2px 0 0;font-weight:600;color:#285854;">Nekustamo īpašumu aģents</td>',
-            '<td style="border:0;padding:8px 0 0;">'
+                .'</p>',
+            '<p style="margin:2px 0 0;font-weight:600;color:#285854;">Nekustamo īpašumu aģents</p>',
+            '<p style="margin:8px 0 0;">'
                 .'<a href="mailto:'.e((string) $this->email).'" style="color:#374151;text-decoration:none;">'.e((string) $this->email).'</a>'
-                .'</td>',
+                .'</p>',
         ];
 
         if ($phone !== null) {
-            $rows[] = '<td style="border:0;padding:2px 0 0;">'
+            $lines[] = '<p style="margin:2px 0 0;">'
                 .'<a href="tel:'.e((string) $phoneHref).'" style="color:#374151;text-decoration:none;">'.e($phone).'</a>'
-                .'</td>';
+                .'</p>';
         }
 
+        // One row, two cells: ProseMirror tables do not support rowspan and
+        // freeze when the signature editor tries to edit the avatar cell.
         $html = '<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
             .'style="border:0;border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:13px;'
             .'line-height:1.5;color:#374151;">'
             .'<tr>';
 
         if ($avatarUrl !== null) {
-            $html .= '<td rowspan="'.count($rows).'" style="vertical-align:top;padding:0 14px 0 0;border:0;">'
+            $html .= '<td style="vertical-align:top;padding:0 14px 0 0;border:0;">'
                 .'<img src="'.e($avatarUrl).'" alt="'.e((string) $this->name).'" width="64" height="64" '
                 .'style="display:block;width:64px;height:64px;border:0;border-radius:50%;object-fit:cover;">'
                 .'</td>';
         }
 
-        $html .= $rows[0].'</tr>';
+        $html .= '<td style="vertical-align:top;border:0;">'.implode('', $lines).'</td></tr></table>';
 
-        foreach (array_slice($rows, 1) as $row) {
-            $html .= '<tr>'.$row.'</tr>';
-        }
-
-        return $html.'</table>';
+        return $html;
     }
 
     /**

@@ -2524,4 +2524,10 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
 .pdc-signature-editor table th {
     padding: 0.2rem 0.7rem 0.2rem 0 !important;
 }
+.pdc-signature-editor table img {
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+}
 </style>
