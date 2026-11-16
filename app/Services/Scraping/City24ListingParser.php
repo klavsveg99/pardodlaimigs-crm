@@ -53,7 +53,16 @@ class City24ListingParser
             ];
 
             if (filled($search->location)) {
-                $params['address']['text'] = $search->location;
+                $location = $this->resolveLocation((string) $search->location);
+
+                if ($location !== null) {
+                    // city24 ignores address[text]; its own location id is
+                    // what actually narrows the result set before we filter
+                    // the remaining criteria locally.
+                    $params['address'][$location['type']] = $location['id'];
+                } else {
+                    $params['address']['text'] = $search->location;
+                }
             }
 
             $response = Http::withHeaders([
@@ -173,6 +182,58 @@ class City24ListingParser
             'image_url' => is_string($image) ? $image : null,
             'listed_at' => $listedAt,
         ];
+    }
+
+    /**
+     * Resolve a free-text location to the city24 address filter. Without this
+     * the API returns apartments for the whole country and the runner has to
+     * download every page before applying the local location filter.
+     *
+     * @return array{type: string, id: int}|null
+     */
+    private function resolveLocation(string $location): ?array
+    {
+        static $cache = [];
+
+        $key = mb_strtolower(trim($location));
+
+        if (array_key_exists($key, $cache)) {
+            return $cache[$key];
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Accept' => 'application/json',
+                'User-Agent' => 'Mozilla/5.0 (compatible; PardodLaimigsCRM/1.0; +https://pardodlaimigs.lv)',
+                'Referer' => 'https://www.city24.lv/',
+            ])->timeout(10)->get('https://api.city24.lv/lv_LV/search/autocomplete', [
+                'q' => $location,
+            ]);
+
+            if (! $response->successful()) {
+                return $cache[$key] = null;
+            }
+
+            foreach ((array) $response->json() as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+
+                $content = $row['content'] ?? [];
+
+                foreach (['county', 'city', 'parish'] as $type) {
+                    $id = $content[$type]['id'] ?? null;
+
+                    if (is_numeric($id) && (int) $id > 0) {
+                        return $cache[$key] = ['type' => $type, 'id' => (int) $id];
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        return $cache[$key] = null;
     }
 
     /**
