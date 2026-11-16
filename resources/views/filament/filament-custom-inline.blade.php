@@ -2512,6 +2512,9 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
 /* E-mail signature editor: the generated signature is an invisible layout
    table, so the RichEditor must not paint its default table grid. */
 .pdc-signature-editor table,
+.pdc-signature-editor table thead,
+.pdc-signature-editor table tbody,
+.pdc-signature-editor table tr,
 .pdc-signature-editor table td,
 .pdc-signature-editor table th {
     border: 0 !important;
