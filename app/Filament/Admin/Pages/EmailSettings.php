@@ -8,7 +8,6 @@ use App\Filament\Admin\Widgets\GreetingHistoryTable;
 use App\Filament\Admin\Widgets\OfferHistoryTable;
 use App\Models\EmailSetting;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -169,27 +168,21 @@ class EmailSettings extends Page
                     ]),
 
                 Section::make('Piedāvājumu nosūtīšana')
+                    ->description('Noklusējums visiem aģentiem. E-pasta kājenē automātiski tiek iekļauta mājaslapa pardodlaimigs.lv.')
                     ->collapsible()
                     ->collapsed()
                     ->schema([
                         Toggle::make('offers.auto_send')
-                            ->label('Automātiski sūtīt piedāvājumus atrastajiem objektiem')
-                            ->helperText('Kad ieslēgts, Meklētāji automātiski nosūta piedāvājumu katram jaunatrastajam objektam, kuram portāls norāda kontaktpersonas e-pastu (city24.lv). Objektiem bez e-pasta piedāvājums jānosūta manuāli.'),
+                            ->label('Automātiski sūtīt piedāvājumus atrastajiem objektiem'),
 
                         TextInput::make('offers.subject')
                             ->label('Temats')
                             ->required()
-                            ->maxLength(255)
-                            ->helperText('Šis ir noklusējuma saturs visiem aģentiem - rakstiet neitrāli, bez personīgām atsauksmēm.'),
+                            ->maxLength(255),
 
                         RichEditor::make('offers.body')
                             ->label('Teksts')
-                            ->helperText('E-pasta kājenē jau automātiski tiek iekļauta mājaslapa pardodlaimigs.lv. Tālruņa un e-pasta kontakti kājenē netiek pievienoti - ja tie nepieciešami, iekļaujiet tos tekstā.')
                             ->columnSpanFull(),
-
-                        Placeholder::make('offers.footer_note')
-                            ->hiddenLabel()
-                            ->content('Piedāvājuma e-pasts tiek sūtīts ar to pašu CRM e-pasta sagatavi. Manuāli nosūtot, tiek pievienots aģenta paraksts; automātiskajiem piedāvājumiem personīgais paraksts netiek pievienots. Aģenti saturu pirms nosūtīšanas var brīvi labot.'),
 
                         Livewire::make(OfferHistoryTable::class)
                             ->columnSpanFull(),
