@@ -166,7 +166,6 @@ class LawyerDocumentService
             $body,
             $attachments,
             $user?->name,
-            internal: true,
             context: [
                 'context' => 'lawyer_request',
                 'property_id' => $property->id,

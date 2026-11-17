@@ -131,7 +131,8 @@ class KnowledgeComment extends Model
                     to: $email,
                     subject: 'Jauns komentārs: '.$title,
                     body: implode('', $rows),
-                    internal: true,
+                    // System notification: branded footer, no agent signature.
+                    signature: '',
                     context: ['context' => 'knowledge_comment'],
                 );
             } catch (\Throwable $e) {

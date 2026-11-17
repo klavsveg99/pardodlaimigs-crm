@@ -194,7 +194,8 @@ class SendGreetings extends Command
                 to: (string) $client->email,
                 subject: $subject,
                 body: nl2br(e($body)),
-                internal: true,
+                // Automated greeting: branded footer, no agent signature.
+                signature: '',
                 context: ['context' => $context, 'client_id' => $client->id],
             );
 

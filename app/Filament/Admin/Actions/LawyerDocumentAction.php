@@ -194,11 +194,15 @@ final class LawyerDocumentAction
                     ->columnSpanFull(),
             ]),
 
-            Section::make('E-pasta priekšskatījums')->columns(1)->schema([$preview]),
+            Section::make('E-pasta priekšskatījums')
+                ->description('Jūsu e-pasta paraksts un CRM kājene tiek pievienoti nosūtīšanas brīdī.')
+                ->columns(1)
+                ->schema([$preview]),
 
             Section::make()->columns(1)->schema([
                 Forms\Components\Textarea::make('extra_info')
                     ->label('Papildus informācija')
+                    ->helperText('Jūsu e-pasta paraksts tiek pievienots automātiski.')
                     ->rows(3)
                     ->live()
                     ->columnSpanFull(),
