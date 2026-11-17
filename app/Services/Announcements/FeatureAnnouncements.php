@@ -88,7 +88,7 @@ class FeatureAnnouncements
                 'title' => 'Jauns e-pasta paraksts',
                 'body' => 'Visiem lietotājiem ir izveidots vienots e-pasta paraksts.',
                 'bullets' => [
-                    'Tas automātiski parādās katra no CRM nosūtītā e-pasta beigās, zem ziņas un virs CRM kājenes.',
+                    'Tas automātiski parādās katra no CRM nosūtītā e-pasta beigās.',
                     'Parakstā ir jūsu foto, vārds, amats, e-pasts un tālrunis, ja tas norādīts.',
                 ],
                 'link_label' => 'Rediģēt parakstu',
