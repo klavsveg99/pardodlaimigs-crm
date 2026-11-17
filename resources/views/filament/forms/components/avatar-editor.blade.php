@@ -415,38 +415,40 @@
 >
 
     <div style="display: flex; flex-direction: column; gap: 1rem; align-items: flex-start;">
-        <div class="avatar-editor-preview">
-            <template x-if="url">
-                <img :src="url" alt="Avatars" />
-            </template>
-            <template x-if="!url">
-                <div class="avatar-editor-placeholder">
-                    <svg style="width: 3rem; height: 3rem; margin: 0 auto 0.5rem; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-                    <div>Nav foto</div>
-                </div>
-            </template>
-        </div>
+        <div style="display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap;">
+            <div class="avatar-editor-preview">
+                <template x-if="url">
+                    <img :src="url" alt="Avatars" />
+                </template>
+                <template x-if="!url">
+                    <div class="avatar-editor-placeholder">
+                        <svg style="width: 3rem; height: 3rem; margin: 0 auto 0.5rem; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                        <div>Nav foto</div>
+                    </div>
+                </template>
+            </div>
 
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <label style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.9rem; border-radius: 0.5rem; background: var(--pdc-primary); color: white; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1px solid var(--pdc-primary);">
-                <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
-                <span x-text="url ? 'Nomainīt foto' : 'Augšupielādēt foto'"></span>
-                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" style="display: none;" x-on:change="handleUpload($event)" />
-            </label>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: stretch;">
+                <label style="display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 0.9rem; border-radius: 0.5rem; background: var(--pdc-primary); color: white; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1px solid var(--pdc-primary);">
+                    <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"/></svg>
+                    <span x-text="url ? 'Nomainīt foto' : 'Augšupielādēt foto'"></span>
+                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" style="display: none;" x-on:change="handleUpload($event)" />
+                </label>
 
-            <template x-if="url">
-                <button type="button" x-on:click="openEditor()" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.5rem 0.85rem; border-radius: 0.5rem; background: #1f2937; color: white; border: 1px solid rgba(255,255,255,0.15); font-size: 0.8rem; font-weight: 600; cursor: pointer;">
-                    <svg style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.83 15.83a2 2 0 01-1.415.586H9a1 1 0 01-1-1v-1.415a2 2 0 01.586-1.414l9-9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 5l4 4"/></svg>
-                    <span>Rediģēt</span>
-                </button>
-            </template>
+                <template x-if="url">
+                    <button type="button" x-on:click="openEditor()" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem 0.85rem; border-radius: 0.5rem; background: #1f2937; color: white; border: 1px solid rgba(255,255,255,0.15); font-size: 0.8rem; font-weight: 600; cursor: pointer;">
+                        <svg style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.83 15.83a2 2 0 01-1.415.586H9a1 1 0 01-1-1v-1.415a2 2 0 01.586-1.414l9-9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 5l4 4"/></svg>
+                        <span>Rediģēt</span>
+                    </button>
+                </template>
 
-            <template x-if="url">
-                <button type="button" x-on:click="removeAvatar()" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.5rem 0.85rem; border-radius: 0.5rem; background: transparent; color: #cf2e2e; border: 1px solid #cf2e2e; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
-                    <svg style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clip-rule="evenodd"/></svg>
-                    <span>Dzēst</span>
-                </button>
-            </template>
+                <template x-if="url">
+                    <button type="button" x-on:click="removeAvatar()" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem 0.85rem; border-radius: 0.5rem; background: transparent; color: #cf2e2e; border: 1px solid #cf2e2e; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
+                        <svg style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clip-rule="evenodd"/></svg>
+                        <span>Dzēst</span>
+                    </button>
+                </template>
+            </div>
         </div>
         <p style="font-size: 0.75rem; color: #6b7280;">Kvadrātveida foto - 1:1, 1000×1000px, max 5MB.</p>
         <template x-if="uploading">
