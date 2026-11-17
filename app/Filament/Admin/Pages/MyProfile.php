@@ -18,7 +18,6 @@ use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
@@ -131,20 +130,6 @@ class MyProfile extends Page
                         TextInput::make('linkedin_url')->label('LinkedIn URL')->url()->maxLength(500)->columnSpan(1),
                         TextInput::make('website_url')->label('Mājaslapa')->url()->maxLength(500)->columnSpan(1),
                         TextInput::make('office_address')->label('Biroja adrese')->maxLength(500)->placeholder('Rīga, Brīvības iela 1')->columnSpanFull(),
-                        Actions::make([
-                            Action::make('restoreEmailSignature')
-                                ->label('Atjaunot noklusējumu')
-                                ->icon('heroicon-o-arrow-path')
-                                ->button()
-                                ->color('gray')
-                                ->action(function (Set $set): void {
-                                    $user = auth()->user();
-
-                                    if ($user instanceof User) {
-                                        $set('email_signature', $user->buildEmailSignature());
-                                    }
-                                }),
-                        ])->columnSpanFull(),
                         Hidden::make('email_signature'),
                         View::make('filament.forms.components.email-signature-preview')
                             ->columnSpanFull(),

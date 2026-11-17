@@ -13,9 +13,7 @@ use App\Support\PhoneFormat;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Actions as FormActions;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -102,19 +100,6 @@ class UserResource extends Resource
                     Forms\Components\TextInput::make('linkedin_url')->label('LinkedIn URL')->url()->maxLength(500)->columnSpan(1),
                     Forms\Components\TextInput::make('website_url')->label('Mājaslapa')->url()->maxLength(500)->columnSpan(1),
                     Forms\Components\TextInput::make('office_address')->label('Biroja adrese')->maxLength(500)->placeholder('Rīga, Brīvības iela 1')->columnSpanFull(),
-                    FormActions::make([
-                        Actions\Action::make('restoreEmailSignature')
-                            ->label('Atjaunot noklusējumu')
-                            ->icon('heroicon-o-arrow-path')
-                            ->button()
-                            ->color('gray')
-                            ->visible(fn (?User $record): bool => $record !== null)
-                            ->action(function (Set $set, ?User $record): void {
-                                if ($record !== null) {
-                                    $set('email_signature', $record->buildEmailSignature());
-                                }
-                            }),
-                    ])->columnSpanFull(),
                     Forms\Components\Hidden::make('email_signature'),
                     View::make('filament.forms.components.email-signature-preview')
                         ->columnSpanFull()

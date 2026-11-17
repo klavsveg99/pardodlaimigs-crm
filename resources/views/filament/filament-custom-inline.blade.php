@@ -2509,13 +2509,11 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
     padding-bottom: 1.25rem !important;
 }
 
-/* E-mail signature preview: rendered as a white e-mail surface, never as an
-   editable table. */
+/* E-mail signature preview: read-only, flush with the form content and
+   themed with the rest of the panel. */
 .pdc-signature-preview {
-    background: #ffffff;
-    color: #111827;
-    border-radius: 0.6rem;
-    padding: 1rem;
+    background: transparent;
+    color: inherit;
     overflow-x: auto;
 }
 .pdc-signature-preview table {
@@ -2546,6 +2544,16 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
 .pdc-signature-preview p:nth-of-type(n+3),
 .pdc-signature-preview p:nth-of-type(n+3) a {
     color: #374151 !important;
+}
+html.dark .pdc-signature-preview p:nth-of-type(1) {
+    color: #f3f4f6 !important;
+}
+html.dark .pdc-signature-preview p:nth-of-type(2) {
+    color: #8fc4be !important;
+}
+html.dark .pdc-signature-preview p:nth-of-type(n+3),
+html.dark .pdc-signature-preview p:nth-of-type(n+3) a {
+    color: #d1d5db !important;
 }
 .pdc-signature-preview-empty {
     font-size: 0.875rem;
