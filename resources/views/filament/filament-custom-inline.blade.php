@@ -2514,7 +2514,13 @@ html.dark .pdc-client-contact { color: #9ca3af !important; }
 .pdc-signature-preview {
     background: transparent;
     color: inherit;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.6rem;
+    padding: 0.75rem 1rem;
     overflow-x: auto;
+}
+html.dark .pdc-signature-preview {
+    border-color: #27303a;
 }
 .pdc-signature-preview table {
     border: 0;
@@ -2560,7 +2566,7 @@ html.dark .pdc-signature-preview p:nth-of-type(n+3) a {
     color: #6b7280;
 }
 .pdc-signature-preview-note {
-    margin-top: 0.5rem;
+    margin-top: 1rem;
     font-size: 0.75rem;
     color: #6b7280;
 }

@@ -3,7 +3,7 @@
 @endphp
 
 <div>
-    <div style="margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">
+    <div style="margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600;">
         E-pasta paraksts
     </div>
 
