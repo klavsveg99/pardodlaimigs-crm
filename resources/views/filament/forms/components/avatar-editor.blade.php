@@ -165,6 +165,7 @@
         scaleY: 1,
         uploading: false,
         uploadProgress: 0,
+        uploadError: null,
         saving: false,
         saveProgress: 0,
         init() {
@@ -197,10 +198,38 @@
             return url;
         },
         sync() { $wire.set('{{ $statePath }}', this.path, false); },
+        imageSize(file) {
+            return new Promise((resolve) => {
+                const objectUrl = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    resolve({ width: img.naturalWidth, height: img.naturalHeight });
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    resolve(null);
+                };
+                img.src = objectUrl;
+            });
+        },
         async handleUpload(e) {
             const input = e.target;
             const file = input.files?.[0];
             if (!file) return;
+            this.uploadError = null;
+            const errorText = 'Foto neatbilst prasībām - kvadrātveida 1:1, 1000×1000px, max 5MB.';
+            const size = await this.imageSize(file);
+            if (file.size > 5 * 1024 * 1024
+                || !size
+                || Math.abs(size.width - size.height) > 1
+                || size.width < 1000
+                || size.height < 1000
+            ) {
+                this.uploadError = errorText;
+                input.value = '';
+                return;
+            }
             this.uploading = true;
             this.uploadProgress = 0;
             const xhr = new XMLHttpRequest();
@@ -221,7 +250,7 @@
                         this.sync();
                         this.$nextTick(() => this.openEditor());
                     } else {
-                        window.alert('Augšupielāde neizdevās: ' + file.name);
+                        this.uploadError = xhr.status === 422 ? errorText : 'Augšupielāde neizdevās: ' + file.name;
                     }
                 } catch (err) {
                     window.alert('Augšupielāde neizdevās: ' + file.name + '\n' + err.message);
@@ -450,7 +479,9 @@
                 </template>
             </div>
         </div>
-        <p style="font-size: 0.75rem; color: #6b7280;">Kvadrātveida foto - 1:1, 1000×1000px, max 5MB.</p>
+        <template x-if="uploadError">
+            <p role="alert" style="margin: 0; font-size: 0.8rem; font-weight: 600; color: #cf2e2e;" x-text="uploadError"></p>
+        </template>
         <template x-if="uploading">
             <div style="width: 100%; padding: 0.7rem 0.9rem; border: 1px solid #bfdbfe; background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); border-radius: 0.55rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <div style="display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.45rem;">
