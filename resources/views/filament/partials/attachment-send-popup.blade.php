@@ -206,7 +206,7 @@
                         <div x-ref="editor" contenteditable="true"
                             style="min-height: 7rem; padding: 0.7rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0 0 0.5rem 0.5rem; font-size: 0.85rem; line-height: 1.55; overflow-y: auto; max-height: 16rem; background: #fff; color: #1f2937; outline: none;"></div>
                         <div style="margin-top: 0.3rem; font-size: 0.7rem; color: #9ca3af; line-height: 1.4;">Nosūtītāja e-pasts: info@pardodlaimigs.lv - pielikumu limits 18 MB</div>
-                        <div style="margin-top: 0.2rem; font-size: 0.7rem; color: #9ca3af; line-height: 1.4;">Jūsu e-pasta paraksts tiek pievienots automātiski.</div>
+                        <div style="margin-top: 0.2rem; font-size: 0.7rem; color: #9ca3af; line-height: 1.4;">Jūsu e-pasta paraksts ar jūsu kontaktinformāciju tiek pievienots e-pasta beigās automātiski.</div>
                     </div>
 
                     <div x-show="error" x-cloak style="background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 0.5rem 0.7rem; border-radius: 0.45rem; font-size: 0.8rem;" x-text="error"></div>

@@ -195,14 +195,14 @@ final class LawyerDocumentAction
             ]),
 
             Section::make('E-pasta priekšskatījums')
-                ->description('Jūsu e-pasta paraksts un CRM kājene tiek pievienoti nosūtīšanas brīdī.')
+                ->description('Jūsu e-pasta paraksts ar jūsu kontaktinformāciju un CRM kājene tiek pievienoti nosūtīšanas brīdī.')
                 ->columns(1)
                 ->schema([$preview]),
 
             Section::make()->columns(1)->schema([
                 Forms\Components\Textarea::make('extra_info')
                     ->label('Papildus informācija')
-                    ->helperText('Jūsu e-pasta paraksts tiek pievienots automātiski.')
+                    ->helperText('Jūsu e-pasta paraksts ar jūsu kontaktinformāciju tiek pievienots e-pasta beigās automātiski.')
                     ->rows(3)
                     ->live()
                     ->columnSpanFull(),
