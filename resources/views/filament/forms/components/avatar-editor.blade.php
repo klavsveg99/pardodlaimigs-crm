@@ -415,7 +415,7 @@
 >
 
     <div style="display: flex; flex-direction: column; gap: 1rem; align-items: flex-start;">
-        <div style="display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap;">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
             <div class="avatar-editor-preview">
                 <template x-if="url">
                     <img :src="url" alt="Avatars" />
