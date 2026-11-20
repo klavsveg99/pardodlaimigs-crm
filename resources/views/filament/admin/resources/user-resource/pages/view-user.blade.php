@@ -55,6 +55,22 @@
             object-fit: cover;
             background: #f3f4f6;
         }
+        .pdc-agent-profile-avatar-button {
+            flex: none;
+            display: block;
+            padding: 0;
+            border: 0;
+            border-radius: 9999px;
+            background: none;
+            cursor: zoom-in;
+        }
+        .pdc-agent-profile-avatar-button:hover .pdc-agent-profile-avatar {
+            filter: brightness(0.92);
+        }
+        .pdc-agent-profile-avatar-button:focus-visible {
+            outline: 3px solid var(--pdc-primary, #285854);
+            outline-offset: 3px;
+        }
         .pdc-agent-profile-body {
             min-width: 0;
         }
@@ -70,12 +86,15 @@
             color: #6b7280;
         }
         .pdc-agent-profile-contacts {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.35rem 1rem;
+            display: grid;
+            gap: 0.35rem;
+            justify-items: start;
             margin-top: 0.55rem;
             font-size: 0.85rem;
             color: #374151;
+        }
+        .pdc-agent-profile-contacts > * {
+            overflow-wrap: anywhere;
         }
         .pdc-agent-profile-contacts a,
         .pdc-agent-profile-contacts span {
@@ -280,11 +299,20 @@
 
     <x-filament::section>
         <div class="pdc-agent-profile">
-            <img
-                class="pdc-agent-profile-avatar"
-                src="{{ $record->avatar_url ?: asset('images/no-photo.svg') }}"
-                alt=""
-            >
+            @if ($record->avatar_url)
+                <button
+                    type="button"
+                    class="pdc-agent-profile-avatar-button"
+                    data-pdc-photo="{{ $record->avatar_url }}"
+                    data-pdc-photo-alt="{{ $record->name }}"
+                    aria-label="Skatīt pilnu foto"
+                    title="Skatīt pilnu foto"
+                >
+                    <img class="pdc-agent-profile-avatar" src="{{ $record->avatar_url }}" alt="{{ $record->name }}">
+                </button>
+            @else
+                <img class="pdc-agent-profile-avatar" src="{{ asset('images/no-photo.svg') }}" alt="">
+            @endif
             <div class="pdc-agent-profile-body">
                 <div class="pdc-agent-profile-name">{{ $record->name }}</div>
                 <div class="pdc-agent-profile-meta">

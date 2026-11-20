@@ -19,8 +19,8 @@
             <div class="agent-copy">
                 <p class="eyebrow eyebrow-green">{{ $agent['position'] ?? ($copy['agent'] ?? '') }}</p>
                 <h1>{{ $agent['name'] }}</h1>
-                @if (! empty($agent['description']))
-                    <div class="agent-description">{!! nl2br(e($agent['description'])) !!}</div>
+                @if (! empty($agent['description_html']))
+                    <div class="agent-description">{!! $agent['description_html'] !!}</div>
                 @endif
                 <div class="contact-direct">
                     @if (! empty($agent['phone']))

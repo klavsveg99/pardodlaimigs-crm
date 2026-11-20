@@ -54,6 +54,7 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook('panels::body.end', fn () => view('filament.partials.sold-celebration'))
             ->renderHook('panels::body.end', fn () => view('filament.partials.calendar-quick-add'))
             ->renderHook('panels::body.end', fn () => view('filament.partials.offer-email-popup'))
+            ->renderHook('panels::body.end', fn () => view('filament.partials.photo-preview'))
             ->renderHook('panels::head.end', fn () => view('filament.phone-assets'))
             ->renderHook('panels::head.end', fn () => view('filament.calendar-assets'))
             ->renderHook('panels::styles.after', fn () => view('filament.page-animations'))

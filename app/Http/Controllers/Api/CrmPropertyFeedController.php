@@ -9,6 +9,7 @@ use App\Models\Attachment;
 use App\Models\CrmProperty;
 use App\Models\EmailSetting;
 use App\Models\User;
+use App\Support\LightText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -158,6 +159,7 @@ class CrmPropertyFeedController extends Controller
                 'phone' => $u->phone,
                 'position' => $u->position,
                 'description' => $u->description,
+                'description_html' => LightText::paragraphs($u->description),
                 'avatar_url' => $u->avatar_url,
                 'facebook_url' => $u->facebook_url,
                 'instagram_url' => $u->instagram_url,

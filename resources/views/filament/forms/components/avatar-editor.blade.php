@@ -31,6 +31,16 @@
         object-fit: cover;
         display: block;
     }
+    .avatar-editor-preview[role="button"] {
+        cursor: zoom-in;
+    }
+    .avatar-editor-preview[role="button"]:hover img {
+        filter: brightness(0.92);
+    }
+    .avatar-editor-preview[role="button"]:focus-visible {
+        outline: 3px solid var(--pdc-primary);
+        outline-offset: 3px;
+    }
     .avatar-editor-placeholder {
         color: #9ca3af;
         font-size: 0.85rem;
@@ -445,7 +455,18 @@
 
     <div style="display: flex; flex-direction: column; gap: 1rem; align-items: flex-start;">
         <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-            <div class="avatar-editor-preview">
+            <div
+                class="avatar-editor-preview"
+                x-bind:role="url ? 'button' : null"
+                x-bind:tabindex="url ? 0 : -1"
+                x-bind:aria-label="url ? 'Skatīt pilnu foto' : null"
+                x-bind:title="url ? 'Skatīt pilnu foto' : null"
+                x-bind:data-pdc-photo="url"
+                data-pdc-photo-alt="Avatars"
+                x-bind:style="url ? 'cursor: zoom-in;' : ''"
+                x-on:keydown.enter.prevent="url && window.pdcPhotoPreview(url, 'Avatars')"
+                x-on:keydown.space.prevent="url && window.pdcPhotoPreview(url, 'Avatars')"
+            >
                 <template x-if="url">
                     <img :src="url" alt="Avatars" />
                 </template>

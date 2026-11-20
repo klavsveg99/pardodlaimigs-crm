@@ -47,7 +47,7 @@ class User extends Authenticatable implements FilamentUser
         // Keep the stored signature in sync with the profile data it is built
         // from. Manual signature edits are not possible in the form.
         static::saving(function (self $user): void {
-            if (! $user->exists || $user->isDirty(['name', 'email', 'phone', 'avatar_path'])) {
+            if (! $user->exists || $user->isDirty(['name', 'email', 'phone', 'position', 'avatar_path'])) {
                 $user->email_signature = $user->buildEmailSignature();
             }
         });
@@ -190,12 +190,13 @@ class User extends Authenticatable implements FilamentUser
 
         $phone = filled($this->phone) ? PhoneFormat::display((string) $this->phone) : null;
         $phoneHref = filled($this->phone) ? preg_replace('/[^\d+]/', '', (string) $this->phone) : null;
+        $position = filled($this->position) ? (string) $this->position : 'Nekustamo īpašumu aģents';
 
         $lines = [
             '<p style="margin:0;font-size:15px;font-weight:700;line-height:1.3;color:#111827;">'
                 .e((string) $this->name)
                 .'</p>',
-            '<p style="margin:2px 0 0;font-weight:600;color:#285854;">Nekustamo īpašumu aģents</p>',
+            '<p style="margin:2px 0 0;font-weight:600;color:#285854;">'.e($position).'</p>',
             '<p style="margin:8px 0 0;">'
                 .'<a href="mailto:'.e((string) $this->email).'" style="color:#374151;text-decoration:none;">'.e((string) $this->email).'</a>'
                 .'</p>',

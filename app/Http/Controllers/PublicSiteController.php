@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\CrmProperty;
 use App\Models\User;
 use App\Services\Site\SiteContent;
+use App\Support\LightText;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -328,6 +329,7 @@ class PublicSiteController extends Controller
             );
 
             $preview[$index]['description'] = $this->content->agentBio($locale, $agent['slug']);
+            $preview[$index]['description_html'] = LightText::paragraphs($preview[$index]['description']);
             $preview[$index]['property_count'] = $mine->count();
             $preview[$index]['properties'] = $mine->take(3)->map(static fn (array $property): array => [
                 'slug' => $property['slug'],
@@ -353,12 +355,15 @@ class PublicSiteController extends Controller
                 return $fallback;
             }
 
+            $description = $agent->description ?: ($bios[$fallback['slug']] ?? '');
+
             return [
                 'slug' => $agent->slug,
                 'name' => $agent->name,
                 'phone' => $agent->phone ?: $fallback['phone'],
                 'position' => $agent->position ?: $fallback['position'],
-                'description' => $agent->description ?: ($bios[$fallback['slug']] ?? ''),
+                'description' => $description,
+                'description_html' => LightText::paragraphs($description),
                 'avatar_url' => $agent->avatar_url ?: $fallback['avatar_url'],
                 'portrait' => $fallback['portrait'] ?? false,
             ];

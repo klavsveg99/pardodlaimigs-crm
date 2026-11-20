@@ -234,7 +234,7 @@
                         'slug' => $agent['slug'],
                         'name' => $agent['name'],
                         'phone' => $agent['phone'] ?? '',
-                        'description' => $agent['description'] ?? '',
+                        'descriptionHtml' => $agent['description_html'] ?? '',
                         'portrait' => (bool) ($agent['portrait'] ?? false),
                         'photo' => $agent['avatar_url'] ?? '',
                         'url' => \App\Support\SiteUrls::agent($locale, $agent['slug']),

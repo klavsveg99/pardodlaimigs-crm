@@ -691,7 +691,7 @@
             $('#agent-dialog-photo').alt = agent.name;
             dialog.classList.toggle('is-portrait', Boolean(agent.portrait));
             $('#agent-dialog-name').textContent = agent.name;
-            $('#agent-dialog-bio').textContent = agent.description;
+            $('#agent-dialog-bio').innerHTML = agent.descriptionHtml || '';
 
             const phone = $('#agent-dialog-phone');
             phone.href = `tel:${agent.phone.replace(/\s/g, '')}`;
