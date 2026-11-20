@@ -1,15 +1,4 @@
 <x-filament-panels::page>
-    <x-slot name="heading">
-        <div class="flex items-center justify-between">
-            <h1 class="fi-header-heading">{{ $record->title }}</h1>
-            <div class="flex items-center gap-2">
-                <x-filament::badge :color="$record->status_color ?? 'gray'" class="text-sm">
-                    {{ $record->status_label ?? $record->status }}
-                </x-filament::badge>
-            </div>
-        </div>
-    </x-slot>
-
     <style>
         .pdc-client-sent {
             display: inline-flex;
@@ -33,7 +22,41 @@
     </style>
 
     <x-filament::section heading="Pamatdati">
-        <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        <div class="grid gap-3 grid-cols-1 md:grid-cols-2">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nosaukums</dt>
+                <dd class="mt-1 text-base font-semibold text-gray-900 dark:text-white">{{ $record->title ?: '-' }}</dd>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Statuss</dt>
+                <dd class="mt-1">
+                    <x-filament::badge :color="$record->status_color ?? 'gray'" class="text-sm">
+                        {{ $record->status_label ?? $record->status }}
+                    </x-filament::badge>
+                </dd>
+            </div>
+        </div>
+
+        <div class="mt-6 grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Izveidots</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->created_at->format('d.m.Y H:i') }}</dd>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atjaunināts</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->updated_at->format('d.m.Y H:i') }}</dd>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pārdošanas sākums</dt>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->sale_started_at?->format('d.m.Y') ?? '-' }}</dd>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sadarbības līguma periods</dt>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->partnership_label }}</dd>
+            </div>
+        </div>
+
+        <div class="mt-6 grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Kategorija</dt>
                 <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->category ?: '-' }}</dd>
@@ -51,6 +74,7 @@
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all">{{ $record->slug ?: '-' }}</dd>
             </div>
         </div>
+
         @if($record->status === 'sold')
             <div class="mt-6 grid gap-3 grid-cols-1 md:grid-cols-3">
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
@@ -357,27 +381,6 @@
                 </div>
             </div>
         @endif
-    </x-filament::section>
-
-    <x-filament::section heading="Datumi">
-        <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Izveidots</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->created_at->format('d.m.Y H:i') }}</dd>
-            </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atjaunināts</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $record->updated_at->format('d.m.Y H:i') }}</dd>
-            </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pārdošanas sākums</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->sale_started_at?->format('d.m.Y') ?? '-' }}</dd>
-            </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#27303a] dark:bg-[#0b0f14]">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sadarbības līguma periods</dt>
-                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $record->partnership_label }}</dd>
-            </div>
-        </div>
     </x-filament::section>
 
     @if ($record->lawyerRequests->isNotEmpty())

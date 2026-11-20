@@ -1829,7 +1829,7 @@ html.dark .pdc-search-progress-failed { color: #fca5a5; }
 }
 
 .fi-section-header {
-    padding: 1.25rem 1.5rem 0 !important;
+    padding: 1.5rem 1.5rem 0 !important;
 }
 
 .fi-section-header-heading {
@@ -1846,8 +1846,9 @@ html.dark .pdc-search-progress-failed { color: #fca5a5; }
 
 .fi-section-content {
     /* Vienmēr vienāds padding pa vertikāli un pa horizontāli: Filament
-       noklusējums (1rem augšā, 1.5rem apakšā) izskatījās nevienmērīgi. */
-    padding: 1.5rem !important;
+       noklusējums (1rem augšā, 1.5rem apakšā) izskatījās nevienmērīgi.
+       Lielāks vertikālais padding padara kartītes gaisīgākas. */
+    padding: 2rem 1.5rem !important;
 }
 
 /* Home stats 4-col box inner padding must be 0 (20px side / 16px top removed) */
