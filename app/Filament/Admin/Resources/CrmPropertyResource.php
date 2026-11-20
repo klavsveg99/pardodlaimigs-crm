@@ -119,17 +119,7 @@ class CrmPropertyResource extends Resource
                     Forms\Components\TextInput::make('title')
                         ->label('Nosaukums')
                         ->required()
-                        ->maxLength(255)
-                        ->columnSpanFull(),
-
-                    Forms\Components\Select::make('category')
-                        ->label('Kategorija')
-                        ->options(CrmProperty::CATEGORIES)
-                        ->required()
-                        ->searchable()
-                        ->validationMessages([
-                            'required' => 'Kategorija ir obligāts lauks.',
-                        ]),
+                        ->maxLength(255),
 
                     Forms\Components\Select::make('status')
                         ->label('Statuss')
@@ -140,6 +130,45 @@ class CrmPropertyResource extends Resource
                         ->default('published')
                         ->required()
                         ->live(),
+
+                    Forms\Components\DatePicker::make('sale_started_at')
+                        ->label('Pārdošanas sākuma datums')
+                        ->native(false)
+                        ->displayFormat('d.m.Y')
+                        ->required()
+                        ->validationMessages([
+                            'required' => 'Pārdošanas sākuma datums ir obligāts lauks.',
+                        ]),
+
+                    Forms\Components\Select::make('partnership_months')
+                        ->label('Sadarbības līguma periods')
+                        ->options(CrmProperty::PARTNERSHIP_PERIODS)
+                        ->placeholder('Nav norādīts')
+                        ->native(false)
+                        ->required()
+                        ->validationMessages([
+                            'required' => 'Sadarbības līguma periods ir obligāts lauks.',
+                        ])
+                        // Aģenta lauks (blakus kolonnā) nav redzams ne-adminiem;
+                        // tad šis lauks aizņem visu rindu.
+                        ->columnSpan(['default' => AgentField::siblingSpan()]),
+
+                    Forms\Components\Select::make('category')
+                        ->label('Kategorija')
+                        ->options(CrmProperty::CATEGORIES)
+                        ->required()
+                        ->searchable()
+                        ->validationMessages([
+                            'required' => 'Kategorija ir obligāts lauks.',
+                        ]),
+
+                    // Cena nav obligāta: bez tās vietnē rāda "Cena pēc
+                    // pieprasījuma" (skat. CrmProperty::price_display).
+                    Forms\Components\TextInput::make('price_eur')
+                        ->label('Cena (€)')
+                        ->numeric()
+                        ->minValue(0)
+                        ->prefix('€'),
 
                     Forms\Components\Checkbox::make('is_featured')
                         ->label('Izcelts īpašums')
@@ -221,36 +250,6 @@ class CrmPropertyResource extends Resource
                                     return number_format($percent, 2, ',', ' ').' %';
                                 }),
                         ]),
-
-                    // Cena nav obligāta: bez tās vietnē rāda "Cena pēc
-                    // pieprasījuma" (skat. CrmProperty::price_display).
-                    Forms\Components\TextInput::make('price_eur')
-                        ->label('Cena (€)')
-                        ->numeric()
-                        ->minValue(0)
-                        ->prefix('€'),
-
-                    Forms\Components\DatePicker::make('sale_started_at')
-                        ->label('Pārdošanas sākuma datums')
-                        ->native(false)
-                        ->displayFormat('d.m.Y')
-                        ->required()
-                        ->validationMessages([
-                            'required' => 'Pārdošanas sākuma datums ir obligāts lauks.',
-                        ]),
-
-                    Forms\Components\Select::make('partnership_months')
-                        ->label('Sadarbības līguma periods')
-                        ->options(CrmProperty::PARTNERSHIP_PERIODS)
-                        ->placeholder('Nav norādīts')
-                        ->native(false)
-                        ->required()
-                        ->validationMessages([
-                            'required' => 'Sadarbības līguma periods ir obligāts lauks.',
-                        ])
-                        // Aģenta lauks (blakus kolonnā) nav redzams ne-adminiem;
-                        // tad šis lauks aizņem visu rindu.
-                        ->columnSpan(['default' => AgentField::siblingSpan()]),
 
                     Forms\Components\Select::make('owner_user_id')
                         ->label('Aģents')
