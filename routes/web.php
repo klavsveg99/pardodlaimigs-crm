@@ -36,8 +36,9 @@ Route::post('/feature-announcements/{feature}/seen', function (string $feature) 
     return response()->noContent();
 })->middleware('auth')->where('feature', '[a-z0-9-]+')->name('feature-announcements.seen');
 
-// Trigger the Laravel scheduler over HTTP (no system cron on shared hosting).
-// Called by the WordPress mu-plugin on every 5-minute sync tick.
+// Trigger the Laravel scheduler over HTTP. The Hostinger hPanel cron runs
+// `php artisan pdc:cron` every minute instead; this endpoint stays as a
+// manual fallback and needs the WordPress API key.
 Route::get('/cron-schedule', function () {
     if (request()->header('X-CRM-API-Key') !== config('wp-bridge.wordpress.api_key')) {
         abort(403);
