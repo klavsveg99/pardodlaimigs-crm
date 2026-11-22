@@ -16,6 +16,7 @@ return [
 
     'dir' => env('BACKUP_DIR', storage_path('app/backups')),
 
-    'keep' => (int) env('BACKUP_KEEP', 3),
+    // Two most recent nightly copies (tonight and the night before).
+    'keep' => (int) env('BACKUP_KEEP', 2),
 
 ];
