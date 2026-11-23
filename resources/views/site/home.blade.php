@@ -95,7 +95,10 @@
                     <h2 id="properties-title">{{ $copy['propertiesTitle'] ?? '' }}</h2>
                     <p class="section-lead">{{ $copy['propertiesLead'] ?? '' }}</p>
                 </div>
-                <a class="text-link desktop-link" href="{{ \App\Support\SiteUrls::path($locale, '/properties/') }}"><span>{{ $copy['viewAll'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                <div class="view-switcher" role="group" aria-label="{{ $copy['viewSwitcherLabel'] ?? '' }}">
+                    <button class="view-switcher-button is-active" type="button" data-property-view="grid" aria-pressed="true"><i class="fa-solid fa-table-cells-large" aria-hidden="true"></i><span>{{ $copy['viewGrid'] ?? '' }}</span></button>
+                    <button class="view-switcher-button" type="button" data-property-view="map" aria-pressed="false"><i class="fa-solid fa-map" aria-hidden="true"></i><span>{{ $copy['viewMap'] ?? '' }}</span></button>
+                </div>
             </div>
             <div class="results-line">
                 <span id="property-count" data-suffix="{{ $copy['propertyCount'] ?? '' }}">{{ count($properties) }} {{ $copy['propertyCount'] ?? '' }}</span>
@@ -109,7 +112,16 @@
                     @include('site.partials.property-card', ['property' => $property, 'locale' => $locale, 'copy' => $copy])
                 @endforeach
             </div>
-            <div class="section-action"><button class="button button-outline" id="view-all" type="button"><span>{{ $copy['viewAll'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></div>
+            <div class="property-map-view" id="property-map-view"
+                 data-key="{{ $googleMapsKey ?? '' }}"
+                 data-loading="{{ $copy['mapLoading'] ?? '' }}"
+                 data-details="{{ $copy['details'] ?? '' }}"
+                 data-empty="{{ $copy['mapEmpty'] ?? '' }}"
+                 data-error="{{ $copy['mapError'] ?? '' }}" hidden>
+                <div class="property-map-canvas" id="property-map-canvas" role="region" aria-label="{{ $copy['viewMap'] ?? '' }}"></div>
+                <p class="property-map-status" id="property-map-status">{{ $copy['mapLoading'] ?? '' }}</p>
+            </div>
+            <div class="section-action" id="properties-action"><button class="button button-outline" id="view-all" type="button"><span>{{ $copy['viewAll'] ?? '' }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></div>
         </div>
     </section>
 

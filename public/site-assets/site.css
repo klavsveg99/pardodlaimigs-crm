@@ -138,6 +138,24 @@ h1, h2, h3 { font-family: var(--serif); }
 .text-link:hover { color: var(--accent); }
 .results-line { min-height: 24px; display: flex; justify-content: space-between; margin: 0 0 15px; color: #7b847f; font-size: 11px; }
 .property-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 20px; }
+.view-switcher { display: inline-flex; flex: 0 0 auto; padding: 3px; border: 1px solid var(--line); background: #fff; }
+.view-switcher-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 37px; padding: 0 16px; border: 0; cursor: pointer; color: var(--muted); background: #fff; font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; transition: color .18s ease, background .18s ease; }
+.view-switcher-button i { color: var(--accent); font-size: 12px; }
+.view-switcher-button + .view-switcher-button { box-shadow: inset 1px 0 0 var(--line); }
+.view-switcher-button:hover { background: #f5f7f4; }
+.view-switcher-button:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+.view-switcher-button.is-active { color: #fff; background: var(--brand); }
+.view-switcher-button.is-active i { color: #e5bd76; }
+.property-map-view { position: relative; margin: 0 0 15px; border: 1px solid var(--line); background: #eef0ec; }
+.property-map-canvas { height: clamp(420px, 52vw, 600px); background: #eef0ec; }
+.property-map-status { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 20px; color: var(--muted); background: #eef0ec; font-size: 12px; text-align: center; }
+.property-map-view[hidden], .property-map-status[hidden], .property-grid[hidden], .section-action[hidden] { display: none; }
+.property-map-card { display: grid; gap: 4px; min-width: 190px; max-width: 230px; }
+.property-map-card-price { margin: 0; color: var(--brand); font-size: 13px; font-weight: 700; }
+.property-map-card-title { font-size: 13px; line-height: 1.35; }
+.property-map-card-address { color: var(--muted); font-size: 11px; line-height: 1.45; }
+.property-map-card-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; padding: 0; border: 0; cursor: pointer; color: var(--accent); background: transparent; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.property-map-card-link:hover { color: var(--brand); }
 .property-card { min-width: 0; background: #fff; animation: card-in .35s both; animation-delay: calc(var(--card-index) * 35ms); }
 @keyframes card-in { from { opacity: .35; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .property-image-button { position: relative; display: block; width: 100%; height: 224px; overflow: hidden; border: 0; padding: 0; cursor: pointer; background: #e8e9e4; text-align: left; }
@@ -507,6 +525,10 @@ dialog::backdrop { background: rgb(17 31 28 / 62%); }
   .section-lead { font-size: 12px; }
   .desktop-link { display: none; }
   .property-grid { gap: 14px; }
+  .properties-section .section-heading-row { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .view-switcher { width: 100%; }
+  .view-switcher-button { flex: 1; }
+  .property-map-canvas { height: 62vh; min-height: 360px; }
   .property-image-button { height: 180px; }
   .property-card-body { padding: 13px 12px; }
   .property-card-top { font-size: 8px; }

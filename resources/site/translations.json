@@ -516,7 +516,13 @@
       "loadMore": "Rādīt vairāk rakstu",
       "loadMoreFailed": "Neizdevās ielādēt vairāk rakstu. Lūdzu, mēģiniet vēlreiz.",
       "blogTitle": "Bloga raksti",
-      "viewMoreProperties": "Skatīt visus īpašumus"
+      "viewMoreProperties": "Skatīt visus īpašumus",
+      "viewSwitcherLabel": "Īpašumu skats",
+      "viewGrid": "Saraksts",
+      "viewMap": "Karte",
+      "mapLoading": "Ielādē karti...",
+      "mapEmpty": "Šobrīd nevienam īpašumam nav norādīta atrašanās vieta.",
+      "mapError": "Karti neizdevās ielādēt."
     },
     "en": {
       "navFaq": "FAQ",
@@ -616,7 +622,13 @@
       "loadMore": "Show more articles",
       "loadMoreFailed": "Could not load more articles. Please try again.",
       "blogTitle": "Blog articles",
-      "viewMoreProperties": "View all properties"
+      "viewMoreProperties": "View all properties",
+      "viewSwitcherLabel": "Property view",
+      "viewGrid": "List",
+      "viewMap": "Map",
+      "mapLoading": "Loading map...",
+      "mapEmpty": "No properties have a location yet.",
+      "mapError": "The map could not be loaded."
     },
     "ru": {
       "navFaq": "FAQ",
@@ -716,7 +728,13 @@
       "loadMore": "Показать больше статей",
       "loadMoreFailed": "Не удалось загрузить статьи. Попробуйте ещё раз.",
       "blogTitle": "Статьи в блогах",
-      "viewMoreProperties": "Показать все объекты"
+      "viewMoreProperties": "Показать все объекты",
+      "viewSwitcherLabel": "Вид объектов",
+      "viewGrid": "Список",
+      "viewMap": "Карта",
+      "mapLoading": "Загрузка карты...",
+      "mapEmpty": "Пока ни у одного объекта не указано местоположение.",
+      "mapError": "Не удалось загрузить карту."
     },
     "de": {
       "navFaq": "FAQ",
@@ -816,7 +834,13 @@
       "loadMore": "Mehr Artikel anzeigen",
       "loadMoreFailed": "Weitere Artikel konnten nicht geladen werden. Bitte erneut versuchen.",
       "blogTitle": "Blog-Artikel",
-      "viewMoreProperties": "Alle Objekte anzeigen"
+      "viewMoreProperties": "Alle Objekte anzeigen",
+      "viewSwitcherLabel": "Objektansicht",
+      "viewGrid": "Liste",
+      "viewMap": "Karte",
+      "mapLoading": "Karte wird geladen...",
+      "mapEmpty": "Für noch kein Objekt ist ein Standort hinterlegt.",
+      "mapError": "Die Karte konnte nicht geladen werden."
     }
   }
 }
