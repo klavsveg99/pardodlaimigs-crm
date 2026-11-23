@@ -195,7 +195,6 @@
             const max = Number(price?.value || 0);
             const needle = (query?.value || '').trim().toLowerCase();
             let shown = 0;
-            const matched = [];
             let expanded = grid.dataset.expanded === '1';
 
             cards.forEach((card) => {
@@ -208,15 +207,11 @@
 
                 if (matches) {
                     shown += 1;
-                    matched.push(card.dataset.property);
                     card.hidden = !expanded && shown > limit;
                 } else {
                     card.hidden = true;
                 }
             });
-
-            // Lets the front-page map keep its markers in step with the filters.
-            grid.dispatchEvent(new CustomEvent('site:filtered', { detail: { slugs: matched }, bubbles: true }));
 
             const visible = cards.filter((card) => !card.hidden).length;
             if (count) count.textContent = String(shown) + ' ' + (count.dataset.suffix || '');
@@ -247,231 +242,6 @@
         });
 
         apply();
-    }
-
-    /* ── Front page: property grid/map switcher ─────────────────────────── */
-    function setupPropertyMap() {
-        const panel = $('#property-map-view');
-        const canvas = $('#property-map-canvas');
-        const status = $('#property-map-status');
-        const grid = $('#property-grid');
-        const buttons = $$('[data-property-view]');
-        if (!panel || !canvas || !status || !grid || !buttons.length) return;
-
-        const action = $('#properties-action');
-        const key = (panel.dataset.key || '').trim();
-        const located = properties().filter((property) => {
-            if (property.lat === null || property.lng === null) return false;
-            return Number.isFinite(Number(property.lat)) && Number.isFinite(Number(property.lng));
-        });
-
-        // A quiet, mostly neutral base so the gold pins stand out.
-        const mapStyle = [
-            { elementType: 'geometry', stylers: [{ color: '#f5f4ef' }] },
-            { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
-            { elementType: 'labels.text.fill', stylers: [{ color: '#6f7873' }] },
-            { elementType: 'labels.text.stroke', stylers: [{ color: '#fbfaf7' }] },
-            { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#e0e4de' }] },
-            { featureType: 'landscape.natural', elementType: 'geometry', stylers: [{ color: '#f1f3ed' }] },
-            { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-            { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#e8efeb' }] },
-            { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
-            { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#e7e9e4' }] },
-            { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#efe9df' }] },
-            { featureType: 'road', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-            { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-            { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#dbe7e2' }] },
-            { featureType: 'water', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-        ];
-
-        let map = null;
-        let info = null;
-        let icon = null;
-        const markers = new Map();
-        let visible = null;
-        let ready = false;
-        let loading = false;
-
-        const setStatus = (text) => {
-            status.textContent = text || '';
-            status.hidden = !text;
-        };
-
-        const pin = () => {
-            if (!icon) {
-                const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 40"><path d="M15 1C7.3 1 1 7.3 1 15c0 10.2 14 24 14 24s14-13.8 14-24c0-7.7-6.3-14-14-14Z" fill="#966830" stroke="#fff" stroke-width="2"/><circle cx="15" cy="14.6" r="4.8" fill="#fff"/></svg>';
-                icon = {
-                    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
-                    scaledSize: new google.maps.Size(27, 36),
-                    anchor: new google.maps.Point(13.5, 36),
-                };
-            }
-            return icon;
-        };
-
-        const openInfo = (property, marker) => {
-            const card = document.createElement('div');
-            card.className = 'property-map-card';
-
-            if (property.price) {
-                const price = document.createElement('p');
-                price.className = 'property-map-card-price';
-                price.textContent = property.price;
-                card.appendChild(price);
-            }
-
-            const title = document.createElement('strong');
-            title.className = 'property-map-card-title';
-            title.textContent = property.title;
-            card.appendChild(title);
-
-            const address = property.address || property.city || '';
-            if (address) {
-                const line = document.createElement('span');
-                line.className = 'property-map-card-address';
-                line.textContent = address;
-                card.appendChild(line);
-            }
-
-            const link = document.createElement('button');
-            link.type = 'button';
-            link.className = 'property-map-card-link';
-            const label = document.createElement('span');
-            label.textContent = panel.dataset.details || '';
-            const arrow = document.createElement('i');
-            arrow.className = 'fa-solid fa-arrow-right';
-            arrow.setAttribute('aria-hidden', 'true');
-            link.append(label, arrow);
-            link.addEventListener('click', () => {
-                info.close();
-                openProperty(property.slug);
-            });
-            card.appendChild(link);
-
-            info.setContent(card);
-            info.open({ map, anchor: marker });
-        };
-
-        const fit = () => {
-            const bounds = new google.maps.LatLngBounds();
-            let count = 0;
-            markers.forEach((marker) => {
-                if (marker.getMap()) {
-                    bounds.extend(marker.getPosition());
-                    count += 1;
-                }
-            });
-            if (!count) return;
-            if (count === 1) {
-                map.setCenter(bounds.getCenter());
-                map.setZoom(13);
-                return;
-            }
-            map.fitBounds(bounds, { top: 48, right: 48, bottom: 48, left: 48 });
-            if (map.getZoom() > 13) map.setZoom(13);
-        };
-
-        const applyVisibility = () => {
-            if (!ready) return;
-            markers.forEach((marker, slug) => {
-                marker.setMap(!visible || visible.has(slug) ? map : null);
-            });
-            info.close();
-            fit();
-        };
-
-        const load = () => new Promise((resolve, reject) => {
-            if (window.google && window.google.maps) {
-                resolve();
-                return;
-            }
-            if (!key) {
-                reject(new Error('missing key'));
-                return;
-            }
-
-            window.__siteMapReady = () => {
-                delete window.__siteMapReady;
-                window.gm_authFailure = () => setStatus(panel.dataset.error || '');
-                resolve();
-            };
-
-            const script = document.createElement('script');
-            script.async = true;
-            script.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&loading=async&callback=__siteMapReady';
-            script.onerror = () => reject(new Error('failed to load'));
-            document.head.appendChild(script);
-        });
-
-        const ensure = () => {
-            if (ready || loading) return;
-            if (!located.length) {
-                setStatus(panel.dataset.empty || '');
-                return;
-            }
-
-            loading = true;
-            setStatus(panel.dataset.loading || '');
-
-            load().then(() => {
-                map = new google.maps.Map(canvas, {
-                    center: { lat: 56.8796, lng: 24.6032 },
-                    zoom: 7,
-                    backgroundColor: '#eef0ec',
-                    clickableIcons: false,
-                    fullscreenControl: true,
-                    mapTypeControl: false,
-                    streetViewControl: false,
-                    styles: mapStyle,
-                });
-                info = new google.maps.InfoWindow({ maxWidth: 260 });
-
-                located.forEach((property) => {
-                    const marker = new google.maps.Marker({
-                        position: { lat: Number(property.lat), lng: Number(property.lng) },
-                        map,
-                        title: property.title,
-                        icon: pin(),
-                    });
-                    marker.addListener('click', () => openInfo(property, marker));
-                    markers.set(property.slug, marker);
-                });
-
-                ready = true;
-                setStatus('');
-                applyVisibility();
-                google.maps.event.trigger(map, 'resize');
-            }).catch(() => {
-                setStatus(panel.dataset.error || '');
-            }).finally(() => {
-                loading = false;
-            });
-        };
-
-        const setView = (view) => {
-            const isMap = view === 'map';
-            buttons.forEach((button) => {
-                const active = button.dataset.propertyView === view;
-                button.classList.toggle('is-active', active);
-                button.setAttribute('aria-pressed', String(active));
-            });
-
-            panel.hidden = !isMap;
-            grid.hidden = isMap;
-            if (action) action.hidden = isMap;
-
-            if (isMap) {
-                ensure();
-            } else if (info) {
-                info.close();
-            }
-        };
-
-        buttons.forEach((button) => button.addEventListener('click', () => setView(button.dataset.propertyView)));
-        grid.addEventListener('site:filtered', (event) => {
-            visible = new Set(event.detail?.slugs || []);
-            applyVisibility();
-        });
     }
 
     /* ── Property dialog ────────────────────────────────────────────────── */
@@ -991,7 +761,6 @@
         setupMobileMenu();
         setupStickyHeader();
         setupHero();
-        setupPropertyMap();
         setupFilters();
         setupPropertyDialog();
         setupPropertyPage();
