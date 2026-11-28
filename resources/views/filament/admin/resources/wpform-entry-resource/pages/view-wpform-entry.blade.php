@@ -46,6 +46,11 @@
                         {{ implode(', ', array_map(fn ($v) => (string) $v, $value)) }}
                     @elseif ($value === '' || $value === null)
                         <span class="text-gray-400 dark:text-gray-500">-</span>
+                    @elseif (($field['name'] ?? '') === 'Īpašuma saite' && preg_match('#^https?://#i', $value))
+                        <a href="{{ $value }}" target="_blank" rel="noopener noreferrer"
+                           class="font-semibold text-[var(--pdc-primary)] dark:text-white underline decoration-[var(--pdc-primary)]/30 hover:no-underline break-all">
+                            {{ $value }}
+                        </a>
                     @else
                         {!! nl2br(trim(e($value))) !!}
                     @endif

@@ -157,7 +157,11 @@
                 </div>
 
                 <div class="pdc-feature-popup-body">
-                    <p>{{ $featureAnnouncement['body'] }}</p>
+                    @if (filled($featureAnnouncement['body_html'] ?? null))
+                        <p>{!! $featureAnnouncement['body_html'] !!}</p>
+                    @else
+                        <p>{{ $featureAnnouncement['body'] }}</p>
+                    @endif
 
                     @if ($featureAnnouncement['bullets'] !== [])
                         <ul class="pdc-feature-popup-list">

@@ -6,11 +6,13 @@ namespace App\Services\Notices;
 
 use App\Filament\Admin\Resources\ClientResource;
 use App\Filament\Admin\Resources\CrmPropertyResource;
+use App\Filament\Admin\Resources\WpformEntryResource;
 use App\Models\Client;
 use App\Models\CrmProperty;
 use App\Models\KnowledgeComment;
 use App\Models\NotificationDismissal;
 use App\Models\User;
+use App\Models\WpformEntry;
 use App\Support\PhoneFormat;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -40,6 +42,8 @@ class NoticeCenter
 
     public const STALE_KEY_PREFIX = 'stale_property:';
 
+    public const FORM_KEY_PREFIX = 'wpform:';
+
     /** @return array<int, array<string, mixed>> */
     public function forUser(User $user): array
     {
@@ -57,6 +61,7 @@ class NoticeCenter
             $this->followUpNotices($user, $dismissals),
             $this->leadNotices($user, $dismissals),
             $this->stalePropertyNotices($user, $dismissals),
+            $this->formSubmissionNotices($user, $dismissals),
             $this->knowledgeCommentNotices($user, $dismissals),
         ));
     }
@@ -193,6 +198,59 @@ class NoticeCenter
                     ['label' => 'Pārdošanas sākums', 'value' => $property->sale_started_at?->format('d.m.Y') ?? '-'],
                     ['label' => 'Līguma periods', 'value' => $property->partnership_label],
                 ],
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Jauni kontaktformas pieteikumi. Administratori saņem galvenās lapas
+     * formas pieteikumus (un savu īpašumu pieteikumus); aģenti - tikai savu
+     * īpašumu pieteikumus. Pēc aizvēršanas pieteikums vairs neatgriežas.
+     *
+     * @param  Collection<string, NotificationDismissal>  $dismissals
+     * @return array<int, array<string, mixed>>
+     */
+    private function formSubmissionNotices(User $user, Collection $dismissals): array
+    {
+        if ($user->isPhoto()) {
+            return [];
+        }
+
+        return WpformEntry::query()
+            ->with('property')
+            ->where('status', 'new')
+            ->when(
+                $user->can('manage'),
+                fn ($query) => $query->where(fn ($q) => $q
+                    ->whereNull('property_id')
+                    ->orWhereHas('property', fn ($property) => $property->where('owner_user_id', $user->id))),
+                fn ($query) => $query->whereHas(
+                    'property',
+                    fn ($property) => $property->where('owner_user_id', $user->id),
+                ),
+            )
+            ->orderByDesc('created_at')
+            ->limit(30)
+            ->get()
+            ->reject(fn (WpformEntry $entry): bool => $dismissals->has(self::FORM_KEY_PREFIX.$entry->id))
+            ->take(10)
+            ->map(fn (WpformEntry $entry): array => [
+                'key' => self::FORM_KEY_PREFIX.$entry->id,
+                'type' => 'Pieteikums',
+                'type_color' => 'gray',
+                'icon' => 'heroicon-o-inbox-stack',
+                'urgent' => false,
+                'title' => $entry->property?->title
+                    ?? $entry->fieldValue('Jūsu vārds')
+                    ?? $entry->form_name,
+                'url' => WpformEntryResource::getUrl('view', ['record' => $entry]),
+                'fields' => array_values(array_filter([
+                    ['label' => 'Forma', 'value' => $entry->form_name],
+                    $entry->fieldValue('Jūsu vārds') ? ['label' => 'Vārds', 'value' => $entry->fieldValue('Jūsu vārds')] : null,
+                    $entry->fieldValue('Telefona numurs') ? ['label' => 'Tālrunis', 'value' => PhoneFormat::display((string) $entry->fieldValue('Telefona numurs'))] : null,
+                    $entry->fieldValue('E-pasts') ? ['label' => 'E-pasts', 'value' => $entry->fieldValue('E-pasts')] : null,
+                ])),
             ])
             ->values()
             ->all();

@@ -6,7 +6,6 @@ namespace App\Filament\Admin\Resources\WpformEntryResource\Pages;
 
 use App\Filament\Admin\Resources\Pages\Concerns\RefreshesTabBadges;
 use App\Filament\Admin\Resources\WpformEntryResource;
-use App\Models\WpformEntry;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,10 +24,10 @@ class ListWpformEntries extends ListRecords
         return [
             'active' => Tab::make('Aktīvie')
                 ->modifyQueryUsing($active)
-                ->badge($active(WpformEntry::query())->count()),
+                ->badge($active(WpformEntryResource::getEloquentQuery())->count()),
             'deleted' => Tab::make('Dzēstie')
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'deleted'))
-                ->badge(WpformEntry::where('status', 'deleted')->count()),
+                ->badge(WpformEntryResource::getEloquentQuery()->where('status', 'deleted')->count()),
         ];
     }
 }

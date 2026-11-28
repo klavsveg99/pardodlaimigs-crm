@@ -16,6 +16,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use UnitEnum;
 
@@ -67,16 +68,29 @@ class WpformEntryResource extends Resource
 
     protected static ?int $navigationSort = 30;
 
-    // Pieteikumi ir konfidenciāli - pieejami tikai administratoriem
-    // (slēpti arī navigācijā un klienta skatā).
+    // Aģenti redz tikai savu īpašumu pieteikumus; administratori redz visus.
+    // Fotogrāfiem un studentiem šī sadaļa nav pieejama.
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('manage') ?? false;
+        $user = auth()->user();
+
+        return $user !== null && ! $user->isPhoto() && ! $user->isStudent();
     }
 
     public static function shouldRegisterNavigation(): bool
     {
         return static::canAccess();
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->when(
+            ! auth()->user()?->can('manage'),
+            fn (Builder $query) => $query->whereHas(
+                'property',
+                fn (Builder $property) => $property->where('owner_user_id', auth()->id()),
+            ),
+        );
     }
 
     public static function table(Table $table): Table
@@ -266,7 +280,7 @@ class WpformEntryResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = WpformEntry::where('status', 'new')->count();
+        $count = static::getEloquentQuery()->where('status', 'new')->count();
 
         return $count > 0 ? (string) $count : null;
     }

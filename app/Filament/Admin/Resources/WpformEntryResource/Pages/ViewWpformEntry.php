@@ -128,7 +128,12 @@ class ViewWpformEntry extends ViewRecord
                         ->success()
                         ->send();
                 }),
-            Actions\DeleteAction::make()->label('Dzēst')->color('gray'),
+            // Hard delete was admin-only while the whole resource was; keep it
+            // that way now that agents can open their own submissions.
+            Actions\DeleteAction::make()
+                ->label('Dzēst')
+                ->color('gray')
+                ->visible(fn (): bool => auth()->user()?->can('manage') ?? false),
         ];
     }
 }

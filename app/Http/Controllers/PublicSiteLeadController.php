@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Jobs\NotifyWpformEntry;
 use App\Models\CrmProperty;
 use App\Models\WpformEntry;
 use App\Services\Site\SiteContent;
@@ -124,11 +125,11 @@ class PublicSiteLeadController extends Controller
             ['id' => 12, 'name' => 'Privātuma politika', 'type' => 'checkbox', 'value' => 'Piekritu'],
         ];
 
-        WpformEntry::query()->create([
+        $entry = WpformEntry::query()->create([
             'external_id' => 'site:'.Str::uuid(),
             'entry_id' => (int) floor(microtime(true) * 1000),
             'form_id' => 0,
-            'form_name' => 'Vietnes īpašuma vērtēšanas pieteikums',
+            'form_name' => WpformEntry::FORM_MAIN,
             'status' => 'new',
             'viewed' => false,
             'starred' => false,
@@ -137,6 +138,8 @@ class PublicSiteLeadController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        NotifyWpformEntry::dispatch($entry->id);
     }
 
     private function createEnquiry(Request $request, string $locale): void
@@ -181,19 +184,22 @@ class PublicSiteLeadController extends Controller
             ['id' => 8, 'name' => 'Privātuma politika', 'type' => 'checkbox', 'value' => 'Piekritu'],
         ];
 
-        WpformEntry::query()->create([
+        $entry = WpformEntry::query()->create([
             'external_id' => 'site:'.Str::uuid(),
             'entry_id' => (int) floor(microtime(true) * 1000),
             'form_id' => 0,
-            'form_name' => 'Pieprasījums par īpašumu',
+            'form_name' => WpformEntry::FORM_PROPERTY,
             'status' => 'new',
             'viewed' => false,
             'starred' => false,
             'ip_address' => $request->ip(),
             'fields' => $fields,
+            'property_id' => $property?->id,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        NotifyWpformEntry::dispatch($entry->id);
     }
 
     /**

@@ -8,13 +8,17 @@ use Illuminate\Support\Facades\DB;
 
 class WpformEntry extends Model
 {
+    public const FORM_MAIN = 'Galvenā kontaktforma';
+
+    public const FORM_PROPERTY = 'Īpašuma kontaktforma';
+
     protected $table = 'wpform_entries';
 
     public $timestamps = false;
 
     protected $fillable = [
         'external_id', 'entry_id', 'form_id', 'form_name', 'status',
-        'viewed', 'starred', 'ip_address', 'fields', 'client_id',
+        'viewed', 'starred', 'ip_address', 'fields', 'client_id', 'property_id',
         'created_at', 'updated_at',
     ];
 
@@ -25,6 +29,7 @@ class WpformEntry extends Model
         'starred' => 'boolean',
         'fields' => 'array',
         'client_id' => 'integer',
+        'property_id' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -91,6 +96,16 @@ class WpformEntry extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(CrmProperty::class, 'property_id');
+    }
+
+    public function isPropertyForm(): bool
+    {
+        return $this->property_id !== null || $this->form_name === self::FORM_PROPERTY;
     }
 
     /**

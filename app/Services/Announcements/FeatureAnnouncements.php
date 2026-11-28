@@ -7,6 +7,7 @@ namespace App\Services\Announcements;
 use App\Filament\Admin\Pages\MyProfile;
 use App\Filament\Admin\Resources\PropertySearchResource;
 use App\Filament\Admin\Resources\UserResource;
+use App\Filament\Admin\Resources\WpformEntryResource;
 use App\Models\FeatureAnnouncementView;
 use App\Models\User;
 use Illuminate\Support\Facades\Schema;
@@ -45,11 +46,17 @@ class FeatureAnnouncements
                 $linkUrl = $linkUrl($user);
             }
 
+            $bodyHtml = $definition['body_html'] ?? null;
+            if ($bodyHtml instanceof \Closure) {
+                $bodyHtml = $bodyHtml($user);
+            }
+
             return [
                 'key' => $key,
                 'kicker' => $definition['kicker'],
                 'title' => $definition['title'],
                 'body' => $definition['body'],
+                'body_html' => $bodyHtml,
                 'bullets' => $definition['bullets'] ?? [],
                 'link_label' => $definition['link_label'] ?? null,
                 'link_url' => $linkUrl,
@@ -83,6 +90,18 @@ class FeatureAnnouncements
         return [
             // Newer announcements first: the signature notice should reach
             // everyone before the older Meklētāji introduction.
+            'pieteikumi' => [
+                'kicker' => 'Kas jauns',
+                'title' => 'Kontaktformas pieteikumi',
+                'body' => 'Tagad saņemsiet kontaktformas pieteikumus jūsu īpašumiem e-pastā un CRM paziņojumos.',
+                'body_html' => fn (): string => 'Tagad saņemsiet kontaktformas pieteikumus jūsu īpašumiem e-pastā un CRM paziņojumos. '
+                    .'Skatiet visus savus pieteikumus admin sadaļā '
+                    .'<a href="'.e(WpformEntryResource::getUrl('index')).'" class="font-semibold underline">Pieteikumi</a>.',
+                'link_label' => null,
+                'link_url' => null,
+                'audience' => fn (User $user): bool => $user->isAgent(),
+            ],
+
             'signature' => [
                 'kicker' => 'Kas jauns',
                 'title' => 'Jauns e-pasta paraksts',
